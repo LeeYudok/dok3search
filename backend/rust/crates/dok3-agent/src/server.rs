@@ -228,12 +228,8 @@ impl McpServer {
     }
 
     fn handle_discover(&self, id: Value, params: &Map<String, Value>) -> JsonRpcResponse {
-        let requested = match params.get("protocolVersion") {
-            None | Some(Value::Null) => params
-                .get("_meta")
-                .and_then(Value::as_object)
-                .and_then(|m| m.get("io.modelcontextprotocol/protocolVersion"))
-                .and_then(Value::as_str),
+        let param_ver = match params.get("protocolVersion") {
+            None | Some(Value::Null) => None,
             Some(Value::String(ver)) => Some(ver.as_str()),
             Some(_) => {
                 return JsonRpcResponse::err(
@@ -244,6 +240,27 @@ impl McpServer {
                 );
             }
         };
+        let meta_ver = params
+            .get("_meta")
+            .and_then(Value::as_object)
+            .and_then(|m| {
+                m.get("io.modelcontextprotocol/protocolVersion")
+                    .or_else(|| m.get("protocolVersion"))
+            })
+            .and_then(Value::as_str);
+
+        if let (Some(pv), Some(mv)) = (param_ver, meta_ver)
+            && pv != mv
+        {
+            return JsonRpcResponse::err(
+                id,
+                JSONRPC_INVALID_PARAMS,
+                format!("conflicting protocolVersion: params='{pv}' vs _meta='{mv}'"),
+                None,
+            );
+        }
+
+        let requested = meta_ver.or(param_ver);
         if let Some(ver) = requested
             && !SUPPORTED_PROTOCOL_VERSIONS.contains(&ver)
         {

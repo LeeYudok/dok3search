@@ -290,6 +290,11 @@ async fn streamable_http_rejects_header_body_mismatches_and_enforces_per_request
             r#"{"jsonrpc":"2.0","id":5,"method":"tools/list","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28"}}}"#,
         ),
         (
+            MCP_PROTOCOL_VERSION_HEADER,
+            "2026-07-28",
+            r#"{"jsonrpc":"2.0","id":55,"method":"server/discover","params":{"protocolVersion":"2025-11-25","_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28"}}}"#,
+        ),
+        (
             MCP_METHOD_HEADER,
             "tools/list",
             r#"{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"kb_list_categories"}}"#,

@@ -173,10 +173,10 @@ fn validate_header_body_consistency(
         Box::new(json_response(StatusCode::BAD_REQUEST, &err, err_ver))
     };
 
-    if let Some(hdr_ver) = header_ver
-        && let Some(meta_ver) = obj
-            .get("params")
-            .and_then(Value::as_object)
+    let body_method = obj.get("method").and_then(Value::as_str);
+    if let Some(hdr_ver) = header_ver {
+        let params_obj = obj.get("params").and_then(Value::as_object);
+        if let Some(meta_ver) = params_obj
             .and_then(|p| p.get("_meta"))
             .and_then(Value::as_object)
             .and_then(|m| {
@@ -184,14 +184,24 @@ fn validate_header_body_consistency(
                     .or_else(|| m.get("protocolVersion"))
             })
             .and_then(Value::as_str)
-        && meta_ver != hdr_ver
-    {
-        return Err(mismatch(format!(
-            "Header mismatch: MCP-Protocol-Version '{hdr_ver}' does not match _meta protocolVersion '{meta_ver}'"
-        )));
+            && meta_ver != hdr_ver
+        {
+            return Err(mismatch(format!(
+                "Header mismatch: MCP-Protocol-Version '{hdr_ver}' does not match _meta protocolVersion '{meta_ver}'"
+            )));
+        }
+        if body_method == Some("server/discover")
+            && let Some(param_ver) = params_obj
+                .and_then(|p| p.get("protocolVersion"))
+                .and_then(Value::as_str)
+            && param_ver != hdr_ver
+        {
+            return Err(mismatch(format!(
+                "Header mismatch: MCP-Protocol-Version '{hdr_ver}' does not match server/discover params.protocolVersion '{param_ver}'"
+            )));
+        }
     }
 
-    let body_method = obj.get("method").and_then(Value::as_str);
     if let Some(raw_method) = headers.get(MCP_METHOD_HEADER) {
         let Ok(hdr_method) = raw_method.to_str().map(str::trim) else {
             return Err(mismatch("invalid Mcp-Method header encoding".to_string()));

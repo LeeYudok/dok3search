@@ -154,6 +154,16 @@ fn supports_initialize_2025_and_discover_2026_stateless() {
             .unwrap()
             .contains(&json!("2026-07-28"))
     );
+
+    let conflicting_discover = server
+        .handle_message(
+            r#"{"jsonrpc":"2.0","id":4,"method":"server/discover","params":{"protocolVersion":"2025-11-25","_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28"}}}"#,
+        )
+        .unwrap();
+    assert_eq!(
+        conflicting_discover.error.unwrap().code,
+        JSONRPC_INVALID_PARAMS
+    );
 }
 
 #[test]
