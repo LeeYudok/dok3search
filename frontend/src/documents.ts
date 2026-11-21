@@ -60,21 +60,16 @@ type DesignPair = { id: string; title: string; markdown: string; yaml: string }
 const rawPairs: unknown[] = isRecord(designManifest) && Array.isArray(designManifest.entrypoints)
   ? designManifest.entrypoints
   : []
-export const designPairs = rawPairs.filter((entry): entry is DesignPair =>
+const designPairs = rawPairs.filter((entry): entry is DesignPair =>
   isRecord(entry) && typeof entry.id === 'string' && typeof entry.title === 'string' &&
   typeof entry.markdown === 'string' && typeof entry.yaml === 'string',
 )
-const entrypointPaths = new Set(designPairs.flatMap(({ markdown, yaml }) => [markdown, yaml]))
-
-function isDesignEntrypoint(path: string) {
-  return entrypointPaths.has(path)
-}
 
 export const designDocuments: Document[] = Object.entries(designFiles).map(([path, content]): Document => {
   const samplePath = path.slice('./samples/design/'.length)
   const isMarkdown = samplePath.endsWith('.md')
   const isArchitecture = samplePath === 'dok3search-final-architecture.md'
-  const isEntrypoint = isDesignEntrypoint(samplePath)
+  const pair = designPairs.find(({ markdown, yaml }) => samplePath === markdown || samplePath === yaml)
   const heading = /^# ([^\r\n]+)\r?\n/.exec(content)
   const markdown = isMarkdown
     ? content.replace(/^# [^\r\n]+\r?\n+/, '')
@@ -93,7 +88,7 @@ export const designDocuments: Document[] = Object.entries(designFiles).map(([pat
 
   return {
     id: isArchitecture ? 'final-architecture' : 'design-' + samplePath.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-    title: (isEntrypoint ? samplePath : heading?.[1].replace(/[`*]/g, '') ?? samplePath) + (samplePath.endsWith('-download.md') ? ' (다운로드본)' : ''),
+    title: (pair?.title ?? heading?.[1].replace(/[`*]/g, '') ?? samplePath) + (samplePath.endsWith('-download.md') ? ' (다운로드본)' : ''),
     summary,
     source: 'dok3search-design',
     tag: isArchitecture ? '아키텍처' : isMarkdown ? 'Markdown' : 'YAML',
@@ -108,9 +103,19 @@ export const designDocuments: Document[] = Object.entries(designFiles).map(([pat
   return rank(a) - rank(b) || (a.samplePath ?? '').localeCompare(b.samplePath ?? '')
 })
 
-export function designDocumentUrl(path: string) {
-  const doc = designDocuments.find((item) => item.samplePath === path)
-  return doc ? '/docs/' + doc.id + '?category=design' : undefined
+const designFormatsById = new Map<string, { markdown: Document; yaml: Document }>()
+for (const pair of designPairs) {
+  const markdown = designDocuments.find((doc) => doc.samplePath === pair.markdown)
+  const yaml = designDocuments.find((doc) => doc.samplePath === pair.yaml)
+  if (!markdown || !yaml) continue
+
+  const formats = { markdown, yaml }
+  designFormatsById.set(markdown.id, formats)
+  designFormatsById.set(yaml.id, formats)
+}
+
+export function documentFormats(id: string) {
+  return designFormatsById.get(id)
 }
 
 export const documents: Document[] = [
@@ -256,3 +261,19 @@ export const documents: Document[] = [
     body: '소유 부서와 원본 위치를 기록해 정정이 필요할 때 원문을 찾을 수 있게 합니다.',
   },
 ]
+
+export function searchDocuments(query: string) {
+  const terms = query.toLowerCase().split(/\s+/)
+
+  return documents.filter((doc) => {
+    const formats = documentFormats(doc.id)
+    if (formats?.yaml === doc) return false
+    if (!query) return true
+
+    const variants = formats ? [formats.markdown, formats.yaml] : [doc]
+    return variants.some((variant) => {
+      const searchable = [variant.title, variant.summary, variant.source, variant.tag, variant.body, variant.markdown, variant.samplePath].join(' ').toLowerCase()
+      return terms.every((term) => searchable.includes(term))
+    })
+  })
+}

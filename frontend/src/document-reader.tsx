@@ -4,7 +4,7 @@ import remarkGfm from 'remark-gfm'
 import remarkParse from 'remark-parse'
 import { unified } from 'unified'
 import { toString } from 'mdast-util-to-string'
-import { categories, categoryLabels, documentHeadingId, designDocuments, designDocumentUrl, designPairs, documents, searchUrl } from './documents'
+import { categories, categoryLabels, designDocuments, documentFormats, documentHeadingId, documents, searchUrl } from './documents'
 
 const designParser = unified().use(remarkParse).use(remarkGfm)
 
@@ -61,8 +61,7 @@ function MarkdownBody({ markdown, sections, samplePath }: {
 
 export function DocumentPage({ id }: { id: string }) {
   const doc = documents.find((item) => item.id === id)
-  const pair = designPairs.find((item) => item.markdown === doc?.samplePath || item.yaml === doc?.samplePath)
-  const companionPath = pair && (pair.markdown === doc?.samplePath ? pair.yaml : pair.markdown)
+  const formats = documentFormats(id)
   const reader = useRef<HTMLElement>(null)
   const progress = useRef<HTMLDivElement>(null)
   const [activeSection, setActiveSection] = useState('overview')
@@ -160,8 +159,19 @@ export function DocumentPage({ id }: { id: string }) {
               <h1>{doc.title}</h1>
               <p className="article-meta">
                 <span>{doc.samplePath ?? doc.source}</span>{doc.date && <time dateTime={doc.date}>{doc.date}</time>}
-                {companionPath && <a className="reader-back" href={designDocumentUrl(companionPath)}>{companionPath} 보기</a>}
               </p>
+              {formats && (
+                <nav className="category-filters article-formats" aria-label="문서 형식">
+                  {[
+                    { id: formats.markdown.id, label: 'Markdown' },
+                    { id: formats.yaml.id, label: 'YAML' },
+                  ].map((format) => (
+                    <a key={format.id} href={'/docs/' + format.id + window.location.search} aria-current={format.id === id ? 'page' : undefined}>
+                      {format.label}
+                    </a>
+                  ))}
+                </nav>
+              )}
             </header>
             <div className="article-layout">
               <article className="article-copy">

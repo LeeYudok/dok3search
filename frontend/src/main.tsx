@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { DotsThreeVerticalIcon as More, FileTextIcon as FileText, MagnifyingGlassIcon as Search, XIcon as X } from '@phosphor-icons/react'
 import { createRoot } from 'react-dom/client'
-import { categories, categoryLabels, documents, searchUrl } from './documents'
+import { categories, categoryLabels, documentFormats, documents, searchDocuments, searchUrl } from './documents'
 import './style.css'
 
 const pageSize = 15
@@ -37,11 +37,7 @@ function SearchPage() {
   const requestedPage = Number(params.get('page'))
   const [openMenu, setOpenMenu] = useState('')
   const [copyStatus, setCopyStatus] = useState('')
-  const terms = query.toLowerCase().split(/\s+/)
-  const matches = documents.filter((doc) => {
-    const searchable = [doc.title, doc.summary, doc.source, doc.tag, doc.body, doc.markdown, doc.samplePath].join(' ').toLowerCase()
-    return terms.every((term) => searchable.includes(term))
-  })
+  const matches = searchDocuments(query)
   const visible = category ? matches.filter((doc) => doc.category === category) : matches
   const browseDesign = category === 'design' && !query
 
@@ -104,7 +100,7 @@ function SearchPage() {
                 <a className="document" href={documentUrl(doc.id)}>
                   <span className="file-icon"><FileText size={18} aria-hidden="true" /></span>
                   <span className="doc-copy">
-                    <small>{categoryLabels.get(doc.category) ?? doc.source} · {doc.tag}</small>
+                    <small>{categoryLabels.get(doc.category) ?? doc.source} · {documentFormats(doc.id) ? 'Markdown · YAML' : doc.tag}</small>
                     <strong>{doc.title}</strong>
                     <span className="snippet">{doc.summary} {doc.body}</span>
                   </span>
