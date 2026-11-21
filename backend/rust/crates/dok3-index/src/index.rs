@@ -90,13 +90,12 @@ impl TantivyIndex {
             .try_into()
             .map_err(|e| Dok3Error::Index(format!("failed to open index reader: {e}")))?;
 
-        let initial_docs = reader.searcher().num_docs();
         let snapshot = SearchSnapshotMeta {
             generation_id,
             epoch: 1,
             schema_version: SCHEMA_VERSION,
             acl_policy_version: 1,
-            applied_change_sequence: Sequence::new(initial_docs),
+            applied_change_sequence: Sequence::new(0),
             reader_state: ReaderState::Ready,
         };
 
@@ -150,7 +149,7 @@ impl TantivyIndex {
         Ok(())
     }
 
-    /// Commits pending writer changes, reloads the reader, and advances snapshot epoch.
+    /// Commits pending writer changes, reloads the reader, and advances snapshot epoch atomically.
     pub fn commit_and_reload(
         &self,
         applied_sequence: Option<Sequence>,
@@ -162,19 +161,21 @@ impl TantivyIndex {
         writer
             .commit()
             .map_err(|e| Dok3Error::Index(format!("failed to commit index: {e}")))?;
-        drop(writer);
 
-        self.reader
-            .reload()
-            .map_err(|e| Dok3Error::Index(format!("failed to reload index reader: {e}")))?;
-
-        let num_docs = self.reader.searcher().num_docs();
         let mut snap = self
             .snapshot
             .write()
             .map_err(|_| Dok3Error::Internal("snapshot lock poisoned".to_string()))?;
+        self.reader
+            .reload()
+            .map_err(|e| Dok3Error::Index(format!("failed to reload index reader: {e}")))?;
+
         snap.epoch += 1;
-        snap.applied_change_sequence = applied_sequence.unwrap_or(Sequence::new(num_docs));
+        if let Some(seq) = applied_sequence
+            && seq > snap.applied_change_sequence
+        {
+            snap.applied_change_sequence = seq;
+        }
         snap.reader_state = ReaderState::Ready;
         Ok(snap.clone())
     }
@@ -438,7 +439,13 @@ impl SearchPort for TantivyIndex {
             return Ok(empty_response(query_trimmed, &req, self.snapshot()));
         }
 
-        let searcher = self.reader.searcher();
+        let (searcher, snapshot) = {
+            let snap_guard = self
+                .snapshot
+                .read()
+                .map_err(|_| Dok3Error::Internal("snapshot lock poisoned".to_string()))?;
+            (self.reader.searcher(), snap_guard.clone())
+        };
         let (base_clauses, snippet_q) = self.build_base_clauses(&effective_scopes, &req);
         let base_query = BooleanQuery::new(clone_clauses(&base_clauses));
 
@@ -515,7 +522,7 @@ impl SearchPort for TantivyIndex {
             category_counts,
             related_searches,
             hits,
-            snapshot: self.snapshot(),
+            snapshot,
         })
     }
 

@@ -187,9 +187,18 @@ fn delete_removes_document_after_commit_and_reload() {
     assert_eq!(search(&index, &public, "uniquedelterm").total_hits, 1);
 
     index.delete_document(&DocumentId::new("d1")).unwrap();
-    index.commit_and_reload(None).unwrap();
+    let del_snap = index.commit_and_reload(None).unwrap();
+    assert_eq!(del_snap.applied_change_sequence, Sequence::new(0));
     assert_eq!(index.doc_count(), 0);
     assert_eq!(search(&index, &public, "uniquedelterm").total_hits, 0);
+
+    // Explicit monotonic sequences never regress even on None or lower-sequence commits.
+    let s10 = index.commit_and_reload(Some(Sequence::new(10))).unwrap();
+    assert_eq!(s10.applied_change_sequence, Sequence::new(10));
+    let s_none = index.commit_and_reload(None).unwrap();
+    assert_eq!(s_none.applied_change_sequence, Sequence::new(10));
+    let s_lower = index.commit_and_reload(Some(Sequence::new(3))).unwrap();
+    assert_eq!(s_lower.applied_change_sequence, Sequence::new(10));
 }
 
 #[test]
