@@ -296,6 +296,7 @@ impl SearchPort for InMemorySearchRepository {
                         String::new()
                     },
                     category: doc.category.clone(),
+                    topic: doc.topic.clone(),
                     source: doc.source.clone(),
                     tag: doc.tag.clone(),
                     tags: doc.tags.clone(),
@@ -360,6 +361,7 @@ impl DocumentStorePort for InMemorySearchRepository {
             title: doc.title.clone(),
             summary: doc.summary.clone(),
             category: doc.category.clone(),
+            topic: doc.topic.clone(),
             tag: doc.tag.clone(),
             tags: doc.tags.clone(),
             keywords: doc.keywords.clone(),

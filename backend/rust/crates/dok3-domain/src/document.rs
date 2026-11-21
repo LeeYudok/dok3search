@@ -67,6 +67,8 @@ pub struct Document {
     pub title: String,
     pub summary: String,
     pub category: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub topic: Option<String>,
     pub tag: String,
     pub tags: Vec<String>,
     pub keywords: Vec<String>,
@@ -92,6 +94,8 @@ pub struct DocumentDetail {
     pub title: String,
     pub summary: String,
     pub category: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub topic: Option<String>,
     pub tag: String,
     pub tags: Vec<String>,
     pub keywords: Vec<String>,
