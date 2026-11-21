@@ -1,7 +1,7 @@
 //! Content-addressed original store plus document metadata implementing `DocumentStorePort`.
 
 use std::collections::BTreeMap;
-use std::fs;
+use std::fs::{self, File};
 use std::path::{Path, PathBuf};
 use std::sync::RwLock;
 
@@ -12,7 +12,7 @@ use dok3_domain::{
 };
 use sha2::{Digest, Sha256};
 
-use crate::fsutil::{atomic_write, storage_err};
+use crate::fsutil::{acquire_exclusive_lock, atomic_write, cleanup_stale_temps, storage_err};
 
 /// Returns the canonical revision id (`sha256:<hex>`) for original bytes.
 #[must_use]
@@ -32,9 +32,9 @@ fn sha256_hex(content: &[u8]) -> String {
 /// Result of [`FileDocumentStore::put`].
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PutOutcome {
-    /// New document or changed content; carries the new revision.
+    /// New document, changed metadata/sections, or healed object; carries the revision.
     Stored(RevisionId),
-    /// Content hash identical to the stored revision; nothing was written.
+    /// Stored metadata and object file match identically; nothing was written.
     Unchanged(RevisionId),
 }
 
@@ -50,14 +50,20 @@ impl PutOutcome {
 /// File-backed store: originals in `objects/`, metadata in `documents.json`.
 #[derive(Debug)]
 pub struct FileDocumentStore {
+    _lock: File,
     root: PathBuf,
     docs: RwLock<BTreeMap<String, Document>>,
 }
 
 impl FileDocumentStore {
-    /// Opens (or creates) a store rooted at `root`, loading persisted metadata.
+    /// Opens (or creates) a store rooted at `root` under an exclusive `.store.lock`.
     pub fn open(root: &Path) -> Result<Self, Dok3Error> {
-        fs::create_dir_all(root.join("objects")).map_err(|e| storage_err("create store", e))?;
+        let objects_dir = root.join("objects");
+        fs::create_dir_all(&objects_dir).map_err(|e| storage_err("create store", e))?;
+        let lock = acquire_exclusive_lock(&root.join(".store.lock"))?;
+        cleanup_stale_temps(root);
+        cleanup_stale_temps(&objects_dir);
+
         let meta = root.join("documents.json");
         let docs = match fs::read(&meta) {
             Ok(raw) => {
@@ -67,6 +73,7 @@ impl FileDocumentStore {
             Err(e) => return Err(storage_err("read metadata", e)),
         };
         Ok(Self {
+            _lock: lock,
             root: root.to_path_buf(),
             docs: RwLock::new(docs),
         })
@@ -74,6 +81,9 @@ impl FileDocumentStore {
 
     /// Stores original bytes and metadata. `doc.revision_id` and `doc.content_hash`
     /// are derived from `content` (SHA-256) and override caller-provided values.
+    ///
+    /// If the content hash matches an intact object on disk, object writing is skipped,
+    /// while metadata or section edits still persist. Corrupted existing objects are healed.
     pub fn put(&self, mut doc: Document, content: &[u8]) -> Result<PutOutcome, Dok3Error> {
         if doc.id.as_str().trim().is_empty() {
             return Err(Dok3Error::InvalidInput(
@@ -82,23 +92,28 @@ impl FileDocumentStore {
         }
         let hash = sha256_hex(content);
         let revision = RevisionId::new(format!("sha256:{hash}"));
+        doc.revision_id = revision.clone();
+        doc.content_hash = hash.clone();
+
         let mut docs = self.write()?;
-        if docs
-            .get(doc.id.as_str())
-            .is_some_and(|cur| cur.content_hash == hash && cur.acl_scope == doc.acl_scope)
-        {
+        let object = self.object_path(&hash);
+        let intact = object_intact(&object, &hash);
+        let metadata_changed = docs.get(doc.id.as_str()) != Some(&doc);
+        if !metadata_changed && intact {
             return Ok(PutOutcome::Unchanged(revision));
         }
-        let object = self.object_path(&hash);
-        if !object.exists() {
+        if !intact {
             atomic_write(&object, content)?;
         }
-        doc.revision_id = revision.clone();
-        doc.content_hash = hash;
-        let mut next = docs.clone();
-        next.insert(doc.id.as_str().to_string(), doc);
-        self.persist(&next)?;
-        *docs = next;
+        if metadata_changed {
+            let mut next = docs.clone();
+            next.insert(doc.id.as_str().to_string(), doc);
+            if let Err(err) = self.persist(&next) {
+                self.resync_from_disk(&mut docs);
+                return Err(err);
+            }
+            *docs = next;
+        }
         Ok(PutOutcome::Stored(revision))
     }
 
@@ -111,7 +126,10 @@ impl FileDocumentStore {
         }
         let mut next = docs.clone();
         next.remove(id.as_str());
-        self.persist(&next)?;
+        if let Err(err) = self.persist(&next) {
+            self.resync_from_disk(&mut docs);
+            return Err(err);
+        }
         *docs = next;
         Ok(true)
     }
@@ -142,6 +160,20 @@ impl FileDocumentStore {
         atomic_write(&self.root.join("documents.json"), &raw)
     }
 
+    fn resync_from_disk(&self, docs: &mut BTreeMap<String, Document>) {
+        match fs::read(self.root.join("documents.json")) {
+            Ok(raw) => {
+                if let Ok(on_disk) = serde_json::from_slice::<BTreeMap<String, Document>>(&raw) {
+                    *docs = on_disk;
+                }
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                docs.clear();
+            }
+            Err(_) => {}
+        }
+    }
+
     fn write(
         &self,
     ) -> Result<std::sync::RwLockWriteGuard<'_, BTreeMap<String, Document>>, Dok3Error> {
@@ -166,6 +198,13 @@ impl FileDocumentStore {
         }
         Ok(doc.clone())
     }
+}
+
+fn object_intact(path: &Path, expected_hash: &str) -> bool {
+    let Ok(bytes) = fs::read(path) else {
+        return false;
+    };
+    sha256_hex(&bytes) == expected_hash
 }
 
 impl DocumentStorePort for FileDocumentStore {
