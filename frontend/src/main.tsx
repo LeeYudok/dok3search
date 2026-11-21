@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { DotsThreeVerticalIcon as More, FileTextIcon as FileText, MagnifyingGlassIcon as Search, XIcon as X } from '@phosphor-icons/react'
 import { createRoot } from 'react-dom/client'
-import { categories, categoryLabels, documentFormats, documents, searchDocuments, searchUrl } from './documents'
+import { categories, categoryLabels, documentFormats, documents, searchDocuments, searchUrl, type Document } from './documents'
+import { rustDocumentPrefix, type RustCorpus } from './rust-corpus'
 import './style.css'
 
 const pageSize = 15
@@ -29,7 +30,7 @@ function HomePage() {
   )
 }
 
-function SearchPage() {
+function SearchPage({ corpus }: { corpus: readonly Document[] }) {
   const params = new URLSearchParams(window.location.search)
   const query = params.get('q')?.trim() ?? ''
   const activeCategory = categories.find((item) => item.id === params.get('category'))
@@ -37,8 +38,13 @@ function SearchPage() {
   const requestedPage = Number(params.get('page'))
   const [openMenu, setOpenMenu] = useState('')
   const [copyStatus, setCopyStatus] = useState('')
-  const matches = searchDocuments(query)
+  const matches = searchDocuments(query, corpus)
   const visible = category ? matches.filter((doc) => doc.category === category) : matches
+  if (category === 'rust' && query) {
+    const normalizedQuery = query.toLowerCase()
+    const titleMatch = (doc: Document) => Number(doc.title.toLowerCase().includes(normalizedQuery))
+    visible.sort((a, b) => titleMatch(b) - titleMatch(a))
+  }
   const browseDesign = category === 'design' && !query
 
   const pageCount = Math.ceil(visible.length / pageSize)
@@ -49,7 +55,7 @@ function SearchPage() {
   const lastPage = Math.min(firstPage + 4, pageCount)
   const matchedCategories = new Set(visible.map((doc) => doc.category))
   const relatedSearches = query && visible.length
-    ? [...new Set(documents.filter((doc) => matchedCategories.has(doc.category)).map((doc) => doc.tag))]
+    ? [...new Set(corpus.filter((doc) => matchedCategories.has(doc.category)).map((doc) => doc.tag))]
         .filter((tag) => !query.toLowerCase().includes(tag.toLowerCase()))
         .slice(0, 6)
     : []
@@ -100,7 +106,7 @@ function SearchPage() {
                 <a className="document" href={documentUrl(doc.id)}>
                   <span className="file-icon"><FileText size={18} aria-hidden="true" /></span>
                   <span className="doc-copy">
-                    <small>{categoryLabels.get(doc.category) ?? doc.source} · {documentFormats(doc.id) ? 'Markdown · YAML' : doc.tag}</small>
+                    <small>{doc.category === 'rust' ? doc.source : categoryLabels.get(doc.category)} · {documentFormats(doc.id) ? 'Markdown · YAML' : doc.tag}</small>
                     <strong>{doc.title}</strong>
                     <span className="snippet">{doc.summary} {doc.body}</span>
                   </span>
@@ -111,7 +117,7 @@ function SearchPage() {
                     if (!event.currentTarget.contains(event.relatedTarget)) setOpenMenu('')
                   }}
                   onKeyDown={(event) => {
-                    if (event.key === 'Escape' && openMenu === doc.title) {
+                    if (event.key === 'Escape' && openMenu === doc.id) {
                       event.stopPropagation()
                       event.currentTarget.querySelector('button')?.focus()
                       setOpenMenu('')
@@ -120,13 +126,13 @@ function SearchPage() {
                 >
                   <button type="button" className="more-button"
                     aria-label={doc.title + ' 옵션'}
-                    aria-expanded={openMenu === doc.title}
+                    aria-expanded={openMenu === doc.id}
                     onClick={(event) => {
                       event.currentTarget.focus()
-                      setOpenMenu(openMenu === doc.title ? '' : doc.title)
+                      setOpenMenu(openMenu === doc.id ? '' : doc.id)
                     }}
                   ><More size={20} weight="bold" aria-hidden="true" /></button>
-                  {openMenu === doc.title && (
+                  {openMenu === doc.id && (
                     <div className="document-options" onPointerDown={(event) => event.preventDefault()}>
                       <a href={documentUrl(doc.id)}>문서 열기</a>
                       <button type="button" onClick={() => void copyTitle(doc.title)}>제목 복사</button>
@@ -176,14 +182,38 @@ const legacyIds: Record<string, string> = {
   'design-design-yaml': 'design-map-yaml',
 }
 const detailId = detail ? legacyIds[detail[1]] ?? detail[1] : undefined
-if (detailId) {
-  const title = documents.find((doc) => doc.id === detailId)?.title
-  document.title = (title ?? '문서를 찾을 수 없습니다') + ' · dok3search'
+const container = document.getElementById('root')
+if (!container) throw new Error('화면을 표시할 요소를 찾을 수 없습니다.')
+const root = createRoot(container)
+
+function loadRustCorpora(documentId?: string): Promise<RustCorpus[]> {
+  const sources = [
+    { folder: 'comprehensive-rust', load: () => import('./comprehensive-rust').then(({ comprehensiveRust }) => comprehensiveRust) },
+    { folder: 'rust-book', load: () => import('./rust-book').then(({ rustBook }) => rustBook) },
+  ]
+  return Promise.all(sources
+    .filter(({ folder }) => !documentId || documentId.startsWith(rustDocumentPrefix + folder + '-'))
+    .map(({ load }) => load()))
 }
 
-const root = createRoot(document.getElementById('root')!)
-if (detailId) {
-  void import('./document-reader').then(({ DocumentPage }) => root.render(<DocumentPage id={detailId} />))
-} else {
-  root.render(path === '/search' ? <SearchPage /> : <HomePage />)
+async function renderPage() {
+  if (detailId) {
+    const [{ DocumentPage }, corpora] = await Promise.all([
+      import('./document-reader'),
+      loadRustCorpora(detailId),
+    ])
+    const corpus = corpora.find(({ idPrefix }) => detailId.startsWith(idPrefix))
+    const doc = (corpus?.documents ?? documents).find(({ id }) => id === detailId)
+    document.title = (doc?.title ?? '문서를 찾을 수 없습니다') + ' · dok3search'
+    root.render(<DocumentPage doc={doc} corpus={corpus} />)
+  } else if (path === '/search') {
+    const corpora = await loadRustCorpora()
+    root.render(<SearchPage corpus={documents.concat(corpora.flatMap((corpus) => corpus.documents))} />)
+  } else {
+    root.render(<HomePage />)
+  }
 }
+
+void renderPage().catch(() => {
+  root.render(<main className="shell library"><p role="alert">문서를 불러올 수 없습니다.</p></main>)
+})

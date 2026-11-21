@@ -149,6 +149,7 @@ h2 { font-size: 23px; letter-spacing: -.045em; }
 .article-header h1 { margin-block: 8px 12px; font-size: clamp(28px, 5vw, 45px); line-height: 1.25; letter-spacing: -.04em; overflow-wrap: anywhere; }
 .article-meta { display: flex; flex-wrap: wrap; gap: 12px; color: var(--muted-foreground); font-size: 14px; }
 .article-meta time { font-size: inherit; }
+.article-meta a { text-decoration: underline; }
 .article-formats { margin-top: 12px; }
 .article-layout { padding-top: 28px; display: grid; grid-template-columns: minmax(0, 66ch) minmax(104px, 1fr); gap: clamp(20px, 6vw, 62px); align-items: start; }
 .article-copy { display: grid; grid-template-columns: minmax(0, 1fr); gap: 26px; line-height: 1.8; }
@@ -163,6 +164,7 @@ h2 { font-size: 23px; letter-spacing: -.045em; }
 }
 
 .markdown-body { min-width: 0; overflow-wrap: anywhere; }
+.markdown-body img { display: block; max-width: 100%; height: auto; }
 .markdown-body > * + * { margin-top: 1em; }
 .markdown-body h2 { margin-top: 1.7em; }
 .markdown-body h3, .markdown-body h4 { line-height: 1.45; }

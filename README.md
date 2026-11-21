@@ -28,6 +28,12 @@ npm --prefix frontend run dev
 
 Vite가 출력하는 로컬 주소를 엽니다. `npm --prefix frontend run build`로 TypeScript 검사와 정적 빌드를 실행합니다.
 
+## 폐쇄망 Rust 참고 자료
+
+`/search?category=rust`에서 Google의 Comprehensive Rust 한국어판 337개 장과 Rust 공식 책 영문판 111개 장을 검색합니다. 제목·본문·코드를 검색할 수 있고, 열람 화면의 코드 예제와 강의 자료에 포함된 그림은 로컬에서 엽니다.
+
+개발 에이전트는 `frontend/src/samples/comprehensive-rust/chapters/`와 `frontend/src/samples/rust-book/chapters/`의 Markdown을 직접 읽거나 파일 색인에 넣을 수 있습니다. [Comprehensive Rust 출처와 라이선스](frontend/src/samples/comprehensive-rust/README.md) · [Rust 공식 책 출처와 라이선스](frontend/src/samples/rust-book/README.md)
+
 ## Rust 백엔드 점검
 
 ```sh

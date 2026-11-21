@@ -7,6 +7,7 @@
 ## 디렉터리 구조
 
 - `frontend/` — React + TypeScript + Vite 웹 UI (로컬 폰트·샘플 데이터 포함, 외부 CDN 미사용)
+- `frontend/src/samples/{comprehensive-rust,rust-book}/chapters/` — Rust 문서 검색에 쓰는 장별 Markdown. Comprehensive Rust는 한국어판, Rust 공식 책은 영문판이다.
 - `backend/rust/` — Cargo workspace (`crates/` 아래 13개 크레이트: `dok3-core` ~ `dok3-server`)
 - `config/` — 환경별 설정 예시 및 스키마 배치 위치
 - `contracts/` — REST·MCP·도메인 계약 정의 배치 위치
@@ -24,6 +25,7 @@
 ## 검증 명령
 
 - 프론트엔드 빌드: `npm --prefix frontend run build`
+- Comprehensive Rust 변환: `python3 scripts/import-comprehensive-rust.py <snapshot-dir> <output-dir>` ([준비할 입력과 라이선스](frontend/src/samples/comprehensive-rust/README.md))
 - Rust 정적/테스트 검증:
   - `cargo fmt --manifest-path backend/rust/Cargo.toml --all -- --check`
   - `cargo clippy --manifest-path backend/rust/Cargo.toml --workspace --all-targets -- -D warnings`

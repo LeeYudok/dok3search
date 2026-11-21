@@ -1,0 +1,1692 @@
+{
+  "source": "https://google.github.io/comprehensive-rust/ko/",
+  "printSha256": "d71412270431447607dbd02dd282ef982c8bdfd8c3c39372f845101882dc990b",
+  "tocSha256": "b5253d257d794a96d4437b5676cf45736db802509e1e711ccc0e83005a93d87f",
+  "chapters": [
+    {
+      "path": "chapters/index.md",
+      "title": "Comprehensive Rust에 오신 것을 환영합니다 🦀",
+      "summary": "이 강의는 무료이며, Google의 Android 팀이 만들었습니다. 기본 문법부터 제네릭, 에러 핸들링과 같은 고급주제까지 러스트의 모든 것을 포함합니다."
+    },
+    {
+      "path": "chapters/running-the-course.md",
+      "title": "강의 진행",
+      "summary": "다음은 구글 내부에서 이 과정을 어떤식으로 운영해왔는지에 대한 배경 정보입니다."
+    },
+    {
+      "path": "chapters/running-the-course/course-structure.md",
+      "title": "강의 구성",
+      "summary": "첫 4일은 Rust 기초 로 이루어지며 짧은 시간 안에 많은 내용을 다루게 됩니다."
+    },
+    {
+      "path": "chapters/running-the-course/keyboard-shortcuts.md",
+      "title": "단축키",
+      "summary": "다음은, mdBook 시스템(현 사이트)에서 유용한 단축키들 입니다:"
+    },
+    {
+      "path": "chapters/running-the-course/translations.md",
+      "title": "다른 언어들",
+      "summary": "이 과정은 다른 언어로도 제공됩니다. 괄호 안은 번역에 도움 주신 분들입니다:"
+    },
+    {
+      "path": "chapters/cargo.md",
+      "title": "카고 사용하기",
+      "summary": "러스트를 시작하려고하면 당신은 곧 Cargo 라는, 러스트 생태계에서 사용하는 표준 빌드/실행 도구를 만날 것 입니다. 여기서는 카고가 무엇인지, 그리고 카고가 러스트 생태계에서 어떤 역할을 하는지, 그리고 이 강의에서 어떻게 사용될 지에 대해 간략히 설명하겠습니다."
+    },
+    {
+      "path": "chapters/cargo/rust-ecosystem.md",
+      "title": "러스트 생태계",
+      "summary": "러스트의 생태계는 여러가지 도구들로 구성되어 있으며, 그 중 중요한 것들은 아래와 같습니다:"
+    },
+    {
+      "path": "chapters/cargo/code-samples.md",
+      "title": "강의에서의 코드 샘플",
+      "summary": "이 강의자료에 있는 모든 예제는 브라우저에서 바로 수행 가능합니다. 이렇게 한 이유는, 준비 과정을 단순화 시키고, 모두가 같은 환경에서 작업할 수 있도록 하기 위함입니다."
+    },
+    {
+      "path": "chapters/cargo/running-locally.md",
+      "title": "로컬 환경의 카고",
+      "summary": "만약 개인용 컴퓨터에서 코드를 실행해보려면 먼저 러스트를 설치해야 합니다. Rust Book 의 지침에 따라 rustc 와 cargo 를 함께 설치 하시기 바랍니다. 설치 후 아래 커맨드를 통해 각 툴의 버전을 확인 할 수 있습니다:"
+    },
+    {
+      "path": "chapters/welcome-day-1.md",
+      "title": "1일차 개요",
+      "summary": "강의 첫 날입니다. 오늘 배울 것이 참 많습니다:"
+    },
+    {
+      "path": "chapters/hello-world.md",
+      "title": "Hello World!",
+      "summary": "This segment should take about 15 minutes. It contains:"
+    },
+    {
+      "path": "chapters/hello-world/what-is-rust.md",
+      "title": "러스트란?",
+      "summary": "러스트는 2015년에 버전 1.0 을 릴리즈 한 새로운 프로그램 언어입니다:"
+    },
+    {
+      "path": "chapters/hello-world/benefits.md",
+      "title": "Rust의 이점",
+      "summary": "러스트만의 독특한 세일즈 포인트(장점):"
+    },
+    {
+      "path": "chapters/hello-world/playground.md",
+      "title": "플레이그라운드",
+      "summary": "The Rust Playground provides an easy way to run short Rust programs, and is the basis for the examples and exercises in this course. Try running the “hello-world” program it starts with. It comes with a few handy features:"
+    },
+    {
+      "path": "chapters/types-and-values.md",
+      "title": "타입 및 값",
+      "summary": "This segment should take about 45 minutes. It contains:"
+    },
+    {
+      "path": "chapters/types-and-values/hello-world.md",
+      "title": "Hello World!",
+      "summary": "가장 간단한 러스트 프로그램으로써, 고전적인 Hello World 를 작성해 보겠습니다:"
+    },
+    {
+      "path": "chapters/types-and-values/variables.md",
+      "title": "변수",
+      "summary": "Rust provides type safety via static typing. Variable bindings are made with let :"
+    },
+    {
+      "path": "chapters/types-and-values/values.md",
+      "title": "값",
+      "summary": "다음은 몇 가지 기본 내장 타입과 각 타입의 리터럴 값 문법입니다."
+    },
+    {
+      "path": "chapters/types-and-values/arithmetic.md",
+      "title": "연산",
+      "summary": ""
+    },
+    {
+      "path": "chapters/types-and-values/strings.md",
+      "title": "문자열",
+      "summary": "Rust has two types to represent strings, both of which will be covered in more depth later. Both always store UTF-8 encoded strings."
+    },
+    {
+      "path": "chapters/types-and-values/inference.md",
+      "title": "타입 추론",
+      "summary": "러스트는 변수가 어떻게 사용되는지를 보고 그 변수의 타입을 추론합니다:"
+    },
+    {
+      "path": "chapters/types-and-values/exercise.md",
+      "title": "연습문제: 피보나치",
+      "summary": "The first and second Fibonacci numbers are both 1 . For n>2, the n’th Fibonacci number is calculated recursively as the sum of the n-1’th and n-2’th Fibonacci numbers."
+    },
+    {
+      "path": "chapters/types-and-values/solution.md",
+      "title": "해답",
+      "summary": ""
+    },
+    {
+      "path": "chapters/control-flow-basics.md",
+      "title": "흐름 제어",
+      "summary": "This segment should take about 40 minutes. It contains:"
+    },
+    {
+      "path": "chapters/control-flow-basics/if.md",
+      "title": "if 표현식",
+      "summary": "다른 언어의 if 문과 똑같이 if 표현식 을 사용합니다:"
+    },
+    {
+      "path": "chapters/control-flow-basics/loops.md",
+      "title": "배열과 for 반복문",
+      "summary": "Rust에는 while , loop , for 라는 세 가지 반복 키워드가 있습니다."
+    },
+    {
+      "path": "chapters/control-flow-basics/loops/for.md",
+      "title": "for",
+      "summary": "The for loop iterates over ranges of values or the items in a collection:"
+    },
+    {
+      "path": "chapters/control-flow-basics/loops/loop.md",
+      "title": "loop",
+      "summary": "The loop statement just loops forever, until a break ."
+    },
+    {
+      "path": "chapters/control-flow-basics/break-continue.md",
+      "title": "break 와 continue",
+      "summary": "다음 반복을 즉시 시작하려면 continue 를 사용합니다."
+    },
+    {
+      "path": "chapters/control-flow-basics/break-continue/labels.md",
+      "title": "Labels",
+      "summary": "사용합니다. 중첩 루프에서는 레이블과 함께 사용할 수 있습니다:"
+    },
+    {
+      "path": "chapters/control-flow-basics/blocks-and-scopes.md",
+      "title": "블록 및 범위",
+      "summary": "A block in Rust contains a sequence of expressions, enclosed by braces {} . Each block has a value and a type, which are those of the last expression of the block:"
+    },
+    {
+      "path": "chapters/control-flow-basics/blocks-and-scopes/scopes.md",
+      "title": "범위(Scopes)와 쉐도잉(Shadowing)",
+      "summary": "변수의 범위는 자신을 포함하는 블록으로 제한됩니다."
+    },
+    {
+      "path": "chapters/control-flow-basics/functions.md",
+      "title": "함수",
+      "summary": ""
+    },
+    {
+      "path": "chapters/control-flow-basics/macros.md",
+      "title": "매크로",
+      "summary": "매크로는 컴파일 중에 Rust 코드로 확장되며 다양한 수의 인수를 사용할 수 있습니다. 끝에 ! 로 구분됩니다. Rust 표준 라이브러리에는 여러 가지 유용한 매크로가 포함되어 있습니다."
+    },
+    {
+      "path": "chapters/control-flow-basics/exercise.md",
+      "title": "연습문제: 콜라츠 수열",
+      "summary": "The Collatz Sequence is defined as follows, for an arbitrary n 1 greater than zero:"
+    },
+    {
+      "path": "chapters/control-flow-basics/solution.md",
+      "title": "해답",
+      "summary": ""
+    },
+    {
+      "path": "chapters/welcome-day-1-afternoon.md",
+      "title": "Welcome Back",
+      "summary": "Including 10 minute breaks, this session should take about 2 hours and 15 minutes. It contains:"
+    },
+    {
+      "path": "chapters/tuples-and-arrays.md",
+      "title": "튜플 및 배열",
+      "summary": "This segment should take about 35 minutes. It contains:"
+    },
+    {
+      "path": "chapters/tuples-and-arrays/arrays.md",
+      "title": "배열",
+      "summary": ""
+    },
+    {
+      "path": "chapters/tuples-and-arrays/tuples.md",
+      "title": "튜플",
+      "summary": ""
+    },
+    {
+      "path": "chapters/tuples-and-arrays/iteration.md",
+      "title": "배열 순회",
+      "summary": "for 문은 배열 반복을 지원하지만 튜플은 지원하지 않습니다."
+    },
+    {
+      "path": "chapters/tuples-and-arrays/destructuring.md",
+      "title": "열거형 분해(역구조화)",
+      "summary": "When working with tuples and other structured values it’s common to want to extract the inner values into local variables. This can be done manually by directly accessing the inner values:"
+    },
+    {
+      "path": "chapters/tuples-and-arrays/exercise.md",
+      "title": "연습문제: 중첩 배열",
+      "summary": "배열에는 다음과 같은 다른 배열이 포함될 수 있습니다."
+    },
+    {
+      "path": "chapters/tuples-and-arrays/solution.md",
+      "title": "해답",
+      "summary": ""
+    },
+    {
+      "path": "chapters/references.md",
+      "title": "참조",
+      "summary": "This segment should take about 35 minutes. It contains:"
+    },
+    {
+      "path": "chapters/references/shared.md",
+      "title": "공유 참조",
+      "summary": "참조는 값에 대한 책임을 지지 않고 다른 값에 액세스하는 방법을 제공하며 ’빌림’이라고도 합니다. 공유 참조는 읽기 전용이며 참조된 데이터는 변경할 수 없습니다."
+    },
+    {
+      "path": "chapters/references/exclusive.md",
+      "title": "배타적(Exclusive) 참조",
+      "summary": "변경 가능한 참조라고도 하는 배타적 참조를 사용하면 참조되는 값을 변경할 수 있습니다. 타입은 &mut T 입니다."
+    },
+    {
+      "path": "chapters/references/exercise.md",
+      "title": "연습문제: 기하",
+      "summary": "3차원 도형을 위한 몇 가지 유틸리티 함수를 만들어 보겠습니다. 3차원 상의 한 점을 [f64;3] 으로 나타내도록 합니다. 함수 서명은 개발자가 결정합니다."
+    },
+    {
+      "path": "chapters/references/solution.md",
+      "title": "해답",
+      "summary": ""
+    },
+    {
+      "path": "chapters/user-defined-types.md",
+      "title": "사용자 정의 타입",
+      "summary": "This segment should take about 50 minutes. It contains:"
+    },
+    {
+      "path": "chapters/user-defined-types/named-structs.md",
+      "title": "구조체",
+      "summary": "C/C++ 와 마찬가지로 러스트는 커스텀 구조체를 지원합니다:"
+    },
+    {
+      "path": "chapters/user-defined-types/tuple-structs.md",
+      "title": "튜플",
+      "summary": "각 필드 이름이 중요하지 않다면 튜플 구조체를 사용할 수 있습니다:"
+    },
+    {
+      "path": "chapters/user-defined-types/enums.md",
+      "title": "열거형",
+      "summary": "enum 키워드는 몇가지 변형(variant)으로 표현되는 열거형 타입을 생성합니다:"
+    },
+    {
+      "path": "chapters/user-defined-types/static-and-const.md",
+      "title": "정적변수(static)와 상수(const)",
+      "summary": "Static and constant variables are two different ways to create globally-scoped values that cannot be moved or reallocated during the execution of the program."
+    },
+    {
+      "path": "chapters/user-defined-types/aliases.md",
+      "title": "타입 별칭",
+      "summary": "타입 별칭은 다른 타입의 이름을 생성합니다. 두 타입은 서로 바꿔서 사용할 수 있습니다."
+    },
+    {
+      "path": "chapters/user-defined-types/exercise.md",
+      "title": "연습문제: 엘리베이터 이벤트",
+      "summary": "엘리베이터 제어 시스템의 이벤트를 나타내는 데이터 구조를 만들어 보겠습니다. 다양한 이벤트를 구성하기 위해 타입과 함수를 정의하는 것은 개발자의 몫입니다. 해당 타입을 {:?} 문법을 통해 출력할 수 있도록 #[derive(Debug)] 를 사용합시다."
+    },
+    {
+      "path": "chapters/user-defined-types/solution.md",
+      "title": "해답",
+      "summary": ""
+    },
+    {
+      "path": "chapters/welcome-day-2.md",
+      "title": "2일차 개요",
+      "summary": "Now that we have seen a fair amount of Rust, today will focus on Rust’s type system:"
+    },
+    {
+      "path": "chapters/pattern-matching.md",
+      "title": "패턴 매칭",
+      "summary": "This segment should take about 1 hour. It contains:"
+    },
+    {
+      "path": "chapters/pattern-matching/match.md",
+      "title": "Matching Values",
+      "summary": "The match keyword lets you match a value against one or more patterns . The comparisons are done from top to bottom and the first match wins."
+    },
+    {
+      "path": "chapters/pattern-matching/destructuring.md",
+      "title": "열거형 분해(역구조화)",
+      "summary": "튜플과 마찬가지로 구조체 및 enum도 다음을 일치시켜 디스트럭처링할 수 있습니다."
+    },
+    {
+      "path": "chapters/pattern-matching/let-control-flow.md",
+      "title": "흐름 제어",
+      "summary": "Rust에는 다른 언어와는 다른 몇 가지 제어 흐름 구조가 있으며 패턴 일치에 사용됩니다."
+    },
+    {
+      "path": "chapters/pattern-matching/exercise.md",
+      "title": "연습문제: 수식 계산",
+      "summary": "Let’s write a simple recursive evaluator for arithmetic expressions."
+    },
+    {
+      "path": "chapters/pattern-matching/solution.md",
+      "title": "해답",
+      "summary": ""
+    },
+    {
+      "path": "chapters/methods-and-traits.md",
+      "title": "메소드와 트레이트",
+      "summary": "This segment should take about 50 minutes. It contains:"
+    },
+    {
+      "path": "chapters/methods-and-traits/methods.md",
+      "title": "메서드",
+      "summary": "러스트에서 선언된 타입에 대해 impl 블록에 함수를 선언하여 메서드를 연결 할 수 있습니다:"
+    },
+    {
+      "path": "chapters/methods-and-traits/traits.md",
+      "title": "트레잇(Trait)",
+      "summary": "트레잇은 타입을 추상화 하는데 사용됩니다. 인터페이스와 비슷합니다:"
+    },
+    {
+      "path": "chapters/methods-and-traits/traits/implementing.md",
+      "title": "Implementing Traits",
+      "summary": ""
+    },
+    {
+      "path": "chapters/methods-and-traits/traits/supertraits.md",
+      "title": "트레잇(Trait)",
+      "summary": "A trait can require that types implementing it also implement other traits, called supertraits . Here, any type implementing Pet must implement Animal ."
+    },
+    {
+      "path": "chapters/methods-and-traits/traits/associated-types.md",
+      "title": "공유 타입",
+      "summary": "Associated types are placeholder types which are supplied by the trait implementation."
+    },
+    {
+      "path": "chapters/methods-and-traits/deriving.md",
+      "title": "트레잇 상속하기",
+      "summary": "지원되는 트레잇은 다음과 같이 맞춤 타입에 자동으로 구현할 수 있습니다."
+    },
+    {
+      "path": "chapters/methods-and-traits/exercise.md",
+      "title": "Exercise: Logger Trait",
+      "summary": "Let’s design a simple logging utility, using a trait Logger with a log method. Code which might log its progress can then take an &impl Logger . In testing, this might put messages in the test logfile, while in a production build it would send messages to a log server."
+    },
+    {
+      "path": "chapters/methods-and-traits/solution.md",
+      "title": "해답",
+      "summary": ""
+    },
+    {
+      "path": "chapters/generics.md",
+      "title": "제네릭",
+      "summary": "This segment should take about 40 minutes. It contains:"
+    },
+    {
+      "path": "chapters/generics/generic-functions.md",
+      "title": "제네릭 함수",
+      "summary": "Rust supports generics, which lets you abstract algorithms or data structures (such as sorting or a binary tree) over the types used or stored."
+    },
+    {
+      "path": "chapters/generics/generic-data.md",
+      "title": "제네릭 데이터 타입",
+      "summary": "제네릭을 사용하여 필드의 타입을 추상화 할 수 있습니다:"
+    },
+    {
+      "path": "chapters/generics/generic-traits.md",
+      "title": "제네릭 트레잇",
+      "summary": "Traits can also be generic, just like types and functions. A trait’s parameters get concrete types when it is used."
+    },
+    {
+      "path": "chapters/generics/trait-bounds.md",
+      "title": "제네릭 타입 제한(트레잇 경계)",
+      "summary": "제네릭을 이용하다 보면 타입이 어떤 트레잇을 구현하고 있어야 하는 경우가 있습니다. 그래야 그 트레잇의 메서드를 호출할 수 있기 때문입니다."
+    },
+    {
+      "path": "chapters/generics/impl-trait.md",
+      "title": "트레잇 구현하기( impl Trait )",
+      "summary": "트레잇 바운드와 유사하게 impl Trait 문법은 함수의 인자와 반환값에도 적용 가능합니다:"
+    },
+    {
+      "path": "chapters/generics/exercise.md",
+      "title": "Exercise: Generic min",
+      "summary": "In this short exercise, you will implement a generic min function that determines the minimum of two values, using the Ord trait."
+    },
+    {
+      "path": "chapters/generics/solution.md",
+      "title": "해답",
+      "summary": ""
+    },
+    {
+      "path": "chapters/welcome-day-2-afternoon.md",
+      "title": "Welcome Back",
+      "summary": "Including 10 minute breaks, this session should take about 3 hours and 10 minutes. It contains:"
+    },
+    {
+      "path": "chapters/std-types.md",
+      "title": "표준 라이브러리 타입",
+      "summary": "This segment should take about 1 hour and 20 minutes. It contains:"
+    },
+    {
+      "path": "chapters/std-types/std.md",
+      "title": "표준 라이브러리",
+      "summary": "Rust comes with a standard library which helps establish a set of common types used by Rust libraries and programs. This way, two libraries can work together smoothly because they both use the same String type."
+    },
+    {
+      "path": "chapters/std-types/docs.md",
+      "title": "문서화",
+      "summary": "Rust comes with extensive documentation. For example:"
+    },
+    {
+      "path": "chapters/std-types/option.md",
+      "title": "Option",
+      "summary": "Option<T> 의 일부 사용법은 이미 살펴봤습니다. ‘T’ 타입의 값을 저장하거나 아무것도 저장하지 않습니다. 예를 들어 String::find 는 Option<usize> 를 반환합니다."
+    },
+    {
+      "path": "chapters/std-types/result.md",
+      "title": "Option, Result",
+      "summary": "Result 는 Option 과 유사하지만 작업의 성공 또는 실패를 나타내며, 각각 타입이 다릅니다. 이는 표현식 연습에서 정의된 Res 와 유사하지만 제네릭: Result<T, E> 입니다. 여기서 T 는 Ok 변형에 사용되고 E 는 Err 변형에 표시됩니다."
+    },
+    {
+      "path": "chapters/std-types/string.md",
+      "title": "String",
+      "summary": "String 은 힙에 할당되고 가변 길이의 표준 UTF-8 문자열 버퍼입니다:"
+    },
+    {
+      "path": "chapters/std-types/vec.md",
+      "title": "Vec",
+      "summary": "Vec 는 힙에 할당된 표준 가변 크기 버퍼입니다:"
+    },
+    {
+      "path": "chapters/std-types/hashmap.md",
+      "title": "HashMap",
+      "summary": "HashDoS 공격으로부터 보호되는 표준 해시 맵입니다:"
+    },
+    {
+      "path": "chapters/std-types/exercise.md",
+      "title": "연습문제: 카운터",
+      "summary": "이 연습에서는 매우 간단한 데이터 구조를 사용하여 제네릭으로 만듭니다. std::collections::HashMap 을 사용하여 어떤 값이 표시되었는지, 각각 얼마나 표시되었는지 추적합니다."
+    },
+    {
+      "path": "chapters/std-types/solution.md",
+      "title": "해답",
+      "summary": ""
+    },
+    {
+      "path": "chapters/std-traits.md",
+      "title": "표준 라이브러리 트레잇",
+      "summary": "This segment should take about 1 hour and 40 minutes. It contains:"
+    },
+    {
+      "path": "chapters/std-traits/comparisons.md",
+      "title": "비교",
+      "summary": "이러한 트레잇은 값 간의 비교를 지원합니다. 모든 트레잇은 이러한 트레잇을 구현하는 필드를 포함하는 타입에 대해 상속될 수 있습니다."
+    },
+    {
+      "path": "chapters/std-traits/operators.md",
+      "title": "연산자",
+      "summary": "연산자 오버로드는 std::ops 에 있는 다양한 트레잇들을 통해 구현됩니다:"
+    },
+    {
+      "path": "chapters/std-traits/from-and-into.md",
+      "title": "From 과 Into",
+      "summary": "타입은 용이한 형변환을 위해 From 과 Into 를 구현합니다:"
+    },
+    {
+      "path": "chapters/std-traits/casting.md",
+      "title": "캐스팅",
+      "summary": "Rust에는 암시적 타입 변환이 없지만 as 를 사용한 명시적 변환은 지원됩니다. 이는 일반적으로 C 의미론을 따라 정의됩니다."
+    },
+    {
+      "path": "chapters/std-traits/read-and-write.md",
+      "title": "Read 와 Write",
+      "summary": "Read 와 BufRead 를 사용하면 u8 타입의 데이터 스트림을 읽을 수 있습니다:"
+    },
+    {
+      "path": "chapters/std-traits/default.md",
+      "title": "Default 트레잇",
+      "summary": "Default 트레잇은 어떤 타입에 대한 기본값을 제공합니다."
+    },
+    {
+      "path": "chapters/std-traits/closures.md",
+      "title": "클로저(Closure)",
+      "summary": "클로저 혹은 람다표현식은 익명타입입니다. 이들은 Fn , FnMut , FnOnce 라는 특별한 트레잇을 구현합니다:"
+    },
+    {
+      "path": "chapters/std-traits/exercise.md",
+      "title": "연습문제: ROT13",
+      "summary": "이 예에서는 기존의 “ROT13” 암호화 를 구현합니다. 이 코드를 플레이그라운드에 복사하고 누락된 비트를 구현합니다. 결과가 여전히 유효한 UTF-8인지 확인하려면 ASCII 영문자만 회전하세요."
+    },
+    {
+      "path": "chapters/std-traits/solution.md",
+      "title": "해답",
+      "summary": ""
+    },
+    {
+      "path": "chapters/welcome-day-3.md",
+      "title": "3일차 개요",
+      "summary": "오늘 다룰 내용은 다음과 같습니다."
+    },
+    {
+      "path": "chapters/memory-management.md",
+      "title": "메모리 관리",
+      "summary": "This segment should take about 1 hour. It contains:"
+    },
+    {
+      "path": "chapters/memory-management/review.md",
+      "title": "프로그램 메모리 검토",
+      "summary": "프로그램은 두 가지 방법으로 메모리를 할당합니다."
+    },
+    {
+      "path": "chapters/memory-management/approaches.md",
+      "title": "메모리 관리에 대한 접근",
+      "summary": "전통적으로, 두 종류의 프로그래밍 언어가 있습니다:"
+    },
+    {
+      "path": "chapters/memory-management/ownership.md",
+      "title": "소유권",
+      "summary": "모든 변수 바인딩은 유효한 “범위(스코프)“를 가지며, 범위 밖에서 변수 사용하면 에러가 발생합니다:"
+    },
+    {
+      "path": "chapters/memory-management/move.md",
+      "title": "Move 문법",
+      "summary": "(변수의) 할당은 _소유권_을 변수 간에 이동시킵니다:"
+    },
+    {
+      "path": "chapters/memory-management/clone.md",
+      "title": "Clone",
+      "summary": "값을 복사해야 하는 경우도 있습니다. Clone 트레잇을 사용하면 됩니다."
+    },
+    {
+      "path": "chapters/memory-management/copy-types.md",
+      "title": "복사 타입",
+      "summary": "이동이 기본 설정이지만, 특정 타입은 복사됩니다:"
+    },
+    {
+      "path": "chapters/memory-management/drop.md",
+      "title": "Drop 트레잇",
+      "summary": "Drop 트레잇을 구현하면, 그 값이 스코프 밖으로 나갈 때 실행될 코드를 작성할 수 있습니다:"
+    },
+    {
+      "path": "chapters/memory-management/exercise.md",
+      "title": "연습문제: Builder 타입",
+      "summary": "이 예에서는 모든 데이터를 소유하는 복잡한 데이터 타입을 구현합니다. 편의 함수를 사용하여 새로운 값을 하나씩 빌드하도록 지원하기 위해 ’빌더 패턴’을 사용합니다."
+    },
+    {
+      "path": "chapters/memory-management/solution.md",
+      "title": "해답",
+      "summary": ""
+    },
+    {
+      "path": "chapters/smart-pointers.md",
+      "title": "스마트 포인터",
+      "summary": "This segment should take about 55 minutes. It contains:"
+    },
+    {
+      "path": "chapters/smart-pointers/box.md",
+      "title": "Box<T>",
+      "summary": "Box 는 힙 데이터에 대한 소유 포인터입니다:"
+    },
+    {
+      "path": "chapters/smart-pointers/rc.md",
+      "title": "Rc",
+      "summary": "Rc 는 참조 카운팅 공유 포인터입니다. 여러 위치에서 동일한 데이터를 참조해야할 경우 사용합니다:"
+    },
+    {
+      "path": "chapters/smart-pointers/trait-objects.md",
+      "title": "트레잇 객체",
+      "summary": "트레잇 객체는 타입이 다른 값(예를 들어 컬렉션에 속한 각 값)들을 가질 수 있습니다:"
+    },
+    {
+      "path": "chapters/smart-pointers/exercise.md",
+      "title": "연습문제: 바이너리 트리",
+      "summary": "바이너리 트리는 모든 노드에 두 개의 하위 요소(왼쪽과 오른쪽)가 있는 트리 유형 데이터 구조입니다. 각 노드가 값을 저장하는 트리를 만들겠습니다. 주어진 노드 N의 경우 N의 왼쪽 하위 트리에 있는 모든 노드는 더 작은 값을 포함하고, N의 오른쪽 하위 트리에 있는 모든 노드는 더 큰 값을 포함합니다."
+    },
+    {
+      "path": "chapters/smart-pointers/solution.md",
+      "title": "해답",
+      "summary": ""
+    },
+    {
+      "path": "chapters/welcome-day-3-afternoon.md",
+      "title": "Welcome Back",
+      "summary": "Including 10 minute breaks, this session should take about 2 hours and 10 minutes. It contains:"
+    },
+    {
+      "path": "chapters/borrowing.md",
+      "title": "대여",
+      "summary": "This segment should take about 50 minutes. It contains:"
+    },
+    {
+      "path": "chapters/borrowing/shared.md",
+      "title": "값 대여",
+      "summary": "As we saw before, instead of transferring ownership when calling a function, you can let a function borrow the value:"
+    },
+    {
+      "path": "chapters/borrowing/borrowck.md",
+      "title": "대여 검증",
+      "summary": "Rust’s borrow checker puts constraints on the ways you can borrow values. For a given value, at any time:"
+    },
+    {
+      "path": "chapters/borrowing/interior-mutability.md",
+      "title": "상호운용성",
+      "summary": "In some situations, it’s necessary to modify data behind a shared (read-only) reference. For example, a shared data structure might have an internal cache, and wish to update that cache from read-only methods."
+    },
+    {
+      "path": "chapters/borrowing/exercise.md",
+      "title": "연습문제: 건강검진",
+      "summary": "당신은 건강 상태를 모니터링하는 시스템을 구현하는 일을 하고 있습니다. 그 일환으로 당신은 사용자의 건강 상태 통계를 추적해야합니다."
+    },
+    {
+      "path": "chapters/borrowing/solution.md",
+      "title": "해답",
+      "summary": ""
+    },
+    {
+      "path": "chapters/slices-and-lifetimes.md",
+      "title": "슬라이스와 수명",
+      "summary": "This segment should take about 1 hour and 10 minutes. It contains:"
+    },
+    {
+      "path": "chapters/slices-and-lifetimes/slices.md",
+      "title": "슬라이스",
+      "summary": "슬라이스는 큰 컬랙션의 일부(혹은 전체)를 보여주는 뷰(view)입니다:"
+    },
+    {
+      "path": "chapters/slices-and-lifetimes/str.md",
+      "title": "문자열 레퍼런스",
+      "summary": "이제 Rust의 두 가지 문자열 타입을 이해할 수 있습니다. &str 은 거의 &[char] 와 비슷하지만 데이터가 가변 길이 인코딩(UTF-8)으로 저장됩니다."
+    },
+    {
+      "path": "chapters/slices-and-lifetimes/lifetime-annotations.md",
+      "title": "함수 호출에서의 수명",
+      "summary": "A reference has a lifetime , which must not “outlive” the value it refers to. This is verified by the borrow checker."
+    },
+    {
+      "path": "chapters/slices-and-lifetimes/lifetime-elision.md",
+      "title": "함수 호출에서의 수명",
+      "summary": "Lifetimes for function arguments and return values must be fully specified, but Rust allows lifetimes to be elided in most cases with a few simple rules . This is not inference – it is just a syntactic shorthand."
+    },
+    {
+      "path": "chapters/slices-and-lifetimes/struct-lifetimes.md",
+      "title": "구조체에서의 수명",
+      "summary": "어떤 타입이 빌려온 데이터를 저장하고 있다면, 반드시 수명을 표시해야 합니다:"
+    },
+    {
+      "path": "chapters/slices-and-lifetimes/exercise.md",
+      "title": "연습문제: Protobuf 파싱",
+      "summary": "이 연습에서는 protobuf 바이너리 인코딩 용 파서를 빌드합니다. 생각보다 간단합니다. 이는 데이터 슬라이스를 전달하는 일반적인 파싱 패턴을 보여줍니다. 기본 데이터 자체는 복사되지 않습니다."
+    },
+    {
+      "path": "chapters/slices-and-lifetimes/solution.md",
+      "title": "해답",
+      "summary": "컴파일 오류 예제"
+    },
+    {
+      "path": "chapters/welcome-day-4.md",
+      "title": "4일차 개요",
+      "summary": "Today we will cover topics relating to building large-scale software in Rust:"
+    },
+    {
+      "path": "chapters/iterators.md",
+      "title": "Iterators",
+      "summary": "This segment should take about 45 minutes. It contains:"
+    },
+    {
+      "path": "chapters/iterators/iterator.md",
+      "title": "Iterator",
+      "summary": "컬랙션에 있는 값들을 접근하기 위해서는 Iterator 트레잇을 사용합니다. 이 트레잇은 next 메서드를 비롯한 많은 메서드를 제공합니다. 많은 표준 라이브러리 타입이 Iterator 를 구현하고 있으며, 여러분도 여러분의 타입이 이 트레잇을 직접 구현하도록 할 수 있습니다."
+    },
+    {
+      "path": "chapters/iterators/intoiterator.md",
+      "title": "IntoIterator",
+      "summary": "The Iterator trait tells you how to iterate once you have created an iterator. The related trait IntoIterator defines how to create an iterator for a type. It is used automatically by the for loop."
+    },
+    {
+      "path": "chapters/iterators/fromiterator.md",
+      "title": "FromIterator",
+      "summary": "어떤 컬렉션이 FromIterator 를 구현하고 있다면 Iterator 로부터 그 컬렉션을 만들 수 있습니다."
+    },
+    {
+      "path": "chapters/iterators/exercise.md",
+      "title": "연습문제: Iterator 메서드 체이닝",
+      "summary": "In this exercise, you will need to find and use some of the provided methods in the Iterator trait to implement a complex calculation."
+    },
+    {
+      "path": "chapters/iterators/solution.md",
+      "title": "해답",
+      "summary": ""
+    },
+    {
+      "path": "chapters/modules.md",
+      "title": "모듈",
+      "summary": "This segment should take about 40 minutes. It contains:"
+    },
+    {
+      "path": "chapters/modules/modules.md",
+      "title": "모듈",
+      "summary": "impl 블록은 해당 타입의 함수들에 대한 네임스페이스를 제공합니다."
+    },
+    {
+      "path": "chapters/modules/filesystem.md",
+      "title": "파일시스템 계층",
+      "summary": "모듈의 내용을 기술하지 않으면, 러스트는 다른 파일에서 그 내용을 읽습니다:"
+    },
+    {
+      "path": "chapters/modules/visibility.md",
+      "title": "가시성",
+      "summary": "모듈의 타입이나 함수는 기본적으로 바깥에 노출되지 않습니다:"
+    },
+    {
+      "path": "chapters/modules/paths.md",
+      "title": "use, super, self",
+      "summary": "모듈은 use 를 사용하여 다른 모듈의 심볼을 내 스코프로 가져올 수 있습니다. 일반적으로 각 모듈의 상단에 다음과 같은 내용이 옵니다:"
+    },
+    {
+      "path": "chapters/modules/exercise.md",
+      "title": "연습문제: GUI 라이브러리 모듈 만들기",
+      "summary": "In this exercise, you will reorganize a small GUI Library implementation. This library defines a Widget trait and a few implementations of that trait, as well as a main function."
+    },
+    {
+      "path": "chapters/modules/solution.md",
+      "title": "해답",
+      "summary": ""
+    },
+    {
+      "path": "chapters/testing.md",
+      "title": "테스트",
+      "summary": "This segment should take about 45 minutes. It contains:"
+    },
+    {
+      "path": "chapters/testing/unit-tests.md",
+      "title": "단위 테스트",
+      "summary": "러스트와 카고(cargo)는 간단한 단위 테스트 프레임워크와 함께 제공됩니다:"
+    },
+    {
+      "path": "chapters/testing/other.md",
+      "title": "다른 테스트 프로젝트 타입",
+      "summary": "라이브러리를 사용자 입장에서 테스트 하려면, 통합 테스트를 해야 합니다."
+    },
+    {
+      "path": "chapters/testing/lints.md",
+      "title": "컴파일러 린트 및 Clippy",
+      "summary": "Rust 컴파일러는 유용한 내장 린트뿐 아니라 멋진 오류 메시지를 생성합니다. Clippy 는 프로젝트별로 사용 설정할 수 있는 그룹으로 구성된 더 많은 린트를 제공합니다."
+    },
+    {
+      "path": "chapters/testing/exercise.md",
+      "title": "룬 알고리즘",
+      "summary": "룬(Luhn) 알고리즘 은 신용카드 번호 검증에 사용되는 알고리즘 입니다. 이 알고리즘은 신용카드 번호를 문자열 로 입력받고, 아래의 순서에 따라 신용카드 번호의 유효성을 확인합니다:"
+    },
+    {
+      "path": "chapters/testing/solution.md",
+      "title": "해답",
+      "summary": ""
+    },
+    {
+      "path": "chapters/welcome-day-4-afternoon.md",
+      "title": "Welcome Back",
+      "summary": "Including 10 minute breaks, this session should take about 2 hours and 10 minutes. It contains:"
+    },
+    {
+      "path": "chapters/error-handling.md",
+      "title": "오류처리",
+      "summary": "This segment should take about 55 minutes. It contains:"
+    },
+    {
+      "path": "chapters/error-handling/panics.md",
+      "title": "패닉",
+      "summary": "Rust는 ’패닉’으로 치명적인 오류를 처리합니다."
+    },
+    {
+      "path": "chapters/error-handling/try.md",
+      "title": "Iterator",
+      "summary": "Runtime errors like connection-refused or file-not-found are handled with the Result type, but matching this type on every call can be cumbersome. The try-operator ? is used to return errors to the caller. It lets you turn the common"
+    },
+    {
+      "path": "chapters/error-handling/try-conversions.md",
+      "title": "묵시적 형변환",
+      "summary": "실제로 ? 가 적용되는 과정은 아까 설명한 것 보다 좀 더 복잡합니다:"
+    },
+    {
+      "path": "chapters/error-handling/error.md",
+      "title": "동적인 에러 타입",
+      "summary": "Sometimes we want to allow any type of error to be returned without writing our own enum covering all the different possibilities. The std::error::Error trait makes it easy to create a trait object that can contain any error."
+    },
+    {
+      "path": "chapters/error-handling/thiserror-and-anyhow.md",
+      "title": "thiserror and anyhow",
+      "summary": "The thiserror and anyhow crates are widely used to simplify error handling."
+    },
+    {
+      "path": "chapters/error-handling/exercise.md",
+      "title": "Result를 이용한 구조화된 오류처리",
+      "summary": "다음은 표현식 언어의 매우 간단한 파서를 구현합니다. 그러나 패닉을 통해 오류를 처리합니다. 대신 관용적인 오류 처리를 사용하고 오류를 main 의 반환으로 전파하도록 다시 작성합니다. thiserror 및 anyhow 를 얼마든지 사용하세요."
+    },
+    {
+      "path": "chapters/error-handling/solution.md",
+      "title": "해답",
+      "summary": "컴파일 오류 예제"
+    },
+    {
+      "path": "chapters/unsafe-rust.md",
+      "title": "안전하지 않은 러스트",
+      "summary": "This segment should take about 1 hour and 5 minutes. It contains:"
+    },
+    {
+      "path": "chapters/unsafe-rust/unsafe.md",
+      "title": "안전하지 않은 러스트",
+      "summary": "러스트로 작성된 프로그램은 크게 두 부분으로 나뉩니다:"
+    },
+    {
+      "path": "chapters/unsafe-rust/dereferencing.md",
+      "title": "원시 포인터 역참조(따라가기)",
+      "summary": "포인터를 만드는 것은 안전합니다. 하지만 역참조(따라가기)할 경우 unsafe 가 필요합니다:"
+    },
+    {
+      "path": "chapters/unsafe-rust/mutable-static.md",
+      "title": "정적 가변 변수",
+      "summary": "불변 정적변수를 읽는 것은 안전합니다:"
+    },
+    {
+      "path": "chapters/unsafe-rust/unions.md",
+      "title": "Unions",
+      "summary": "유니온 타입은 열거형(enum)과 비슷하지만, 어떤 필드에 해당하는 값을 가지고 있는지 여부를 프로그래머가 수동으로 추적해야 합니다:"
+    },
+    {
+      "path": "chapters/unsafe-rust/unsafe-functions.md",
+      "title": "안전하지 않은 함수 호출",
+      "summary": "함수나 메서드가 정의되지 않은 동작으로 빠지지 않게 하기 위해서 만족해야 하는 전제 조건이 있는 경우, 그 함수나 메서드를 unsafe 로 표시할 수 있습니다:"
+    },
+    {
+      "path": "chapters/unsafe-rust/unsafe-traits.md",
+      "title": "안전하지 않은 트레잇 구현하기",
+      "summary": "함수에서와 마찬가지로 트레잇도 unsafe 로 마킹 가능합니다. 만약 그 트레잇을 구현할 때 정의되지 않은 동작을 피하기 위해 특별한 조건이 필요하다면 말이지요."
+    },
+    {
+      "path": "chapters/unsafe-rust/exercise.md",
+      "title": "FFI래퍼",
+      "summary": "Rust has great support for calling functions through a foreign function interface (FFI). We will use this to build a safe wrapper for the libc functions you would use from C to read the names of files in a directory."
+    },
+    {
+      "path": "chapters/unsafe-rust/solution.md",
+      "title": "해답",
+      "summary": ""
+    },
+    {
+      "path": "chapters/android.md",
+      "title": "Welcome to Rust in Android",
+      "summary": "Rust is supported for system software on Android. This means that you can write new services, libraries, drivers or even firmware in Rust (or improve existing code as needed)."
+    },
+    {
+      "path": "chapters/android/setup.md",
+      "title": "설치",
+      "summary": "We will be using a Cuttlefish Android Virtual Device to test our code. Make sure you have access to one or create a new one with:"
+    },
+    {
+      "path": "chapters/android/build-rules.md",
+      "title": "빌드 규칙",
+      "summary": "안드로이드 빌드 시스템(Soong)은 다음과 같은 여러 모듈을 통해 러스트를 지원합니다:"
+    },
+    {
+      "path": "chapters/android/build-rules/binary.md",
+      "title": "러스트 바이너리",
+      "summary": "간단한 응용 프로그램으로 시작해 보겠습니다. AOSP 체크아웃의 루트에서 다음 파일을 생성합니다:"
+    },
+    {
+      "path": "chapters/android/build-rules/library.md",
+      "title": "러스트 라이브러리",
+      "summary": "rust_library 를 사용하여 안드로이드용 새 러스트 라이브러리를 만듭니다."
+    },
+    {
+      "path": "chapters/android/aidl.md",
+      "title": "AIDL",
+      "summary": "러스트는 안드로이드 인터페이스 정의 언어(AIDL) 를 지원합니다:"
+    },
+    {
+      "path": "chapters/android/aidl/birthday-service.md",
+      "title": "/** 생일 서비스 인터페이스입니다. */",
+      "summary": "To illustrate how to use Rust with Binder, we’re going to walk through the process of creating a Binder interface. We’re then going to both implement the described service and write client code that talks to that service."
+    },
+    {
+      "path": "chapters/android/aidl/example-service/interface.md",
+      "title": "AIDL 인터페이스",
+      "summary": "AIDL 인터페이스를 이용해서 서비스의 API를 선언합니다:"
+    },
+    {
+      "path": "chapters/android/aidl/example-service/service-bindings.md",
+      "title": "Generated Service API",
+      "summary": "Binder generates a trait corresponding to the interface definition. trait to talk to the service."
+    },
+    {
+      "path": "chapters/android/aidl/example-service/service.md",
+      "title": "서비스 구현",
+      "summary": "이제 AIDL서비스를 구현할 수 있습니다:"
+    },
+    {
+      "path": "chapters/android/aidl/example-service/server.md",
+      "title": "AIDL 서버",
+      "summary": "마지막으로 서비스를 제공하는 서버를 만들 수 있습니다:"
+    },
+    {
+      "path": "chapters/android/aidl/example-service/deploy.md",
+      "title": "배포",
+      "summary": "서비스를 빌드하고, 가상 디바이스에 넣고, 시작 할 수 있습니다:"
+    },
+    {
+      "path": "chapters/android/aidl/example-service/client.md",
+      "title": "AIDL 클라이언트",
+      "summary": "마지막으로, 아까 추가한 서비스에 대한 클라이언트를 러스트로 만들겠습니다."
+    },
+    {
+      "path": "chapters/android/aidl/example-service/changing-definition.md",
+      "title": "API 수정",
+      "summary": "API를 확장하여 더 많은 기능을 제공해 봅시다. 클라이언트가 생일 카드에 담길 내용을 지정할 수 있도록 하겠습니다:"
+    },
+    {
+      "path": "chapters/android/aidl/example-service/changing-implementation.md",
+      "title": "Updating Client and Service",
+      "summary": "Update the client and server code to account for the new API."
+    },
+    {
+      "path": "chapters/android/aidl/types.md",
+      "title": "Working With AIDL Types",
+      "summary": "AIDL types translate into the appropriate idiomatic Rust type:"
+    },
+    {
+      "path": "chapters/android/aidl/types/primitives.md",
+      "title": "원시 타입",
+      "summary": "Primitive types map (mostly) idiomatically:"
+    },
+    {
+      "path": "chapters/android/aidl/types/arrays.md",
+      "title": "배열",
+      "summary": "The array types ( T[] , byte[] , and List<T> ) get translated to the appropriate Rust array type depending on how they are used in the function signature:"
+    },
+    {
+      "path": "chapters/android/aidl/types/objects.md",
+      "title": "트레잇 객체",
+      "summary": "AIDL objects can be sent either as a concrete AIDL type or as the type-erased IBinder interface:"
+    },
+    {
+      "path": "chapters/android/aidl/types/parcelables.md",
+      "title": "변수",
+      "summary": "Binder for Rust supports sending parcelables directly:"
+    },
+    {
+      "path": "chapters/android/aidl/types/file-descriptor.md",
+      "title": "Sending Files",
+      "summary": "Files can be sent between Binder clients/servers using the ParcelFileDescriptor type:"
+    },
+    {
+      "path": "chapters/android/testing.md",
+      "title": "Testing in Android",
+      "summary": "Building on Testing , we will now look at how unit tests work in AOSP. Use the rust_test module for your unit tests:"
+    },
+    {
+      "path": "chapters/android/testing/googletest.md",
+      "title": "GoogleTest",
+      "summary": "The GoogleTest crate allows for flexible test assertions using matchers :"
+    },
+    {
+      "path": "chapters/android/testing/mocking.md",
+      "title": "모의 처리",
+      "summary": "모의 처리의 경우 널리 사용되는 라이브러리인 Mockall 이 있습니다. 트레잇을 사용하도록 코드를 리팩터링해야 합니다. 그런 다음 빠르게 모의 처리할 수 있습니다."
+    },
+    {
+      "path": "chapters/android/logging.md",
+      "title": "로깅",
+      "summary": "log 크레이트를 사용하면 안드로이드 디바이스 안에서 수행될 때에는 logcat 으로, 호스트에서 수행될 때에는 stdout 으로 로그가 자동으로 출력이 되도록 할 수 있습니다:"
+    },
+    {
+      "path": "chapters/android/interoperability.md",
+      "title": "상호운용성",
+      "summary": "러스트는 다음과 같이 다른 언어와의 상호운용성을 훌륭히 지원합니다:"
+    },
+    {
+      "path": "chapters/android/interoperability/with-c.md",
+      "title": "C와의 상호운용성",
+      "summary": "러스트는 C 호출규약을 따르는 오브젝트 파일과 링킹할 수 있습니다. 또한, 반대로 러스트 함수를 내보내서 C에서 호출 할 수 도 있습니다."
+    },
+    {
+      "path": "chapters/android/interoperability/with-c/bindgen.md",
+      "title": "Bindgen 사용하기",
+      "summary": "bindgen 는 C 헤더파일에서 러스트 바인딩을 자동으로 생성하는 도구입니다."
+    },
+    {
+      "path": "chapters/android/interoperability/with-c/rust.md",
+      "title": "C에서 러스트 호출",
+      "summary": "러스트에서 타입과 함수를 C로 내보내는 것은 간단합니다:"
+    },
+    {
+      "path": "chapters/android/interoperability/cpp.md",
+      "title": "C++와의 상호운용성",
+      "summary": "CXX 크레이트 는 러스트와 C++ 사이의 안전한 상호운용성을 가능하게 해줍니다."
+    },
+    {
+      "path": "chapters/android/interoperability/cpp/bridge.md",
+      "title": "브리지 모듈",
+      "summary": "CXX는 각 언어에서 다른 언어로 노출되는 함수 서명에 관한 설명을 사용합니다. #[cxx::bridge] 속성 매크로로 주석이 달린 Rust 모듈에서 extern 블록을 사용하여 이 설명을 제공합니다."
+    },
+    {
+      "path": "chapters/android/interoperability/cpp/rust-bridge.md",
+      "title": "Rust Bridge Declarations",
+      "summary": ""
+    },
+    {
+      "path": "chapters/android/interoperability/cpp/generated-cpp.md",
+      "title": "생성된 C++",
+      "summary": "그 결과는 대략 다음과 같은 C++입니다."
+    },
+    {
+      "path": "chapters/android/interoperability/cpp/cpp-bridge.md",
+      "title": "C++ 브리지 선언",
+      "summary": "결과는 대략 다음과 같은 Rust입니다."
+    },
+    {
+      "path": "chapters/android/interoperability/cpp/shared-types.md",
+      "title": "공유 타입",
+      "summary": ""
+    },
+    {
+      "path": "chapters/android/interoperability/cpp/shared-enums.md",
+      "title": "공유 Enum",
+      "summary": "생성된 러스트:"
+    },
+    {
+      "path": "chapters/android/interoperability/cpp/rust-result.md",
+      "title": "Rust 오류처리",
+      "summary": ""
+    },
+    {
+      "path": "chapters/android/interoperability/cpp/cpp-exception.md",
+      "title": "C++ 오류처리",
+      "summary": ""
+    },
+    {
+      "path": "chapters/android/interoperability/cpp/type-mapping.md",
+      "title": "추가 타입",
+      "summary": ""
+    },
+    {
+      "path": "chapters/android/interoperability/cpp/android-build-cpp.md",
+      "title": "Building in Android",
+      "summary": "cc_library_static 을 만들어 CXX에서 생성된 헤더와 소스 파일을 비롯하여 C++ 라이브러리를 빌드합니다."
+    },
+    {
+      "path": "chapters/android/interoperability/cpp/android-cpp-genrules.md",
+      "title": "Building in Android",
+      "summary": "두 개의 genrule을 만듭니다. 하나는 CXX 헤더를 생성하고 다른 하나는 CXX 소스 파일을 생성합니다. 그런 다음 cc_library_static 에 대한 입력으로 사용됩니다."
+    },
+    {
+      "path": "chapters/android/interoperability/cpp/android-build-rust.md",
+      "title": "Building in Android",
+      "summary": "libcxx 및 cc_library_static 에 종속되는 rust_binary 를 생성합니다."
+    },
+    {
+      "path": "chapters/android/interoperability/java.md",
+      "title": "Java와의 상호운용성",
+      "summary": "자바는 Java Native Interface(JNI) 를 통해 공유 라이브러리를 로드할 수 있습니다. jni 크레이트 를 사용하여 JNI 라이브러리를 만들 수 있습니다."
+    },
+    {
+      "path": "chapters/exercises/android/morning.md",
+      "title": "연습문제",
+      "summary": "This is a group exercise: We will look at one of the projects you work with and try to integrate some Rust into it. Some suggestions:"
+    },
+    {
+      "path": "chapters/chromium.md",
+      "title": "Welcome to Rust in Chromium",
+      "summary": "Rust는 Chromium의 서드 파티 라이브러리에 대해 지원되며, Rust와 기존 Chromium C++ 코드 간에 연결하는 퍼스트 파티 글루 코드를 포함합니다."
+    },
+    {
+      "path": "chapters/chromium/setup.md",
+      "title": "설치",
+      "summary": "Chromium을 빌드하고 실행할 수 있는지 확인합니다. 코드가 비교적 최신이라면(커밋 위치 1223636 이후, 2023년 11월에 해당) 어떤 플랫폼이나 빌드 플래그 집합도 괜찮습니다."
+    },
+    {
+      "path": "chapters/chromium/cargo.md",
+      "title": "Chromium 및 Cargo 생태계 비교",
+      "summary": "Rust 커뮤니티는 일반적으로 crates.io 의 cargo 및 라이브러리를 사용합니다. Chromium은 세심하게 선별된 의존성들과 함께 gn , ninja 을 이용하여 빌드됩니다."
+    },
+    {
+      "path": "chapters/chromium/policy.md",
+      "title": "Chromium Rust 정책",
+      "summary": "Chromium에서는 아직 퍼스트 파티 Rust를 허용하지 않습니다. 단, Chromium의 Area Tech Leads 에서 승인한 드문 경우는 예외입니다."
+    },
+    {
+      "path": "chapters/chromium/build-rules.md",
+      "title": "빌드 규칙",
+      "summary": "Rust 코드는 일반적으로 cargo 를 사용하여 빌드됩니다. Chromium은 효율성을 위해 gn 및 ninja 로 빌드됩니다. 정적 규칙은 최대 동시 로드를 허용합니다. Rust도 예외는 아닙니다."
+    },
+    {
+      "path": "chapters/chromium/build-rules/unsafe.md",
+      "title": "unsafe Rust 코드 포함",
+      "summary": "rust_static_library 에는 안전하지 않은 Rust 코드가 기본적으로 금지되어 있으므로 컴파일되지 않습니다. 안전하지 않은 Rust 코드가 필요하면 gn 타겟에 allow_unsafe = true 를 추가하세요. (이 과정의 후반부에 이것이 필요한 상황을 살펴봅니다.)"
+    },
+    {
+      "path": "chapters/chromium/build-rules/depending.md",
+      "title": "Chromium C++에 의존하는 Rust 코드",
+      "summary": "위의 타겟을 일부 Chromium C++ 타겟의 deps 에 추가하기만 하면 됩니다."
+    },
+    {
+      "path": "chapters/chromium/build-rules/vscode.md",
+      "title": "Visual Studio Code",
+      "summary": "Rust 코드에서는 타입이 생략되므로 우수한 IDE가 C++보다 훨씬 더 유용해집니다. Visual Studio Code는 Chromium의 Rust에서 잘 작동합니다. 사용하려면 다음을 실행합니다."
+    },
+    {
+      "path": "chapters/exercises/chromium/build-rules.md",
+      "title": "빌드 규칙",
+      "summary": "Chromium 빌드에서 다음을 포함하는 //ui/base/BUILD.gn 에 새 Rust 타겟을 추가합니다."
+    },
+    {
+      "path": "chapters/chromium/testing.md",
+      "title": "테스트",
+      "summary": "Rust community typically authors unit tests in a module placed in the same source file as the code being tested. This was covered earlier in the course and looks like this:"
+    },
+    {
+      "path": "chapters/chromium/testing/rust-gtest-interop.md",
+      "title": "rust_gtest_interop Library",
+      "summary": "The rust_gtest_interop library provides a way to:"
+    },
+    {
+      "path": "chapters/chromium/testing/build-gn.md",
+      "title": "GN Rules for Rust Tests",
+      "summary": "The simplest way to build Rust gtest tests is to add them to an existing test binary that already contains tests authored in C++. For example:"
+    },
+    {
+      "path": "chapters/chromium/testing/chromium-import-macro.md",
+      "title": "chromium::import! Macro",
+      "summary": "After adding :my_rust_lib to GN deps , we still need to learn how to import and use my_rust_lib from my_rust_lib_unittest.rs . We haven’t provided an explicit crate_name for my_rust_lib so its crate name is computed based on the full target path and name. Fortunately we can avoid working with such an unwieldy name by using the chromium::import! macro from the automatically-imported chromium crate:"
+    },
+    {
+      "path": "chapters/exercises/chromium/testing.md",
+      "title": "Testing exercise",
+      "summary": "새로운 연습문제를 풀어봅시다!"
+    },
+    {
+      "path": "chapters/chromium/interoperability-with-cpp.md",
+      "title": "C++와의 상호운용성",
+      "summary": "Rust 커뮤니티는 C++/Rust 상호 운용성을 위한 여러 옵션을 제공하며, 새로운 도구가 계속 개발되고 있습니다. 현재 Chromium은 CXX라는 도구를 사용합니다."
+    },
+    {
+      "path": "chapters/chromium/interoperability-with-cpp/example-bindings.md",
+      "title": "예제",
+      "summary": "CXX에서는 전체 C++/Rust 경계가 .rs 소스 코드 내의 cxx::bridge ’modules’에 선언되어야 합니다."
+    },
+    {
+      "path": "chapters/chromium/interoperability-with-cpp/limitations-of-cxx.md",
+      "title": "CXX 제한사항",
+      "summary": "CXX를 사용할 때 단연 가장 유용한 페이지는 유형 참조 입니다."
+    },
+    {
+      "path": "chapters/chromium/interoperability-with-cpp/error-handling.md",
+      "title": "CXX에서의 오류처리",
+      "summary": "CXX’s support for Result<T,E> relies on C++ exceptions, so we can’t use that in Chromium. Alternatives:"
+    },
+    {
+      "path": "chapters/chromium/interoperability-with-cpp/error-handling-qr.md",
+      "title": "CXX Error Handling: QR Example",
+      "summary": "QR 코드 생성기 에서와 같이 간단한 부울로 성공을 나타낼 수 있는 경우: 성공을 나타내는 부울을 반환하고 out 매개변수를 사용하여 결과를 기록합니다."
+    },
+    {
+      "path": "chapters/chromium/interoperability-with-cpp/error-handling-png.md",
+      "title": "CXX Error Handling: PNG Example",
+      "summary": "A prototype of a PNG decoder illustrates what can be done when the successful result cannot be passed across the FFI boundary:"
+    },
+    {
+      "path": "chapters/chromium/interoperability-with-cpp/using-cxx-in-chromium.md",
+      "title": "Chromium에서 CXX 사용",
+      "summary": "Chromium에서는 Rust를 사용하려는 리프 노드마다 독립적인 #[cxx::bridge] mod 를 정의합니다. 일반적으로 rust_static_library 마다 하나씩 있습니다. 추가하기만 하면 됩니다."
+    },
+    {
+      "path": "chapters/exercises/chromium/interoperability-with-cpp.md",
+      "title": "Exercise: Interoperability with C++",
+      "summary": "CXX를 사용해 보는 것도 좋은 방법입니다. Chromium의 Rust가 실제로 얼마나 유연한지 생각해 보는 데 도움이 됩니다."
+    },
+    {
+      "path": "chapters/chromium/adding-third-party-crates.md",
+      "title": "서드 파티 크레이트 추가",
+      "summary": "Rust 라이브러리는 ’크레이트’라고 하며 crates.io 에서 찾을 수 있습니다. Rust 크레이트가 서로 종속되는 것은 아주 쉽습니다 . 따라서 서로 종속됩니다."
+    },
+    {
+      "path": "chapters/chromium/adding-third-party-crates/configuring-cargo-toml.md",
+      "title": "크레이트를 추가하도록 Cargo.toml 파일 구성",
+      "summary": "Chromium에는 중앙에서 관리되는 직접 크레이트 종속 항목의 단일 세트가 있습니다. 이는 단일 Cargo.toml 을 통해 관리됩니다."
+    },
+    {
+      "path": "chapters/chromium/adding-third-party-crates/configuring-gnrt-config-toml.md",
+      "title": "Configuring gnrt_config.toml",
+      "summary": "Cargo.toml 과 함께 gnrt_config.toml 이 있습니다. 여기에는 크레이트 처리를 위한 Chromium 전용 확장 프로그램이 포함되어 있습니다."
+    },
+    {
+      "path": "chapters/chromium/adding-third-party-crates/downloading-crates.md",
+      "title": "크레이트 다운로드",
+      "summary": "gnrt 라는 도구는 크레이트를 다운로드하는 방법과 BUILD.gn 규칙을 생성하는 방법을 알고 있습니다."
+    },
+    {
+      "path": "chapters/chromium/adding-third-party-crates/generating-gn-build-rules.md",
+      "title": "Generating gn Build Rules",
+      "summary": "크레이트를 다운로드한 후에는 다음과 같이 BUILD.gn 파일을 생성합니다."
+    },
+    {
+      "path": "chapters/chromium/adding-third-party-crates/resolving-problems.md",
+      "title": "문제 해결",
+      "summary": "빌드가 실패하는 경우, 이는 빌드 시간에 임의의 작업을 실행하는 프로그램인 build.rs 때문일 수 있습니다. 이는 빌드의 병렬성과 재현성을 최대화하기 위해 정적인 빌드 규칙을 목표로 하는 gn 및 ninja 의 설계와 근본적으로 상충됩니다."
+    },
+    {
+      "path": "chapters/chromium/adding-third-party-crates/resolving-problems/build-scripts-which-generate-code.md",
+      "title": "코드를 생성하는 스크립트 빌드",
+      "summary": "ninja 가 파일 누락에 관한 불만을 제기하는 경우 build.rs 에서 소스 코드 파일을 작성하는지 확인합니다."
+    },
+    {
+      "path": "chapters/chromium/adding-third-party-crates/resolving-problems/build-scripts-which-take-arbitrary-actions.md",
+      "title": "C++를 빌드하거나 임의의 작업을 실행하는 스크립트 빌드",
+      "summary": "일부 크레이트는 cc 크레이트를 사용하여 C/C++ 라이브러리를 빌드하고 연결합니다. 다른 크레이트는 빌드 스크립트 내에서 bindgen 을 사용하여 C/C++를 파싱합니다. 이러한 작업은 Chromium 컨텍스트에서는 지원되지 않습니다. — Google의 gn, ninja, LLVM 빌드 시스템은 빌드 작업 간의 관계를 매우 구체적으로 표현합니다."
+    },
+    {
+      "path": "chapters/chromium/adding-third-party-crates/depending-on-a-crate.md",
+      "title": "크레이트에 따라 다름",
+      "summary": "서드 파티 크레이트를 추가하고 빌드 규칙을 생성하고 나면 크레이트에 따른 작업은 간단합니다. rust_static_library 타겟을 찾고 크레이트 내의 :lib 타겟에 dep 를 추가합니다."
+    },
+    {
+      "path": "chapters/chromium/adding-third-party-crates/reviews-and-audits.md",
+      "title": "서드 파티 크레이트 감사",
+      "summary": "새 라이브러리 추가에는 Chromium의 표준 정책 이 적용되지만 또한 보안 검토도 적용됩니다. 단일 크레이트뿐만 아니라 전이 종속 항목도 가져올 수 있으므로 검토할 코드가 많을 수 있습니다. 반면에 안전한 Rust 코드에서는 부정적인 부작용이 제한될 수 있습니다. 어떻게 검토해야 할까요?"
+    },
+    {
+      "path": "chapters/chromium/adding-third-party-crates/checking-in.md",
+      "title": "Chromium 소스 코드로 크레이트 확인",
+      "summary": "git status 는 다음을 표시해야 합니다."
+    },
+    {
+      "path": "chapters/chromium/adding-third-party-crates/keeping-up-to-date.md",
+      "title": "크레이트를 최신 상태로 유지",
+      "summary": "서드 파티 Chromium 종속 항목의 OWNER이므로 모든 보안 수정사항을 통해 최신 상태로 유지해야 합니다 . 곧 Rust 크레이트의 경우 이 작업을 자동화할 수 있기를 바라지만, 당분간은 다른 서드 파티 종속 항목과 마찬가지로 개발자의 책임입니다."
+    },
+    {
+      "path": "chapters/exercises/chromium/third-party.md",
+      "title": "연습문제",
+      "summary": "Chromium에 uwuify 를 추가하여 크레이트의 기본 기능 을 사용 중지합니다. 크레이트가 Chromium 배송에 사용되지만 신뢰할 수 없는 입력을 처리하는 데는 사용되지 않는다고 가정합니다."
+    },
+    {
+      "path": "chapters/exercises/chromium/bringing-it-together.md",
+      "title": "Bringing It Together — Exercise",
+      "summary": "이 연습에서는 이미 학습한 모든 내용을 종합하는 완전히 새로운 Chromium 기능을 추가합니다."
+    },
+    {
+      "path": "chapters/exercises/chromium/solutions.md",
+      "title": "연습문제 해답",
+      "summary": "Solutions to the Chromium exercises can be found in this series of CLs ."
+    },
+    {
+      "path": "chapters/bare-metal.md",
+      "title": "Welcome to Bare Metal Rust",
+      "summary": "이 과정은 Rust에 대해 어느정도 경험이 있고 (아마도 Comprehensive Rust 과정을 통해) C와 같은 다른 언어로 bare-metal 프로그래밍을 해 본 사용자를 대상으로 하는 bare-metal Rust에 관한 독립적인 1일 과정입니다."
+    },
+    {
+      "path": "chapters/bare-metal/no_std.md",
+      "title": "no_std",
+      "summary": ""
+    },
+    {
+      "path": "chapters/bare-metal/minimal.md",
+      "title": "최소한의 no_std 프로그램",
+      "summary": "컴파일 오류 예제"
+    },
+    {
+      "path": "chapters/bare-metal/alloc.md",
+      "title": "alloc",
+      "summary": "alloc 을 사용하려면 전역 (힙) 할당자 를 구현해야 합니다."
+    },
+    {
+      "path": "chapters/bare-metal/microcontrollers.md",
+      "title": "마이크로컨트롤러",
+      "summary": "cortex_m_rt 크레이트는 Cortex M 마이크로컨트롤러를 초기화 하는 핸들러를 제공합니다."
+    },
+    {
+      "path": "chapters/bare-metal/microcontrollers/mmio.md",
+      "title": "원시 MMIO",
+      "summary": "대부분의 마이크로컨트롤러는 메모리 매핑 IO를 통해 주변기기에 액세스합니다. micro:bit에서 LED를 켜보겠습니다."
+    },
+    {
+      "path": "chapters/bare-metal/microcontrollers/pacs.md",
+      "title": "주변기기 액세스 크레이트",
+      "summary": "svd2rust 크레이트를 이용하면 메모리 매핑된 주변장치를 기술하는 CMSIS-SVD 파일로부터 Rust 래퍼를 생성할 수 있습니다."
+    },
+    {
+      "path": "chapters/bare-metal/microcontrollers/hals.md",
+      "title": "HAL 크레이트들",
+      "summary": "다양한 주변 장치에 대한 래퍼를 제공하는 HAL 크레이트 들이 있습니다. 이 크레이트들은 일반적으로 embedded-hal 의 트레잇을 구현합니다."
+    },
+    {
+      "path": "chapters/bare-metal/microcontrollers/board-support.md",
+      "title": "Board support crates",
+      "summary": "보드 지원 크레이트들은, 특정 보드를 더 손쉽게 사용할 수 있게 해 주는 더 높은 수준의 추상화를 제공합니다."
+    },
+    {
+      "path": "chapters/bare-metal/microcontrollers/type-state.md",
+      "title": "타입 상태 패턴",
+      "summary": "컴파일 오류 예제"
+    },
+    {
+      "path": "chapters/bare-metal/microcontrollers/embedded-hal.md",
+      "title": "embedded-hal",
+      "summary": "embedded-hal 크레이트는 다양한 마이크로컨트롤러에서 공통적으로 찾아볼 수 있는 주변기기를 추상회 하는 다양한 트레잇을 제공합니다."
+    },
+    {
+      "path": "chapters/bare-metal/microcontrollers/probe-rs.md",
+      "title": "probe-rs and cargo-embed",
+      "summary": "probe-rs 는 임베디드 시스템을 위한 도구 모임입니다. OpenOCD와 비슷하지만, Rust에 더 잘 통합되어 있습니다."
+    },
+    {
+      "path": "chapters/bare-metal/microcontrollers/debugging.md",
+      "title": "디버깅",
+      "summary": "Embed.toml :"
+    },
+    {
+      "path": "chapters/bare-metal/microcontrollers/other-projects.md",
+      "title": "다른 프로젝트",
+      "summary": ""
+    },
+    {
+      "path": "chapters/exercises/bare-metal/morning.md",
+      "title": "연습문제",
+      "summary": "I2C 나침반에서 방향을 읽고, 읽은 값을 직렬 포트에 기록하세요."
+    },
+    {
+      "path": "chapters/exercises/bare-metal/compass.md",
+      "title": "나침반",
+      "summary": "I2C 나침반에서 방향을 읽고 판독값을 직렬 포트에 기록하세요. 시간이 있으면 어떻게든 LED에 표시하거나 버튼을 사용하세요."
+    },
+    {
+      "path": "chapters/exercises/bare-metal/solutions-morning.md",
+      "title": "Bare Metal Rust Morning Exercise",
+      "summary": "( 연습문제로 돌아가기 )"
+    },
+    {
+      "path": "chapters/bare-metal/aps.md",
+      "title": "애플리케이션 프로세서",
+      "summary": "지금까지 Arm Cortex-M 시리즈와 같은 마이크로컨트롤러에 관해 알아봤습니다. 이제 애플리케이션 프로세서인 Cortex-A를 위한 코드를 작성해 보겠습니다. 편의상 QEMU의 aarch64 ‘virt’ 보드를 사용합니다."
+    },
+    {
+      "path": "chapters/bare-metal/aps/entry-point.md",
+      "title": "Rust 수행 준비",
+      "summary": "Rust 코드 실행을 시작하기 전에 몇 가지 초기화를 실행해야 합니다."
+    },
+    {
+      "path": "chapters/bare-metal/aps/inline-assembly.md",
+      "title": "인라인 어셈블리",
+      "summary": "Sometimes we need to use assembly to do things that aren’t possible with Rust code. For example, to make an HVC (hypervisor call) to tell the firmware to power off the system:"
+    },
+    {
+      "path": "chapters/bare-metal/aps/mmio.md",
+      "title": "MMIO를 위한 휘발성(volatile) 메모리 액세스",
+      "summary": ""
+    },
+    {
+      "path": "chapters/bare-metal/aps/uart.md",
+      "title": "UART 드라이버 작성",
+      "summary": "QEMU의 ‘virt’ 보드에는 PL011 UART가 있으므로 이를 위한 드라이버를 작성해 보겠습니다."
+    },
+    {
+      "path": "chapters/bare-metal/aps/uart/traits.md",
+      "title": "More traits",
+      "summary": "Debug 트레잇을 상속했습니다. 몇 가지 트레잇을 추가로 더 구현하는 것도 유용할 수 있습니다."
+    },
+    {
+      "path": "chapters/bare-metal/aps/better-uart.md",
+      "title": "더 나은 UART 드라이버",
+      "summary": "PL011에는 실제로 훨씬 더 많은 레지스터 가 있으며, 이에 액세스할 포인터를 구성하기 위해 오프셋을 추가하면 오류가 발생하기 쉽고 읽기 어렵습니다. 또한 그중 일부는 구조화된 방식으로 액세스할 수 있는 비트 필드입니다."
+    },
+    {
+      "path": "chapters/bare-metal/aps/better-uart/bitflags.md",
+      "title": "비트플래그",
+      "summary": "bitflags 크레이트는 비트플래그를 사용하는 데 유용합니다."
+    },
+    {
+      "path": "chapters/bare-metal/aps/better-uart/registers.md",
+      "title": "Multiple registers",
+      "summary": "구조체를 사용하여 UART 레지스터의 메모리 레이아웃을 나타낼 수 있습니다."
+    },
+    {
+      "path": "chapters/bare-metal/aps/better-uart/driver.md",
+      "title": "드라이버",
+      "summary": "이제 드라이버에서 새로운 Registers 구조체를 사용해 보겠습니다."
+    },
+    {
+      "path": "chapters/bare-metal/aps/better-uart/using.md",
+      "title": "Using it",
+      "summary": "드라이버를 사용하여 직렬 콘솔에 쓰고 수신되는 바이트를 에코하는 간단한 프로그램을 작성해 보겠습니다."
+    },
+    {
+      "path": "chapters/bare-metal/aps/logging.md",
+      "title": "로깅",
+      "summary": "log 크레이트의 로깅 매크로를 사용할 수 있으면 좋습니다. 이는 Log 트레잇을 구현하면 됩니다."
+    },
+    {
+      "path": "chapters/bare-metal/aps/logging/using.md",
+      "title": "Using it",
+      "summary": "로거를 사용하려면 먼저 초기화해야 합니다."
+    },
+    {
+      "path": "chapters/bare-metal/aps/exceptions.md",
+      "title": "예외",
+      "summary": "AArch64는 4개 상태(SP0을 사용하는 현재 EL, SPx를 사용하는 현재 EL, AArch64를 사용하는 하위 EL, AArch32를 사용하는 하위 EL)의 4가지 예외 타입(동기, IRQ, FIQ, SError)에 대해 16개 항목이 있는 예외 벡터 테이블을 정의합니다. Rust 코드를 호출하기 전에 휘발성 레지스터를 스택에 저장하기 위해 어셈블리에서 이를 구현합니다."
+    },
+    {
+      "path": "chapters/bare-metal/aps/other-projects.md",
+      "title": "다른 프로젝트",
+      "summary": ""
+    },
+    {
+      "path": "chapters/bare-metal/useful-crates.md",
+      "title": "유용한 크레이트",
+      "summary": "bare-metal 프로그래밍의 몇 가지 일반적인 문제를 해결하는 크레이트를 살펴봅니다."
+    },
+    {
+      "path": "chapters/bare-metal/useful-crates/zerocopy.md",
+      "title": "zerocopy",
+      "summary": "Fuchsia팀이 만든 zerocopy 크레이트는 바이트 시퀀스를 다른 타입으로 안전하게 변환하기 위한 트레잇 및 매크로를 제공합니다."
+    },
+    {
+      "path": "chapters/bare-metal/useful-crates/aarch64-paging.md",
+      "title": "aarch64-paging",
+      "summary": "aarch64-paging 크레이트를 사용하면 AArch64 가상 메모리 시스템 아키텍처에 따라 페이지 테이블을 만들 수 있습니다."
+    },
+    {
+      "path": "chapters/bare-metal/useful-crates/buddy_system_allocator.md",
+      "title": "buddy_system_allocator",
+      "summary": "buddy_system_allocator 는 버디 시스템 할당자를 구현하는 서드 파티 크레이트입니다. 이 크레이트의 LockedHeap 은 GlobalAlloc 를 구현합니다. 따라서 여러분은 버디 시스템 할당자를 ‘alloc’ 크레이트를 통해서 사용할 수 있습니다( 이전 에 확인함). 또는 다른 주소 공간을 할당하는 데 사용할 수 있습니다. 예를 들어 PCI BAR에 MMIO 공간을 할당할 수 있습니다."
+    },
+    {
+      "path": "chapters/bare-metal/useful-crates/tinyvec.md",
+      "title": "tinyvec",
+      "summary": "힙에 메모리 할당하지 않고 크기 조절이 가능한 컨테이너(예: Vec 같은)가 필요할 때가 있습니다. tinyvec 을 사용하면 됩니다. tinyvec 에서 벡터는 배열 또는 슬라이스로부터 생성이 되며, 이들은 정적으로 할당되었거나 스택에 할당되어 있을 수 있습니다. tinyvec 은 현재 벡터 안에 얼마나 많은 엘리먼트들이 존재하는 지를 추적하고 있으며, 할당된 양보다 더 많이 사용하려고 하면 패닉을 발생시킵니다."
+    },
+    {
+      "path": "chapters/bare-metal/useful-crates/spin.md",
+      "title": "spin",
+      "summary": "std::sync::Mutex 및 std::sync 의 기타 동기화 프리미티브는 core 또는 alloc 에서 사용할 수 없습니다. 그러면 어떻게 동기화 또는 interior mutability와 같은 기능이 필요할 경우 어떻게 해야 할까요?"
+    },
+    {
+      "path": "chapters/bare-metal/android.md",
+      "title": "안드로이드",
+      "summary": "AOSP에서 bare-metal Rust 바이너리를 빌드하려면 rust_ffi_static 을 사용하여 Rust 코드를 빌드하고, 링커 스크립트가 포함된 cc_binary 를 사용하여 ELF 바이너리를 생성하고, raw_binary 를 사용해 ELF를 곧바로 수행될 수 있는 원시(raw) 바이너리로 변환합니다."
+    },
+    {
+      "path": "chapters/bare-metal/android/vmbase.md",
+      "title": "vmbase",
+      "summary": "vmbase 라이브러리는, aarch64의 crosvm에서 실행되는 VM을 타겟하여, 진입점, UART 콘솔 로깅, 링커 스크립트, 빌드 룰 등에 대한 기본 구현들을 제공합니다."
+    },
+    {
+      "path": "chapters/exercises/bare-metal/afternoon.md",
+      "title": "연습문제",
+      "summary": "PL031 실시간 시계 기기용 드라이버를 작성합니다."
+    },
+    {
+      "path": "chapters/exercises/bare-metal/rtc.md",
+      "title": "RTC driver",
+      "summary": "The QEMU aarch64 virt machine has a PL031 real-time clock at 0x9010000. For this exercise, you should write a driver for it."
+    },
+    {
+      "path": "chapters/exercises/bare-metal/solutions-afternoon.md",
+      "title": "전Bare Metal 오후",
+      "summary": "( 연습문제로 돌아가기 )"
+    },
+    {
+      "path": "chapters/concurrency.md",
+      "title": "Welcome to Concurrency in Rust",
+      "summary": "러스트는 동시성 지원이 막강합니다. 운영체제 레벨의 스레드를 사용하며, 뮤택스와 채널도 지원합니다."
+    },
+    {
+      "path": "chapters/concurrency/threads.md",
+      "title": "스레드",
+      "summary": "러스트의 스레드는 다른 언어의 스레드와 유사하게 동작합니다:"
+    },
+    {
+      "path": "chapters/concurrency/scoped-threads.md",
+      "title": "범위 스레드(Scoped Threads)",
+      "summary": "보통, 스레드는 스레드 밖에서 데이터를 빌릴 수 없습니다:"
+    },
+    {
+      "path": "chapters/concurrency/channels.md",
+      "title": "채널",
+      "summary": "러스트의 채널은 Sender<T> 와 Receiver<T> 두 부분으로 구성됩니다. 이 둘은 채널을 통해 서로 연결되어 있지만, 우리는 채널을 볼 수는 없고 이 양 끝단만을 사용하게 됩니다."
+    },
+    {
+      "path": "chapters/concurrency/channels/unbounded.md",
+      "title": "무경계 채널",
+      "summary": "mpsc::channel() 함수는 경계가 없는 비동기 채널을 생성합니다:"
+    },
+    {
+      "path": "chapters/concurrency/channels/bounded.md",
+      "title": "경계 채널",
+      "summary": "With bounded (synchronous) channels, send can block the current thread:"
+    },
+    {
+      "path": "chapters/concurrency/send-sync.md",
+      "title": "Send 와 Sync",
+      "summary": "How does Rust know to forbid shared access across threads? The answer is in two traits:"
+    },
+    {
+      "path": "chapters/concurrency/send-sync/send.md",
+      "title": "Send",
+      "summary": "소유권을 다른 스레드로 이동하면 소멸자가 해당 스레드에서 실행됩니다. 여기서 의문은 “언제 한 스레드에서 값을 할당하고 다른 스레드에서 값을 할당 해제할 수 있는가” 입니다."
+    },
+    {
+      "path": "chapters/concurrency/send-sync/sync.md",
+      "title": "Sync",
+      "summary": "좀 더 정확한 정의는 다음과 같습니다:"
+    },
+    {
+      "path": "chapters/concurrency/send-sync/examples.md",
+      "title": "예제",
+      "summary": "여러분이 다루게 될 대부분의 타입은 Send + Sync 입니다:"
+    },
+    {
+      "path": "chapters/concurrency/shared_state.md",
+      "title": "상태 공유",
+      "summary": "러스트는 주로 아래 두 가지 타입을 이용해서 공유 데이터 동기화를 수행합니다:"
+    },
+    {
+      "path": "chapters/concurrency/shared_state/arc.md",
+      "title": "Arc",
+      "summary": "Arc<T> allows shared read-only access via Arc::clone :"
+    },
+    {
+      "path": "chapters/concurrency/shared_state/mutex.md",
+      "title": "Mutex",
+      "summary": "Mutex<T> ensures mutual exclusion and allows mutable access to T behind a read-only interface (another form of interior mutability ):"
+    },
+    {
+      "path": "chapters/concurrency/shared_state/example.md",
+      "title": "예제",
+      "summary": "Arc 와 Mutex 의 동작을 살펴봅시다:"
+    },
+    {
+      "path": "chapters/exercises/concurrency/morning.md",
+      "title": "연습문제",
+      "summary": "동시성 기법들을 연습해 봅시다"
+    },
+    {
+      "path": "chapters/exercises/concurrency/dining-philosophers.md",
+      "title": "식사하는 철학자들",
+      "summary": "식사하는 철학자 문제는 동시성에 있어서 고전적인 문제입니다:"
+    },
+    {
+      "path": "chapters/exercises/concurrency/link-checker.md",
+      "title": "멀티스레드 링크 검사기",
+      "summary": "새로 배운것들을 활용해서 멀티 스레드 링크 검사기를 만듭니다. 이 검사기는 웹페이지 안에 있는 링크들이 유효한지 확인합니다. 그리고 재귀적으로 동일 도메인의 다른 모든 페이지가 유효한지 확인합니다."
+    },
+    {
+      "path": "chapters/exercises/concurrency/solutions-morning.md",
+      "title": "Concurrency Morning Exercise",
+      "summary": "( 연습문제로 돌아가기"
+    },
+    {
+      "path": "chapters/async.md",
+      "title": "Async Rust",
+      "summary": "“Async“는 블럭될(더 이상 진행할 수 없을) 때까지 각 작업을 실행한 다음 진행할 준비가 된 다른 작업으로 전환하여 여러 작업을 동시에 실행하는 동시 실행 모델입니다. 이 모델을 사용하면 제한된 수의 스레드에서 더 많은 작업을 실행할 수 있습니다. 이는, 한 작업을 유지하고 수행하는데 필요한 오버헤드가 (스레드에 비해) 매우 낮고 운영체제가 여러 I/O들에서 현재 진행 가능한 I/O들을 효과적으로 식별해 주는 프리미티브를 제공하기 때문입니다."
+    },
+    {
+      "path": "chapters/async/async-await.md",
+      "title": "async / await",
+      "summary": "겉에서 보았을 때, 비동기 Rust 코드는 일반적인 절차적 코드와 매우 유사합니다."
+    },
+    {
+      "path": "chapters/async/futures.md",
+      "title": "Future",
+      "summary": "Future 는 트레잇입니다.이 트레잇은 아직 완료되지 않았을 수도 있는 작업을 나타냅니다. Future는 poll 함수를 통해 폴링될 수 있으며, 이 함수는 Poll 을 반환합니다."
+    },
+    {
+      "path": "chapters/async/runtimes.md",
+      "title": "비동기 런타임들",
+      "summary": "비동기 _런타임_은 리액터 (비동기식 작업 실행을 지원)와 실행자 (futures를 실행)의 두 가지 역할을 합니다. Rust 언어 자체에서 기본 제공하는 비동기 런타임은 없습니다. 그러나 다음과 같은 비동기 런타임 크레잇들이 있습니다."
+    },
+    {
+      "path": "chapters/async/runtimes/tokio.md",
+      "title": "Tokio",
+      "summary": "Tokio provides:"
+    },
+    {
+      "path": "chapters/async/tasks.md",
+      "title": "태스크",
+      "summary": "Rust의 태스크(작업) 시스템은 경량 스레딩의 한 종류로 볼 수 있습니다."
+    },
+    {
+      "path": "chapters/async/channels.md",
+      "title": "비동기 채널",
+      "summary": "여러 크레이트에서 비동기 채널을 지원합니다. 예를 들어 tokio 에서는 아래와 같이합니다."
+    },
+    {
+      "path": "chapters/async/control-flow.md",
+      "title": "Futures Control Flow",
+      "summary": "Future들을 결합하여 계산 과정을 동시성이 있는 플로우 그래프 형태로 모델링 할 수 있습니다. 앞서 배운,  각 태스크가 독립적으로 수행되도록 하는 것도 Future들을 결합하는 한 방법으로 볼 수 있습니다."
+    },
+    {
+      "path": "chapters/async/control-flow/join.md",
+      "title": "Join",
+      "summary": "Join 연산은 모든 future가 준비될 때까지 기다린 후, 각 future의 결과값을 담은 컬렉션을 리턴합니다. 이는 자바스크립트의 Promise.all 이나 파이썬의 asyncio.gather 와 유사합니다."
+    },
+    {
+      "path": "chapters/async/control-flow/select.md",
+      "title": "Select",
+      "summary": "Select 연산은 여러 future들 모두에 대해서 준비될 때 까지 기다리다가, 그 중 어떤 한 future가 최초로 준비 상태가 되면 해당 future의 결과값을 리턴합니다.  이것은 자바스크립트에서의 Promise.race 와 비슷합니다. 파이썬에서라면 asyncio.wait(task_set, return_when=asyncio.FIRST_COMPLETED) 가 하는 동작과 비슷합니다."
+    },
+    {
+      "path": "chapters/async/pitfalls.md",
+      "title": "async/await에서 주의해야할 함정",
+      "summary": "Async와 await는 동시 비동기 프로그래밍을 위한 편리하고 효율적인 추상화를 제공합니다. 하지만 Rust의 async/await 모델에도 문제는 있습니다. 이 장에서 몇 가지 예를 살펴보겠습니다."
+    },
+    {
+      "path": "chapters/async/pitfalls/blocking-executor.md",
+      "title": "실행자(executor)를 블록시킴",
+      "summary": "대부분의 비동기 런타임은 IO 작업만 동시에 실행되도록 허용합니다. 즉, CPU를 블럭하는 태스크가 있는 경우, 이는 실행자(executor)를 블럭하게 되며, 그 결과로 다른 태스크가 실행되지 않습니다. 이 문제를 해결하는 간단한 방법은, 항상 async를 지원하는 메서드를 사용하는 것입니다."
+    },
+    {
+      "path": "chapters/async/pitfalls/pin.md",
+      "title": "Pin",
+      "summary": "Async blocks and functions return types implementing the Future trait. The type returned is the result of a compiler transformation which turns local variables into data stored inside the future."
+    },
+    {
+      "path": "chapters/async/pitfalls/async-traits.md",
+      "title": "비동기 트레잇",
+      "summary": "Async methods in traits are were stabilized only recently, in the 1.75 release. This required support for using return-position impl Trait (RPIT) in traits, as the desugaring for async fn includes -> impl Future<Output = ...> ."
+    },
+    {
+      "path": "chapters/async/pitfalls/cancellation.md",
+      "title": "취소",
+      "summary": "future가 누락되면 다시 폴링할 수 없다는 의미입니다. 이를 _취소_라고 하며, await 지점에서 발생할 수 있습니다. future가 취소되더라도 시스템이 올바르게 작동할 수 있도록 주의를 기울여야 합니다. 예를 들어 교착 상태가 되거나 데이터가 손실되면 안 됩니다."
+    },
+    {
+      "path": "chapters/exercises/concurrency/afternoon.md",
+      "title": "연습문제",
+      "summary": "Async Rust 기술을 연습할 수 있도록 두 가지 연습문제를 준비했습니다."
+    },
+    {
+      "path": "chapters/exercises/concurrency/dining-philosophers-async.md",
+      "title": "Dining Philosophers — Async",
+      "summary": "문제에 관한 설명은 식사하는 철학자 를 참고하세요."
+    },
+    {
+      "path": "chapters/exercises/concurrency/chat-app.md",
+      "title": "채팅 애플리케이션",
+      "summary": "이 연습에서는 새로운 지식을 사용하여 브로드캐스트 채팅 애플리케이션을 구현해 보겠습니다. 클라이언트가 연결하고 메시지를 게시하는 채팅 서버가 있습니다. 클라이언트는 표준 입력에서 사용자 메시지를 읽고 서버로 전송합니다. 채팅 서버는 수신하는 각 메시지를 모든 클라이언트에 브로드캐스트합니다."
+    },
+    {
+      "path": "chapters/exercises/concurrency/solutions-afternoon.md",
+      "title": "Concurrency Afternoon Exercise",
+      "summary": "( 연습문제로 돌아가기"
+    },
+    {
+      "path": "chapters/thanks.md",
+      "title": "감사인사",
+      "summary": "Comprehensive Rust 🦀를 이용해 주셔서 감사합니다. 즐겁고 유익한 시간이었기를 바랍니다."
+    },
+    {
+      "path": "chapters/glossary.md",
+      "title": "용어집",
+      "summary": "다음은 여러 Rust 용어의 간단한 정의를 제공하는 용어집입니다. 번역의 경우 용어를 다시 영어 원본에 연결하는 역할도 합니다."
+    },
+    {
+      "path": "chapters/other-resources.md",
+      "title": "러스트 참고 자료",
+      "summary": "러스트 커뮤니티는 온라인에서 고품질의 무료 소스를 만들었습니다."
+    },
+    {
+      "path": "chapters/credits.md",
+      "title": "도와주신 분들",
+      "summary": "이 자료는 많은 훌륭한 러스트 문서들의 도움을 받아 작성되었습니다. 유용한 자료의 전체 목록은 other resources 에서 살펴보시기 바랍니다."
+    }
+  ]
+}

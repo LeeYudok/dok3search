@@ -4,64 +4,76 @@ import remarkGfm from 'remark-gfm'
 import remarkParse from 'remark-parse'
 import { unified } from 'unified'
 import { toString } from 'mdast-util-to-string'
-import { categories, categoryLabels, designDocuments, documentFormats, documentHeadingId, documents, searchUrl } from './documents'
+import { categories, categoryLabels, designDocuments, documentFormats, documentHeadingId, searchUrl, type Document } from './documents'
+import type { RustCorpus } from './rust-corpus'
 
 const designParser = unified().use(remarkParse).use(remarkGfm)
 
-type DocumentSection = { id: string; label: string; line?: number }
+type DocumentSection = { id: string; label: string; line?: number; depth?: number }
 
-function markdownSections(markdown: string): DocumentSection[] {
+function markdownSections(markdown: string, includeSubsections = false): DocumentSection[] {
   const ids = new Set<string>()
   return designParser.parse(markdown).children.flatMap((node) => {
-    if (node.type !== 'heading' || node.depth !== 2) return []
+    if (node.type !== 'heading' || node.depth === 1 || (node.depth !== 2 && !includeSubsections)) return []
     const label = toString(node)
     const base = documentHeadingId(label)
     let id = base
     for (let suffix = 2; ids.has(id); suffix++) id = base + '-' + suffix
     ids.add(id)
-    return [{ id, label, line: node.position?.start.line }]
+    return [{ id, label, line: node.position?.start.line, depth: node.depth }]
   })
 }
 
-function MarkdownBody({ markdown, sections, samplePath }: {
+function MarkdownBody({ markdown, sections, samplePath, corpus }: {
   markdown: string
   sections: DocumentSection[]
   samplePath?: string
+  corpus?: RustCorpus
 }) {
+  function headingId(line?: number) {
+    return sections.find((entry) => entry.line === line)?.id
+  }
+
   return (
     <div className="markdown-body">
       <Markdown
         remarkPlugins={[remarkGfm]}
         skipHtml
-        disallowedElements={['img']}
+        disallowedElements={corpus ? [] : ['img']}
         components={{
-          h2: ({ children, node }) => <h2 id={sections.find((entry) => entry.line === node?.position?.start.line)?.id}>{children}</h2>,
+          h2: ({ children, node }) => <h2 id={headingId(node?.position?.start.line)}>{children}</h2>,
+          h3: ({ children, node }) => <h3 id={headingId(node?.position?.start.line)}>{children}</h3>,
+          h4: ({ children, node }) => <h4 id={headingId(node?.position?.start.line)}>{children}</h4>,
+          img: ({ src, alt }) => src ? <img src={src} alt={alt ?? ''} loading="lazy" /> : null,
           table: ({ children }) => <div className="markdown-table" tabIndex={0}><table>{children}</table></div>,
         }}
-        urlTransform={(url) => {
+        urlTransform={(url, key) => {
           const safeUrl = defaultUrlTransform(url)
-          if (!samplePath || !safeUrl || /^(?:[a-z]+:|#|\/\/)/i.test(safeUrl)) return safeUrl
+          if (!samplePath || !safeUrl || /^(?:[a-z][a-z+.-]*:|\/\/)/i.test(safeUrl)) return key === 'src' ? '' : safeUrl
+          if (!corpus && safeUrl.startsWith('#')) return safeUrl
 
           const target = new URL(safeUrl, new URL('/' + samplePath, window.location.origin))
-          const linkedDoc = designDocuments.find((entry) => '/' + entry.samplePath === target.pathname)
+          if (key === 'src') return corpus?.images.get(target.pathname) ?? ''
+
+          const linkedDoc = (corpus?.documents ?? designDocuments).find((entry) => '/' + entry.samplePath === target.pathname)
           if (!linkedDoc) return safeUrl
           const heading = target.hash && linkedDoc.markdown
-            ? markdownSections(linkedDoc.markdown).find(({ label }) => {
-                const slug = label.toLowerCase().replace(/[.,:/]/g, '').replaceAll(' ', '-')
-                return '#' + encodeURIComponent(slug) === target.hash
+            ? markdownSections(linkedDoc.markdown, Boolean(corpus)).find(({ label, id }) => {
+                const punctuation = corpus ? /[^\p{L}\p{N}_ -]/gu : /[.,:/]/g
+                const slug = label.toLowerCase().replace(punctuation, '').replaceAll(' ', '-')
+                return '#' + encodeURIComponent(slug) === target.hash || '#' + encodeURIComponent(id) === target.hash
               })
             : undefined
           const section = heading ? '#' + encodeURIComponent(heading.id) : target.hash
-          return '/docs/' + linkedDoc.id + '?category=design' + section
+          return safeUrl.startsWith('#') ? section : '/docs/' + linkedDoc.id + '?category=' + linkedDoc.category + section
         }}
       >{markdown}</Markdown>
     </div>
   )
 }
 
-export function DocumentPage({ id }: { id: string }) {
-  const doc = documents.find((item) => item.id === id)
-  const formats = documentFormats(id)
+export function DocumentPage({ doc, corpus }: { doc?: Document; corpus?: RustCorpus }) {
+  const formats = doc && documentFormats(doc.id)
   const reader = useRef<HTMLElement>(null)
   const progress = useRef<HTMLDivElement>(null)
   const [activeSection, setActiveSection] = useState('overview')
@@ -130,11 +142,16 @@ export function DocumentPage({ id }: { id: string }) {
       if (frame) window.cancelAnimationFrame(frame)
     }
   }, [doc])
-  const sections = useMemo(() => doc?.markdown ? markdownSections(doc.markdown) : [{ label: '본문', id: 'body' }], [doc])
-  const fallbackBody = Boolean(doc?.markdown && sections.length === 0)
+  const sections = useMemo(
+    () => doc?.markdown ? markdownSections(doc.markdown, Boolean(corpus)) : [{ label: '본문', id: 'body' }],
+    [doc, corpus],
+  )
+  const mainSections = sections.filter(({ depth }) => depth === undefined || depth === 2)
+  const fallbackBody = Boolean(doc?.markdown && mainSections.length === 0)
+  const readerSummary = corpus ? '' : doc?.summary
   const tocSections = [
-    ...(doc?.summary ? [{ id: 'overview', label: '요약' }] : []),
-    ...(fallbackBody ? [{ id: 'body', label: '본문' }] : sections),
+    ...(readerSummary ? [{ id: 'overview', label: '요약' }] : []),
+    ...(fallbackBody ? [{ id: 'body', label: '본문' }] : mainSections),
   ]
   const params = new URLSearchParams(window.location.search)
   const category = categories.find((item) => item.id === params.get('category'))?.id
@@ -158,7 +175,8 @@ export function DocumentPage({ id }: { id: string }) {
               <a className="article-category" href={searchUrl('', doc.category)}>{categoryLabels.get(doc.category)}</a>
               <h1>{doc.title}</h1>
               <p className="article-meta">
-                <span>{doc.samplePath ?? doc.source}</span>{doc.date && <time dateTime={doc.date}>{doc.date}</time>}
+                <span>{corpus ? doc.source : doc.samplePath ?? doc.source}</span>{doc.date && <time dateTime={doc.date}>{doc.date}</time>}
+                {corpus?.licenses.map(({ label, url }) => <a href={url} key={label}>{label}</a>)}
               </p>
               {formats && (
                 <nav className="category-filters article-formats" aria-label="문서 형식">
@@ -166,7 +184,7 @@ export function DocumentPage({ id }: { id: string }) {
                     { id: formats.markdown.id, label: 'Markdown' },
                     { id: formats.yaml.id, label: 'YAML' },
                   ].map((format) => (
-                    <a key={format.id} href={'/docs/' + format.id + window.location.search} aria-current={format.id === id ? 'page' : undefined}>
+                    <a key={format.id} href={'/docs/' + format.id + window.location.search} aria-current={format.id === doc.id ? 'page' : undefined}>
                       {format.label}
                     </a>
                   ))}
@@ -175,14 +193,14 @@ export function DocumentPage({ id }: { id: string }) {
             </header>
             <div className="article-layout">
               <article className="article-copy">
-                {doc.summary && <section aria-labelledby="overview">
+                {readerSummary && <section aria-labelledby="overview">
                   <h2 id="overview">요약</h2>
-                  <p>{doc.summary}</p>
+                  <p>{readerSummary}</p>
                 </section>}
                 {doc.markdown ? (
                   <section>
                     {fallbackBody && <h2 id="body">본문</h2>}
-                    <MarkdownBody markdown={doc.markdown} sections={sections} samplePath={doc.samplePath} />
+                    <MarkdownBody markdown={doc.markdown} sections={sections} samplePath={doc.samplePath} corpus={corpus} />
                   </section>
                 ) : (
                   <section aria-labelledby="body">

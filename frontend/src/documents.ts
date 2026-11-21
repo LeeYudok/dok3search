@@ -6,6 +6,7 @@ export const categories = [
   { id: 'manual', label: '운영 매뉴얼' },
   { id: 'code', label: '코드 레퍼런스' },
   { id: 'policy', label: '내부 규정' },
+  { id: 'rust', label: 'Rust 자료' },
   { id: 'design', label: 'dok3search-design' },
 ] as const
 
@@ -25,7 +26,7 @@ export function documentHeadingId(label: string) {
 
 type Category = typeof categories[number]['id']
 
-type Document = {
+export type Document = {
   id: string
   title: string
   summary: string
@@ -36,6 +37,7 @@ type Document = {
   body: string
   markdown?: string
   samplePath?: string
+  keywords?: string
 }
 
 const designFiles = import.meta.glob<string>('./samples/design/**/*.{md,yaml,yml}', {
@@ -262,17 +264,17 @@ export const documents: Document[] = [
   },
 ]
 
-export function searchDocuments(query: string) {
+export function searchDocuments(query: string, corpus: readonly Document[]) {
   const terms = query.toLowerCase().split(/\s+/)
 
-  return documents.filter((doc) => {
+  return corpus.filter((doc) => {
     const formats = documentFormats(doc.id)
     if (formats?.yaml === doc) return false
     if (!query) return true
 
     const variants = formats ? [formats.markdown, formats.yaml] : [doc]
     return variants.some((variant) => {
-      const searchable = [variant.title, variant.summary, variant.source, variant.tag, variant.body, variant.markdown, variant.samplePath].join(' ').toLowerCase()
+      const searchable = [variant.title, variant.summary, variant.source, variant.tag, variant.body, variant.markdown, variant.samplePath, variant.keywords].join(' ').toLowerCase()
       return terms.every((term) => searchable.includes(term))
     })
   })
