@@ -9,4 +9,5 @@ publish.workspace = true
 dok3-core.workspace = true
 dok3-domain.workspace = true
 dok3-search.workspace = true
-dok3-index-manager.workspace = true
+serde.workspace = true
+serde_json.workspace = true
