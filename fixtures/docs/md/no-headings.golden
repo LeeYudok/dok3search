@@ -1,0 +1,9 @@
+title: no-headings
+warnings: 0
+sections: 1
+
+[1] id=body anchor=body lines=1-3
+heading: no-headings
+| Just a note without any heading, see [the manual](https://example.com/manual).
+|
+| Second paragraph with `inline code`.

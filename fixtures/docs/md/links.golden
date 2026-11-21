@@ -1,0 +1,22 @@
+title: Links and images
+warnings: 0
+sections: 3
+
+[1] id=links-and-images anchor=links-and-images lines=1-9
+heading: Links and images
+| Inline [link](https://example.com/path_(with)_parens), a bare <https://example.com/auto> autolink,
+| and a reference link [Rust][rust-lang].
+|
+| ![Diagram](images/diagram.png "Title")
+|
+| [rust-lang]: https://www.rust-lang.org
+
+[2] id=see-the-docs-now anchor=see-the-docs-now lines=10-13
+heading: See [the docs](https://example.com/docs) now
+| Inline code `let x = 1;` and a [fragment link](#see-the-docs-now).
+
+[3] id=image-logo-heading anchor=image-logo-heading lines=14-18
+heading: Image ![logo](logo.png) heading
+| | Name | Link |
+| |------|------|
+| | a    | [a](https://a.example) |

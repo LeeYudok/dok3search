@@ -1,0 +1,11 @@
+title: preamble
+warnings: 0
+sections: 2
+
+[1] id=preamble anchor=preamble lines=3-4
+heading: preamble
+| Text before any heading, with a [link](https://example.com).
+
+[2] id=first anchor=first lines=5-9
+heading: First
+| Body.

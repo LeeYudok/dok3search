@@ -1,0 +1,20 @@
+title: Unclosed fence
+warnings: 1
+  ! unclosed code fence opened at line 9; the rest of the document is treated as code
+sections: 3
+
+[1] id=unclosed-fence anchor=unclosed-fence lines=1-2
+heading: Unclosed fence
+
+[2] id=before anchor=before lines=3-6
+heading: Before
+| Plain text.
+
+[3] id=broken anchor=broken lines=7-14
+heading: Broken
+| ```rust
+| // the closing fence is missing
+| ## not a heading
+| fn main() {}
+|
+| ## also not a heading
