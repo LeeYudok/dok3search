@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 456 97">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-QualifiedPathInExpression" class="link">
+<text class="comment" x="106" y="25">
+QualifiedPathInExpression</text>
+</a>
+<g class="sequence">
+<path d=" M 10 58 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="sequence">
+<a xlink:href="#railroad-summary-QualifiedPathType" class="link">
+<g class="nonterminal">
+<rect x="35" y="47" height="22" width="156" />
+<text x="113" y="63">
+QualifiedPathType</text>
+</g>
+</a>
+<g class="repeat">
+<path d=" M 201 58 h 5 h 12 m 186 0 h 12 h 5 m -17 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 m 0 0 h -186 m 96 0 l 5 -5 m 0 10 l -5 -5 m -96 0 a 12 12 0 0 1 -12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<g>
+</g>
+<g class="sequence">
+<g class="terminal">
+<rect x="218" y="47" height="22" width="36" rx="10" ry="10" />
+<text x="236" y="63">
+::</text>
+</g>
+<a xlink:href="#railroad-summary-PathExprSegment" class="link">
+<g class="nonterminal">
+<rect x="264" y="47" height="22" width="140" />
+<text x="334" y="63">
+PathExprSegment</text>
+</g>
+</a>
+<path d=" M 254 58 h 10" />
+</g>
+</g>
+<path d=" M 191 58 h 10" />
+</g>
+<path d=" M 431 58 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 58 h 10" />
+<path d=" M 421 58 h 10" />
+</g>
+</g>
+</svg>

@@ -44,6 +44,10 @@ form button:hover { filter: brightness(.92); }
 .category-filters a:hover { background: var(--muted); color: var(--foreground); }
 .category-filters a[aria-current="page"] { background: var(--accent); color: var(--accent-foreground); border-color: var(--border); font-weight: 700; }
 .category-count { font-size: .9em; font-variant-numeric: tabular-nums; }
+.topic-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin: 2px 0 12px 9px; padding-left: 11px; border-left: 2px solid var(--border); }
+.topic-filters a { min-height: 32px; display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border: 1px solid transparent; border-radius: var(--radius); color: var(--muted-foreground); font-size: 12px; }
+.topic-filters a:hover { background: var(--muted); color: var(--foreground); }
+.topic-filters a[aria-current="page"] { background: var(--accent); color: var(--accent-foreground); border-color: var(--border); font-weight: 700; }
 .section-heading { min-height: 32px; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 h2 { font-size: 23px; letter-spacing: -.045em; }
 .doc-copy { display: grid; gap: 3px; }
@@ -169,6 +173,8 @@ h2 { font-size: 23px; letter-spacing: -.045em; }
 .markdown-body h2 { margin-top: 1.7em; }
 .markdown-body h3, .markdown-body h4 { line-height: 1.45; }
 .markdown-body a { color: var(--primary); text-decoration: underline; }
+.external-reference { color: var(--muted-foreground); text-decoration: underline dotted; text-underline-offset: 3px; cursor: help; }
+.external-reference-label { display: inline-block; margin-inline-start: 5px; padding: 0 5px; border: 1px solid var(--border); border-radius: calc(var(--radius) - 4px); color: var(--muted-foreground); font-size: .75em; font-weight: 700; line-height: 1.5; vertical-align: .08em; }
 .markdown-body blockquote { margin-inline: 0; border-inline-start: 3px solid var(--border); padding-inline-start: 14px; color: var(--muted-foreground); }
 .markdown-body pre, .markdown-body code { font-family: ui-monospace, monospace; font-size: .9em; background: var(--muted); }
 .markdown-body code { padding: 2px 4px; }

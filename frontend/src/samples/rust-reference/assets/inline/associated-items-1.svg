@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 664 212">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-AssociatedItem" class="link">
+<text class="comment" x="64" y="25">
+AssociatedItem</text>
+</a>
+<g class="sequence">
+<path d=" M 10 75 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="sequence">
+<g class="optional">
+<path d=" M 35 75 h 24 m -24 0 a 12 12 0 0 0 12 -12 v -4 a 12 12 0 0 1 12 -12 h 166 m -80 0 l -5 -5 m 0 10 l 5 -5 m 80 0 a 12 12 0 0 1 12 12 v 4 a 12 12 0 0 0 12 12 h -24" />
+<g class="repeat">
+<path d=" M 59 75 h 5 h 12 m 132 0 h 12 h 5 m -17 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 m 0 0 h -132 m 69 0 l 5 -5 m 0 10 l -5 -5 m -69 0 a 12 12 0 0 1 -12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<g>
+</g>
+<a xlink:href="../attributes.md#railroad-OuterAttribute" class="link">
+<g class="nonterminal">
+<rect x="76" y="64" height="22" width="132" />
+<text x="142" y="80">
+OuterAttribute</text>
+</g>
+</a>
+</g>
+</g>
+<g class="multichoice">
+<path d=" M 259 75 h 24" />
+<path d=" M 259 75 a 12 12 0 0 1 12 12" />
+<path d=" M 271 87 v 26" />
+<g class="sequence">
+<a xlink:href="../macros.md#railroad-MacroInvocationSemi" class="link">
+<g class="nonterminal">
+<rect x="283" y="64" height="22" width="172" />
+<text x="369" y="80">
+MacroInvocationSemi</text>
+</g>
+</a>
+</g>
+<path d=" M 455 75 h 174 m -84 0 l -5 -5 m 0 10 l 5 -5 m 84 0" />
+<path d=" M 271 113 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<g class="sequence">
+<g class="optional">
+<path d=" M 283 125 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 100 m -47 0 l -5 -5 m 0 10 l 5 -5 m 47 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="../visibility-and-privacy.md#railroad-Visibility" class="link">
+<g class="nonterminal">
+<rect x="307" y="114" height="22" width="100" />
+<text x="357" y="130">
+Visibility</text>
+</g>
+</a>
+</g>
+<g class="multichoice">
+<path d=" M 441 125 h 24" />
+<path d=" M 441 125 a 12 12 0 0 1 12 12" />
+<path d=" M 453 137 v 9" />
+<path d=" M 453 146 v 33" />
+<a xlink:href="type-aliases.md#railroad-TypeAlias" class="link">
+<g class="nonterminal">
+<rect x="465" y="114" height="22" width="92" />
+<text x="511" y="130">
+TypeAlias</text>
+</g>
+</a>
+<path d=" M 557 125 h 48" />
+<path d=" M 453 146 a 12 12 0 0 0 12 12 h 0" />
+<a xlink:href="constant-items.md#railroad-ConstantItem" class="link">
+<g class="nonterminal">
+<rect x="465" y="147" height="22" width="116" />
+<text x="523" y="163">
+ConstantItem</text>
+</g>
+</a>
+<path d=" M 581 158 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 453 179 a 12 12 0 0 0 12 12 h 0" />
+<a xlink:href="functions.md#railroad-Function" class="link">
+<g class="nonterminal">
+<rect x="465" y="180" height="22" width="84" />
+<text x="507" y="196">
+Function</text>
+</g>
+</a>
+<path d=" M 549 191 h 32 a 12 12 0 0 0 12 -12" />
+<path d=" M 593 179 v -33" />
+<path d=" M 593 146 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 431 125 h 10" />
+</g>
+</g>
+<path d=" M 605 125 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 617 113 v -26 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 249 75 h 10" />
+</g>
+<path d=" M 639 75 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 75 h 10" />
+<path d=" M 629 75 h 10" />
+</g>
+</g>
+</svg>

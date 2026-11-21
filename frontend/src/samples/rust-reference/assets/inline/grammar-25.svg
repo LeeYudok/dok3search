@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 462 151">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-OUTER_LINE_DOC" class="link">
+<text class="comment" x="64" y="25">
+OUTER_LINE_DOC</text>
+</a>
+<g class="sequence">
+<path d=" M 10 89 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="sequence">
+<g class="terminal">
+<rect x="35" y="78" height="22" width="44" rx="10" ry="10" />
+<text x="57" y="94">
+///</text>
+</g>
+<g class="labeledbox">
+<rect x="89" y="42" height="99" width="338" />
+<path d=" M 89 89 h 8 m 322 0 h 8" />
+<text class="comment" x="154" y="65">
+no backtracking</text>
+<g class="sequence">
+<a xlink:href="#railroad-summary-LINE_DOC_COMMENT_CONTENT" class="link">
+<g class="nonterminal">
+<rect x="97" y="78" height="22" width="220" />
+<text x="207" y="94">
+LINE_DOC_COMMENT_CONTENT</text>
+</g>
+</a>
+<g class="multichoice">
+<path d=" M 327 89 h 24" />
+<path d=" M 327 89 a 12 12 0 0 1 12 12" />
+<path d=" M 339 101 v 9" />
+<a xlink:href="#railroad-summary-LF" class="link">
+<g class="nonterminal">
+<rect x="351" y="78" height="22" width="36" />
+<text x="369" y="94">
+LF</text>
+</g>
+</a>
+<path d=" M 387 89 h 32" />
+<path d=" M 339 110 a 12 12 0 0 0 12 12 h 0" />
+<a xlink:href="#railroad-summary-EOF" class="link">
+<g class="nonterminal">
+<rect x="351" y="111" height="22" width="44" />
+<text x="373" y="127">
+EOF</text>
+</g>
+</a>
+<path d=" M 395 122 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 407 110 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 317 89 h 10" />
+</g>
+</g>
+<path d=" M 79 89 h 10" />
+</g>
+<path d=" M 437 89 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 89 h 10" />
+<path d=" M 427 89 h 10" />
+</g>
+</g>
+</svg>

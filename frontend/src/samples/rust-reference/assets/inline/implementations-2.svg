@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 630 308">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-InherentImpl" class="link">
+<text class="comment" x="57" y="25">
+InherentImpl</text>
+</a>
+<g class="sequence">
+<path d=" M 10 71 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="stack">
+<path d=" M 35 71 h 24" />
+<path d=" M 559 71 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 h -500 m 253 0 l 5 -5 m 0 10 l -5 -5 m -253 0 a 12 12 0 0 0 -12 12 v 21 v 0 a 12 12 0 0 0 12 12" />
+<g class="sequence">
+<g class="terminal">
+<rect x="59" y="60" height="22" width="52" rx="10" ry="10" />
+<text x="85" y="76">
+impl</text>
+</g>
+<g class="optional">
+<path d=" M 121 71 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 124 m -59 0 l -5 -5 m 0 10 l 5 -5 m 59 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="generics.md#railroad-GenericParams" class="link">
+<g class="nonterminal">
+<rect x="145" y="60" height="22" width="124" />
+<text x="207" y="76">
+GenericParams</text>
+</g>
+</a>
+</g>
+<a xlink:href="../types.md#railroad-Type" class="link">
+<g class="nonterminal">
+<rect x="303" y="60" height="22" width="52" />
+<text x="329" y="76">
+Type</text>
+</g>
+</a>
+<g class="optional">
+<path d=" M 365 71 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 108 m -51 0 l -5 -5 m 0 10 l 5 -5 m 51 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="generics.md#railroad-WhereClause" class="link">
+<g class="nonterminal">
+<rect x="389" y="60" height="22" width="108" />
+<text x="443" y="76">
+WhereClause</text>
+</g>
+</a>
+</g>
+<g class="terminal">
+<rect x="531" y="60" height="22" width="28" rx="10" ry="10" />
+<text x="545" y="76">
+{</text>
+</g>
+<path d=" M 111 71 h 10" />
+<path d=" M 293 71 h 10" />
+<path d=" M 355 71 h 10" />
+<path d=" M 521 71 h 10" />
+</g>
+<path d=" M 273 140 a 12 12 0 0 1 12 12 v 15 a 12 12 0 0 1 -12 12 h -214 m 110 0 l 5 -5 m 0 10 l -5 -5 m -110 0 a 12 12 0 0 0 -12 12 v 21 v 0 a 12 12 0 0 0 12 12" />
+<g class="sequence">
+<g class="optional">
+<path d=" M 59 140 h 24 m -24 0 a 12 12 0 0 0 12 -12 v -4 a 12 12 0 0 1 12 -12 h 166 m -80 0 l -5 -5 m 0 10 l 5 -5 m 80 0 a 12 12 0 0 1 12 12 v 4 a 12 12 0 0 0 12 12 h -24" />
+<g class="repeat">
+<path d=" M 83 140 h 5 h 12 m 132 0 h 12 h 5 m -17 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 m 0 0 h -132 m 69 0 l 5 -5 m 0 10 l -5 -5 m -69 0 a 12 12 0 0 1 -12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<g>
+</g>
+<a xlink:href="../attributes.md#railroad-InnerAttribute" class="link">
+<g class="nonterminal">
+<rect x="100" y="129" height="22" width="132" />
+<text x="166" y="145">
+InnerAttribute</text>
+</g>
+</a>
+</g>
+</g>
+</g>
+<path d=" M 273 224 a 12 12 0 0 1 12 12 v 15 a 12 12 0 0 1 -12 12 h -214 m 110 0 l 5 -5 m 0 10 l -5 -5 m -110 0 a 12 12 0 0 0 -12 12 v 0 v 0 a 12 12 0 0 0 12 12" />
+<g class="sequence">
+<g class="optional">
+<path d=" M 59 224 h 24 m -24 0 a 12 12 0 0 0 12 -12 v -4 a 12 12 0 0 1 12 -12 h 166 m -80 0 l -5 -5 m 0 10 l 5 -5 m 80 0 a 12 12 0 0 1 12 12 v 4 a 12 12 0 0 0 12 12 h -24" />
+<g class="repeat">
+<path d=" M 83 224 h 5 h 12 m 132 0 h 12 h 5 m -17 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 m 0 0 h -132 m 69 0 l 5 -5 m 0 10 l -5 -5 m -69 0 a 12 12 0 0 1 -12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<g>
+</g>
+<a xlink:href="associated-items.md#railroad-AssociatedItem" class="link">
+<g class="nonterminal">
+<rect x="100" y="213" height="22" width="132" />
+<text x="166" y="229">
+AssociatedItem</text>
+</g>
+</a>
+</g>
+</g>
+</g>
+<path d=" M 87 287 h 484 m -239 0 l -5 -5 m 0 10 l 5 -5 m 239 0 a 12 12 0 0 0 12 -12 v -192 m 0 99 l -5 5 m 10 0 l -5 -5 m 0 -99 a 12 12 0 0 1 12 -12" />
+<g class="sequence">
+<g class="terminal">
+<rect x="59" y="276" height="22" width="28" rx="10" ry="10" />
+<text x="73" y="292">
+}</text>
+</g>
+</g>
+</g>
+<path d=" M 605 71 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 71 h 10" />
+<path d=" M 595 71 h 10" />
+</g>
+</g>
+</svg>

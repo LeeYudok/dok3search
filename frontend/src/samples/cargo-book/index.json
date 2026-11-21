@@ -1,0 +1,497 @@
+{
+  "source": "The Cargo Book",
+  "source_url": "https://doc.rust-lang.org/1.100.0/cargo/",
+  "toolchain": "1.100.0 (0ef1bc386 2026-11-09)",
+  "chapters": [
+    {
+      "path": "chapters/index.md",
+      "title": "The Cargo Book",
+      "summary": ""
+    },
+    {
+      "path": "chapters/getting-started/index.md",
+      "title": "Getting Started",
+      "summary": "To get started with Cargo, install Cargo (and Rust) and set up your first crate."
+    },
+    {
+      "path": "chapters/getting-started/installation.md",
+      "title": "Installation",
+      "summary": "The easiest way to get Cargo is to install the current stable release of Rust by using rustup. Installing Rust using rustup will also install cargo."
+    },
+    {
+      "path": "chapters/getting-started/first-steps.md",
+      "title": "First Steps with Cargo",
+      "summary": "This section provides a quick sense for the cargo command line tool. We demonstrate its ability to generate a new package for us, its ability to compile the crate within the package, and its ability to run the resulting program."
+    },
+    {
+      "path": "chapters/guide/index.md",
+      "title": "Cargo Guide",
+      "summary": "This guide will give you all that you need to know about how to use Cargo to develop Rust packages."
+    },
+    {
+      "path": "chapters/guide/why-cargo-exists.md",
+      "title": "Why Cargo Exists",
+      "summary": "In Rust, as you may know, a library or executable program is called a crate. Crates are compiled using the Rust compiler, rustc. When starting with Rust, the first source code most people encounter is that of the classic “hello world” program, which they compile by invoking rustc directly:"
+    },
+    {
+      "path": "chapters/guide/creating-a-new-project.md",
+      "title": "Creating a New Package",
+      "summary": "To start a new package with Cargo, use cargo new:"
+    },
+    {
+      "path": "chapters/guide/working-on-an-existing-project.md",
+      "title": "Working on an Existing Cargo Package",
+      "summary": "If you download an existing package that uses Cargo, it’s really easy to get going."
+    },
+    {
+      "path": "chapters/guide/dependencies.md",
+      "title": "Dependencies",
+      "summary": "crates.io is the Rust community’s central package registry that serves as a location to discover and download packages. cargo is configured to use it by default to find requested packages."
+    },
+    {
+      "path": "chapters/guide/project-layout.md",
+      "title": "Package Layout",
+      "summary": "Cargo uses conventions for file placement to make it easy to dive into a new Cargo package:"
+    },
+    {
+      "path": "chapters/guide/cargo-toml-vs-cargo-lock.md",
+      "title": "Cargo.toml vs Cargo.lock",
+      "summary": "Cargo.toml and Cargo.lock serve two different purposes. Before we talk about them, here’s a summary:"
+    },
+    {
+      "path": "chapters/guide/tests.md",
+      "title": "Tests",
+      "summary": "Cargo can run your tests with the cargo test command. Cargo looks for tests to run in two places: in each of your src files and any tests in tests/. Tests in your src files should be unit tests and documentation tests. Tests in tests/ should be integration-style tests. As such, you’ll need to import your crates into th"
+    },
+    {
+      "path": "chapters/guide/continuous-integration.md",
+      "title": "Continuous Integration",
+      "summary": "A basic CI will build and test your projects:"
+    },
+    {
+      "path": "chapters/reference/publishing.md",
+      "title": "Publishing on crates.io",
+      "summary": "Once you’ve got a library that you’d like to share with the world, it’s time to publish it on crates.io! Publishing a crate is when a specific version is uploaded to be hosted on crates.io."
+    },
+    {
+      "path": "chapters/guide/cargo-home.md",
+      "title": "Cargo Home",
+      "summary": "The “Cargo home” functions as a download and source cache. When building a crate, Cargo stores downloaded build dependencies in the Cargo home. You can alter the location of the Cargo home by setting the CARGO_HOME environmental variable. The home crate provides an API for getting this location if you need this informa"
+    },
+    {
+      "path": "chapters/guide/build-performance.md",
+      "title": "Optimizing Build Performance",
+      "summary": "Cargo configuration options and source code organization patterns can help improve build performance, by prioritizing it over other aspects which may not be as important for your circumstances."
+    },
+    {
+      "path": "chapters/reference/index.md",
+      "title": "Cargo Reference",
+      "summary": "The reference covers the details of various areas of Cargo."
+    },
+    {
+      "path": "chapters/reference/manifest.md",
+      "title": "The Manifest Format",
+      "summary": "The Cargo.toml file for each package is called its manifest. It is written in the TOML format. It contains metadata that is needed to compile the package. Checkout the cargo locate-project section for more detail on how cargo finds the manifest file."
+    },
+    {
+      "path": "chapters/reference/cargo-targets.md",
+      "title": "Cargo Targets",
+      "summary": "Cargo packages consist of targets which correspond to source files which can be compiled into a crate. Packages can have library, binary, example, test, and benchmark targets. The list of targets can be configured in the Cargo.toml manifest, often inferred automatically by the directory layout of the source files."
+    },
+    {
+      "path": "chapters/reference/rust-version.md",
+      "title": "Rust Version",
+      "summary": "The rust-version field is an optional key that tells cargo what version of the Rust toolchain you support for your package."
+    },
+    {
+      "path": "chapters/reference/workspaces.md",
+      "title": "Workspaces",
+      "summary": "A workspace is a collection of one or more packages, called workspace members, that are managed together."
+    },
+    {
+      "path": "chapters/reference/specifying-dependencies.md",
+      "title": "Specifying Dependencies",
+      "summary": "Your crates can depend on other libraries from crates.io or other registries, git repositories, or subdirectories on your local file system. You can also temporarily override the location of a dependency — for example, to be able to test out a bug fix in the dependency that you are working on locally. You can have diff"
+    },
+    {
+      "path": "chapters/reference/overriding-dependencies.md",
+      "title": "Overriding Dependencies",
+      "summary": "The desire to override a dependency can arise through a number of scenarios. Most of them, however, boil down to the ability to work with a crate before it’s been published to crates.io. For example:"
+    },
+    {
+      "path": "chapters/reference/source-replacement.md",
+      "title": "Source Replacement",
+      "summary": "This document is about redirecting communication with registries or repositories of git-based dependencies to another data source, such as a server mirroring the original registry or an exact local copy."
+    },
+    {
+      "path": "chapters/reference/resolver.md",
+      "title": "Dependency Resolution",
+      "summary": "One of Cargo’s primary tasks is to determine the versions of dependencies to use based on the version requirements specified in each package. This process is called “dependency resolution” and is performed by the “resolver”. The result of the resolution is stored in the Cargo.lock file which “locks” the dependencies to"
+    },
+    {
+      "path": "chapters/reference/features.md",
+      "title": "Features",
+      "summary": "Cargo “features” provide a mechanism to express conditional compilation and optional dependencies. A package defines a set of named features in the [features] table of Cargo.toml, and each feature can either be enabled or disabled. Features for the package being built can be enabled on the command-line with flags such "
+    },
+    {
+      "path": "chapters/reference/features-examples.md",
+      "title": "Features Examples",
+      "summary": "The following illustrates some real-world examples of features in action."
+    },
+    {
+      "path": "chapters/reference/profiles.md",
+      "title": "Profiles",
+      "summary": "Profiles provide a way to alter the compiler settings, influencing things like optimizations and debugging symbols."
+    },
+    {
+      "path": "chapters/reference/config.md",
+      "title": "Configuration",
+      "summary": "This document explains how Cargo’s configuration system works, as well as available keys or configuration. For configuration of a package through its manifest, see the manifest format."
+    },
+    {
+      "path": "chapters/reference/environment-variables.md",
+      "title": "Environment Variables",
+      "summary": "Cargo sets and reads a number of environment variables which your code can detect or override. Here is a list of the variables Cargo sets, organized by when it interacts with them:"
+    },
+    {
+      "path": "chapters/reference/build-scripts.md",
+      "title": "Build Scripts",
+      "summary": "Some packages need to compile third-party non-Rust code, for example C libraries. Other packages need to link to C libraries which can either be located on the system or possibly need to be built from source. Others still need facilities for functionality such as code generation before building (think parser generators"
+    },
+    {
+      "path": "chapters/reference/build-script-examples.md",
+      "title": "Build Script Examples",
+      "summary": "The following sections illustrate some examples of writing build scripts."
+    },
+    {
+      "path": "chapters/reference/build-cache.md",
+      "title": "Build cache",
+      "summary": "Cargo stores the output of a build into the “target” and “build” directories. By default, both directories point to a directory named target in the root of your workspace. To change the location of the target-dir, you can set the CARGO_TARGET_DIR environment variable, the build.target-dir config value, or the --target-"
+    },
+    {
+      "path": "chapters/reference/pkgid-spec.md",
+      "title": "Package ID Specifications",
+      "summary": "Subcommands of Cargo frequently need to refer to a particular package within a dependency graph for various operations like updating, cleaning, building, etc. To solve this problem, Cargo supports Package ID Specifications. A specification is a string which is used to uniquely refer to one package within a graph of pac"
+    },
+    {
+      "path": "chapters/reference/external-tools.md",
+      "title": "External tools",
+      "summary": "One of the goals of Cargo is simple integration with third-party tools, like IDEs and other build systems. To make integration easier, Cargo has several facilities:"
+    },
+    {
+      "path": "chapters/reference/registries.md",
+      "title": "Registries",
+      "summary": "Cargo installs crates and fetches dependencies from a “registry”. The default registry is crates.io. A registry contains an “index” which contains a searchable list of available crates. A registry may also provide a web API to support publishing new crates directly from Cargo."
+    },
+    {
+      "path": "chapters/reference/registry-authentication.md",
+      "title": "Registry Authentication",
+      "summary": "Cargo authenticates to registries with credential providers. These credential providers are external executables or built-in providers that Cargo uses to store and retrieve credentials."
+    },
+    {
+      "path": "chapters/reference/credential-provider-protocol.md",
+      "title": "Credential Provider Protocol",
+      "summary": "This document describes information for building a Cargo credential provider. For information on setting up or using a credential provider, see Registry Authentication."
+    },
+    {
+      "path": "chapters/reference/running-a-registry.md",
+      "title": "Running a Registry",
+      "summary": "A minimal registry can be implemented by having a git repository that contains an index, and a server that contains the compressed .crate files created by cargo package. Users won’t be able to use Cargo to publish to it, but this may be sufficient for closed environments. The index format is described in Registry Index"
+    },
+    {
+      "path": "chapters/reference/registry-index.md",
+      "title": "Index Format",
+      "summary": "The following defines the format of the index. New features are occasionally added, which are only understood starting with the version of Cargo that introduced them. Older versions of Cargo may not be able to use packages that make use of new features. However, the format for older packages should not change, so older"
+    },
+    {
+      "path": "chapters/reference/registry-web-api.md",
+      "title": "Web API",
+      "summary": "A registry may host a web API at the location defined in config.json to support any of the actions listed below."
+    },
+    {
+      "path": "chapters/reference/semver.md",
+      "title": "SemVer Compatibility",
+      "summary": "This chapter provides details on what is conventionally considered a compatible or breaking SemVer change for new releases of a package. See the SemVer compatibility section for details on what SemVer is, and how Cargo uses it to ensure compatibility of libraries."
+    },
+    {
+      "path": "chapters/reference/future-incompat-report.md",
+      "title": "Future incompat report",
+      "summary": "Cargo checks for future-incompatible warnings in all dependencies. These are warnings for changes that may become hard errors in the future, causing the dependency to stop building in a future version of rustc. If any warnings are found, a small notice is displayed indicating that the warnings were found, and provides "
+    },
+    {
+      "path": "chapters/reference/timings.md",
+      "title": "Reporting build timings",
+      "summary": "The --timings option gives some information about how long each compilation takes, and tracks concurrency information over time."
+    },
+    {
+      "path": "chapters/reference/lints.md",
+      "title": "Lints",
+      "summary": "Note"
+    },
+    {
+      "path": "chapters/reference/unstable.md",
+      "title": "Unstable Features",
+      "summary": "Experimental Cargo features are only available on the nightly channel. You are encouraged to experiment with these features to see if they meet your needs, and if there are any issues or problems. Check the linked tracking issues listed below for more information on the feature, and click the GitHub subscribe button if"
+    },
+    {
+      "path": "chapters/commands/index.md",
+      "title": "Cargo Commands",
+      "summary": ""
+    },
+    {
+      "path": "chapters/commands/general-commands.md",
+      "title": "General Commands",
+      "summary": ""
+    },
+    {
+      "path": "chapters/commands/cargo.md",
+      "title": "cargo(1)",
+      "summary": "cargo — The Rust package manager"
+    },
+    {
+      "path": "chapters/commands/cargo-help.md",
+      "title": "cargo-help(1)",
+      "summary": "cargo-help — Get help for a Cargo command"
+    },
+    {
+      "path": "chapters/commands/cargo-version.md",
+      "title": "cargo-version(1)",
+      "summary": "cargo-version — Show version information"
+    },
+    {
+      "path": "chapters/commands/build-commands.md",
+      "title": "Build Commands",
+      "summary": ""
+    },
+    {
+      "path": "chapters/commands/cargo-bench.md",
+      "title": "cargo-bench(1)",
+      "summary": "cargo-bench — Execute benchmarks of a package"
+    },
+    {
+      "path": "chapters/commands/cargo-build.md",
+      "title": "cargo-build(1)",
+      "summary": "cargo-build — Compile the current package"
+    },
+    {
+      "path": "chapters/commands/cargo-check.md",
+      "title": "cargo-check(1)",
+      "summary": "cargo-check — Check the current package"
+    },
+    {
+      "path": "chapters/commands/cargo-clean.md",
+      "title": "cargo-clean(1)",
+      "summary": "cargo-clean — Remove generated artifacts"
+    },
+    {
+      "path": "chapters/commands/cargo-clippy.md",
+      "title": "cargo-clippy(1)",
+      "summary": "cargo-clippy — Checks a package to catch common mistakes and improve your Rust code"
+    },
+    {
+      "path": "chapters/commands/cargo-doc.md",
+      "title": "cargo-doc(1)",
+      "summary": "cargo-doc — Build a package’s documentation"
+    },
+    {
+      "path": "chapters/commands/cargo-fetch.md",
+      "title": "cargo-fetch(1)",
+      "summary": "cargo-fetch — Fetch dependencies of a package from the network"
+    },
+    {
+      "path": "chapters/commands/cargo-fix.md",
+      "title": "cargo-fix(1)",
+      "summary": "cargo-fix — Automatically fix lint warnings reported by rustc"
+    },
+    {
+      "path": "chapters/commands/cargo-fmt.md",
+      "title": "cargo-fmt(1)",
+      "summary": "cargo-fmt — Formats all bin and lib files of the current crate using rustfmt"
+    },
+    {
+      "path": "chapters/commands/cargo-miri.md",
+      "title": "cargo-miri(1)",
+      "summary": "cargo-miri — Runs binary crates and tests in Miri"
+    },
+    {
+      "path": "chapters/commands/cargo-run.md",
+      "title": "cargo-run(1)",
+      "summary": "cargo-run — Run the current package"
+    },
+    {
+      "path": "chapters/commands/cargo-rustc.md",
+      "title": "cargo-rustc(1)",
+      "summary": "cargo-rustc — Compile the current package, and pass extra options to the compiler"
+    },
+    {
+      "path": "chapters/commands/cargo-rustdoc.md",
+      "title": "cargo-rustdoc(1)",
+      "summary": "cargo-rustdoc — Build a package’s documentation, using specified custom flags"
+    },
+    {
+      "path": "chapters/commands/cargo-test.md",
+      "title": "cargo-test(1)",
+      "summary": "cargo-test — Execute unit and integration tests of a package"
+    },
+    {
+      "path": "chapters/commands/manifest-commands.md",
+      "title": "Manifest Commands",
+      "summary": ""
+    },
+    {
+      "path": "chapters/commands/cargo-add.md",
+      "title": "cargo-add(1)",
+      "summary": "cargo-add — Add dependencies to a Cargo.toml manifest file"
+    },
+    {
+      "path": "chapters/commands/cargo-generate-lockfile.md",
+      "title": "cargo-generate-lockfile(1)",
+      "summary": "cargo-generate-lockfile — Generate the lockfile for a package"
+    },
+    {
+      "path": "chapters/commands/cargo-info.md",
+      "title": "cargo-info(1)",
+      "summary": "cargo-info — Display information about a package."
+    },
+    {
+      "path": "chapters/commands/cargo-locate-project.md",
+      "title": "cargo-locate-project(1)",
+      "summary": "cargo-locate-project — Print a JSON representation of a Cargo.toml file’s location"
+    },
+    {
+      "path": "chapters/commands/cargo-metadata.md",
+      "title": "cargo-metadata(1)",
+      "summary": "cargo-metadata — Machine-readable metadata about the current package"
+    },
+    {
+      "path": "chapters/commands/cargo-pkgid.md",
+      "title": "cargo-pkgid(1)",
+      "summary": "cargo-pkgid — Print a fully qualified package specification"
+    },
+    {
+      "path": "chapters/commands/cargo-remove.md",
+      "title": "cargo-remove(1)",
+      "summary": "cargo-remove — Remove dependencies from a Cargo.toml manifest file"
+    },
+    {
+      "path": "chapters/commands/cargo-tree.md",
+      "title": "cargo-tree(1)",
+      "summary": "cargo-tree — Display a tree visualization of a dependency graph"
+    },
+    {
+      "path": "chapters/commands/cargo-update.md",
+      "title": "cargo-update(1)",
+      "summary": "cargo-update — Update dependencies as recorded in the local lock file"
+    },
+    {
+      "path": "chapters/commands/cargo-vendor.md",
+      "title": "cargo-vendor(1)",
+      "summary": "cargo-vendor — Vendor all dependencies locally"
+    },
+    {
+      "path": "chapters/commands/package-commands.md",
+      "title": "Package Commands",
+      "summary": ""
+    },
+    {
+      "path": "chapters/commands/cargo-init.md",
+      "title": "cargo-init(1)",
+      "summary": "cargo-init — Create a new Cargo package in an existing directory"
+    },
+    {
+      "path": "chapters/commands/cargo-install.md",
+      "title": "cargo-install(1)",
+      "summary": "cargo-install — Build and install a Rust binary"
+    },
+    {
+      "path": "chapters/commands/cargo-new.md",
+      "title": "cargo-new(1)",
+      "summary": "cargo-new — Create a new Cargo package"
+    },
+    {
+      "path": "chapters/commands/cargo-search.md",
+      "title": "cargo-search(1)",
+      "summary": "cargo-search — Search packages in the registry. Default registry is crates.io"
+    },
+    {
+      "path": "chapters/commands/cargo-uninstall.md",
+      "title": "cargo-uninstall(1)",
+      "summary": "cargo-uninstall — Remove a Rust binary"
+    },
+    {
+      "path": "chapters/commands/publishing-commands.md",
+      "title": "Publishing Commands",
+      "summary": ""
+    },
+    {
+      "path": "chapters/commands/cargo-login.md",
+      "title": "cargo-login(1)",
+      "summary": "cargo-login — Log in to a registry"
+    },
+    {
+      "path": "chapters/commands/cargo-logout.md",
+      "title": "cargo-logout(1)",
+      "summary": "cargo-logout — Remove an API token from the registry locally"
+    },
+    {
+      "path": "chapters/commands/cargo-owner.md",
+      "title": "cargo-owner(1)",
+      "summary": "cargo-owner — Manage the owners of a crate on the registry"
+    },
+    {
+      "path": "chapters/commands/cargo-package.md",
+      "title": "cargo-package(1)",
+      "summary": "cargo-package — Assemble the local package into a distributable tarball"
+    },
+    {
+      "path": "chapters/commands/cargo-publish.md",
+      "title": "cargo-publish(1)",
+      "summary": "cargo-publish — Upload a package to the registry"
+    },
+    {
+      "path": "chapters/commands/cargo-yank.md",
+      "title": "cargo-yank(1)",
+      "summary": "cargo-yank — Remove a pushed crate from the index"
+    },
+    {
+      "path": "chapters/commands/report-commands.md",
+      "title": "Report Commands",
+      "summary": ""
+    },
+    {
+      "path": "chapters/commands/cargo-report.md",
+      "title": "cargo-report(1)",
+      "summary": "cargo-report — Generate and display various kinds of reports"
+    },
+    {
+      "path": "chapters/commands/cargo-report-future-incompatibilities.md",
+      "title": "cargo-report-future-incompatibilities(1)",
+      "summary": "cargo-report-future-incompatibilities — Reports any crates which will eventually stop compiling"
+    },
+    {
+      "path": "chapters/commands/deprecated-and-removed.md",
+      "title": "Deprecated And Removed",
+      "summary": "These commands have been deprecated or removed in early Rust releases. Deprecated commands receive only critical bug fixes, and may be removed in future versions. Removed commands are no longer functional and are unsupported."
+    },
+    {
+      "path": "chapters/faq.md",
+      "title": "Frequently Asked Questions",
+      "summary": "No. The plan for Cargo is to use crates.io, like npm or Rubygems do with npmjs.com and rubygems.org."
+    },
+    {
+      "path": "chapters/CHANGELOG.md",
+      "title": "Changelog",
+      "summary": "eb98b54b…HEAD"
+    },
+    {
+      "path": "chapters/appendix/glossary.md",
+      "title": "Glossary",
+      "summary": "An artifact is the file or set of files created as a result of the compilation process. This includes linkable libraries, executable binaries, and generated documentation."
+    },
+    {
+      "path": "chapters/appendix/git-authentication.md",
+      "title": "Git Authentication",
+      "summary": "Cargo supports some forms of authentication when using git dependencies and registries. This appendix contains some information for setting up git authentication in a way that works with Cargo."
+    }
+  ]
+}

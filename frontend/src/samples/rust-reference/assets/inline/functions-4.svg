@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 282 107">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-Abi" class="link">
+<text class="comment" x="25" y="25">
+Abi</text>
+</a>
+<g class="sequence">
+<path d=" M 10 53 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="multichoice">
+<path d=" M 35 53 h 24" />
+<path d=" M 35 53 a 12 12 0 0 1 12 12" />
+<path d=" M 47 65 v 9" />
+<a xlink:href="../tokens.md#railroad-STRING_LITERAL" class="link">
+<g class="nonterminal">
+<rect x="59" y="42" height="22" width="132" />
+<text x="125" y="58">
+STRING_LITERAL</text>
+</g>
+</a>
+<path d=" M 191 53 h 56 m -25 0 l -5 -5 m 0 10 l 5 -5 m 25 0" />
+<path d=" M 47 74 a 12 12 0 0 0 12 12 h 0" />
+<a xlink:href="../tokens.md#railroad-RAW_STRING_LITERAL" class="link">
+<g class="nonterminal">
+<rect x="59" y="75" height="22" width="164" />
+<text x="141" y="91">
+RAW_STRING_LITERAL</text>
+</g>
+</a>
+<path d=" M 223 86 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 235 74 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 257 53 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 53 h 10" />
+<path d=" M 247 53 h 10" />
+</g>
+</g>
+</svg>

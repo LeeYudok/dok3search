@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 632 303">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-Function" class="link">
+<text class="comment" x="43" y="25">
+Function</text>
+</a>
+<g class="sequence">
+<path d=" M 10 71 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="stack">
+<path d=" M 35 71 h 24" />
+<path d=" M 561 71 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 h -502 m 254 0 l 5 -5 m 0 10 l -5 -5 m -254 0 a 12 12 0 0 0 -12 12 v 17 v 0 a 12 12 0 0 0 12 12" />
+<g class="sequence">
+<a xlink:href="#railroad-FunctionQualifiers" class="link">
+<g class="nonterminal">
+<rect x="59" y="60" height="22" width="164" />
+<text x="141" y="76">
+FunctionQualifiers</text>
+</g>
+</a>
+<g class="terminal">
+<rect x="233" y="60" height="22" width="36" rx="10" ry="10" />
+<text x="251" y="76">
+fn</text>
+</g>
+<a xlink:href="../identifiers.md#railroad-IDENTIFIER" class="link">
+<g class="nonterminal">
+<rect x="279" y="60" height="22" width="100" />
+<text x="329" y="76">
+IDENTIFIER</text>
+</g>
+</a>
+<g class="optional">
+<path d=" M 389 71 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 124 m -59 0 l -5 -5 m 0 10 l 5 -5 m 59 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="generics.md#railroad-GenericParams" class="link">
+<g class="nonterminal">
+<rect x="413" y="60" height="22" width="124" />
+<text x="475" y="76">
+GenericParams</text>
+</g>
+</a>
+</g>
+<path d=" M 223 71 h 10" />
+<path d=" M 269 71 h 10" />
+<path d=" M 379 71 h 10" />
+</g>
+<path d=" M 347 136 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 h -288 m 147 0 l 5 -5 m 0 10 l -5 -5 m -147 0 a 12 12 0 0 0 -12 12 v 17 v 0 a 12 12 0 0 0 12 12" />
+<g class="sequence">
+<g class="terminal">
+<rect x="59" y="125" height="22" width="28" rx="10" ry="10" />
+<text x="73" y="141">
+(</text>
+</g>
+<g class="optional">
+<path d=" M 97 136 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 164 m -79 0 l -5 -5 m 0 10 l 5 -5 m 79 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="#railroad-FunctionParameters" class="link">
+<g class="nonterminal">
+<rect x="121" y="125" height="22" width="164" />
+<text x="203" y="141">
+FunctionParameters</text>
+</g>
+</a>
+</g>
+<g class="terminal">
+<rect x="319" y="125" height="22" width="28" rx="10" ry="10" />
+<text x="333" y="141">
+)</text>
+</g>
+<path d=" M 87 136 h 10" />
+<path d=" M 309 136 h 10" />
+</g>
+<path d=" M 437 201 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 h -378 m 192 0 l 5 -5 m 0 10 l -5 -5 m -192 0 a 12 12 0 0 0 -12 12 v 0 v 0 a 12 12 0 0 0 12 12" />
+<g class="sequence">
+<g class="optional">
+<path d=" M 59 201 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 164 m -79 0 l -5 -5 m 0 10 l 5 -5 m 79 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="#railroad-FunctionReturnType" class="link">
+<g class="nonterminal">
+<rect x="83" y="190" height="22" width="164" />
+<text x="165" y="206">
+FunctionReturnType</text>
+</g>
+</a>
+</g>
+<g class="optional">
+<path d=" M 281 201 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 108 m -51 0 l -5 -5 m 0 10 l 5 -5 m 51 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="generics.md#railroad-WhereClause" class="link">
+<g class="nonterminal">
+<rect x="305" y="190" height="22" width="108" />
+<text x="359" y="206">
+WhereClause</text>
+</g>
+</a>
+</g>
+<path d=" M 271 201 h 10" />
+</g>
+<path d=" M 247 249 h 326 m -160 0 l -5 -5 m 0 10 l 5 -5 m 160 0 a 12 12 0 0 0 12 -12 v -154 m 0 80 l -5 5 m 10 0 l -5 -5 m 0 -80 a 12 12 0 0 1 12 -12" />
+<g class="sequence">
+<g class="multichoice">
+<path d=" M 59 249 h 24" />
+<path d=" M 59 249 a 12 12 0 0 1 12 12" />
+<path d=" M 71 261 v 9" />
+<a xlink:href="../expressions/block-expr.md#railroad-BlockExpression" class="link">
+<g class="nonterminal">
+<rect x="83" y="238" height="22" width="140" />
+<text x="153" y="254">
+BlockExpression</text>
+</g>
+</a>
+<path d=" M 223 249 h 24" />
+<path d=" M 71 270 a 12 12 0 0 0 12 12 h 0" />
+<g class="terminal">
+<rect x="83" y="271" height="22" width="28" rx="10" ry="10" />
+<text x="97" y="287">
+;</text>
+</g>
+<path d=" M 111 282 h 112 m -53 0 l -5 -5 m 0 10 l 5 -5 m 53 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 235 270 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+</g>
+</g>
+<path d=" M 607 71 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 71 h 10" />
+<path d=" M 597 71 h 10" />
+</g>
+</g>
+</svg>

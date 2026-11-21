@@ -1,0 +1,172 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 458 255">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-RESERVED_KEYWORDS" class="link">
+<text class="comment" x="74" y="25">
+RESERVED_KEYWORDS</text>
+</a>
+<g class="sequence">
+<path d=" M 10 78 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="multichoice">
+<path d=" M 35 78 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<path d=" M 59 54 h 108 m -51 0 l -5 -5 m 0 10 l 5 -5 m 51 0" />
+<path d=" M 167 54 h 132 m -63 0 l -5 -5 m 0 10 l 5 -5 m 63 0" />
+<path d=" M 35 78 h 24" />
+<path d=" M 35 78 a 12 12 0 0 1 12 12" />
+<path d=" M 47 90 v 9" />
+<path d=" M 47 99 v 33" />
+<path d=" M 47 132 v 33" />
+<path d=" M 47 165 v 33" />
+<g class="sequence">
+<g class="terminal">
+<rect x="59" y="67" height="22" width="84" rx="10" ry="10" />
+<text x="101" y="83">
+abstract</text>
+</g>
+</g>
+<path d=" M 143 78 h 0 a 12 12 0 0 1 12 12" />
+<path d=" M 47 99 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<g class="terminal">
+<rect x="59" y="100" height="22" width="68" rx="10" ry="10" />
+<text x="93" y="116">
+become</text>
+</g>
+</g>
+<path d=" M 127 111 h 16 a 12 12 0 0 1 12 12" />
+<path d=" M 47 132 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<g class="terminal">
+<rect x="59" y="133" height="22" width="44" rx="10" ry="10" />
+<text x="81" y="149">
+box</text>
+</g>
+</g>
+<path d=" M 103 144 h 40 a 12 12 0 0 1 12 12" />
+<path d=" M 47 165 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<g class="terminal">
+<rect x="59" y="166" height="22" width="36" rx="10" ry="10" />
+<text x="77" y="182">
+do</text>
+</g>
+</g>
+<path d=" M 95 177 h 48 a 12 12 0 0 1 12 12" />
+<path d=" M 47 198 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<g class="terminal">
+<rect x="59" y="199" height="22" width="60" rx="10" ry="10" />
+<text x="89" y="215">
+final</text>
+</g>
+</g>
+<path d=" M 119 210 h 24 a 12 12 0 0 1 12 12" />
+<path d=" M 155 90 v 33" />
+<path d=" M 155 123 v 33" />
+<path d=" M 155 156 v 33" />
+<path d=" M 155 189 v 33" />
+<path d=" M 155 222 v -1 a 12 12 0 0 0 12 12" />
+<path d=" M 167 54 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12" />
+<path d=" M 179 66 v 33" />
+<path d=" M 179 99 v 33" />
+<path d=" M 179 132 v 33" />
+<path d=" M 179 165 v 33" />
+<g class="sequence">
+<g class="terminal">
+<rect x="191" y="67" height="22" width="44" rx="10" ry="10" />
+<text x="213" y="83">
+gen</text>
+</g>
+</g>
+<path d=" M 235 78 h 40 a 12 12 0 0 1 12 12" />
+<path d=" M 179 99 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<g class="terminal">
+<rect x="191" y="100" height="22" width="60" rx="10" ry="10" />
+<text x="221" y="116">
+macro</text>
+</g>
+</g>
+<path d=" M 251 111 h 24 a 12 12 0 0 1 12 12" />
+<path d=" M 179 132 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<g class="terminal">
+<rect x="191" y="133" height="22" width="84" rx="10" ry="10" />
+<text x="233" y="149">
+override</text>
+</g>
+</g>
+<path d=" M 275 144 h 0 a 12 12 0 0 1 12 12" />
+<path d=" M 179 165 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<g class="terminal">
+<rect x="191" y="166" height="22" width="52" rx="10" ry="10" />
+<text x="217" y="182">
+priv</text>
+</g>
+</g>
+<path d=" M 243 177 h 32 a 12 12 0 0 1 12 12" />
+<path d=" M 179 198 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<g class="terminal">
+<rect x="191" y="199" height="22" width="44" rx="10" ry="10" />
+<text x="213" y="215">
+try</text>
+</g>
+</g>
+<path d=" M 235 210 h 40 a 12 12 0 0 1 12 12" />
+<path d=" M 287 90 v 33" />
+<path d=" M 287 123 v 33" />
+<path d=" M 287 156 v 33" />
+<path d=" M 287 189 v 33" />
+<path d=" M 287 222 v -1 a 12 12 0 0 0 12 12" />
+<path d=" M 299 54 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12" />
+<path d=" M 311 66 v 33" />
+<path d=" M 311 99 v 33" />
+<path d=" M 311 132 v 33" />
+<g class="sequence">
+<g class="terminal">
+<rect x="323" y="67" height="22" width="68" rx="10" ry="10" />
+<text x="357" y="83">
+typeof</text>
+</g>
+</g>
+<path d=" M 391 78 h 8 h 24" />
+<path d=" M 311 99 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<g class="terminal">
+<rect x="323" y="100" height="22" width="76" rx="10" ry="10" />
+<text x="361" y="116">
+unsized</text>
+</g>
+</g>
+<path d=" M 399 111 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 311 132 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<g class="terminal">
+<rect x="323" y="133" height="22" width="76" rx="10" ry="10" />
+<text x="361" y="149">
+virtual</text>
+</g>
+</g>
+<path d=" M 399 144 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 311 165 a 12 12 0 0 0 12 12 h 0" />
+<g class="terminal">
+<rect x="323" y="166" height="22" width="60" rx="10" ry="10" />
+<text x="353" y="182">
+yield</text>
+</g>
+<path d=" M 383 177 h 16 a 12 12 0 0 0 12 -12" />
+<path d=" M 167 233 h 132 m -63 0 l -5 -5 m 0 10 l 5 -5 m 63 0" />
+<path d=" M 299 233 h 100 m -47 0 l -5 -5 m 0 10 l 5 -5 m 47 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 411 221 v -56 m 0 31 l -5 5 m 10 0 l -5 -5 m 0 -31" />
+<path d=" M 411 165 v -33" />
+<path d=" M 411 132 v -33" />
+<path d=" M 411 99 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 433 78 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 78 h 10" />
+<path d=" M 423 78 h 10" />
+</g>
+</g>
+</svg>

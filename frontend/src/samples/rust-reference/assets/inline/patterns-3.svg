@@ -1,0 +1,187 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 722 255">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-PatternWithoutModernRange" class="link">
+<text class="comment" x="106" y="25">
+PatternWithoutModernRange</text>
+</a>
+<g class="sequence">
+<path d=" M 10 78 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="multichoice">
+<path d=" M 35 78 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<path d=" M 59 54 h 180 m -87 0 l -5 -5 m 0 10 l 5 -5 m 87 0" />
+<path d=" M 239 54 h 212 m -103 0 l -5 -5 m 0 10 l 5 -5 m 103 0" />
+<path d=" M 35 78 h 24" />
+<path d=" M 35 78 a 12 12 0 0 1 12 12" />
+<path d=" M 47 90 v 9" />
+<path d=" M 47 99 v 33" />
+<path d=" M 47 132 v 33" />
+<path d=" M 47 165 v 33" />
+<g class="sequence">
+<a xlink:href="#railroad-LiteralPattern" class="link">
+<g class="nonterminal">
+<rect x="59" y="67" height="22" width="132" />
+<text x="125" y="83">
+LiteralPattern</text>
+</g>
+</a>
+</g>
+<path d=" M 191 78 h 24 a 12 12 0 0 1 12 12" />
+<path d=" M 47 99 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-IdentifierPattern" class="link">
+<g class="nonterminal">
+<rect x="59" y="100" height="22" width="156" />
+<text x="137" y="116">
+IdentifierPattern</text>
+</g>
+</a>
+</g>
+<path d=" M 215 111 h 0 a 12 12 0 0 1 12 12" />
+<path d=" M 47 132 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-WildcardPattern" class="link">
+<g class="nonterminal">
+<rect x="59" y="133" height="22" width="140" />
+<text x="129" y="149">
+WildcardPattern</text>
+</g>
+</a>
+</g>
+<path d=" M 199 144 h 16 a 12 12 0 0 1 12 12" />
+<path d=" M 47 165 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-RestPattern" class="link">
+<g class="nonterminal">
+<rect x="59" y="166" height="22" width="108" />
+<text x="113" y="182">
+RestPattern</text>
+</g>
+</a>
+</g>
+<path d=" M 167 177 h 48 a 12 12 0 0 1 12 12" />
+<path d=" M 47 198 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-ReferencePattern" class="link">
+<g class="nonterminal">
+<rect x="59" y="199" height="22" width="148" />
+<text x="133" y="215">
+ReferencePattern</text>
+</g>
+</a>
+</g>
+<path d=" M 207 210 h 8 a 12 12 0 0 1 12 12" />
+<path d=" M 227 90 v 33" />
+<path d=" M 227 123 v 33" />
+<path d=" M 227 156 v 33" />
+<path d=" M 227 189 v 33" />
+<path d=" M 227 222 v -1 a 12 12 0 0 0 12 12" />
+<path d=" M 239 54 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12" />
+<path d=" M 251 66 v 33" />
+<path d=" M 251 99 v 33" />
+<path d=" M 251 132 v 33" />
+<path d=" M 251 165 v 33" />
+<g class="sequence">
+<a xlink:href="#railroad-StructPattern" class="link">
+<g class="nonterminal">
+<rect x="263" y="67" height="22" width="124" />
+<text x="325" y="83">
+StructPattern</text>
+</g>
+</a>
+</g>
+<path d=" M 387 78 h 40 a 12 12 0 0 1 12 12" />
+<path d=" M 251 99 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-TupleStructPattern" class="link">
+<g class="nonterminal">
+<rect x="263" y="100" height="22" width="164" />
+<text x="345" y="116">
+TupleStructPattern</text>
+</g>
+</a>
+</g>
+<path d=" M 427 111 h 0 a 12 12 0 0 1 12 12" />
+<path d=" M 251 132 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-TuplePattern" class="link">
+<g class="nonterminal">
+<rect x="263" y="133" height="22" width="116" />
+<text x="321" y="149">
+TuplePattern</text>
+</g>
+</a>
+</g>
+<path d=" M 379 144 h 48 a 12 12 0 0 1 12 12" />
+<path d=" M 251 165 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-GroupedPattern" class="link">
+<g class="nonterminal">
+<rect x="263" y="166" height="22" width="132" />
+<text x="329" y="182">
+GroupedPattern</text>
+</g>
+</a>
+</g>
+<path d=" M 395 177 h 32 a 12 12 0 0 1 12 12" />
+<path d=" M 251 198 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-SlicePattern" class="link">
+<g class="nonterminal">
+<rect x="263" y="199" height="22" width="116" />
+<text x="321" y="215">
+SlicePattern</text>
+</g>
+</a>
+</g>
+<path d=" M 379 210 h 48 a 12 12 0 0 1 12 12" />
+<path d=" M 439 90 v 33" />
+<path d=" M 439 123 v 33" />
+<path d=" M 439 156 v 33" />
+<path d=" M 439 189 v 33" />
+<path d=" M 439 222 v -1 a 12 12 0 0 0 12 12" />
+<path d=" M 451 54 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12" />
+<path d=" M 463 66 v 33" />
+<path d=" M 463 99 v 33" />
+<g class="sequence">
+<a xlink:href="#railroad-PathPattern" class="link">
+<g class="nonterminal">
+<rect x="475" y="67" height="22" width="108" />
+<text x="529" y="83">
+PathPattern</text>
+</g>
+</a>
+</g>
+<path d=" M 583 78 h 80 m -37 0 l -5 -5 m 0 10 l 5 -5 m 37 0 h 24" />
+<path d=" M 463 99 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="macros.md#railroad-MacroInvocation" class="link">
+<g class="nonterminal">
+<rect x="475" y="100" height="22" width="140" />
+<text x="545" y="116">
+MacroInvocation</text>
+</g>
+</a>
+</g>
+<path d=" M 615 111 h 48 a 12 12 0 0 0 12 -12" />
+<path d=" M 463 132 a 12 12 0 0 0 12 12 h 0" />
+<a xlink:href="#railroad-ObsoleteRangePattern" class="link">
+<g class="nonterminal">
+<rect x="475" y="133" height="22" width="188" />
+<text x="569" y="149">
+ObsoleteRangePattern</text>
+</g>
+</a>
+<path d=" M 663 144 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 239 233 h 212 m -103 0 l -5 -5 m 0 10 l 5 -5 m 103 0" />
+<path d=" M 451 233 h 212 m -103 0 l -5 -5 m 0 10 l 5 -5 m 103 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 675 221 v -89 m 0 47 l -5 5 m 10 0 l -5 -5 m 0 -47" />
+<path d=" M 675 132 v -33" />
+<path d=" M 675 99 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 697 78 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 78 h 10" />
+<path d=" M 687 78 h 10" />
+</g>
+</g>
+</svg>

@@ -1,0 +1,325 @@
+# Glossary
+
+[glossary.ast](#r-glossary.ast)
+
+### Abstract syntax tree
+
+An ‘abstract syntax tree’, or ‘AST’, is an intermediate representation of the structure of the program when the compiler is compiling it.
+
+### Alignment
+
+The alignment of a value specifies what addresses values are preferred to start at. Always a power of two. References to a value must be aligned. [More](type-layout.md#size-and-alignment).
+
+[glossary.abi](#r-glossary.abi)
+
+### Application binary interface (ABI)
+
+An *application binary interface* (ABI) defines how compiled code interacts with other compiled code. With [`extern` blocks](items/external-blocks.md#r-items.extern) and [`extern fn`](items/functions.md#r-items.fn.extern), *ABI strings* affect:
+
+- **Calling convention**: How function arguments are passed, values are returned (e.g., in registers or on the stack), and who is responsible for cleaning up the stack.
+- **Unwinding**: Whether stack unwinding is allowed. For example, the `"C-unwind"` ABI allows unwinding across the FFI boundary, while the `"C"` ABI does not.
+
+### Arity
+
+Arity refers to the number of arguments a function or operator takes. For some examples, `f(2, 3)` and `g(4, 6)` have arity 2, while `h(8, 2, 6)` has arity 3. The `!` operator has arity 1.
+
+### Array
+
+An array, sometimes also called a fixed-size array or an inline array, is a value describing a collection of elements, each selected by an index that can be computed at run time by the program. It occupies a contiguous region of memory.
+
+### Associated item
+
+An associated item is an item that is associated with another item. Associated items are defined in [implementations](items/implementations.md) and declared in [traits](items/traits.md). Only functions, constants, and type aliases can be associated. Contrast to a [free item](#free-item).
+
+### Blanket implementation
+
+Any implementation where a type appears [uncovered](#uncovered-type). `impl<T> Foo for T`, `impl<T> Bar<T> for T`, `impl<T> Bar<Vec<T>> for T`, and `impl<T> Bar<T> for Vec<T>` are considered blanket impls. However, `impl<T> Bar<Vec<T>> for Vec<T>` is not a blanket impl, as all instances of `T` which appear in this `impl` are covered by `Vec`.
+
+### Bound
+
+Bounds are constraints on a type or trait. For example, if a bound is placed on the argument a function takes, types passed to that function must abide by that constraint.
+
+### Combinator
+
+Combinators are higher-order functions that apply only functions and earlier defined combinators to provide a result from its arguments. They can be used to manage control flow in a modular fashion.
+
+### Crate
+
+A crate is the unit of compilation and linking. There are different [types of crates](linkage.md), such as libraries or executables. Crates may link and refer to other library crates, called external crates. A crate has a self-contained tree of [modules](items/modules.md), starting from an unnamed root module called the crate root. [Items](items.md) may be made visible to other crates by marking them as public in the crate root, including through [paths](paths.md) of public modules. [More](crates-and-source-files.md).
+
+### Dispatch
+
+Dispatch is the mechanism to determine which specific version of code is actually run when it involves polymorphism. Two major forms of dispatch are static dispatch and dynamic dispatch. Rust supports dynamic dispatch through the use of [trait objects](types/trait-object.md#r-type.trait-object).
+
+### Dynamically sized type
+
+A dynamically sized type (DST) is a type without a statically known size or alignment.
+
+### Entity
+
+An [*entity*](names.md) is a language construct that can be referred to in some way within the source program, usually via a [path](paths.md). Entities include [types](types.md), [items](items.md), [generic parameters](items/generics.md), [variable bindings](patterns.md), [loop labels](tokens.md#lifetimes-and-loop-labels), [lifetimes](tokens.md#lifetimes-and-loop-labels), [fields](expressions/field-expr.md), [attributes](attributes.md), and [lints](attributes/diagnostics.md#lint-check-attributes).
+
+### Expression
+
+An expression is a combination of values, constants, variables, operators and functions that evaluate to a single value, with or without side-effects.
+
+For example, `2 + (3 * 4)` is an expression that returns the value 14.
+
+### Free item
+
+An [item](items.md) that is not a member of an [implementation](items/implementations.md), such as a *free function* or a *free const*. Contrast to an [associated item](#associated-item).
+
+### Fundamental traits
+
+A fundamental trait is one where adding an impl of it for an existing type is a breaking change. The `Fn` traits and `Sized` are fundamental.
+
+### Fundamental type constructors
+
+A fundamental type constructor is a type where implementing a [blanket implementation](#blanket-implementation) over it is a breaking change. `&`, `&mut`, `Box`, and `Pin` are fundamental.
+
+Any time a type `T` is considered [local](#local-type), `&T`, `&mut T`, `Box<T>`, and `Pin<T>` are also considered local. Fundamental type constructors cannot [cover](#uncovered-type) other types. Any time the term “covered type” is used, the `T` in `&T`, `&mut T`, `Box<T>`, and `Pin<T>` is not considered covered.
+
+### Inhabited
+
+A type is inhabited if it has constructors and therefore can be instantiated. An inhabited type is not “empty” in the sense that there can be values of the type. Opposite of [Uninhabited](#uninhabited).
+
+### Inherent implementation
+
+An [implementation](items/implementations.md) that applies to a nominal type, not to a trait-type pair. [More](items/implementations.md#inherent-implementations).
+
+### Inherent method
+
+A [method](items/associated-items.md#methods) defined in an [inherent implementation](items/implementations.md#inherent-implementations), not in a trait implementation.
+
+### Initialized
+
+A variable is initialized if it has been assigned a value and hasn’t since been moved from. All other memory locations are assumed to be uninitialized. Only unsafe Rust can create a memory location without initializing it.
+
+### Local trait
+
+A `trait` which was defined in the current crate. A trait definition is local or not independent of applied type arguments. Given `trait Foo<T, U>`, `Foo` is always local, regardless of the types substituted for `T` and `U`.
+
+### Local type
+
+A `struct`, `enum`, or `union` which was defined in the current crate. This is not affected by applied type arguments. `struct Foo` is considered local, but `Vec<Foo>` is not. `LocalType<ForeignType>` is local. Type aliases do not affect locality.
+
+### Module
+
+A module is a container for zero or more [items](items.md). Modules are organized in a tree, starting from an unnamed module at the root called the crate root or the root module. [Paths](paths.md) may be used to refer to items from other modules, which may be restricted by [visibility rules](visibility-and-privacy.md). [More](items/modules.md)
+
+### Name
+
+A [*name*](names.md) is an [identifier](identifiers.md) or [lifetime or loop label](tokens.md#lifetimes-and-loop-labels) that refers to an [entity](#entity). A *name binding* is when an entity declaration introduces an identifier or label associated with that entity. [Paths](paths.md), identifiers, and labels are used to refer to an entity.
+
+### Name resolution
+
+[*Name resolution*](names/name-resolution.md) is the compile-time process of tying [paths](paths.md), [identifiers](identifiers.md), and [labels](tokens.md#lifetimes-and-loop-labels) to [entity](#entity) declarations.
+
+### Namespace
+
+A *namespace* is a logical grouping of declared [names](#name) based on the kind of [entity](#entity) the name refers to. Namespaces allow the occurrence of a name in one namespace to not conflict with the same name in another namespace.
+
+Within a namespace, names are organized in a hierarchy, where each level of the hierarchy has its own collection of named entities.
+
+### Nominal types
+
+Types that can be referred to by a path directly. Specifically [enums](items/enumerations.md), [structs](items/structs.md), [unions](items/unions.md), and [trait object types](types/trait-object.md).
+
+### Dyn-compatible traits
+
+[Traits](items/traits.md) that can be used in [trait object types](types/trait-object.md) (`dyn Trait`). Only traits that follow specific [rules](items/traits.md#dyn-compatibility) are *dyn compatible*.
+
+These were formerly known as *object safe* traits.
+
+### Path
+
+A [*path*](paths.md) is a sequence of one or more path segments used to refer to an [entity](#entity) in the current scope or other levels of a [namespace](#namespace) hierarchy.
+
+### Prelude
+
+Prelude, or The Rust Prelude, is a small collection of items - mostly traits - that are imported into every module of every crate. The traits in the prelude are pervasive.
+
+### Scope
+
+A [*scope*](names/scopes.md) is the region of source text where a named [entity](#entity) may be referenced with that name.
+
+### Scrutinee
+
+A scrutinee is the expression that is matched on in `match` expressions and similar pattern matching constructs. For example, in `match x { A => 1, B => 2 }`, the expression `x` is the scrutinee.
+
+### Size
+
+The size of a value has two definitions.
+
+The first is that it is how much memory must be allocated to store that value.
+
+The second is that it is the offset in bytes between successive elements in an array with that item type.
+
+It is a multiple of the alignment, including zero. The size can change depending on compiler version (as new optimizations are made) and target platform (similar to how `usize` varies per-platform).
+
+[More](type-layout.md#size-and-alignment).
+
+### Slice
+
+A slice is dynamically-sized view into a contiguous sequence, written as `[T]`.
+
+It is often seen in its borrowed forms, either mutable or shared. The shared slice type is `&[T]`, while the mutable slice type is `&mut [T]`, where `T` represents the element type.
+
+### Statement
+
+A statement is the smallest standalone element of a programming language that commands a computer to perform an action.
+
+### String literal
+
+A string literal is a string stored directly in the final binary, and so will be valid for the `'static` duration.
+
+Its type is `'static` duration borrowed string slice, `&'static str`.
+
+### String slice
+
+A string slice is the most primitive string type in Rust, written as `str`. It is often seen in its borrowed forms, either mutable or shared. The shared string slice type is `&str`, while the mutable string slice type is `&mut str`.
+
+Strings slices are always valid UTF-8.
+
+### Trait
+
+A trait is a language item that is used for describing the functionalities a type must provide. It allows a type to make certain promises about its behavior.
+
+Generic functions and generic structs can use traits to constrain, or bound, the types they accept.
+
+### Turbofish
+
+Paths with generic parameters in expressions must prefix the opening brackets with a `::`. Combined with the angular brackets for generics, this looks like a fish `::<>`. As such, this syntax is colloquially referred to as turbofish syntax.
+
+Examples:
+
+``` playground
+#![allow(unused)]
+fn main() {
+let ok_num = Ok::<_, ()>(5);
+let vec = [1, 2, 3].iter().map(|n| n * 2).collect::<Vec<_>>();
+}
+```
+
+This `::` prefix is required to disambiguate generic paths with multiple comparisons in a comma-separate list. See [the bastion of the turbofish](https://github.com/rust-lang/rust/blob/1.58.0/src/test/ui/parser/bastion-of-the-turbofish.rs) for an example where not having the prefix would be ambiguous.
+
+### Uncovered type
+
+A type which does not appear as an argument to another type. For example, `T` is uncovered, but the `T` in `Vec<T>` is covered. This is only relevant for type arguments.
+
+### Undefined behavior
+
+Compile-time or run-time behavior that is not specified. This may result in, but is not limited to: process termination or corruption; improper, incorrect, or unintended computation; or platform-specific results. [More](behavior-considered-undefined.md).
+
+[glossary.uninhabited](#r-glossary.uninhabited)
+
+### Uninhabited
+
+A type is uninhabited if it has no constructors and therefore can never be instantiated. An uninhabited type is “empty” in the sense that there are no values of the type. The canonical example of an uninhabited type is the [never type](types/never.md) `!`, or an enum with no variants `enum Never { }`. Opposite of [Inhabited](#inhabited).
+
+> ![](../assets/inline/glossary-1.svg)Note
+>
+> Uninhabited types are not necessarily [zero sized](#r-glossary.zst). For example, `enum Never { }` is uninhabited and zero sized, but `(u8, Never)` is uninhabited and not zero sized.
+
+[glossary.zst](#r-glossary.zst)
+
+### Zero-sized type (ZST)
+
+A type is zero sized (a ZST) if its size is 0. Such types have at most one possible value. Examples include:
+
+- The [unit type](types/tuple.md#r-type.tuple.unit) (see [layout.tuple.unit](type-layout.md#r-layout.tuple.unit)).
+- [Function items](types/function-item.md#r-type.fn-item) (see [type.fn-item.intro](types/function-item.md#r-type.fn-item.intro)).
+- The constructors of [tuple-like structs](items/structs.md#r-items.struct.tuple) (see [type.fn-item.intro](types/function-item.md#r-type.fn-item.intro)).
+- The constructors of [tuple-like enum variants](items/enumerations.md#r-items.enum.constructor-namespace) (see [type.fn-item.intro](types/function-item.md#r-type.fn-item.intro)).
+- `repr(Rust)` [structs](items/structs.md) with no fields or where all fields are zero sized (see [layout.repr.rust.struct-zst](type-layout.md#r-layout.repr.rust.struct-zst)).
+- `repr(C)` [structs](items/structs.md) with no fields or where all fields are zero-sized (see [layout.repr.c.struct.size-field-offset](type-layout.md#r-layout.repr.c.struct.size-field-offset)).
+- `repr(transparent)` [structs](items/structs.md) with no fields or where all fields are zero-sized (see [layout.repr.transparent.layout-abi](type-layout.md#r-layout.repr.transparent.layout-abi)).
+- `repr(Rust)` [enums](items/enumerations.md) (without a [primitive representation](type-layout.md#r-layout.repr.primitive) specified) with no variants (see [layout.repr.rust.enum-empty-zst](type-layout.md#r-layout.repr.rust.enum-empty-zst)).
+- `repr(Rust)` [enums](items/enumerations.md) (without a [primitive representation](type-layout.md#r-layout.repr.primitive) specified) with a single [field-struct-like variant](items/enumerations.md#grammar-EnumVariantStruct), a single [unit-struct-like variant](items/enumerations.md#grammar-EnumVariant), or a single [tuple-struct-like variant](items/enumerations.md#grammar-EnumVariantTuple) and where the struct-like thing has no fields or where all of the fields are zero sized (see [layout.repr.rust.enum-struct-like-zst](type-layout.md#r-layout.repr.rust.enum-struct-like-zst)).
+- [Arrays](types/array.md#r-type.array) of zero-sized types (see [layout.array](type-layout.md#r-layout.array)).
+- [Arrays](types/array.md#r-type.array) of length zero (see [layout.array](type-layout.md#r-layout.array)).
+- [Unions](items/unions.md) of zero-sized types (see [items.union.common-storage](items/unions.md#r-items.union.common-storage)).
+
+``` playground
+#![allow(unused)]
+fn main() {
+use core::mem::{size_of, size_of_val};
+fn f() {}
+struct S(u8);
+enum E { V(u8) }
+struct UnitLike;
+struct NoFields {}
+struct OnlyZST {
+    f1: (),
+    f2: [(); 10],
+    f3: [u8; 0],
+}
+#[repr(C)]
+struct C1 {}
+#[repr(C)]
+struct C2 {
+    f1: (),
+    f2: [(); 10],
+    f3: [u8; 0],
+    f4: C1,
+}
+#[repr(transparent)]
+struct T1 {}
+#[repr(transparent)]
+struct T2 {
+    f1: (),
+    f2: [(); 10],
+    f3: [u8; 0],
+}
+union U {
+    f1: (),
+    f2: [(); 10],
+    f3: [u8; 0],
+}
+/// An enum with a single field-struct-like variant with all fields
+/// being ZSTs.
+enum E2 {
+    V1 { f1: (), f2: [(); 10] },
+}
+/// An enum with a single field-struct-like variant with no fields.
+enum E3 {
+    V1 {},
+}
+/// An enum with a single unit-struct-like variant.
+enum E4 {
+    V1,
+}
+/// An enum with a single tuple-struct-like variant with all fields
+/// being ZSTs.
+enum E5 {
+    V1 ((), [(); 10]),
+}
+/// An enum with a single tuple-struct-like variant with no fields.
+enum E6 {
+    V1 (),
+}
+/// An enum with no variants.
+enum E7 {}
+
+assert_eq!(0, size_of::<()>());
+assert_eq!(0, size_of_val(&f));
+assert_eq!(0, size_of_val(&S));
+assert_eq!(0, size_of_val(&E::V));
+assert_eq!(0, size_of::<UnitLike>());
+assert_eq!(0, size_of::<NoFields>());
+assert_eq!(0, size_of::<OnlyZST>());
+assert_eq!(0, size_of::<C1>());
+assert_eq!(0, size_of::<C2>());
+assert_eq!(0, size_of::<T1>());
+assert_eq!(0, size_of::<T2>());
+assert_eq!(0, size_of::<[(); 10]>());
+assert_eq!(0, size_of::<[u8; 0]>());
+assert_eq!(0, size_of::<U>());
+assert_eq!(0, size_of::<E2>());
+assert_eq!(0, size_of::<E3>());
+assert_eq!(0, size_of::<E4>());
+assert_eq!(0, size_of::<E5>());
+assert_eq!(0, size_of::<E6>());
+assert_eq!(0, size_of::<E7>());
+}
+```

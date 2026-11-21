@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 816 131">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-MetaListNameValueStr" class="link">
+<text class="comment" x="88" y="25">
+MetaListNameValueStr</text>
+</a>
+<g class="sequence">
+<path d=" M 10 92 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="sequence">
+<a xlink:href="#railroad-summary-IDENTIFIER" class="link">
+<g class="nonterminal">
+<rect x="35" y="81" height="22" width="100" />
+<text x="85" y="97">
+IDENTIFIER</text>
+</g>
+</a>
+<g class="terminal">
+<rect x="145" y="81" height="22" width="28" rx="10" ry="10" />
+<text x="159" y="97">
+(</text>
+</g>
+<g class="optional">
+<path d=" M 183 92 h 24 m -24 0 a 12 12 0 0 0 12 -12 v -21 a 12 12 0 0 1 12 -12 h 512 m -253 0 l -5 -5 m 0 10 l 5 -5 m 253 0 a 12 12 0 0 1 12 12 v 21 a 12 12 0 0 0 12 12 h -24" />
+<g class="sequence">
+<a xlink:href="#railroad-summary-MetaNameValueStr" class="link">
+<g class="nonterminal">
+<rect x="207" y="81" height="22" width="148" />
+<text x="281" y="97">
+MetaNameValueStr</text>
+</g>
+</a>
+<g class="optional">
+<path d=" M 365 92 h 24 m -24 0 a 12 12 0 0 0 12 -12 v -4 a 12 12 0 0 1 12 -12 h 220 m -107 0 l -5 -5 m 0 10 l 5 -5 m 107 0 a 12 12 0 0 1 12 12 v 4 a 12 12 0 0 0 12 12 h -24" />
+<g class="repeat">
+<path d=" M 389 92 h 5 h 12 m 186 0 h 12 h 5 m -17 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 m 0 0 h -186 m 96 0 l 5 -5 m 0 10 l -5 -5 m -96 0 a 12 12 0 0 1 -12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<g>
+</g>
+<g class="sequence">
+<g class="terminal">
+<rect x="406" y="81" height="22" width="28" rx="10" ry="10" />
+<text x="420" y="97">
+,</text>
+</g>
+<a xlink:href="#railroad-summary-MetaNameValueStr" class="link">
+<g class="nonterminal">
+<rect x="444" y="81" height="22" width="148" />
+<text x="518" y="97">
+MetaNameValueStr</text>
+</g>
+</a>
+<path d=" M 434 92 h 10" />
+</g>
+</g>
+</g>
+<g class="optional">
+<path d=" M 643 92 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 28 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<g class="terminal">
+<rect x="667" y="81" height="22" width="28" rx="10" ry="10" />
+<text x="681" y="97">
+,</text>
+</g>
+</g>
+<path d=" M 355 92 h 10" />
+<path d=" M 633 92 h 10" />
+</g>
+</g>
+<g class="terminal">
+<rect x="753" y="81" height="22" width="28" rx="10" ry="10" />
+<text x="767" y="97">
+)</text>
+</g>
+<path d=" M 135 92 h 10" />
+<path d=" M 173 92 h 10" />
+<path d=" M 743 92 h 10" />
+</g>
+<path d=" M 791 92 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 92 h 10" />
+<path d=" M 781 92 h 10" />
+</g>
+</g>
+</svg>

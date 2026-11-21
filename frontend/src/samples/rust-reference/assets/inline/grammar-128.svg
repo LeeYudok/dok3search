@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 682 109">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-FunctionQualifiers" class="link">
+<text class="comment" x="78" y="25">
+FunctionQualifiers</text>
+</a>
+<g class="sequence">
+<path d=" M 10 88 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="sequence">
+<g class="optional">
+<path d=" M 35 88 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 60 m -27 0 l -5 -5 m 0 10 l 5 -5 m 27 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<g class="terminal">
+<rect x="59" y="77" height="22" width="60" rx="10" ry="10" />
+<text x="89" y="93">
+const</text>
+</g>
+</g>
+<g class="optional">
+<path d=" M 153 88 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 60 m -27 0 l -5 -5 m 0 10 l 5 -5 m 27 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<g class="terminal">
+<rect x="177" y="77" height="22" width="60" rx="10" ry="10" />
+<text x="207" y="93">
+async</text>
+</g>
+</g>
+<g class="optional">
+<path d=" M 271 88 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 100 m -47 0 l -5 -5 m 0 10 l 5 -5 m 47 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="#railroad-summary-ItemSafety" class="link">
+<g class="nonterminal">
+<rect x="295" y="77" height="22" width="100" />
+<text x="345" y="93">
+ItemSafety</text>
+</g>
+</a>
+</g>
+<g class="optional">
+<path d=" M 429 88 h 24 m -24 0 a 12 12 0 0 0 12 -12 v -17 a 12 12 0 0 1 12 -12 h 170 m -82 0 l -5 -5 m 0 10 l 5 -5 m 82 0 a 12 12 0 0 1 12 12 v 17 a 12 12 0 0 0 12 12 h -24" />
+<g class="sequence">
+<g class="terminal">
+<rect x="453" y="77" height="22" width="68" rx="10" ry="10" />
+<text x="487" y="93">
+extern</text>
+</g>
+<g class="optional">
+<path d=" M 531 88 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 44 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="#railroad-summary-Abi" class="link">
+<g class="nonterminal">
+<rect x="555" y="77" height="22" width="44" />
+<text x="577" y="93">
+Abi</text>
+</g>
+</a>
+</g>
+<path d=" M 521 88 h 10" />
+</g>
+</g>
+<path d=" M 143 88 h 10" />
+<path d=" M 261 88 h 10" />
+<path d=" M 419 88 h 10" />
+</g>
+<path d=" M 657 88 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 88 h 10" />
+<path d=" M 647 88 h 10" />
+</g>
+</g>
+</svg>

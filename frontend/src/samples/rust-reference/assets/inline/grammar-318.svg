@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 202 74">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-PathPattern" class="link">
+<text class="comment" x="53" y="25">
+PathPattern</text>
+</a>
+<g class="sequence">
+<path d=" M 10 53 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<a xlink:href="#railroad-summary-PathExpression" class="link">
+<g class="nonterminal">
+<rect x="35" y="42" height="22" width="132" />
+<text x="101" y="58">
+PathExpression</text>
+</g>
+</a>
+<path d=" M 177 53 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 53 h 10" />
+<path d=" M 167 53 h 10" />
+</g>
+</g>
+</svg>

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 358 107">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-FunctionParamPattern" class="link">
+<text class="comment" x="88" y="25">
+FunctionParamPattern</text>
+</a>
+<g class="sequence">
+<path d=" M 10 53 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="sequence">
+<a xlink:href="#railroad-summary-PatternNoTopAlt" class="link">
+<g class="nonterminal">
+<rect x="35" y="42" height="22" width="140" />
+<text x="105" y="58">
+PatternNoTopAlt</text>
+</g>
+</a>
+<g class="terminal">
+<rect x="185" y="42" height="22" width="28" rx="10" ry="10" />
+<text x="199" y="58">
+:</text>
+</g>
+<g class="multichoice">
+<path d=" M 223 53 h 24" />
+<path d=" M 223 53 a 12 12 0 0 1 12 12" />
+<path d=" M 235 65 v 9" />
+<a xlink:href="#railroad-summary-Type" class="link">
+<g class="nonterminal">
+<rect x="247" y="42" height="22" width="52" />
+<text x="273" y="58">
+Type</text>
+</g>
+</a>
+<path d=" M 299 53 h 24" />
+<path d=" M 235 74 a 12 12 0 0 0 12 12 h 0" />
+<g class="terminal">
+<rect x="247" y="75" height="22" width="44" rx="10" ry="10" />
+<text x="269" y="91">
+...</text>
+</g>
+<path d=" M 291 86 h 8 a 12 12 0 0 0 12 -12" />
+<path d=" M 311 74 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 175 53 h 10" />
+<path d=" M 213 53 h 10" />
+</g>
+<path d=" M 333 53 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 53 h 10" />
+<path d=" M 323 53 h 10" />
+</g>
+</g>
+</svg>

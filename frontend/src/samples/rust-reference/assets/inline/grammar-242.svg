@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 502 189">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-ExpressionWithBlockNoAttrs" class="link">
+<text class="comment" x="109" y="25">
+ExpressionWithBlockNoAttrs</text>
+</a>
+<g class="sequence">
+<path d=" M 10 78 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="multichoice">
+<path d=" M 35 78 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<path d=" M 59 54 h 220 m -107 0 l -5 -5 m 0 10 l 5 -5 m 107 0" />
+<path d=" M 35 78 h 24" />
+<path d=" M 35 78 a 12 12 0 0 1 12 12" />
+<path d=" M 47 90 v 9" />
+<path d=" M 47 99 v 33" />
+<g class="sequence">
+<a xlink:href="#railroad-summary-BlockExpression" class="link">
+<g class="nonterminal">
+<rect x="59" y="67" height="22" width="140" />
+<text x="129" y="83">
+BlockExpression</text>
+</g>
+</a>
+</g>
+<path d=" M 199 78 h 56 m -25 0 l -5 -5 m 0 10 l 5 -5 m 25 0 a 12 12 0 0 1 12 12" />
+<path d=" M 47 99 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-summary-ConstBlockExpression" class="link">
+<g class="nonterminal">
+<rect x="59" y="100" height="22" width="188" />
+<text x="153" y="116">
+ConstBlockExpression</text>
+</g>
+</a>
+</g>
+<path d=" M 247 111 h 8 a 12 12 0 0 1 12 12" />
+<path d=" M 47 132 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-summary-UnsafeBlockExpression" class="link">
+<g class="nonterminal">
+<rect x="59" y="133" height="22" width="196" />
+<text x="157" y="149">
+UnsafeBlockExpression</text>
+</g>
+</a>
+</g>
+<path d=" M 255 144 h 0 a 12 12 0 0 1 12 12" />
+<path d=" M 267 90 v 33" />
+<path d=" M 267 123 v 33" />
+<path d=" M 267 156 v -1 a 12 12 0 0 0 12 12" />
+<path d=" M 279 54 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12" />
+<path d=" M 291 66 v 33" />
+<path d=" M 291 99 v 33" />
+<g class="sequence">
+<a xlink:href="#railroad-summary-LoopExpression" class="link">
+<g class="nonterminal">
+<rect x="303" y="67" height="22" width="132" />
+<text x="369" y="83">
+LoopExpression</text>
+</g>
+</a>
+</g>
+<path d=" M 435 78 h 8 h 24" />
+<path d=" M 291 99 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-summary-IfExpression" class="link">
+<g class="nonterminal">
+<rect x="303" y="100" height="22" width="116" />
+<text x="361" y="116">
+IfExpression</text>
+</g>
+</a>
+</g>
+<path d=" M 419 111 h 24 a 12 12 0 0 0 12 -12" />
+<path d=" M 291 132 a 12 12 0 0 0 12 12 h 0" />
+<a xlink:href="#railroad-summary-MatchExpression" class="link">
+<g class="nonterminal">
+<rect x="303" y="133" height="22" width="140" />
+<text x="373" y="149">
+MatchExpression</text>
+</g>
+</a>
+<path d=" M 443 144 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 279 167 h 164 m -79 0 l -5 -5 m 0 10 l 5 -5 m 79 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 455 155 v -23" />
+<path d=" M 455 132 v -33" />
+<path d=" M 455 99 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 477 78 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 78 h 10" />
+<path d=" M 467 78 h 10" />
+</g>
+</g>
+</svg>

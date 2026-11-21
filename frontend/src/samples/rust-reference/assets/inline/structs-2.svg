@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 894 125">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-StructStruct" class="link">
+<text class="comment" x="57" y="25">
+StructStruct</text>
+</a>
+<g class="sequence">
+<path d=" M 10 71 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="sequence">
+<g class="terminal">
+<rect x="35" y="60" height="22" width="68" rx="10" ry="10" />
+<text x="69" y="76">
+struct</text>
+</g>
+<a xlink:href="../identifiers.md#railroad-IDENTIFIER" class="link">
+<g class="nonterminal">
+<rect x="113" y="60" height="22" width="100" />
+<text x="163" y="76">
+IDENTIFIER</text>
+</g>
+</a>
+<g class="optional">
+<path d=" M 223 71 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 124 m -59 0 l -5 -5 m 0 10 l 5 -5 m 59 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="generics.md#railroad-GenericParams" class="link">
+<g class="nonterminal">
+<rect x="247" y="60" height="22" width="124" />
+<text x="309" y="76">
+GenericParams</text>
+</g>
+</a>
+</g>
+<g class="optional">
+<path d=" M 405 71 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 108 m -51 0 l -5 -5 m 0 10 l 5 -5 m 51 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="generics.md#railroad-WhereClause" class="link">
+<g class="nonterminal">
+<rect x="429" y="60" height="22" width="108" />
+<text x="483" y="76">
+WhereClause</text>
+</g>
+</a>
+</g>
+<g class="multichoice">
+<path d=" M 571 71 h 24" />
+<path d=" M 571 71 a 12 12 0 0 1 12 12" />
+<path d=" M 583 83 v 9" />
+<g class="sequence">
+<g class="terminal">
+<rect x="595" y="60" height="22" width="28" rx="10" ry="10" />
+<text x="609" y="76">
+{</text>
+</g>
+<g class="optional">
+<path d=" M 633 71 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 116 m -55 0 l -5 -5 m 0 10 l 5 -5 m 55 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="#railroad-StructFields" class="link">
+<g class="nonterminal">
+<rect x="657" y="60" height="22" width="116" />
+<text x="715" y="76">
+StructFields</text>
+</g>
+</a>
+</g>
+<g class="terminal">
+<rect x="807" y="60" height="22" width="28" rx="10" ry="10" />
+<text x="821" y="76">
+}</text>
+</g>
+<path d=" M 623 71 h 10" />
+<path d=" M 797 71 h 10" />
+</g>
+<path d=" M 835 71 h 24" />
+<path d=" M 583 92 a 12 12 0 0 0 12 12 h 0" />
+<g class="terminal">
+<rect x="595" y="93" height="22" width="28" rx="10" ry="10" />
+<text x="609" y="109">
+;</text>
+</g>
+<path d=" M 623 104 h 212 m -103 0 l -5 -5 m 0 10 l 5 -5 m 103 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 847 92 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 103 71 h 10" />
+<path d=" M 213 71 h 10" />
+<path d=" M 395 71 h 10" />
+<path d=" M 561 71 h 10" />
+</g>
+<path d=" M 869 71 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 71 h 10" />
+<path d=" M 859 71 h 10" />
+</g>
+</g>
+</svg>

@@ -1,0 +1,11 @@
+{
+  "repository": "https://github.com/quii/learn-go-with-tests",
+  "commit": "592e9f747e9e851af40eb0a5cb0ac4fe86ef18a6",
+  "source_sha256": {
+    "context.md": "a5d3c8e13b6b64e7a63e599a93fcd58cfe4c9172476df4c8b05f761cd39984cf",
+    "http-handlers-revisited.md": "3ad6e24178a0650a0872055f95668d2f58be4a841d942295ca301664c468f5bf",
+    "revisiting-time-with-synctest.md": "d18924c6b69dc0ba46558046599069da824e7e26473a2c8c236870f1af1421a7",
+    "LICENSE.md": "db4086c304e08604aa6d981050ba312a9ed6a5e8d927eb3a8b4bd56ed1d8697b"
+  },
+  "changes": "Links to chapters outside the snapshot point to the pinned upstream commit. One decorative image is omitted. Indentation is normalized in three lines of sample test output."
+}

@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 796 114">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-MaybeNamedFunctionParametersVariadic" class="link">
+<text class="comment" x="144" y="25">
+MaybeNamedFunctionParametersVariadic</text>
+</a>
+<g class="sequence">
+<path d=" M 10 75 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="sequence">
+<g class="optional">
+<path d=" M 35 75 h 24 m -24 0 a 12 12 0 0 0 12 -12 v -4 a 12 12 0 0 1 12 -12 h 212 m -103 0 l -5 -5 m 0 10 l 5 -5 m 103 0 a 12 12 0 0 1 12 12 v 4 a 12 12 0 0 0 12 12 h -24" />
+<g class="repeat">
+<path d=" M 59 75 h 5 h 12 m 178 0 h 12 h 5 m -17 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 m 0 0 h -178 m 92 0 l 5 -5 m 0 10 l -5 -5 m -92 0 a 12 12 0 0 1 -12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<g>
+</g>
+<g class="sequence">
+<a xlink:href="#railroad-MaybeNamedParam" class="link">
+<g class="nonterminal">
+<rect x="76" y="64" height="22" width="140" />
+<text x="146" y="80">
+MaybeNamedParam</text>
+</g>
+</a>
+<g class="terminal">
+<rect x="226" y="64" height="22" width="28" rx="10" ry="10" />
+<text x="240" y="80">
+,</text>
+</g>
+<path d=" M 216 75 h 10" />
+</g>
+</g>
+</g>
+<a xlink:href="#railroad-MaybeNamedParam" class="link">
+<g class="nonterminal">
+<rect x="305" y="64" height="22" width="140" />
+<text x="375" y="80">
+MaybeNamedParam</text>
+</g>
+</a>
+<g class="terminal">
+<rect x="455" y="64" height="22" width="28" rx="10" ry="10" />
+<text x="469" y="80">
+,</text>
+</g>
+<g class="optional">
+<path d=" M 493 75 h 24 m -24 0 a 12 12 0 0 0 12 -12 v -4 a 12 12 0 0 1 12 -12 h 166 m -80 0 l -5 -5 m 0 10 l 5 -5 m 80 0 a 12 12 0 0 1 12 12 v 4 a 12 12 0 0 0 12 12 h -24" />
+<g class="repeat">
+<path d=" M 517 75 h 5 h 12 m 132 0 h 12 h 5 m -17 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 m 0 0 h -132 m 69 0 l 5 -5 m 0 10 l -5 -5 m -69 0 a 12 12 0 0 1 -12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<g>
+</g>
+<a xlink:href="../attributes.md#railroad-OuterAttribute" class="link">
+<g class="nonterminal">
+<rect x="534" y="64" height="22" width="132" />
+<text x="600" y="80">
+OuterAttribute</text>
+</g>
+</a>
+</g>
+</g>
+<g class="terminal">
+<rect x="717" y="64" height="22" width="44" rx="10" ry="10" />
+<text x="739" y="80">
+...</text>
+</g>
+<path d=" M 295 75 h 10" />
+<path d=" M 445 75 h 10" />
+<path d=" M 483 75 h 10" />
+<path d=" M 707 75 h 10" />
+</g>
+<path d=" M 771 75 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 75 h 10" />
+<path d=" M 761 75 h 10" />
+</g>
+</g>
+</svg>

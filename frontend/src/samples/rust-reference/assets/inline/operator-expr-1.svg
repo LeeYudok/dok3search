@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 678 255">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-OperatorExpression" class="link">
+<text class="comment" x="78" y="25">
+OperatorExpression</text>
+</a>
+<g class="sequence">
+<path d=" M 10 78 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="multichoice">
+<path d=" M 35 78 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<path d=" M 59 54 h 284 m -139 0 l -5 -5 m 0 10 l 5 -5 m 139 0" />
+<path d=" M 35 78 h 24" />
+<path d=" M 35 78 a 12 12 0 0 1 12 12" />
+<path d=" M 47 90 v 9" />
+<path d=" M 47 99 v 33" />
+<path d=" M 47 132 v 33" />
+<path d=" M 47 165 v 33" />
+<g class="sequence">
+<a xlink:href="#railroad-BorrowExpression" class="link">
+<g class="nonterminal">
+<rect x="59" y="67" height="22" width="148" />
+<text x="133" y="83">
+BorrowExpression</text>
+</g>
+</a>
+</g>
+<path d=" M 207 78 h 112 m -53 0 l -5 -5 m 0 10 l 5 -5 m 53 0 a 12 12 0 0 1 12 12" />
+<path d=" M 47 99 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-DereferenceExpression" class="link">
+<g class="nonterminal">
+<rect x="59" y="100" height="22" width="196" />
+<text x="157" y="116">
+DereferenceExpression</text>
+</g>
+</a>
+</g>
+<path d=" M 255 111 h 64 m -29 0 l -5 -5 m 0 10 l 5 -5 m 29 0 a 12 12 0 0 1 12 12" />
+<path d=" M 47 132 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-TryPropagationExpression" class="link">
+<g class="nonterminal">
+<rect x="59" y="133" height="22" width="220" />
+<text x="169" y="149">
+TryPropagationExpression</text>
+</g>
+</a>
+</g>
+<path d=" M 279 144 h 40 a 12 12 0 0 1 12 12" />
+<path d=" M 47 165 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-NegationExpression" class="link">
+<g class="nonterminal">
+<rect x="59" y="166" height="22" width="164" />
+<text x="141" y="182">
+NegationExpression</text>
+</g>
+</a>
+</g>
+<path d=" M 223 177 h 96 m -45 0 l -5 -5 m 0 10 l 5 -5 m 45 0 a 12 12 0 0 1 12 12" />
+<path d=" M 47 198 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-ArithmeticOrLogicalExpression" class="link">
+<g class="nonterminal">
+<rect x="59" y="199" height="22" width="260" />
+<text x="189" y="215">
+ArithmeticOrLogicalExpression</text>
+</g>
+</a>
+</g>
+<path d=" M 319 210 h 0 a 12 12 0 0 1 12 12" />
+<path d=" M 331 90 v 33" />
+<path d=" M 331 123 v 33" />
+<path d=" M 331 156 v 33" />
+<path d=" M 331 189 v 33" />
+<path d=" M 331 222 v -1 a 12 12 0 0 0 12 12" />
+<path d=" M 343 54 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12" />
+<path d=" M 355 66 v 33" />
+<path d=" M 355 99 v 33" />
+<path d=" M 355 132 v 33" />
+<path d=" M 355 165 v 33" />
+<g class="sequence">
+<a xlink:href="#railroad-ComparisonExpression" class="link">
+<g class="nonterminal">
+<rect x="367" y="67" height="22" width="188" />
+<text x="461" y="83">
+ComparisonExpression</text>
+</g>
+</a>
+</g>
+<path d=" M 555 78 h 64 m -29 0 l -5 -5 m 0 10 l 5 -5 m 29 0 h 24" />
+<path d=" M 355 99 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-LazyBooleanExpression" class="link">
+<g class="nonterminal">
+<rect x="367" y="100" height="22" width="196" />
+<text x="465" y="116">
+LazyBooleanExpression</text>
+</g>
+</a>
+</g>
+<path d=" M 563 111 h 56 m -25 0 l -5 -5 m 0 10 l 5 -5 m 25 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 355 132 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-TypeCastExpression" class="link">
+<g class="nonterminal">
+<rect x="367" y="133" height="22" width="164" />
+<text x="449" y="149">
+TypeCastExpression</text>
+</g>
+</a>
+</g>
+<path d=" M 531 144 h 88 m -41 0 l -5 -5 m 0 10 l 5 -5 m 41 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 355 165 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-AssignmentExpression" class="link">
+<g class="nonterminal">
+<rect x="367" y="166" height="22" width="188" />
+<text x="461" y="182">
+AssignmentExpression</text>
+</g>
+</a>
+</g>
+<path d=" M 555 177 h 64 m -29 0 l -5 -5 m 0 10 l 5 -5 m 29 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 355 198 a 12 12 0 0 0 12 12 h 0" />
+<a xlink:href="#railroad-CompoundAssignmentExpression" class="link">
+<g class="nonterminal">
+<rect x="367" y="199" height="22" width="252" />
+<text x="493" y="215">
+CompoundAssignmentExpression</text>
+</g>
+</a>
+<path d=" M 619 210 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 343 233 h 276 m -135 0 l -5 -5 m 0 10 l 5 -5 m 135 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 631 221 v -23" />
+<path d=" M 631 198 v -33" />
+<path d=" M 631 165 v -33" />
+<path d=" M 631 132 v -33" />
+<path d=" M 631 99 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 653 78 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 78 h 10" />
+<path d=" M 643 78 h 10" />
+</g>
+</g>
+</svg>

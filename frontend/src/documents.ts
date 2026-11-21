@@ -6,17 +6,23 @@ export const categories = [
   { id: 'manual', label: '운영 매뉴얼' },
   { id: 'code', label: '코드 레퍼런스' },
   { id: 'policy', label: '내부 규정' },
-  { id: 'rust', label: 'Rust 자료' },
-  { id: 'go', label: 'Go 자료' },
   { id: 'design', label: 'dok3search-design' },
 ] as const
 
+export const topics = [
+  { id: 'rust', label: 'Rust' },
+  { id: 'go', label: 'Go' },
+] as const
+
+export type ReferenceTopic = typeof topics[number]['id']
+
 export const categoryLabels = new Map(categories.map(({ id, label }) => [id, label]))
 
-export function searchUrl(query: string, category = '', page = 1) {
+export function searchUrl(query: string, category = '', page = 1, topic = '') {
   const params = new URLSearchParams()
   if (query.trim()) params.set('q', query.trim())
   if (category) params.set('category', category)
+  if (category === 'guide' && topics.some((item) => item.id === topic)) params.set('topic', topic)
   if (page > 1) params.set('page', String(page))
   return params.size ? '/search?' + params : '/search'
 }
@@ -42,20 +48,24 @@ const searchAliases = {
   ]),
 }
 
-export function isReferenceCategory(category: string): category is keyof typeof searchAliases {
+export function isReferenceTopic(category: string): category is keyof typeof searchAliases {
   return category === 'rust' || category === 'go'
 }
 
-function matchesTerm(text: string, term: string, category: Category) {
+export function isReferenceTopicFilter(topic: string): topic is ReferenceTopic {
+  return topics.some((item) => item.id === topic)
+}
+
+function matchesTerm(text: string, term: string, category: string) {
   return text.includes(term) || (
-    isReferenceCategory(category) &&
+    isReferenceTopic(category) &&
     searchAliases[category].get(term)?.some((alias) => text.includes(alias))
   )
 }
 
 export function titleMatches(query: string, doc: Document) {
   const title = doc.title.toLowerCase()
-  return query.toLowerCase().split(/\s+/).every((term) => matchesTerm(title, term, doc.category))
+  return query.toLowerCase().split(/\s+/).every((term) => matchesTerm(title, term, doc.topic ?? doc.category))
 }
 
 export type Document = {
@@ -66,6 +76,7 @@ export type Document = {
   tag: string
   date?: string
   category: Category
+  topic?: ReferenceTopic
   body: string
   markdown?: string
   samplePath?: string
@@ -120,7 +131,7 @@ export const designDocuments: Document[] = Object.entries(designFiles).map(([pat
     (isMarkdown ? '' : '설계 저장소의 YAML 예시입니다.')
 
   return {
-    id: isArchitecture ? 'final-architecture' : 'design-' + samplePath.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+    id: isArchitecture ? 'final-architecture' : 'design-' + samplePath.replace(/[^a-zA-Z0-9]+/g, '-'),
     title: (pair?.title ?? heading?.[1].replace(/[`*]/g, '') ?? samplePath) + (samplePath.endsWith('-download.md') ? ' (다운로드본)' : ''),
     summary,
     source: 'dok3search-design',
@@ -165,6 +176,7 @@ export const documents: Document[] = [
     title: 'Rust 워크스페이스와 검색 계약',
     summary: '검색 요청, 문서 모델, 결과 스냅샷의 경계와 예시를 확인합니다.',
     source: '개발 문서', tag: 'Rust', date: '2026-11-19', category: 'guide',
+    topic: 'rust',
     body: '검색 요청은 질의어, 필터, 페이지 크기를 담습니다. 응답의 각 결과는 문서 ID와 섹션을 포함합니다. 화면과 검색 엔진은 이 계약을 사용해 독립적으로 개발할 수 있습니다.',
   },
   {
@@ -186,6 +198,7 @@ export const documents: Document[] = [
     title: 'Rust 색인 워커 실행 가이드',
     summary: '색인 작업을 시작하고 상태를 확인하는 방법입니다.',
     source: '개발 문서', tag: 'Rust', date: '2026-11-16', category: 'guide',
+    topic: 'rust',
     body: '작업을 등록한 뒤 상태 조회로 대기, 실행, 완료 여부를 확인합니다.',
   },
   {
@@ -214,6 +227,7 @@ export const documents: Document[] = [
     title: 'Rust 테스트용 검색 데이터 만들기',
     summary: '검색 검증에 사용할 문서 구성 예시입니다.',
     source: '개발 문서', tag: 'Rust', date: '2026-11-12', category: 'guide',
+    topic: 'rust',
     body: '한글과 영문 검색어로 제목 일치와 본문 일치를 각각 검증합니다.',
   },
   {
@@ -305,8 +319,8 @@ export function searchDocuments(query: string, corpus: readonly Document[] = doc
 
     const variants = formats ? [formats.markdown, formats.yaml] : [doc]
     return variants.some((variant) => {
-      const searchable = [variant.title, variant.summary, variant.source, variant.tag, variant.body, variant.markdown, variant.samplePath].join(' ').toLowerCase()
-      return terms.every((term) => matchesTerm(searchable, term, variant.category))
+      const searchable = [variant.title, variant.summary, variant.source, variant.tag, variant.topic, variant.body, variant.markdown, variant.samplePath].join(' ').toLowerCase()
+      return terms.every((term) => matchesTerm(searchable, term, variant.topic ?? variant.category))
     })
   })
 }

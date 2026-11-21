@@ -14,7 +14,7 @@ const images = import.meta.glob<string>('./samples/rust-book/assets/**/*.{svg,pn
 
 export const rustBook = createReferenceCorpus({
   folder: 'rust-book',
-  category: 'rust',
+  topic: 'rust',
   source: 'Rust 공식 책 · The Rust Programming Language',
   language: '영어',
   chapters: index.chapters,

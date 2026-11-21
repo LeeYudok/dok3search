@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 263 151">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-TokenTree" class="link">
+<text class="comment" x="46" y="25">
+TokenTree</text>
+</a>
+<g class="sequence">
+<path d=" M 10 89 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="multichoice">
+<path d=" M 35 89 h 24" />
+<path d=" M 35 89 a 12 12 0 0 1 12 12" />
+<path d=" M 47 101 v 17" />
+<g class="sequence">
+<g class="labeledbox">
+<rect x="59" y="42" height="66" width="145" />
+<path d=" M 59 89 h 8 m 60 0 h 77 m -35 0 l -5 -5 m 0 10 l 5 -5 m 35 0" />
+<text class="comment" x="131" y="65">
+except delimiters</text>
+<a xlink:href="tokens.md#railroad-Token" class="link">
+<g class="nonterminal">
+<rect x="67" y="78" height="22" width="60" />
+<text x="97" y="94">
+Token</text>
+</g>
+</a>
+</g>
+</g>
+<path d=" M 204 89 h 24" />
+<path d=" M 47 118 a 12 12 0 0 0 12 12 h 0" />
+<a xlink:href="#railroad-DelimTokenTree" class="link">
+<g class="nonterminal">
+<rect x="59" y="119" height="22" width="132" />
+<text x="125" y="135">
+DelimTokenTree</text>
+</g>
+</a>
+<path d=" M 191 130 h 13 a 12 12 0 0 0 12 -12" />
+<path d=" M 216 118 v -17 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 238 89 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 89 h 10" />
+<path d=" M 228 89 h 10" />
+</g>
+</g>
+</svg>

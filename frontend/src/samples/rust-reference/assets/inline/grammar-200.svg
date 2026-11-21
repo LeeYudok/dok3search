@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 264 118">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-Scrutinee" class="link">
+<text class="comment" x="46" y="25">
+Scrutinee</text>
+</a>
+<g class="sequence">
+<path d=" M 10 89 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="labeledbox">
+<rect x="35" y="42" height="66" width="194" />
+<path d=" M 35 89 h 8 m 100 0 h 86 m -40 0 l -5 -5 m 0 10 l 5 -5 m 40 0" />
+<text class="comment" x="132" y="65">
+except StructExpression</text>
+<a xlink:href="#railroad-summary-Expression" class="link">
+<g class="nonterminal">
+<rect x="43" y="78" height="22" width="100" />
+<text x="93" y="94">
+Expression</text>
+</g>
+</a>
+</g>
+<path d=" M 239 89 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 89 h 10" />
+<path d=" M 229 89 h 10" />
+</g>
+</g>
+</svg>

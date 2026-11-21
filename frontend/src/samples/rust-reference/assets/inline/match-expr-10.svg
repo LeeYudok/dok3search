@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 614 189">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-ExcludedMatchConditions" class="link">
+<text class="comment" x="99" y="25">
+ExcludedMatchConditions</text>
+</a>
+<g class="sequence">
+<path d=" M 10 78 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="multichoice">
+<path d=" M 35 78 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<path d=" M 59 54 h 220 m -107 0 l -5 -5 m 0 10 l 5 -5 m 107 0" />
+<path d=" M 35 78 h 24" />
+<path d=" M 35 78 a 12 12 0 0 1 12 12" />
+<path d=" M 47 90 v 9" />
+<path d=" M 47 99 v 33" />
+<g class="sequence">
+<a xlink:href="operator-expr.md#railroad-LazyBooleanExpression" class="link">
+<g class="nonterminal">
+<rect x="59" y="67" height="22" width="196" />
+<text x="157" y="83">
+LazyBooleanExpression</text>
+</g>
+</a>
+</g>
+<path d=" M 255 78 h 0 a 12 12 0 0 1 12 12" />
+<path d=" M 47 99 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="range-expr.md#railroad-RangeExpr" class="link">
+<g class="nonterminal">
+<rect x="59" y="100" height="22" width="92" />
+<text x="105" y="116">
+RangeExpr</text>
+</g>
+</a>
+</g>
+<path d=" M 151 111 h 104 m -49 0 l -5 -5 m 0 10 l 5 -5 m 49 0 a 12 12 0 0 1 12 12" />
+<path d=" M 47 132 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="range-expr.md#railroad-RangeFromExpr" class="link">
+<g class="nonterminal">
+<rect x="59" y="133" height="22" width="124" />
+<text x="121" y="149">
+RangeFromExpr</text>
+</g>
+</a>
+</g>
+<path d=" M 183 144 h 72 m -33 0 l -5 -5 m 0 10 l 5 -5 m 33 0 a 12 12 0 0 1 12 12" />
+<path d=" M 267 90 v 33" />
+<path d=" M 267 123 v 33" />
+<path d=" M 267 156 v -1 a 12 12 0 0 0 12 12" />
+<path d=" M 279 54 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12" />
+<path d=" M 291 66 v 33" />
+<path d=" M 291 99 v 33" />
+<g class="sequence">
+<a xlink:href="range-expr.md#railroad-RangeInclusiveExpr" class="link">
+<g class="nonterminal">
+<rect x="303" y="67" height="22" width="164" />
+<text x="385" y="83">
+RangeInclusiveExpr</text>
+</g>
+</a>
+</g>
+<path d=" M 467 78 h 88 m -41 0 l -5 -5 m 0 10 l 5 -5 m 41 0 h 24" />
+<path d=" M 291 99 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="operator-expr.md#railroad-AssignmentExpression" class="link">
+<g class="nonterminal">
+<rect x="303" y="100" height="22" width="188" />
+<text x="397" y="116">
+AssignmentExpression</text>
+</g>
+</a>
+</g>
+<path d=" M 491 111 h 64 m -29 0 l -5 -5 m 0 10 l 5 -5 m 29 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 291 132 a 12 12 0 0 0 12 12 h 0" />
+<a xlink:href="operator-expr.md#railroad-CompoundAssignmentExpression" class="link">
+<g class="nonterminal">
+<rect x="303" y="133" height="22" width="252" />
+<text x="429" y="149">
+CompoundAssignmentExpression</text>
+</g>
+</a>
+<path d=" M 555 144 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 279 167 h 276 m -135 0 l -5 -5 m 0 10 l 5 -5 m 135 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 567 155 v -23" />
+<path d=" M 567 132 v -33" />
+<path d=" M 567 99 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 589 78 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 78 h 10" />
+<path d=" M 579 78 h 10" />
+</g>
+</g>
+</svg>

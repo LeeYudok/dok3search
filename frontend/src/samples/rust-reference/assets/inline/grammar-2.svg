@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 532 74">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-CollapseDebuginfoAttribute" class="link">
+<text class="comment" x="109" y="25">
+CollapseDebuginfoAttribute</text>
+</a>
+<g class="sequence">
+<path d=" M 10 53 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="sequence">
+<g class="terminal">
+<rect x="35" y="42" height="22" width="164" rx="10" ry="10" />
+<text x="117" y="58">
+collapse_debuginfo</text>
+</g>
+<g class="terminal">
+<rect x="209" y="42" height="22" width="28" rx="10" ry="10" />
+<text x="223" y="58">
+(</text>
+</g>
+<a xlink:href="#railroad-summary-CollapseDebuginfoOption" class="link">
+<g class="nonterminal">
+<rect x="247" y="42" height="22" width="212" />
+<text x="353" y="58">
+CollapseDebuginfoOption</text>
+</g>
+</a>
+<g class="terminal">
+<rect x="469" y="42" height="22" width="28" rx="10" ry="10" />
+<text x="483" y="58">
+)</text>
+</g>
+<path d=" M 199 53 h 10" />
+<path d=" M 237 53 h 10" />
+<path d=" M 459 53 h 10" />
+</g>
+<path d=" M 507 53 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 53 h 10" />
+<path d=" M 497 53 h 10" />
+</g>
+</g>
+</svg>

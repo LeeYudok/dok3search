@@ -19,3 +19,12 @@ The documentation is attributed to the Go Authors. According to the [Go
 copyright notice](https://go.dev/copyright), site documentation is licensed
 under [CC BY 4.0](LICENSE-CC-BY) and source code under [BSD 3-Clause](LICENSE-BSD).
 The BSD notice is copied from the installed SDK.
+
+`chapters/practice/` contains five original Korean guides for offline development.
+They cover project layout, testing, errors, concurrency, and diagnostics.
+The guides and their examples follow the dok3search repository license.
+
+`chapters/learn-go-with-tests/` contains three English exercises from
+[Learn Go with Tests](https://github.com/quii/learn-go-with-tests): Context,
+HTTP handlers, and time testing with `testing/synctest` (Go 1.25+).
+See [MIT license](LICENSE-LGWT-MIT) and the [source snapshot](learn-go-with-tests-provenance.json).

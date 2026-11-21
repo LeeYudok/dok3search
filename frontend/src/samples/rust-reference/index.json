@@ -1,0 +1,607 @@
+{
+  "source": "The Rust Reference",
+  "source_url": "https://doc.rust-lang.org/1.100.0/reference/",
+  "toolchain": "1.100.0 (0ef1bc386 2026-11-09)",
+  "chapters": [
+    {
+      "path": "chapters/introduction.md",
+      "title": "Introduction",
+      "summary": "This book is the primary reference for the Rust programming language."
+    },
+    {
+      "path": "chapters/notation.md",
+      "title": "Notation",
+      "summary": "The following notations are used by the Lexer and Syntax grammar snippets:"
+    },
+    {
+      "path": "chapters/lexical-structure.md",
+      "title": "Lexical structure",
+      "summary": ""
+    },
+    {
+      "path": "chapters/input-format.md",
+      "title": "Input format",
+      "summary": "Lexer CHAR → [U+0000-U+D7FF U+E000-U+10FFFF] // a Unicode scalar value"
+    },
+    {
+      "path": "chapters/shebang.md",
+      "title": "Shebang",
+      "summary": "A shebang is an optional line that is typically used in Unix-like systems to specify an interpreter for executing the file."
+    },
+    {
+      "path": "chapters/keywords.md",
+      "title": "Keywords",
+      "summary": "Rust divides keywords into three categories:"
+    },
+    {
+      "path": "chapters/identifiers.md",
+      "title": "Identifiers",
+      "summary": "Lexer IDENTIFIER_OR_KEYWORD → ( XID_Start | _ ) XID_Continue*"
+    },
+    {
+      "path": "chapters/comments.md",
+      "title": "Comments",
+      "summary": "Lexer COMMENT → LINE_COMMENT | INNER_LINE_DOC | OUTER_LINE_DOC | INNER_BLOCK_DOC | OUTER_BLOCK_DOC | BLOCK_COMMENT"
+    },
+    {
+      "path": "chapters/whitespace.md",
+      "title": "Whitespace",
+      "summary": "Lexer WHITESPACE → U+0009 // Horizontal tab, '\\t' | U+000A // Line feed, '\\n' | U+000B // Vertical tab | U+000C // Form feed | U+000D // Carriage return, '\\r' | U+0020 // Space, ' ' | U+0085 // Next line | U+200E // Left-to-right mark | U+200F // Right-to-left mark | U+2028 // Line separator | U+2029 // Paragraph separ"
+    },
+    {
+      "path": "chapters/tokens.md",
+      "title": "Tokens",
+      "summary": "Lexer Token → RESERVED_TOKEN | RAW_IDENTIFIER | CHAR_LITERAL | STRING_LITERAL | RAW_STRING_LITERAL | BYTE_LITERAL | BYTE_STRING_LITERAL | RAW_BYTE_STRING_LITERAL | C_STRING_LITERAL | RAW_C_STRING_LITERAL | FLOAT_LITERAL | INTEGER_LITERAL | LIFETIME_TOKEN | PUNCTUATION | IDENTIFIER_OR_KEYWORD"
+    },
+    {
+      "path": "chapters/macros.md",
+      "title": "Macros",
+      "summary": "The functionality and syntax of Rust can be extended with custom definitions called macros. They are given names, and invoked through a consistent syntax: some_extension!(...)."
+    },
+    {
+      "path": "chapters/macros-by-example.md",
+      "title": "Macros by example",
+      "summary": "Syntax MacroRulesDefinition → macro_rules ! IDENTIFIER MacroRulesDef"
+    },
+    {
+      "path": "chapters/procedural-macros.md",
+      "title": "Procedural macros",
+      "summary": "Procedural macros allow creating syntax extensions as execution of a function. Procedural macros come in one of three flavors:"
+    },
+    {
+      "path": "chapters/crates-and-source-files.md",
+      "title": "Crates and source files",
+      "summary": "Syntax Crate → InnerAttribute* Item*"
+    },
+    {
+      "path": "chapters/conditional-compilation.md",
+      "title": "Conditional compilation",
+      "summary": "Syntax ConfigurationPredicate → ConfigurationOption | ConfigurationAll | ConfigurationAny | ConfigurationNot | true | false"
+    },
+    {
+      "path": "chapters/items.md",
+      "title": "Items",
+      "summary": "Syntax Item → OuterAttribute* ( VisItem | MacroItem )"
+    },
+    {
+      "path": "chapters/items/modules.md",
+      "title": "Modules",
+      "summary": "Syntax Module → unsafe? mod IDENTIFIER ; | unsafe? mod IDENTIFIER { InnerAttribute* Item* }"
+    },
+    {
+      "path": "chapters/items/extern-crates.md",
+      "title": "Extern crate declarations",
+      "summary": "Syntax ExternCrate → extern crate CrateRef AsClause? ;"
+    },
+    {
+      "path": "chapters/items/use-declarations.md",
+      "title": "Use declarations",
+      "summary": "Syntax UseDeclaration → use UseTree ;"
+    },
+    {
+      "path": "chapters/items/functions.md",
+      "title": "Functions",
+      "summary": "Syntax Function → FunctionQualifiers fn IDENTIFIER GenericParams? ( FunctionParameters? ) FunctionReturnType? WhereClause? ( BlockExpression | ; )"
+    },
+    {
+      "path": "chapters/items/type-aliases.md",
+      "title": "Type aliases",
+      "summary": "Syntax TypeAlias → type IDENTIFIER GenericParams? ( : Bounds? )? WhereClause? ( = Type WhereClause? )? ;"
+    },
+    {
+      "path": "chapters/items/structs.md",
+      "title": "Structs",
+      "summary": "Syntax Struct → StructStruct | TupleStruct"
+    },
+    {
+      "path": "chapters/items/enumerations.md",
+      "title": "Enumerations",
+      "summary": "Syntax Enumeration → enum IDENTIFIER GenericParams? WhereClause? { EnumVariants? }"
+    },
+    {
+      "path": "chapters/items/unions.md",
+      "title": "Unions",
+      "summary": "Syntax Union → union IDENTIFIER GenericParams? WhereClause? { StructFields? }"
+    },
+    {
+      "path": "chapters/items/constant-items.md",
+      "title": "Constant items",
+      "summary": "Syntax ConstantItem → const ( IDENTIFIER | _ ) : Type ( = Expression )? ;"
+    },
+    {
+      "path": "chapters/items/static-items.md",
+      "title": "Static items",
+      "summary": "Syntax StaticItem → ItemSafety?​1 static mut? IDENTIFIER : Type ( = Expression )? ;"
+    },
+    {
+      "path": "chapters/items/traits.md",
+      "title": "Traits",
+      "summary": "Syntax Trait → unsafe? trait IDENTIFIER GenericParams? ( : Bounds? )? WhereClause? { InnerAttribute* AssociatedItem* }"
+    },
+    {
+      "path": "chapters/items/implementations.md",
+      "title": "Implementations",
+      "summary": "Syntax Implementation → InherentImpl | TraitImpl"
+    },
+    {
+      "path": "chapters/items/external-blocks.md",
+      "title": "External blocks",
+      "summary": "Syntax ExternBlock → unsafe?​1 extern Abi? { InnerAttribute* ExternalItem* }"
+    },
+    {
+      "path": "chapters/items/generics.md",
+      "title": "Generic parameters",
+      "summary": "Syntax GenericParams → < ( GenericParam ( , GenericParam )* ,? )? >"
+    },
+    {
+      "path": "chapters/items/associated-items.md",
+      "title": "Associated items",
+      "summary": "Syntax AssociatedItem → OuterAttribute* ( MacroInvocationSemi | ( Visibility? ( TypeAlias | ConstantItem | Function ) ) )"
+    },
+    {
+      "path": "chapters/attributes.md",
+      "title": "Attributes",
+      "summary": "Syntax InnerAttribute → # ! [ Attr ]"
+    },
+    {
+      "path": "chapters/attributes/testing.md",
+      "title": "Testing attributes",
+      "summary": "The following attributes are used for specifying functions for performing tests. Compiling a crate in “test” mode enables building the test functions along with a test harness for executing the tests. Enabling the test mode also enables the test conditional compilation option."
+    },
+    {
+      "path": "chapters/attributes/derive.md",
+      "title": "Derive",
+      "summary": "The derive attribute invokes one or more derive macros, allowing new items to be automatically generated for data structures. You can create derive macros with procedural macros."
+    },
+    {
+      "path": "chapters/attributes/diagnostics.md",
+      "title": "Diagnostic attributes",
+      "summary": "The following attributes are used for controlling or generating diagnostic messages during compilation."
+    },
+    {
+      "path": "chapters/attributes/codegen.md",
+      "title": "Code generation attributes",
+      "summary": "The following attributes are used for controlling code generation."
+    },
+    {
+      "path": "chapters/attributes/limits.md",
+      "title": "Limits",
+      "summary": "The following attributes affect compile-time limits."
+    },
+    {
+      "path": "chapters/attributes/type_system.md",
+      "title": "Type system attributes",
+      "summary": "The following attributes are used for changing how a type can be used."
+    },
+    {
+      "path": "chapters/attributes/debugger.md",
+      "title": "Debugger attributes",
+      "summary": "The following attributes are used for enhancing the debugging experience when using third-party debuggers like GDB or WinDbg."
+    },
+    {
+      "path": "chapters/statements-and-expressions.md",
+      "title": "Statements and expressions",
+      "summary": "Rust is primarily an expression language. This means that most forms of value-producing or effect-causing evaluation are directed by the uniform syntax category of expressions. Each kind of expression can typically nest within each other kind of expression, and rules for evaluation of expressions involve specifying bot"
+    },
+    {
+      "path": "chapters/statements.md",
+      "title": "Statements",
+      "summary": "Syntax Statement → ; | Item | LetStatement | ExpressionStatement | OuterAttribute* MacroInvocationSemi"
+    },
+    {
+      "path": "chapters/expressions.md",
+      "title": "Expressions",
+      "summary": "Syntax Expression → ExpressionWithoutBlock | ExpressionWithBlock"
+    },
+    {
+      "path": "chapters/expressions/literal-expr.md",
+      "title": "Literal expressions",
+      "summary": "Syntax LiteralExpression → CHAR_LITERAL | STRING_LITERAL | RAW_STRING_LITERAL | BYTE_LITERAL | BYTE_STRING_LITERAL | RAW_BYTE_STRING_LITERAL | C_STRING_LITERAL | RAW_C_STRING_LITERAL | INTEGER_LITERAL | FLOAT_LITERAL | true | false"
+    },
+    {
+      "path": "chapters/expressions/path-expr.md",
+      "title": "Path expressions",
+      "summary": "Syntax PathExpression → PathInExpression | QualifiedPathInExpression"
+    },
+    {
+      "path": "chapters/expressions/block-expr.md",
+      "title": "Block expressions",
+      "summary": "Syntax BlockExpression → { InnerAttribute* Statements? }"
+    },
+    {
+      "path": "chapters/expressions/operator-expr.md",
+      "title": "Operator expressions",
+      "summary": "Syntax OperatorExpression → BorrowExpression | DereferenceExpression | TryPropagationExpression | NegationExpression | ArithmeticOrLogicalExpression | ComparisonExpression | LazyBooleanExpression | TypeCastExpression | AssignmentExpression | CompoundAssignmentExpression"
+    },
+    {
+      "path": "chapters/expressions/grouped-expr.md",
+      "title": "Grouped expressions",
+      "summary": "Syntax GroupedExpression → ( Expression )"
+    },
+    {
+      "path": "chapters/expressions/array-expr.md",
+      "title": "Array and array index expressions",
+      "summary": "Syntax ArrayExpression → [ ArrayElements? ]"
+    },
+    {
+      "path": "chapters/expressions/tuple-expr.md",
+      "title": "Tuple and tuple indexing expressions",
+      "summary": "Syntax TupleExpression → ( TupleElements? )"
+    },
+    {
+      "path": "chapters/expressions/struct-expr.md",
+      "title": "Struct expressions",
+      "summary": "Syntax StructExpression → PathInExpression { ( StructExprFields | StructBase )? }"
+    },
+    {
+      "path": "chapters/expressions/call-expr.md",
+      "title": "Call expressions",
+      "summary": "Syntax CallExpression → Expression ( CallParams? )"
+    },
+    {
+      "path": "chapters/expressions/method-call-expr.md",
+      "title": "Method-call expressions",
+      "summary": "Syntax MethodCallExpression → Expression . PathExprSegment ( CallParams? )"
+    },
+    {
+      "path": "chapters/expressions/field-expr.md",
+      "title": "Field access expressions",
+      "summary": "Syntax FieldExpression → Expression . IDENTIFIER"
+    },
+    {
+      "path": "chapters/expressions/closure-expr.md",
+      "title": "Closure expressions",
+      "summary": "Syntax ClosureExpression → async?​1 move? ( || | | ClosureParameters? | ) ( Expression | -> TypeNoBounds BlockExpression )"
+    },
+    {
+      "path": "chapters/expressions/loop-expr.md",
+      "title": "Loops and other breakable expressions",
+      "summary": "Syntax LoopExpression → LoopLabel? ( InfiniteLoopExpression | PredicateLoopExpression | IteratorLoopExpression | LabelBlockExpression )"
+    },
+    {
+      "path": "chapters/expressions/range-expr.md",
+      "title": "Range expressions",
+      "summary": "Syntax RangeExpression → RangeExpr | RangeFromExpr | RangeToExpr | RangeFullExpr | RangeInclusiveExpr | RangeToInclusiveExpr"
+    },
+    {
+      "path": "chapters/expressions/if-expr.md",
+      "title": "if expressions",
+      "summary": "Syntax IfExpression → if Conditions BlockExpressionNoInnerAttributes ( else ( BlockExpressionNoInnerAttributes | IfExpression ) )?"
+    },
+    {
+      "path": "chapters/expressions/match-expr.md",
+      "title": "match expressions",
+      "summary": "Syntax MatchExpression → match Scrutinee { InnerAttribute* MatchArms? }"
+    },
+    {
+      "path": "chapters/expressions/return-expr.md",
+      "title": "return expressions",
+      "summary": "Syntax ReturnExpression → return Expression?"
+    },
+    {
+      "path": "chapters/expressions/await-expr.md",
+      "title": "Await expressions",
+      "summary": "Syntax AwaitExpression → Expression . await"
+    },
+    {
+      "path": "chapters/expressions/underscore-expr.md",
+      "title": "_ expressions",
+      "summary": "Syntax UnderscoreExpression → _"
+    },
+    {
+      "path": "chapters/patterns.md",
+      "title": "Patterns",
+      "summary": "Syntax Pattern → |? PatternNoTopAlt ( | PatternNoTopAlt )*"
+    },
+    {
+      "path": "chapters/type-system.md",
+      "title": "Type system",
+      "summary": ""
+    },
+    {
+      "path": "chapters/types.md",
+      "title": "Types",
+      "summary": "Every variable, item, and value in a Rust program has a type. The type of a value defines the interpretation of the memory holding it and the operations that may be performed on the value."
+    },
+    {
+      "path": "chapters/types/boolean.md",
+      "title": "Boolean type",
+      "summary": "The boolean type or bool is a primitive data type that can take on one of two values, called true and false."
+    },
+    {
+      "path": "chapters/types/numeric.md",
+      "title": "Numeric types",
+      "summary": "The unsigned integer types consist of:"
+    },
+    {
+      "path": "chapters/types/char.md",
+      "title": "Character type",
+      "summary": "The char type represents a single Unicode scalar value (i.e., a code point that is not a surrogate)."
+    },
+    {
+      "path": "chapters/types/str.md",
+      "title": "String slice type",
+      "summary": "The string slice (str) type represents a sequence of characters."
+    },
+    {
+      "path": "chapters/types/never.md",
+      "title": "Never type",
+      "summary": "The never type ! is a type with no values, representing computations that never complete, also known as diverging computations."
+    },
+    {
+      "path": "chapters/types/tuple.md",
+      "title": "Tuple types",
+      "summary": "Syntax TupleType → ( ) | ( ( Type , )+ Type? )"
+    },
+    {
+      "path": "chapters/types/array.md",
+      "title": "Array types",
+      "summary": "Syntax ArrayType → [ Type ; Expression ]"
+    },
+    {
+      "path": "chapters/types/slice.md",
+      "title": "Slice types",
+      "summary": "Syntax SliceType → [ Type ]"
+    },
+    {
+      "path": "chapters/types/struct.md",
+      "title": "Struct types",
+      "summary": "A struct type is a heterogeneous product of other types, called the fields of the type.1"
+    },
+    {
+      "path": "chapters/types/enum.md",
+      "title": "Enumerated types",
+      "summary": "An enumerated type is a nominal, heterogeneous disjoint union type, denoted by the name of an enum item. 1"
+    },
+    {
+      "path": "chapters/types/union.md",
+      "title": "Union types",
+      "summary": "A union type is a nominal, heterogeneous C-like union, denoted by the name of a union item."
+    },
+    {
+      "path": "chapters/types/function-item.md",
+      "title": "Function item types",
+      "summary": "When referred to, a function item, or the constructor of a tuple-like struct or enum variant, yields a zero-sized value of its function item type."
+    },
+    {
+      "path": "chapters/types/closure.md",
+      "title": "Closure types",
+      "summary": "A closure expression produces a closure value with a unique, anonymous type that cannot be written out. A closure type is approximately equivalent to a struct which contains the captured values. For instance, the following closure:"
+    },
+    {
+      "path": "chapters/types/pointer.md",
+      "title": "Pointer types",
+      "summary": "All pointers are explicit first-class values. They can be moved or copied, stored into data structs, and returned from functions."
+    },
+    {
+      "path": "chapters/types/function-pointer.md",
+      "title": "Function pointer types",
+      "summary": "Syntax BareFunctionType → ForLifetimes? FunctionTypeQualifiers fn ( FunctionParametersMaybeNamedVariadic? ) BareFunctionReturnType?"
+    },
+    {
+      "path": "chapters/types/trait-object.md",
+      "title": "Trait objects",
+      "summary": "Syntax TraitObjectType → Bounds​1 | dyn​2 Bounds?"
+    },
+    {
+      "path": "chapters/types/impl-trait.md",
+      "title": "Impl trait",
+      "summary": "Syntax ImplTraitType → impl Bounds?"
+    },
+    {
+      "path": "chapters/types/parameters.md",
+      "title": "Type parameters",
+      "summary": "Within the body of an item that has type parameter declarations, the names of its type parameters are types:"
+    },
+    {
+      "path": "chapters/types/inferred.md",
+      "title": "Inferred type",
+      "summary": "Syntax InferredType → _"
+    },
+    {
+      "path": "chapters/dynamically-sized-types.md",
+      "title": "Dynamically sized types",
+      "summary": "Most types have a fixed size that is known at compile time and implement the trait Sized. A type with a size that is known only at run-time is called a dynamically sized type (DST) or, informally, an unsized type. Slices, trait objects, and str are examples of DSTs."
+    },
+    {
+      "path": "chapters/type-layout.md",
+      "title": "Type layout",
+      "summary": "The layout of a type is its size, alignment, and the relative offsets of its fields. For enums, how the discriminant is laid out and interpreted is also part of type layout."
+    },
+    {
+      "path": "chapters/interior-mutability.md",
+      "title": "Interior mutability",
+      "summary": "Sometimes a type needs to be mutated while having multiple aliases. In Rust this is achieved using a pattern called interior mutability."
+    },
+    {
+      "path": "chapters/subtyping.md",
+      "title": "Subtyping and variance",
+      "summary": "Subtyping is implicit and can occur at any stage in type checking or inference."
+    },
+    {
+      "path": "chapters/trait-bounds.md",
+      "title": "Trait and lifetime bounds",
+      "summary": "Syntax Bounds → Bound ( + Bound )* +?"
+    },
+    {
+      "path": "chapters/type-coercions.md",
+      "title": "Type coercions",
+      "summary": "Type coercions are implicit operations that change the type of a value. They happen automatically at specific locations and are highly restricted in what types actually coerce."
+    },
+    {
+      "path": "chapters/divergence.md",
+      "title": "Divergence",
+      "summary": "A diverging expression is an expression that never completes normal execution."
+    },
+    {
+      "path": "chapters/destructors.md",
+      "title": "Destructors",
+      "summary": "When an initialized variable or temporary goes out of scope, its destructor is run or it is dropped. Assignment also runs the destructor of its left-hand operand, if it’s initialized. If a variable has been partially initialized, only its initialized fields are dropped."
+    },
+    {
+      "path": "chapters/lifetime-elision.md",
+      "title": "Lifetime elision",
+      "summary": "Rust has rules that allow lifetimes to be elided in various places where the compiler can infer a sensible default choice."
+    },
+    {
+      "path": "chapters/special-types-and-traits.md",
+      "title": "Special types and traits",
+      "summary": "Certain types and traits that exist in the standard library are known to the Rust compiler. This chapter documents the special features of these types and traits."
+    },
+    {
+      "path": "chapters/names.md",
+      "title": "Names",
+      "summary": "An entity is a language construct that can be referred to in some way within the source program, usually via a path. Entities include types, items, generic parameters, variable bindings, loop labels, lifetimes, fields, attributes, and lints."
+    },
+    {
+      "path": "chapters/names/namespaces.md",
+      "title": "Namespaces",
+      "summary": "A namespace is a logical grouping of declared names. Names are segregated into separate namespaces based on the kind of entity the name refers to. Namespaces allow the occurrence of a name in one namespace to not conflict with the same name in another namespace."
+    },
+    {
+      "path": "chapters/names/scopes.md",
+      "title": "Scopes",
+      "summary": "A scope is the region of source text where a named entity may be referenced with that name. The following sections provide details on the scoping rules and behavior, which depend on the kind of entity and where it is declared. The process of how names are resolved to entities is described in the name resolution chapter"
+    },
+    {
+      "path": "chapters/names/preludes.md",
+      "title": "Preludes",
+      "summary": "A prelude is a collection of names that are automatically brought into scope of every module in a crate."
+    },
+    {
+      "path": "chapters/paths.md",
+      "title": "Paths",
+      "summary": "A path is a sequence of one or more path segments separated by :: tokens. Paths are used to refer to items, values, types, macros, and attributes."
+    },
+    {
+      "path": "chapters/names/name-resolution.md",
+      "title": "Name resolution",
+      "summary": "Name resolution is the process of tying paths and other identifiers to the declarations of those entities. Names are segregated into different namespaces, allowing entities in different namespaces to share the same name without conflict. Each name is valid within a scope, or a region of source text where that name may "
+    },
+    {
+      "path": "chapters/visibility-and-privacy.md",
+      "title": "Visibility and privacy",
+      "summary": "Syntax Visibility → pub | pub ( crate ) | pub ( self ) | pub ( super ) | pub ( in SimplePath )"
+    },
+    {
+      "path": "chapters/memory-model.md",
+      "title": "Memory model",
+      "summary": "Warning"
+    },
+    {
+      "path": "chapters/memory-allocation-and-lifetime.md",
+      "title": "Memory allocation and lifetime",
+      "summary": "The items of a program are those functions, modules, and types that have their value calculated at compile-time and stored uniquely in the memory image of the rust process. Items are neither dynamically allocated nor freed."
+    },
+    {
+      "path": "chapters/variables.md",
+      "title": "Variables",
+      "summary": "A variable is a component of a stack frame, either a named function parameter, an anonymous temporary, or a named local variable."
+    },
+    {
+      "path": "chapters/panic.md",
+      "title": "Panic",
+      "summary": "Rust provides a mechanism to prevent a function from returning normally, and instead “panic,” which is a response to an error condition that is typically not expected to be recoverable within the context in which the error is encountered."
+    },
+    {
+      "path": "chapters/linkage.md",
+      "title": "Linkage",
+      "summary": "Note"
+    },
+    {
+      "path": "chapters/inline-assembly.md",
+      "title": "Inline assembly",
+      "summary": "Support for inline assembly is provided via the asm!, naked_asm!, and global_asm! macros. It can be used to embed handwritten assembly in the assembly output generated by the compiler."
+    },
+    {
+      "path": "chapters/unsafety.md",
+      "title": "Unsafety",
+      "summary": "Unsafe operations are those that can potentially violate the memory-safety guarantees of Rust’s static semantics."
+    },
+    {
+      "path": "chapters/unsafe-keyword.md",
+      "title": "The unsafe keyword",
+      "summary": "The unsafe keyword is used to create or discharge the obligation to prove something safe. Specifically:"
+    },
+    {
+      "path": "chapters/behavior-considered-undefined.md",
+      "title": "Behavior considered undefined",
+      "summary": "Rust code is incorrect if it exhibits any of the behaviors in the following list. This includes code within unsafe blocks and unsafe functions. unsafe only means that avoiding undefined behavior is on the programmer; it does not change anything about the fact that Rust programs must never cause undefined behavior."
+    },
+    {
+      "path": "chapters/behavior-not-considered-unsafe.md",
+      "title": "Behavior not considered unsafe",
+      "summary": "The Rust compiler does not consider the following behaviors unsafe, though a programmer may (should) find them undesirable, unexpected, or erroneous."
+    },
+    {
+      "path": "chapters/const_eval.md",
+      "title": "Constant evaluation",
+      "summary": "Constant evaluation is the process of computing the result of expressions during compilation. Only a subset of all expressions can be evaluated at compile-time."
+    },
+    {
+      "path": "chapters/abi.md",
+      "title": "Application binary interface (ABI)",
+      "summary": "This section documents features that affect the ABI of the compiled output of a crate."
+    },
+    {
+      "path": "chapters/runtime.md",
+      "title": "The Rust runtime",
+      "summary": "This section documents features that define some aspects of the Rust runtime."
+    },
+    {
+      "path": "chapters/appendices.md",
+      "title": "Appendices",
+      "summary": ""
+    },
+    {
+      "path": "chapters/grammar.md",
+      "title": "Grammar summary",
+      "summary": "The following is a summary of the grammar production rules. For details on the syntax of this grammar, see notation.grammar.syntax."
+    },
+    {
+      "path": "chapters/syntax-index.md",
+      "title": "Syntax index",
+      "summary": "This appendix provides an index of tokens and common forms with links to where those elements are defined."
+    },
+    {
+      "path": "chapters/macro-ambiguity.md",
+      "title": "Appendix: Macro follow-set ambiguity formal specification",
+      "summary": "This page documents the formal specification of the follow rules for Macros By Example. They were originally specified in RFC 550, from which the bulk of this text is copied, and expanded upon in subsequent RFCs."
+    },
+    {
+      "path": "chapters/influences.md",
+      "title": "Influences",
+      "summary": "Rust is not a particularly original language, with design elements coming from a wide range of sources. Some of these are listed below (including elements that have since been removed):"
+    },
+    {
+      "path": "chapters/test-summary.md",
+      "title": "Test summary",
+      "summary": "The following is a summary of the total tests that are linked to individual rule identifiers within the reference."
+    },
+    {
+      "path": "chapters/glossary.md",
+      "title": "Glossary",
+      "summary": "An ‘abstract syntax tree’, or ‘AST’, is an intermediate representation of the structure of the program when the compiler is compiling it."
+    }
+  ]
+}

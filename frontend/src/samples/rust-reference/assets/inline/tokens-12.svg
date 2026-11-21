@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 476 169">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-BYTE_LITERAL" class="link">
+<text class="comment" x="57" y="25">
+BYTE_LITERAL</text>
+</a>
+<g class="sequence">
+<path d=" M 10 107 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="sequence">
+<g class="terminal">
+<rect x="35" y="96" height="22" width="36" rx="10" ry="10" />
+<text x="53" y="112">
+b'</text>
+</g>
+<g class="labeledbox">
+<rect x="81" y="42" height="117" width="360" />
+<path d=" M 81 107 h 8 m 344 0 h 8" />
+<text class="comment" x="146" y="65">
+no backtracking</text>
+<g class="sequence">
+<g class="multichoice">
+<path d=" M 89 107 h 24" />
+<path d=" M 89 107 a 12 12 0 0 1 12 12" />
+<path d=" M 101 119 v 9" />
+<a xlink:href="#railroad-ASCII_FOR_CHAR" class="link">
+<g class="nonterminal">
+<rect x="113" y="96" height="22" width="132" />
+<text x="179" y="112">
+ASCII_FOR_CHAR</text>
+</g>
+</a>
+<path d=" M 245 107 h 24" />
+<path d=" M 101 128 a 12 12 0 0 0 12 12 h 0" />
+<a xlink:href="#railroad-BYTE_ESCAPE" class="link">
+<g class="nonterminal">
+<rect x="113" y="129" height="22" width="108" />
+<text x="167" y="145">
+BYTE_ESCAPE</text>
+</g>
+</a>
+<path d=" M 221 140 h 24 a 12 12 0 0 0 12 -12" />
+<path d=" M 257 128 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+<g class="terminal">
+<rect x="279" y="96" height="22" width="28" rx="10" ry="10" />
+<text x="293" y="112">
+'</text>
+</g>
+<g class="optional">
+<path d=" M 317 107 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 68 m -31 0 l -5 -5 m 0 10 l 5 -5 m 31 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="#railroad-SUFFIX" class="link">
+<g class="nonterminal">
+<rect x="341" y="96" height="22" width="68" />
+<text x="375" y="112">
+SUFFIX</text>
+</g>
+</a>
+</g>
+<path d=" M 269 107 h 10" />
+<path d=" M 307 107 h 10" />
+</g>
+</g>
+<path d=" M 71 107 h 10" />
+</g>
+<path d=" M 451 107 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 107 h 10" />
+<path d=" M 441 107 h 10" />
+</g>
+</g>
+</svg>

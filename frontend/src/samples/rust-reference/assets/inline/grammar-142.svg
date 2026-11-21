@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 726 175">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-ConstParam" class="link">
+<text class="comment" x="50" y="25">
+ConstParam</text>
+</a>
+<g class="sequence">
+<path d=" M 10 71 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="sequence">
+<g class="terminal">
+<rect x="35" y="60" height="22" width="60" rx="10" ry="10" />
+<text x="65" y="76">
+const</text>
+</g>
+<a xlink:href="#railroad-summary-IDENTIFIER" class="link">
+<g class="nonterminal">
+<rect x="105" y="60" height="22" width="100" />
+<text x="155" y="76">
+IDENTIFIER</text>
+</g>
+</a>
+<g class="terminal">
+<rect x="215" y="60" height="22" width="28" rx="10" ry="10" />
+<text x="229" y="76">
+:</text>
+</g>
+<a xlink:href="#railroad-summary-Type" class="link">
+<g class="nonterminal">
+<rect x="253" y="60" height="22" width="52" />
+<text x="279" y="76">
+Type</text>
+</g>
+</a>
+<g class="optional">
+<path d=" M 315 71 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 328 m -161 0 l -5 -5 m 0 10 l 5 -5 m 161 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<g class="sequence">
+<g class="terminal">
+<rect x="339" y="60" height="22" width="28" rx="10" ry="10" />
+<text x="353" y="76">
+=</text>
+</g>
+<g class="multichoice">
+<path d=" M 377 71 h 24" />
+<path d=" M 377 71 a 12 12 0 0 1 12 12" />
+<path d=" M 389 83 v 9" />
+<path d=" M 389 92 v 50" />
+<a xlink:href="#railroad-summary-BlockExpression" class="link">
+<g class="nonterminal">
+<rect x="401" y="60" height="22" width="140" />
+<text x="471" y="76">
+BlockExpression</text>
+</g>
+</a>
+<path d=" M 541 71 h 126 m -60 0 l -5 -5 m 0 10 l 5 -5 m 60 0" />
+<path d=" M 389 92 a 12 12 0 0 0 12 12 h 0" />
+<a xlink:href="#railroad-summary-IDENTIFIER" class="link">
+<g class="nonterminal">
+<rect x="401" y="93" height="22" width="100" />
+<text x="451" y="109">
+IDENTIFIER</text>
+</g>
+</a>
+<path d=" M 501 104 h 142 m -68 0 l -5 -5 m 0 10 l 5 -5 m 68 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 389 142 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<g class="optional">
+<path d=" M 401 154 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 28 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<g class="terminal">
+<rect x="425" y="143" height="22" width="28" rx="10" ry="10" />
+<text x="439" y="159">
+-</text>
+</g>
+</g>
+<a xlink:href="#railroad-summary-LiteralExpression" class="link">
+<g class="nonterminal">
+<rect x="487" y="143" height="22" width="156" />
+<text x="565" y="159">
+LiteralExpression</text>
+</g>
+</a>
+<path d=" M 477 154 h 10" />
+</g>
+<path d=" M 643 154 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 655 142 v -50" />
+<path d=" M 655 92 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 367 71 h 10" />
+</g>
+</g>
+<path d=" M 95 71 h 10" />
+<path d=" M 205 71 h 10" />
+<path d=" M 243 71 h 10" />
+<path d=" M 305 71 h 10" />
+</g>
+<path d=" M 701 71 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 71 h 10" />
+<path d=" M 691 71 h 10" />
+</g>
+</g>
+</svg>

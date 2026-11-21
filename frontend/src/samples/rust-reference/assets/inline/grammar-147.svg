@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 234 107">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-Implementation" class="link">
+<text class="comment" x="64" y="25">
+Implementation</text>
+</a>
+<g class="sequence">
+<path d=" M 10 53 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="multichoice">
+<path d=" M 35 53 h 24" />
+<path d=" M 35 53 a 12 12 0 0 1 12 12" />
+<path d=" M 47 65 v 9" />
+<a xlink:href="#railroad-summary-InherentImpl" class="link">
+<g class="nonterminal">
+<rect x="59" y="42" height="22" width="116" />
+<text x="117" y="58">
+InherentImpl</text>
+</g>
+</a>
+<path d=" M 175 53 h 24" />
+<path d=" M 47 74 a 12 12 0 0 0 12 12 h 0" />
+<a xlink:href="#railroad-summary-TraitImpl" class="link">
+<g class="nonterminal">
+<rect x="59" y="75" height="22" width="92" />
+<text x="105" y="91">
+TraitImpl</text>
+</g>
+</a>
+<path d=" M 151 86 h 24 a 12 12 0 0 0 12 -12" />
+<path d=" M 187 74 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 209 53 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 53 h 10" />
+<path d=" M 199 53 h 10" />
+</g>
+</g>
+</svg>

@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 706 360">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-LINE_COMMENT" class="link">
+<text class="comment" x="57" y="25">
+LINE_COMMENT</text>
+</a>
+<g class="sequence">
+<path d=" M 10 189 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="multichoice">
+<path d=" M 35 189 h 24" />
+<path d=" M 35 189 a 12 12 0 0 1 12 12" />
+<path d=" M 47 201 v 50" />
+<path d=" M 47 251 v 68 m 0 -31 l -5 -5 m 10 0 l -5 5 m 0 31" />
+<g class="sequence">
+<g class="terminal">
+<rect x="59" y="178" height="22" width="36" rx="10" ry="10" />
+<text x="77" y="194">
+//</text>
+</g>
+<g class="multichoice">
+<path d=" M 105 189 h 24" />
+<path d=" M 105 189 a 12 12 0 0 1 12 12" />
+<path d=" M 117 201 v 17" />
+<g class="labeledbox exceptbox">
+<rect height="166" width="201" x="129" y="42" />
+<path d=" M 129 189 h 8 m 52 0 h 141 m -67 0 l -5 -5 m 0 10 l 5 -5 m 67 0" />
+<g class="verticalgrid">
+<text class="comment" x="229" y="65">
+⚠️ with the exception of</text>
+<g class="multichoice">
+<path d=" M 137 93 h 24" />
+<path d=" M 137 93 a 12 12 0 0 1 12 12" />
+<path d=" M 149 105 v 9" />
+<path d=" M 149 114 v 33" />
+<g class="terminal">
+<rect height="22" rx="10" ry="10" width="28" x="161" y="82" />
+<text x="175" y="98">
+/</text>
+</g>
+<path d=" M 189 93 h 32" />
+<path d=" M 149 114 a 12 12 0 0 0 12 12 h 0" />
+<g class="terminal">
+<rect height="22" rx="10" ry="10" width="28" x="161" y="115" />
+<text x="175" y="131">
+!</text>
+</g>
+<path d=" M 189 126 h 8 a 12 12 0 0 0 12 -12" />
+<path d=" M 149 147 a 12 12 0 0 0 12 12 h 0" />
+<a class="link" xlink:href="whitespace.md#railroad-LF">
+<g class="nonterminal">
+<rect height="22" width="36" x="161" y="148" />
+<text x="179" y="164">
+LF</text>
+</g>
+</a>
+<path d=" M 197 159 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 209 147 v -33" />
+<path d=" M 209 114 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+</g>
+<a class="link" xlink:href="input-format.md#railroad-CHAR">
+<g class="nonterminal">
+<rect height="22" width="52" x="137" y="178" />
+<text x="163" y="194">
+CHAR</text>
+</g>
+</a>
+</g>
+<path d=" M 330 189 h 24" />
+<path d=" M 117 218 a 12 12 0 0 0 12 12 h 0" />
+<g class="terminal">
+<rect x="129" y="219" height="22" width="36" rx="10" ry="10" />
+<text x="147" y="235">
+//</text>
+</g>
+<path d=" M 165 230 h 165 m -79 0 l -5 -5 m 0 10 l 5 -5 m 79 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 342 218 v -17 a 12 12 0 0 1 12 -12" />
+</g>
+<g class="optional">
+<path d=" M 364 189 h 24 m -24 0 a 12 12 0 0 0 12 -12 v -74 m 0 40 l -5 5 m 10 0 l -5 -5 m 0 -40 a 12 12 0 0 1 12 -12 h 235 m -114 0 l -5 -5 m 0 10 l 5 -5 m 114 0 a 12 12 0 0 1 12 12 v 74 m 0 -34 l -5 -5 m 10 0 l -5 5 m 0 34 a 12 12 0 0 0 12 12 h -24" />
+<g class="repeat">
+<path d=" M 388 189 h 5 h 12 m 201 0 h 12 h 5 m -17 0 a 12 12 0 0 1 12 12 v 5 a 12 12 0 0 1 -12 12 m 0 0 h -201 m 103 0 l 5 -5 m 0 10 l -5 -5 m -103 0 a 12 12 0 0 1 -12 -12 v -5 a 12 12 0 0 1 12 -12" />
+<g>
+</g>
+<g class="labeledbox exceptbox">
+<rect height="100" width="201" x="405" y="108" />
+<path d=" M 405 189 h 8 m 52 0 h 141 m -67 0 l -5 -5 m 0 10 l 5 -5 m 67 0" />
+<g class="verticalgrid">
+<text class="comment" x="505" y="131">
+⚠️ with the exception of</text>
+<a class="link" xlink:href="whitespace.md#railroad-LF">
+<g class="nonterminal">
+<rect height="22" width="36" x="413" y="148" />
+<text x="431" y="164">
+LF</text>
+</g>
+</a>
+</g>
+<a class="link" xlink:href="input-format.md#railroad-CHAR">
+<g class="nonterminal">
+<rect height="22" width="52" x="413" y="178" />
+<text x="439" y="194">
+CHAR</text>
+</g>
+</a>
+</g>
+</g>
+</g>
+<path d=" M 95 189 h 10" />
+<path d=" M 354 189 h 10" />
+</g>
+<path d=" M 647 189 h 24" />
+<path d=" M 47 251 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<g class="terminal">
+<rect x="59" y="252" height="22" width="36" rx="10" ry="10" />
+<text x="77" y="268">
+//</text>
+</g>
+<a xlink:href="input-format.md#railroad-EOF" class="link">
+<g class="nonterminal">
+<rect x="105" y="252" height="22" width="44" />
+<text x="127" y="268">
+EOF</text>
+</g>
+</a>
+<path d=" M 95 263 h 10" />
+</g>
+<path d=" M 149 263 h 498 m -246 0 l -5 -5 m 0 10 l 5 -5 m 246 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 47 319 a 12 12 0 0 0 12 12 h 0" />
+<g class="labeledbox">
+<rect x="59" y="284" height="66" width="215" />
+<path d=" M 59 331 h 8 m 36 0 h 171 m -82 0 l -5 -5 m 0 10 l 5 -5 m 82 0" />
+<text class="comment" x="166" y="307">
+immediately followed by LF</text>
+<g class="terminal">
+<rect x="67" y="320" height="22" width="36" rx="10" ry="10" />
+<text x="85" y="336">
+//</text>
+</g>
+</g>
+<path d=" M 274 331 h 373 m -183 0 l -5 -5 m 0 10 l 5 -5 m 183 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 659 319 v -68 m 0 37 l -5 5 m 10 0 l -5 -5 m 0 -37" />
+<path d=" M 659 251 v -50 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 681 189 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 189 h 10" />
+<path d=" M 671 189 h 10" />
+</g>
+</g>
+</svg>

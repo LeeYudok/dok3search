@@ -1,4 +1,4 @@
-import { categories, documentFormats, documents, isReferenceCategory, searchDocuments, titleMatches, type Document } from './documents'
+import { categories, documentFormats, documents, isReferenceTopic, isReferenceTopicFilter, searchDocuments, titleMatches, topics, type Document, type ReferenceTopic } from './documents'
 
 export type DataSourceMode = 'api' | 'local-fallback' | 'local-reference'
 
@@ -12,6 +12,7 @@ export type SearchHitItem = {
   tag: string
   date?: string
   samplePath?: string
+  topic?: ReferenceTopic
   hasPairedFormats: boolean
 }
 
@@ -34,6 +35,7 @@ export type SearchViewResult = {
   totalPages: number
   totalUnfilteredHits: number
   categoryCounts: CategoryCountItem[]
+  topicCounts: Array<{ id: ReferenceTopic; label: string; count: number }>
   relatedSearches: string[]
   hits: SearchHitItem[]
   snapshot: SnapshotInfo
@@ -55,6 +57,7 @@ export type ReaderDocument = {
   body: string
   markdown?: string
   samplePath?: string
+  topic?: ReferenceTopic
   formats?: DocumentFormatPair
 }
 
@@ -77,6 +80,13 @@ function optionalString(record: Record<string, unknown>, key: string): string | 
     throw new Error(`Invalid API field '${key}': expected string or null`)
   }
   return value
+}
+
+function optionalTopic(record: Record<string, unknown>): ReferenceTopic | undefined {
+  const topic = optionalString(record, 'topic')
+  if (topic === undefined) return undefined
+  if (!isReferenceTopicFilter(topic)) throw new Error("Invalid API field 'topic'")
+  return topic
 }
 
 function expectNumber(record: Record<string, unknown>, key: string): number {
@@ -115,6 +125,7 @@ function parseSearchHit(raw: unknown): SearchHitItem {
     tag: expectString(raw, 'tag'),
     date: optionalString(raw, 'date'),
     samplePath: optionalString(raw, 'sample_path'),
+    topic: optionalTopic(raw),
     hasPairedFormats: expectBoolean(raw, 'has_paired_formats'),
   }
 }
@@ -145,6 +156,7 @@ function parseSearchResponse(raw: unknown): SearchViewResult {
     totalPages: expectNumber(raw, 'total_pages'),
     totalUnfilteredHits: expectNumber(raw, 'total_unfiltered_hits'),
     categoryCounts: rawCounts.map(parseCategoryCount),
+    topicCounts: [],
     relatedSearches: expectStringArray(raw, 'related_searches'),
     hits: rawHits.map(parseSearchHit),
     snapshot: {
@@ -176,6 +188,7 @@ function parseDocumentDetail(raw: unknown): ReaderDocument {
     body: expectString(raw, 'body'),
     markdown: optionalString(raw, 'markdown'),
     samplePath: optionalString(raw, 'sample_path'),
+    topic: optionalTopic(raw),
     formats,
   }
 }
@@ -195,10 +208,13 @@ export function searchLocalDocuments(
   requestedPage: number,
   limit: number,
   corpus: readonly Document[] = documents,
+  topic = '',
 ): SearchViewResult {
   const matches = searchDocuments(query, corpus)
-  const visible = category ? matches.filter((doc) => doc.category === category) : matches
-  if (query && isReferenceCategory(category)) {
+  const visible = matches.filter((doc) =>
+    (!category || doc.category === category) && (!topic || doc.topic === topic),
+  )
+  if (query && (topic || isReferenceTopic(category))) {
     visible.sort((a, b) => Number(titleMatches(query, b)) - Number(titleMatches(query, a)))
   }
   const pageCount = Math.ceil(visible.length / limit)
@@ -226,6 +242,10 @@ export function searchLocalDocuments(
       label: item.label,
       count: matches.filter((doc) => doc.category === item.id).length,
     })),
+    topicCounts: topics.map((item) => ({
+      ...item,
+      count: matches.filter((doc) => doc.topic === item.id).length,
+    })),
     relatedSearches,
     hits: pageDocuments.map((doc) => ({
       documentId: doc.id,
@@ -237,6 +257,7 @@ export function searchLocalDocuments(
       tag: doc.tag,
       date: doc.date,
       samplePath: doc.samplePath,
+      topic: doc.topic,
       hasPairedFormats: Boolean(documentFormats(doc.id)),
     })),
     snapshot: {
@@ -261,6 +282,7 @@ function localFallbackDocument(id: string): ReaderDocument | null {
     body: doc.body,
     markdown: doc.markdown,
     samplePath: doc.samplePath,
+    topic: doc.topic,
     formats: formats
       ? { markdownId: formats.markdown.id, yamlId: formats.yaml.id }
       : undefined,
@@ -335,7 +357,8 @@ export async function fetchDocument(
     if (response.status === 404) {
       const contentType = response.headers.get('content-type') ?? ''
       if (contentType.includes('application/json')) {
-        return { doc: null, mode: 'api' }
+        const doc = localFallbackDocument(id)
+        return doc ? { doc, mode: 'local-fallback' } : { doc: null, mode: 'api' }
       }
       return { doc: localFallbackDocument(id), mode: 'local-fallback' }
     }
@@ -362,9 +385,8 @@ export async function fetchDocument(
     if (err instanceof DOMException && err.name === 'AbortError') {
       throw err
     }
-    if (err instanceof TypeError) {
-      return { doc: localFallbackDocument(id), mode: 'local-fallback' }
-    }
+    const doc = localFallbackDocument(id)
+    if (doc) return { doc, mode: 'local-fallback' }
     throw err
   }
 }

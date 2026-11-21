@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 576 188">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-HEX_LITERAL" class="link">
+<text class="comment" x="53" y="25">
+HEX_LITERAL</text>
+</a>
+<g class="sequence">
+<path d=" M 10 111 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="sequence">
+<g class="terminal">
+<rect x="35" y="100" height="22" width="36" rx="10" ry="10" />
+<text x="53" y="116">
+0x</text>
+</g>
+<g class="labeledbox">
+<rect x="81" y="42" height="136" width="460" />
+<path d=" M 81 111 h 8 m 444 0 h 8" />
+<text class="comment" x="146" y="65">
+no backtracking</text>
+<g class="sequence">
+<g class="optional">
+<path d=" M 89 111 h 24 m -24 0 a 12 12 0 0 0 12 -12 v -4 a 12 12 0 0 1 12 -12 h 62 m -28 0 l -5 -5 m 0 10 l 5 -5 m 28 0 a 12 12 0 0 1 12 12 v 4 a 12 12 0 0 0 12 12 h -24" />
+<g class="repeat">
+<path d=" M 113 111 h 5 h 12 m 28 0 h 12 h 5 m -17 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 m 0 0 h -28 a 12 12 0 0 1 -12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<g>
+</g>
+<g class="terminal">
+<rect x="130" y="100" height="22" width="28" rx="10" ry="10" />
+<text x="144" y="116">
+_</text>
+</g>
+</g>
+</g>
+<a xlink:href="#railroad-summary-HEX_DIGIT" class="link">
+<g class="nonterminal">
+<rect x="209" y="100" height="22" width="92" />
+<text x="255" y="116">
+HEX_DIGIT</text>
+</g>
+</a>
+<g class="optional">
+<path d=" M 311 111 h 24 m -24 0 a 12 12 0 0 0 12 -12 v -4 a 12 12 0 0 1 12 -12 h 174 m -84 0 l -5 -5 m 0 10 l 5 -5 m 84 0 a 12 12 0 0 1 12 12 v 4 a 12 12 0 0 0 12 12 h -24" />
+<g class="repeat">
+<path d=" M 335 111 h 5 h 12 m 140 0 h 12 h 5 m -17 0 a 12 12 0 0 1 12 12 v 30 a 12 12 0 0 1 -12 12 m 0 0 h -140 m 73 0 l 5 -5 m 0 10 l -5 -5 m -73 0 a 12 12 0 0 1 -12 -12 v -30 a 12 12 0 0 1 12 -12" />
+<g>
+</g>
+<g class="multichoice">
+<path d=" M 352 111 h 24" />
+<path d=" M 352 111 a 12 12 0 0 1 12 12" />
+<path d=" M 364 123 v 9" />
+<a xlink:href="#railroad-summary-HEX_DIGIT" class="link">
+<g class="nonterminal">
+<rect x="376" y="100" height="22" width="92" />
+<text x="422" y="116">
+HEX_DIGIT</text>
+</g>
+</a>
+<path d=" M 468 111 h 24" />
+<path d=" M 364 132 a 12 12 0 0 0 12 12 h 0" />
+<g class="terminal">
+<rect x="376" y="133" height="22" width="28" rx="10" ry="10" />
+<text x="390" y="149">
+_</text>
+</g>
+<path d=" M 404 144 h 64 m -29 0 l -5 -5 m 0 10 l 5 -5 m 29 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 480 132 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+</g>
+</g>
+<path d=" M 199 111 h 10" />
+<path d=" M 301 111 h 10" />
+</g>
+</g>
+<path d=" M 71 111 h 10" />
+</g>
+<path d=" M 551 111 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 111 h 10" />
+<path d=" M 541 111 h 10" />
+</g>
+</g>
+</svg>

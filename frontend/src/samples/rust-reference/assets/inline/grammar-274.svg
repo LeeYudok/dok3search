@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 218 206">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-SimplePathSegment" class="link">
+<text class="comment" x="74" y="25">
+SimplePathSegment</text>
+</a>
+<g class="sequence">
+<path d=" M 10 53 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="multichoice">
+<path d=" M 35 53 h 24" />
+<path d=" M 35 53 a 12 12 0 0 1 12 12" />
+<path d=" M 47 65 v 9" />
+<path d=" M 47 74 v 33" />
+<path d=" M 47 107 v 33" />
+<path d=" M 47 140 v 33" />
+<g class="sequence">
+<a xlink:href="#railroad-summary-IDENTIFIER" class="link">
+<g class="nonterminal">
+<rect x="59" y="42" height="22" width="100" />
+<text x="109" y="58">
+IDENTIFIER</text>
+</g>
+</a>
+</g>
+<path d=" M 159 53 h 24" />
+<path d=" M 47 74 a 12 12 0 0 0 12 12 h 0" />
+<g class="terminal">
+<rect x="59" y="75" height="22" width="60" rx="10" ry="10" />
+<text x="89" y="91">
+super</text>
+</g>
+<path d=" M 119 86 h 40 a 12 12 0 0 0 12 -12" />
+<path d=" M 47 107 a 12 12 0 0 0 12 12 h 0" />
+<g class="terminal">
+<rect x="59" y="108" height="22" width="52" rx="10" ry="10" />
+<text x="85" y="124">
+self</text>
+</g>
+<path d=" M 111 119 h 48 a 12 12 0 0 0 12 -12" />
+<path d=" M 47 140 a 12 12 0 0 0 12 12 h 0" />
+<g class="terminal">
+<rect x="59" y="141" height="22" width="60" rx="10" ry="10" />
+<text x="89" y="157">
+crate</text>
+</g>
+<path d=" M 119 152 h 40 a 12 12 0 0 0 12 -12" />
+<path d=" M 47 173 a 12 12 0 0 0 12 12 h 0" />
+<g class="terminal">
+<rect x="59" y="174" height="22" width="68" rx="10" ry="10" />
+<text x="93" y="190">
+$crate</text>
+</g>
+<path d=" M 127 185 h 32 a 12 12 0 0 0 12 -12" />
+<path d=" M 171 173 v -33" />
+<path d=" M 171 140 v -33" />
+<path d=" M 171 107 v -33" />
+<path d=" M 171 74 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 193 53 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 53 h 10" />
+<path d=" M 183 53 h 10" />
+</g>
+</g>
+</svg>

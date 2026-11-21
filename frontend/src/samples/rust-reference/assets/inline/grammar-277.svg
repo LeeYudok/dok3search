@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 334 189">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-PathIdentSegment" class="link">
+<text class="comment" x="71" y="25">
+PathIdentSegment</text>
+</a>
+<g class="sequence">
+<path d=" M 10 78 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="multichoice">
+<path d=" M 35 78 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<path d=" M 59 54 h 124 m -59 0 l -5 -5 m 0 10 l 5 -5 m 59 0" />
+<path d=" M 35 78 h 24" />
+<path d=" M 35 78 a 12 12 0 0 1 12 12" />
+<path d=" M 47 90 v 9" />
+<path d=" M 47 99 v 33" />
+<g class="sequence">
+<a xlink:href="#railroad-summary-IDENTIFIER" class="link">
+<g class="nonterminal">
+<rect x="59" y="67" height="22" width="100" />
+<text x="109" y="83">
+IDENTIFIER</text>
+</g>
+</a>
+</g>
+<path d=" M 159 78 h 0 a 12 12 0 0 1 12 12" />
+<path d=" M 47 99 a 12 12 0 0 0 12 12 h 0" />
+<g class="terminal">
+<rect x="59" y="100" height="22" width="60" rx="10" ry="10" />
+<text x="89" y="116">
+super</text>
+</g>
+<path d=" M 119 111 h 40 a 12 12 0 0 1 12 12" />
+<path d=" M 47 132 a 12 12 0 0 0 12 12 h 0" />
+<g class="terminal">
+<rect x="59" y="133" height="22" width="52" rx="10" ry="10" />
+<text x="85" y="149">
+self</text>
+</g>
+<path d=" M 111 144 h 48 a 12 12 0 0 1 12 12" />
+<path d=" M 171 90 v 33" />
+<path d=" M 171 123 v 33" />
+<path d=" M 171 156 v -1 a 12 12 0 0 0 12 12" />
+<path d=" M 183 54 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12" />
+<path d=" M 195 66 v 33" />
+<path d=" M 195 99 v 33" />
+<g class="terminal">
+<rect x="207" y="67" height="22" width="52" rx="10" ry="10" />
+<text x="233" y="83">
+Self</text>
+</g>
+<path d=" M 259 78 h 16 h 24" />
+<path d=" M 195 99 a 12 12 0 0 0 12 12 h 0" />
+<g class="terminal">
+<rect x="207" y="100" height="22" width="60" rx="10" ry="10" />
+<text x="237" y="116">
+crate</text>
+</g>
+<path d=" M 267 111 h 8 a 12 12 0 0 0 12 -12" />
+<path d=" M 195 132 a 12 12 0 0 0 12 12 h 0" />
+<g class="terminal">
+<rect x="207" y="133" height="22" width="68" rx="10" ry="10" />
+<text x="241" y="149">
+$crate</text>
+</g>
+<path d=" M 275 144 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 183 167 h 92 m -43 0 l -5 -5 m 0 10 l 5 -5 m 43 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 287 155 v -23" />
+<path d=" M 287 132 v -33" />
+<path d=" M 287 99 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 309 78 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 78 h 10" />
+<path d=" M 299 78 h 10" />
+</g>
+</g>
+</svg>

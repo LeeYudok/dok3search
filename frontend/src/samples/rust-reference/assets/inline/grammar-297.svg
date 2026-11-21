@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 330 206">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-ModernRangePattern" class="link">
+<text class="comment" x="78" y="25">
+ModernRangePattern</text>
+</a>
+<g class="sequence">
+<path d=" M 10 53 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="multichoice">
+<path d=" M 35 53 h 24" />
+<path d=" M 35 53 a 12 12 0 0 1 12 12" />
+<path d=" M 47 65 v 9" />
+<path d=" M 47 74 v 33" />
+<path d=" M 47 107 v 33" />
+<path d=" M 47 140 v 33" />
+<g class="sequence">
+<a xlink:href="#railroad-summary-RangeExclusivePattern" class="link">
+<g class="nonterminal">
+<rect x="59" y="42" height="22" width="196" />
+<text x="157" y="58">
+RangeExclusivePattern</text>
+</g>
+</a>
+</g>
+<path d=" M 255 53 h 40" />
+<path d=" M 47 74 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-summary-RangeInclusivePattern" class="link">
+<g class="nonterminal">
+<rect x="59" y="75" height="22" width="196" />
+<text x="157" y="91">
+RangeInclusivePattern</text>
+</g>
+</a>
+</g>
+<path d=" M 255 86 h 16 a 12 12 0 0 0 12 -12" />
+<path d=" M 47 107 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-summary-RangeFromPattern" class="link">
+<g class="nonterminal">
+<rect x="59" y="108" height="22" width="148" />
+<text x="133" y="124">
+RangeFromPattern</text>
+</g>
+</a>
+</g>
+<path d=" M 207 119 h 64 m -29 0 l -5 -5 m 0 10 l 5 -5 m 29 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 47 140 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-summary-RangeToExclusivePattern" class="link">
+<g class="nonterminal">
+<rect x="59" y="141" height="22" width="212" />
+<text x="165" y="157">
+RangeToExclusivePattern</text>
+</g>
+</a>
+</g>
+<path d=" M 271 152 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 47 173 a 12 12 0 0 0 12 12 h 0" />
+<a xlink:href="#railroad-summary-RangeToInclusivePattern" class="link">
+<g class="nonterminal">
+<rect x="59" y="174" height="22" width="212" />
+<text x="165" y="190">
+RangeToInclusivePattern</text>
+</g>
+</a>
+<path d=" M 271 185 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 283 173 v -33" />
+<path d=" M 283 140 v -33" />
+<path d=" M 283 107 v -33" />
+<path d=" M 283 74 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 305 53 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 53 h 10" />
+<path d=" M 295 53 h 10" />
+</g>
+</g>
+</svg>

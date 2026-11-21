@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 327 118">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-MacroRepSep" class="link">
+<text class="comment" x="53" y="25">
+MacroRepSep</text>
+</a>
+<g class="sequence">
+<path d=" M 10 89 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="labeledbox">
+<rect x="35" y="42" height="66" width="257" />
+<path d=" M 35 89 h 8 m 60 0 h 189 m -91 0 l -5 -5 m 0 10 l 5 -5 m 91 0" />
+<text class="comment" x="163" y="65">
+except delimiters and MacroRepOp</text>
+<a xlink:href="tokens.md#railroad-Token" class="link">
+<g class="nonterminal">
+<rect x="43" y="78" height="22" width="60" />
+<text x="73" y="94">
+Token</text>
+</g>
+</a>
+</g>
+<path d=" M 302 89 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 89 h 10" />
+<path d=" M 292 89 h 10" />
+</g>
+</g>
+</svg>
