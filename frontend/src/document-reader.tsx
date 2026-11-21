@@ -17,6 +17,7 @@ type MarkdownNode = {
   tagName?: string
   url?: string
   properties?: { href?: unknown }
+  position?: { start?: { line?: number } }
   children?: readonly MarkdownNode[]
 }
 
@@ -58,20 +59,24 @@ function grammarAnchorForNode(node: MarkdownNode | null | undefined) {
   const link = node?.children?.find((child) => {
     if (child.type !== 'link' && !(child.type === 'element' && child.tagName === 'a')) return false
     const href = child.url ?? (typeof child.properties?.href === 'string' ? child.properties.href : undefined)
-    return Boolean(href?.startsWith('#railroad-') || href?.startsWith('#grammar-'))
+    return Boolean(href?.startsWith('#railroad-'))
   })
   const href = link?.url ?? (typeof link?.properties?.href === 'string' ? link.properties.href : undefined)
   if (!href) return undefined
-  return href.startsWith('#railroad-') ? 'grammar-' + href.slice('#railroad-'.length) : href.slice(1)
+  return 'grammar-' + href.slice('#railroad-'.length)
 }
 
-function markdownBlockAnchorIds(markdown: string) {
+function markdownBlockAnchors(markdown: string) {
   const ids = new Set<string>()
+  const byLine = new Map<number, string>()
   for (const node of designParser.parse(markdown).children as MarkdownNode[]) {
     const anchor = grammarAnchorForNode(node)
-    if (anchor) ids.add(anchor)
+    if (!anchor) continue
+    ids.add(anchor)
+    const line = node.position?.start?.line
+    if (line) byLine.set(line, anchor)
   }
-  return ids
+  return { ids, byLine }
 }
 
 function decodedHash(hash: string) {
@@ -113,7 +118,7 @@ function MarkdownBody({ markdown, sections, samplePath, corpus, corpora }: {
     return sections.find((entry) => entry.line === line)?.id
   }
   const referenceDocuments = corpora?.flatMap((item) => item.documents.map((doc) => ({ corpus: item, doc }))) ?? []
-  const blockAnchorIds = markdownBlockAnchorIds(markdown)
+  const blockAnchors = markdownBlockAnchors(markdown)
 
   return (
     <div className="markdown-body">
@@ -127,7 +132,7 @@ function MarkdownBody({ markdown, sections, samplePath, corpus, corpora }: {
           h4: ({ children, node }) => <h4 id={headingId(node?.position?.start.line)}>{children}</h4>,
           h5: ({ children, node }) => <h5 id={headingId(node?.position?.start.line)}>{children}</h5>,
           h6: ({ children, node }) => <h6 id={headingId(node?.position?.start.line)}>{children}</h6>,
-          p: ({ children, node }) => <p id={grammarAnchorForNode(node)}>{children}</p>,
+          p: ({ children, node }) => <p id={blockAnchors.byLine.get(node?.position?.start?.line ?? 0)}>{children}</p>,
           img: ({ src, alt }) => src ? <img src={src} alt={alt ?? ''} loading="lazy" /> : null,
           a: ({ href, title, children }) => !href
             ? <span>{children}</span>
@@ -144,7 +149,7 @@ function MarkdownBody({ markdown, sections, samplePath, corpus, corpora }: {
           if (!safeUrl) return ''
           if (isExternalUrl(safeUrl)) return key === 'src' ? '' : safeUrl
           if (safeUrl.startsWith('#')) {
-            const sectionId = sectionIdForHash(sections, safeUrl, corpus, blockAnchorIds)
+            const sectionId = sectionIdForHash(sections, safeUrl, corpus, blockAnchors.ids)
             return sectionId ? '#' + encodeURIComponent(sectionId) : ''
           }
           if (!samplePath) return ''
@@ -167,7 +172,7 @@ function MarkdownBody({ markdown, sections, samplePath, corpus, corpora }: {
                 markdownSections(linkedDoc.markdown, Boolean(linkedCorpus)),
                 target.hash,
                 linkedCorpus,
-                markdownBlockAnchorIds(linkedDoc.markdown),
+                markdownBlockAnchors(linkedDoc.markdown).ids,
               )
             : undefined
           const section = sectionId ? '#' + encodeURIComponent(sectionId) : ''

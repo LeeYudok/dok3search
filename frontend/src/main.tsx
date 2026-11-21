@@ -80,6 +80,25 @@ async function fetchSearchPage(
   }
 
   if (category && documents.some((doc) => doc.category === category)) {
+    let search: Awaited<ReturnType<typeof fetchSearch>> | undefined
+    try {
+      search = await fetchSearch({ query, category, page, limit: pageSize }, signal)
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') throw error
+    }
+    if (search?.mode === 'api') {
+      const categoryCounts = search.result.categoryCounts.filter(({ id }) => categories.some((item) => item.id === id))
+      const local = searchLocalDocuments(query, '', 1, pageSize, documents)
+      return {
+        result: {
+          ...search.result,
+          categoryCounts,
+          topicCounts: local.topicCounts,
+        },
+        mode: 'api',
+      }
+    }
+
     const allLocal = searchLocalDocuments(query, '', 1, pageSize, documents)
     const local = searchLocalDocuments(query, category, page, pageSize, documents)
     return {
