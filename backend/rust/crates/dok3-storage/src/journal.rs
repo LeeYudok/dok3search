@@ -14,6 +14,7 @@ use crate::fsutil::{acquire_exclusive_lock, storage_err, sync_dir};
 struct JournalState {
     last: u64,
     poisoned: bool,
+    dir_synced: bool,
 }
 
 /// Durable single-writer change journal. Assigns sequences strictly monotonically (`last + 1`);
@@ -34,6 +35,7 @@ impl FileChangeJournal {
 
         let path = root.join("journal.jsonl");
         let (events, valid_len) = read_all(&path)?;
+        let mut dir_synced = false;
         if path.exists() {
             let len = fs::metadata(&path)
                 .map_err(|e| storage_err("stat journal", e))?
@@ -46,8 +48,9 @@ impl FileChangeJournal {
                 f.set_len(valid_len)
                     .map_err(|e| storage_err("truncate journal", e))?;
                 f.sync_all().map_err(|e| storage_err("fsync journal", e))?;
-                sync_dir(root)?;
             }
+            sync_dir(root)?;
+            dir_synced = true;
         }
         let last = events.last().map_or(0, |e| e.sequence.get());
         Ok(Self {
@@ -56,6 +59,7 @@ impl FileChangeJournal {
             state: Mutex::new(JournalState {
                 last,
                 poisoned: false,
+                dir_synced,
             }),
         })
     }
@@ -66,13 +70,15 @@ impl FileChangeJournal {
             .map_err(|_| Dok3Error::Internal("journal mutex poisoned".to_string()))
     }
 
-    fn append_with_hooks<W, R>(
+    fn append_with_hooks<S, W, R>(
         &self,
         mut change: ChangeEvent,
+        sync_dir_fn: S,
         write_fn: W,
         rollback_fn: R,
     ) -> Result<Sequence, Dok3Error>
     where
+        S: FnOnce(&Path) -> Result<(), Dok3Error>,
         W: FnOnce(&mut File, &[u8]) -> io::Result<()>,
         R: FnOnce(&mut File, u64) -> io::Result<()>,
     {
@@ -88,7 +94,6 @@ impl FileChangeJournal {
         let mut line = serde_json::to_vec(&change).map_err(|e| storage_err("encode event", e))?;
         line.push(b'\n');
 
-        let existed = self.path.exists();
         let mut f = OpenOptions::new()
             .create(true)
             .read(true)
@@ -96,10 +101,13 @@ impl FileChangeJournal {
             .truncate(false)
             .open(&self.path)
             .map_err(|e| storage_err("open journal", e))?;
-        // Fsync parent dir right after creating journal.jsonl so write/sync failure cannot
-        // leave an unindexed first entry if directory durability fails.
-        if !existed && let Some(parent) = self.path.parent() {
-            sync_dir(parent)?;
+        // Track directory durability explicitly so a retry continues syncing parent dir
+        // even if a prior attempt already created an empty journal.jsonl on disk.
+        if !state.dir_synced
+            && let Some(parent) = self.path.parent()
+        {
+            sync_dir_fn(parent)?;
+            state.dir_synced = true;
         }
         let prev_len = f
             .seek(SeekFrom::End(0))
@@ -129,7 +137,7 @@ fn rollback_truncate(f: &mut File, prev_len: u64) -> io::Result<()> {
 
 impl ChangeJournalPort for FileChangeJournal {
     fn append(&self, change: ChangeEvent) -> Result<Sequence, Dok3Error> {
-        self.append_with_hooks(change, write_and_sync, rollback_truncate)
+        self.append_with_hooks(change, sync_dir, write_and_sync, rollback_truncate)
     }
 
     fn read_after(&self, seq: Sequence, limit: usize) -> Result<Vec<ChangeEvent>, Dok3Error> {
@@ -202,7 +210,8 @@ mod tests {
         ChangeEvent, ChangeJournalPort, ChangeKind, DocumentId, RevisionId, Sequence,
     };
 
-    use super::{FileChangeJournal, rollback_truncate};
+    use super::{FileChangeJournal, rollback_truncate, write_and_sync};
+    use crate::fsutil::sync_dir;
 
     struct TempDir(PathBuf);
 
@@ -245,6 +254,7 @@ mod tests {
         let err = journal
             .append_with_hooks(
                 sample_event("partial"),
+                sync_dir,
                 |f, line| {
                     f.write_all(&line[..line.len() / 2])?;
                     Err(io::Error::other("simulated disk full"))
@@ -266,6 +276,60 @@ mod tests {
     }
 
     #[test]
+    fn failed_initial_dir_sync_retries_sync_dir_on_next_append() {
+        let dir = TempDir::new("dir-sync-retry");
+        let journal = FileChangeJournal::open(&dir.0).unwrap();
+
+        let err = journal
+            .append_with_hooks(
+                sample_event("first-fail"),
+                |_| {
+                    Err(Dok3Error::Storage(
+                        "simulated dir fsync failure".to_string(),
+                    ))
+                },
+                write_and_sync,
+                rollback_truncate,
+            )
+            .unwrap_err();
+        assert!(matches!(err, Dok3Error::Storage(msg) if msg.contains("dir fsync")));
+        // journal.jsonl now exists on disk (empty) from the failed first attempt.
+        assert!(dir.0.join("journal.jsonl").exists());
+
+        // Retry even with existing empty file must STILL invoke sync_dir_fn before writing seq 1.
+        let mut sync_calls = 0usize;
+        let seq = journal
+            .append_with_hooks(
+                sample_event("recovered"),
+                |parent| {
+                    sync_calls += 1;
+                    sync_dir(parent)
+                },
+                write_and_sync,
+                rollback_truncate,
+            )
+            .unwrap();
+        assert_eq!(sync_calls, 1);
+        assert_eq!(seq, Sequence::new(1));
+
+        // Subsequent append does not re-sync the directory unnecessarily.
+        let mut subsequent_sync_calls = 0usize;
+        let seq2 = journal
+            .append_with_hooks(
+                sample_event("second"),
+                |_| {
+                    subsequent_sync_calls += 1;
+                    Ok(())
+                },
+                write_and_sync,
+                rollback_truncate,
+            )
+            .unwrap();
+        assert_eq!(subsequent_sync_calls, 0);
+        assert_eq!(seq2, Sequence::new(2));
+    }
+
+    #[test]
     fn failed_rollback_poisons_journal_until_reopen() {
         let dir = TempDir::new("poison");
         let journal = FileChangeJournal::open(&dir.0).unwrap();
@@ -273,6 +337,7 @@ mod tests {
         let err = journal
             .append_with_hooks(
                 sample_event("a"),
+                sync_dir,
                 |f, line| {
                     f.write_all(&line[..4])?;
                     Err(io::Error::other("write failed"))
