@@ -151,6 +151,7 @@ async fn internal_documents_are_blocked_over_http_for_public_principal() {
         title: "내부 보안 지침".to_string(),
         summary: "대외비".to_string(),
         category: "policy".to_string(),
+        topic: None,
         tag: "보안".to_string(),
         tags: vec!["보안".to_string()],
         keywords: vec![],

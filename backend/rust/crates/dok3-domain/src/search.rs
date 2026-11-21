@@ -103,6 +103,8 @@ pub struct SearchHit {
     pub summary: String,
     pub snippet: String,
     pub category: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub topic: Option<String>,
     pub source: String,
     pub tag: String,
     pub tags: Vec<String>,

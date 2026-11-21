@@ -283,6 +283,7 @@ fn build_design_document(
         title,
         summary,
         category: "design".to_string(),
+        topic: None,
         tag: tag.to_string(),
         tags: vec![tag.to_string()],
         keywords: vec!["dok3search-design".to_string()],
@@ -700,6 +701,8 @@ fn builtin_sample_documents() -> Vec<Document> {
                 title: item.title.to_string(),
                 summary: item.summary.to_string(),
                 category: item.category.to_string(),
+                topic: matches!(item.id, "rust-workspace" | "worker-guide" | "test-data")
+                    .then(|| "rust".to_string()),
                 tag: item.tag.to_string(),
                 tags: vec![item.tag.to_string()],
                 keywords: vec![item.tag.to_string()],

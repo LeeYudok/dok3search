@@ -28,6 +28,7 @@ fn make_doc(id: &str, title: &str, category: &str, scope: AclScope, body: &str) 
         title: title.to_string(),
         summary: format!("{title} 요약"),
         category: category.to_string(),
+        topic: None,
         tag: "테스트".to_string(),
         tags: vec!["테스트".to_string()],
         keywords: vec![],
@@ -58,6 +59,23 @@ fn seed_search_pairs_markdown_and_yaml_and_preserves_unfiltered_counts() {
     let repo = Arc::new(InMemorySearchRepository::from_seed(Some(&design_dir)));
     let service = SearchService::new(repo.clone(), repo);
     let public = Principal::anonymous_public();
+
+    let guide_resp = service
+        .search(
+            &public,
+            &SearchRequest {
+                filters: SearchFilters {
+                    category: Some("guide".to_string()),
+                    ..SearchFilters::default()
+                },
+                limit: 100,
+                ..SearchRequest::default()
+            },
+        )
+        .unwrap();
+    assert!(guide_resp.hits.iter().any(|hit| {
+        hit.document_id.as_str() == "rust-workspace" && hit.topic.as_deref() == Some("rust")
+    }));
 
     // "entrypoints" exists in index.yaml and not in index.md body; paired search must return design-index-md once.
     let yaml_term_resp = service

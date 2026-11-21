@@ -30,13 +30,26 @@ function loadReferenceCorpora(documentId?: string): Promise<ReferenceCorpus[]> {
   return Promise.all(sources.map(({ load }) => load()))
 }
 
+function inferGuideTopic(hit: SearchViewResult['hits'][number]) {
+  const metadata = `${hit.tag} ${hit.source} ${hit.title}`
+  if (/\brust\b|러스트/i.test(metadata)) return 'rust' as const
+  if (/\bgo(?:lang)?\b|고랭/i.test(metadata)) return 'go' as const
+  return undefined
+}
+
 function mergeSearchHits(...groups: ReadonlyArray<SearchViewResult['hits']>): SearchViewResult['hits'] {
-  const seen = new Set<string>()
-  return groups.flat().filter((hit) => {
-    if (seen.has(hit.documentId)) return false
-    seen.add(hit.documentId)
-    return true
-  })
+  const merged = new Map<string, SearchViewResult['hits'][number]>()
+  for (const hit of groups.flat()) {
+    const existing = merged.get(hit.documentId)
+    const topic = existing?.topic ?? hit.topic ?? inferGuideTopic(hit)
+    merged.set(hit.documentId, {
+      ...(existing ?? hit),
+      topic,
+      date: existing?.date ?? hit.date,
+      samplePath: existing?.samplePath ?? hit.samplePath,
+    })
+  }
+  return [...merged.values()]
 }
 
 async function fetchSearchPage(
@@ -66,14 +79,20 @@ async function fetchSearchPage(
     const localGuide = topicFilter
       ? searchLocalDocuments(query, 'guide', 1, Math.max(1, guideDocuments.length), guideDocuments, topicFilter)
       : localGuideAll
-    const localFallback = () => ({
-      result: {
-        ...localGuide,
-        totalUnfilteredHits: allLocal.totalUnfilteredHits,
-        categoryCounts: allLocal.categoryCounts,
-      },
-      mode: 'local-reference' as const,
-    })
+    const localFallback = () => {
+      const localPage = searchLocalDocuments(
+        query, 'guide', page, pageSize, guideDocuments, topicFilter,
+      )
+      return {
+        result: {
+          ...localPage,
+          totalUnfilteredHits: allLocal.totalUnfilteredHits,
+          categoryCounts: allLocal.categoryCounts,
+          topicCounts: localGuideAll.topicCounts,
+        },
+        mode: 'local-reference' as const,
+      }
+    }
 
     let apiFirst: SearchViewResult | undefined
     const serverHits: SearchViewResult['hits'] = []
