@@ -116,6 +116,7 @@ commands:
     import_comprehensive_rust: 'python3 scripts/import-comprehensive-rust.py <snapshot-dir> <output-dir>'
   checks:
     agents_yaml: scripts/check-agents-yaml.sh
+    design_copy: 'python3 scripts/check-design-copy.py'
 
 policies:
 - {id: agents_yaml_sync, rule: 'Update AGENTS.md and AGENTS.yaml together when components, paths, commands or env keys change; run scripts/check-agents-yaml.sh', source: AGENTS.md}

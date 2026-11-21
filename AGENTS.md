@@ -14,6 +14,8 @@
 
 화면·API 계약·검색 동작을 변경할 때는 `dok3search-design`의 계약 예시(`contracts/*.example.yaml`) 및 `frontend/src/samples/design/`과의 정합성을 함께 확인한다.
 
+설계 사본의 원본 커밋과 파일별 SHA-256은 `frontend/src/samples/design/provenance.json`에 기록한다. 사본을 갱신한 뒤 `python3 scripts/check-design-copy.py --source ../dok3search-design`로 원본과 대조한다. 사본만 있는 환경에서는 `--source`를 빼고 무결성을 검사한다.
+
 ## 디렉터리 구조
 
 - `frontend/` — React + TypeScript + Vite 웹 UI (로컬 폰트·샘플 데이터 포함, 외부 CDN 미사용, 개발 프록시 `/api`·`/health`)
