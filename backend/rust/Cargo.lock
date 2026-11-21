@@ -437,6 +437,7 @@ dependencies = [
 name = "dok3-server"
 version = "0.1.0"
 dependencies = [
+ "axum",
  "dok3-agent",
  "dok3-analyzer",
  "dok3-api",
@@ -448,8 +449,12 @@ dependencies = [
  "dok3-parser",
  "dok3-search",
  "dok3-storage",
+ "http-body-util",
+ "serde",
+ "serde_json",
  "tempfile",
  "tokio",
+ "tower",
 ]
 
 [[package]]

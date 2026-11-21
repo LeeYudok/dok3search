@@ -273,7 +273,7 @@ pub fn build_document(
         language: config.language.clone(),
         version: "v1".to_string(),
         date: None,
-        source_uri: format!("file://{}", scanned.relative_path),
+        source_uri: format!("file:///{}", scanned.relative_path),
         sample_path: Some(scanned.relative_path.clone()),
         acl_scope: config.acl_scope.clone(),
         content_hash: String::new(),

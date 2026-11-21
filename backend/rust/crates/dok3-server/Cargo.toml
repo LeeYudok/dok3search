@@ -22,4 +22,11 @@ dok3-search.workspace = true
 dok3-agent.workspace = true
 dok3-api.workspace = true
 tokio.workspace = true
+
+[dev-dependencies]
+axum.workspace = true
+http-body-util.workspace = true
+serde.workspace = true
+serde_json.workspace = true
 tempfile = "3"
+tower.workspace = true
