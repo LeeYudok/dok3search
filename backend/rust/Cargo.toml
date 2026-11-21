@@ -38,3 +38,8 @@ dok3-benchmark = { path = "crates/dok3-benchmark" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 thiserror = "2.0"
+axum = "0.8"
+tokio = { version = "1", features = ["macros", "net", "rt-multi-thread", "signal"] }
+tower = { version = "0.5", features = ["util"] }
+tower-http = { version = "0.7", features = ["fs"] }
+http-body-util = "0.1"

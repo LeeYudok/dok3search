@@ -2,10 +2,12 @@
 
 use std::path::PathBuf;
 
+use serde::{Deserialize, Serialize};
+
 use crate::error::Dok3Error;
 
 /// Configuration for the dok3search HTTP and static asset server.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ServerConfig {
     pub bind: String,
     pub port: u16,

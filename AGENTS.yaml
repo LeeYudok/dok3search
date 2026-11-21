@@ -13,6 +13,10 @@ meta:
   tracker: github
   issue_tracker_url: 'https://github.com/LeeYudok/dok3search/issues'
 
+x-design_repo:
+  name: dok3search-design
+  repo_url: 'https://github.com/LeeYudok/dok3search-design'
+
 environments:
   local:
     toolchain:
@@ -24,21 +28,21 @@ nodes:
 - {id: frontend, type: vite-react-app, label: 'React + TypeScript + Vite web UI', path: frontend/src/main.tsx, module: frontend/package.json}
 - {id: rust_workspace, type: cargo-workspace, label: 'Rust backend Cargo workspace', path: backend/rust/Cargo.toml}
 - {id: dok3_server, type: rust-binary, label: 'Single server binary entrypoint (dok3search)', path: backend/rust/crates/dok3-server/src/main.rs}
-- {id: dok3_api, type: rust-crate, label: 'Axum HTTP router, auth, and admin API', path: backend/rust/crates/dok3-api/src/lib.rs}
+- {id: dok3_api, type: rust-crate, label: 'Axum HTTP router, security headers, static SPA fallback', path: backend/rust/crates/dok3-api/src/lib.rs}
 - {id: dok3_agent, type: rust-crate, label: 'Agent protocol adapters (MCP, A2A, ACP)', path: backend/rust/crates/dok3-agent/src/lib.rs}
-- {id: dok3_search, type: rust-crate, label: 'Search orchestration, ACL enforcement, original access', path: backend/rust/crates/dok3-search/src/lib.rs}
+- {id: dok3_search, type: rust-crate, label: 'Search orchestration, ACL enforcement, in-memory store', path: backend/rust/crates/dok3-search/src/lib.rs}
 - {id: dok3_index_manager, type: rust-crate, label: 'Blue-green generation build, activation, recovery', path: backend/rust/crates/dok3-index-manager/src/lib.rs}
 - {id: dok3_index, type: rust-crate, label: 'Tantivy schema, writer, reader management', path: backend/rust/crates/dok3-index/src/lib.rs}
 - {id: dok3_storage, type: rust-crate, label: 'SQLite change journal, metadata, active generation state', path: backend/rust/crates/dok3-storage/src/lib.rs}
-- {id: dok3_domain, type: rust-crate, label: 'Core domain types and port traits', path: backend/rust/crates/dok3-domain/src/lib.rs}
-- {id: dok3_core, type: rust-crate, label: 'Shared errors, config, common primitives', path: backend/rust/crates/dok3-core/src/lib.rs}
+- {id: dok3_domain, type: rust-crate, label: 'Core domain types, ACL model, and port traits', path: backend/rust/crates/dok3-domain/src/lib.rs}
+- {id: dok3_core, type: rust-crate, label: 'Shared errors, runtime config, common primitives', path: backend/rust/crates/dok3-core/src/lib.rs}
 - {id: dok3_parser, type: rust-crate, label: 'Document and code parsers', path: backend/rust/crates/dok3-parser/src/lib.rs}
 - {id: dok3_analyzer, type: rust-crate, label: 'Korean, English, n-gram, identifier analyzers', path: backend/rust/crates/dok3-analyzer/src/lib.rs}
 - {id: dok3_connectors, type: rust-crate, label: 'File, Git, SVN, DB source connectors', path: backend/rust/crates/dok3-connectors/src/lib.rs}
 - {id: dok3_benchmark, type: rust-crate, label: 'Reproducible indexing and search load benchmarks', path: backend/rust/crates/dok3-benchmark/src/lib.rs}
 
 edges:
-- {from: frontend, to: dok3_api, rel: planned_rest_client}
+- {from: frontend, to: dok3_api, rel: calls_rest_api}
 - {from: rust_workspace, to: dok3_server, rel: contains_binary_crate}
 - {from: dok3_server, to: dok3_api, rel: hosts_router}
 - {from: dok3_server, to: dok3_agent, rel: hosts_agent_protocols}
@@ -83,12 +87,19 @@ edges:
 - {from: dok3_analyzer, to: dok3_core, rel: uses_core}
 - {from: dok3_domain, to: dok3_core, rel: uses_core}
 
+ports:
+- {id: dok3_server_http, port: 8080, protocol: http, note: 'Default local dev HTTP bind (127.0.0.1); override with DOK3_PORT'}
+
+env_keys:
+  dok3_server: [DOK3_BIND, DOK3_PORT, DOK3_STATIC_DIR, DOK3_DESIGN_DIR]
+
 commands:
   frontend:
     install: 'npm --prefix frontend ci'
     dev: 'npm --prefix frontend run dev'
     build: 'npm --prefix frontend run build'
   rust:
+    run: 'cargo run --manifest-path backend/rust/Cargo.toml -p dok3-server'
     fmt: 'cargo fmt --manifest-path backend/rust/Cargo.toml --all -- --check'
     clippy: 'cargo clippy --manifest-path backend/rust/Cargo.toml --workspace --all-targets -- -D warnings'
     test: 'cargo test --manifest-path backend/rust/Cargo.toml --workspace'
