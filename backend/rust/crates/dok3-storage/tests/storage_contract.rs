@@ -398,3 +398,15 @@ fn open_cleans_up_stale_temp_files_without_removing_locks() {
     assert!(!stale_obj.exists());
     assert!(root.0.join(".store.lock").exists());
 }
+
+#[test]
+fn journal_open_does_not_delete_store_temp_files() {
+    let root = TempRoot::new("jrn-keeps-tmp");
+    let _store = FileDocumentStore::open(&root.0).unwrap();
+
+    let active_store_tmp = root.0.join(".documents.json.tmp.99999.1");
+    fs::write(&active_store_tmp, b"staging").unwrap();
+
+    let _journal = FileChangeJournal::open(&root.0).unwrap();
+    assert!(active_store_tmp.exists());
+}

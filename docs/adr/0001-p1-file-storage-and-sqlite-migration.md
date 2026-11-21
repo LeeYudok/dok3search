@@ -6,7 +6,7 @@
 
 ## Decision
 
-For P1 (`FileDocumentStore` + `FileChangeJournal` in `dok3-storage`), metadata (`documents.json`) and the change journal (`journal.jsonl`) are persisted as plain UTF-8 files under the storage root alongside content-addressed original bytes (`objects/<sha256 hex>`), protected by exclusive advisory file locks (`.store.lock`, `.journal.lock`), `fsync` + directory `fsync`, and partial-write rollback.
+For P1 (`FileDocumentStore` + `FileChangeJournal` in `dok3-storage`), metadata (`documents.json`) and the change journal (`journal.jsonl`) are persisted as plain UTF-8 files under the storage root alongside content-addressed original bytes (`objects/<sha256 hex>`), protected by exclusive advisory file locks (`.store.lock`, `.journal.lock`), `fsync` + Unix-only directory `fsync` (`#[cfg(unix)]`), and partial-write rollback.
 
 ## Rationale
 

@@ -108,7 +108,10 @@ impl FileDocumentStore {
         if metadata_changed {
             let mut next = docs.clone();
             next.insert(doc.id.as_str().to_string(), doc);
-            self.persist(&next)?;
+            if let Err(err) = self.persist(&next) {
+                self.resync_from_disk(&mut docs);
+                return Err(err);
+            }
             *docs = next;
         }
         Ok(PutOutcome::Stored(revision))
@@ -123,7 +126,10 @@ impl FileDocumentStore {
         }
         let mut next = docs.clone();
         next.remove(id.as_str());
-        self.persist(&next)?;
+        if let Err(err) = self.persist(&next) {
+            self.resync_from_disk(&mut docs);
+            return Err(err);
+        }
         *docs = next;
         Ok(true)
     }
@@ -152,6 +158,20 @@ impl FileDocumentStore {
     fn persist(&self, docs: &BTreeMap<String, Document>) -> Result<(), Dok3Error> {
         let raw = serde_json::to_vec_pretty(docs).map_err(|e| storage_err("encode metadata", e))?;
         atomic_write(&self.root.join("documents.json"), &raw)
+    }
+
+    fn resync_from_disk(&self, docs: &mut BTreeMap<String, Document>) {
+        match fs::read(self.root.join("documents.json")) {
+            Ok(raw) => {
+                if let Ok(on_disk) = serde_json::from_slice::<BTreeMap<String, Document>>(&raw) {
+                    *docs = on_disk;
+                }
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                docs.clear();
+            }
+            Err(_) => {}
+        }
     }
 
     fn write(

@@ -8,7 +8,7 @@ use std::sync::Mutex;
 use dok3_core::Dok3Error;
 use dok3_domain::{ChangeEvent, ChangeJournalPort, Sequence};
 
-use crate::fsutil::{acquire_exclusive_lock, cleanup_stale_temps, storage_err, sync_dir};
+use crate::fsutil::{acquire_exclusive_lock, storage_err, sync_dir};
 
 #[derive(Debug)]
 struct JournalState {
@@ -31,7 +31,6 @@ impl FileChangeJournal {
     pub fn open(root: &Path) -> Result<Self, Dok3Error> {
         fs::create_dir_all(root).map_err(|e| storage_err("create journal dir", e))?;
         let lock = acquire_exclusive_lock(&root.join(".journal.lock"))?;
-        cleanup_stale_temps(root);
 
         let path = root.join("journal.jsonl");
         let (events, valid_len) = read_all(&path)?;
@@ -97,6 +96,11 @@ impl FileChangeJournal {
             .truncate(false)
             .open(&self.path)
             .map_err(|e| storage_err("open journal", e))?;
+        // Fsync parent dir right after creating journal.jsonl so write/sync failure cannot
+        // leave an unindexed first entry if directory durability fails.
+        if !existed && let Some(parent) = self.path.parent() {
+            sync_dir(parent)?;
+        }
         let prev_len = f
             .seek(SeekFrom::End(0))
             .map_err(|e| storage_err("seek journal end", e))?;
@@ -108,9 +112,6 @@ impl FileChangeJournal {
             return Err(storage_err("append journal", err));
         }
 
-        if !existed && let Some(parent) = self.path.parent() {
-            sync_dir(parent)?;
-        }
         state.last = next;
         Ok(Sequence::new(next))
     }
