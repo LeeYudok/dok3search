@@ -1,0 +1,46 @@
+//! Hexagonal port traits decoupled from concrete engines and web frameworks.
+
+use dok3_core::Dok3Error;
+
+use crate::acl::Principal;
+use crate::change::ChangeEvent;
+use crate::document::{DocumentDetail, ParsedDocument, SectionReadRequest, SectionReadResponse};
+use crate::ids::{DocumentId, Sequence};
+use crate::search::{SearchRequest, SearchResponse, SearchSnapshotMeta};
+
+/// Port for executing ACL-scoped document search queries.
+pub trait SearchPort: Send + Sync {
+    fn search(
+        &self,
+        principal: &Principal,
+        req: &SearchRequest,
+    ) -> Result<SearchResponse, Dok3Error>;
+    fn snapshot(&self) -> SearchSnapshotMeta;
+}
+
+/// Port for retrieving authorized document details and bounded sections.
+pub trait DocumentStorePort: Send + Sync {
+    fn get_document(
+        &self,
+        principal: &Principal,
+        id: &DocumentId,
+    ) -> Result<DocumentDetail, Dok3Error>;
+    fn get_section(
+        &self,
+        principal: &Principal,
+        req: &SectionReadRequest,
+    ) -> Result<SectionReadResponse, Dok3Error>;
+    fn document_count(&self) -> usize;
+}
+
+/// Port for format-specific document parsing without touching Tantivy or storage directly.
+pub trait DocumentParserPort: Send + Sync {
+    fn supports(&self, media_type: &str, filename: &str) -> bool;
+    fn parse(&self, filename: &str, content: &[u8]) -> Result<ParsedDocument, Dok3Error>;
+}
+
+/// Port for durable change-journal persistence and catch-up replay.
+pub trait ChangeJournalPort: Send + Sync {
+    fn append(&self, change: ChangeEvent) -> Result<Sequence, Dok3Error>;
+    fn read_after(&self, seq: Sequence, limit: usize) -> Result<Vec<ChangeEvent>, Dok3Error>;
+}
