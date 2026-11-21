@@ -1,0 +1,31 @@
+**기계 판독용 정보는 [`AGENTS.yaml`](AGENTS.yaml)** — 구성요소 그래프(`nodes`/`edges`), `commands`, `policies`, `known_issues` 등. 작업 전 이 파일을 먼저 읽고, 구성요소·경로·명령·환경변수가 바뀌면 이 문서와 **함께** 갱신한다. 두 파일이 어긋나면 실제 코드·파일시스템을 확인해 둘 다 고친다. 고친 뒤엔 `scripts/check-agents-yaml.sh` 로 검증한다. 날짜·버전 값은 항상 따옴표로 감싼다.
+
+# dok3search 에이전트 지침
+
+폐쇄망 환경에서 동작하는 문서·코드 검색 플랫폼(`dok3search`) 모노레포다. 다중 백엔드 확장을 대비해 언어별 백엔드는 `backend/` 아래에 두고, 현재 백엔드 워크스페이스는 `backend/rust/`에 위치한다.
+
+## 디렉터리 구조
+
+- `frontend/` — React + TypeScript + Vite 웹 UI (로컬 폰트·샘플 데이터 포함, 외부 CDN 미사용)
+- `backend/rust/` — Cargo workspace (`crates/` 아래 13개 크레이트: `dok3-core` ~ `dok3-server`)
+- `config/` — 환경별 설정 예시 및 스키마 배치 위치
+- `contracts/` — REST·MCP·도메인 계약 정의 배치 위치
+- `docs/` — 아키텍처·ADR·운영 매뉴얼 배치 위치
+- `tests/` — 워크스페이스 단위 외 통합·장애 주입·성능 테스트 배치 위치
+- `scripts/` — 저장소 검증·유틸리티 스크립트 (`check-agents-yaml.sh`)
+
+## 의존성 방향 규칙
+
+- `dok3-domain`은 외부 크레이트 구현(Tantivy, Axum, SQLite 드라이버 등)에 의존하지 않는다.
+- `dok3-parser`는 `dok3-index`를 직접 의존하거나 수정하지 않는다.
+- `dok3-index-manager`는 `dok3-storage`와 `dok3-index`를 조합해 세대 빌드·전환·복구를 담당한다.
+- `dok3-api`와 `dok3-agent`는 `dok3-search` 응용 서비스를 호출하며 도메인 로직을 중복 구현하지 않는다.
+
+## 검증 명령
+
+- 프론트엔드 빌드: `npm --prefix frontend run build`
+- Rust 정적/테스트 검증:
+  - `cargo fmt --manifest-path backend/rust/Cargo.toml --all -- --check`
+  - `cargo clippy --manifest-path backend/rust/Cargo.toml --workspace --all-targets -- -D warnings`
+  - `cargo test --manifest-path backend/rust/Cargo.toml --workspace`
+- `AGENTS.yaml` 검증: `scripts/check-agents-yaml.sh`

@@ -1,0 +1,37 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/dok3-core",
+    "crates/dok3-domain",
+    "crates/dok3-storage",
+    "crates/dok3-connectors",
+    "crates/dok3-parser",
+    "crates/dok3-analyzer",
+    "crates/dok3-index",
+    "crates/dok3-index-manager",
+    "crates/dok3-search",
+    "crates/dok3-agent",
+    "crates/dok3-api",
+    "crates/dok3-benchmark",
+    "crates/dok3-server",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+publish = false
+
+[workspace.dependencies]
+dok3-core = { path = "crates/dok3-core" }
+dok3-domain = { path = "crates/dok3-domain" }
+dok3-storage = { path = "crates/dok3-storage" }
+dok3-connectors = { path = "crates/dok3-connectors" }
+dok3-parser = { path = "crates/dok3-parser" }
+dok3-analyzer = { path = "crates/dok3-analyzer" }
+dok3-index = { path = "crates/dok3-index" }
+dok3-index-manager = { path = "crates/dok3-index-manager" }
+dok3-search = { path = "crates/dok3-search" }
+dok3-agent = { path = "crates/dok3-agent" }
+dok3-api = { path = "crates/dok3-api" }
+dok3-benchmark = { path = "crates/dok3-benchmark" }

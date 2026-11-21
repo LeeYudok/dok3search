@@ -1,0 +1,10 @@
+[package]
+name = "dok3-storage"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+dok3-core.workspace = true
+dok3-domain.workspace = true

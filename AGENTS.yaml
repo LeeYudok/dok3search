@@ -1,0 +1,108 @@
+# Machine-readable companion to AGENTS.md: component graph, commands, policies.
+# Never put secret values here - only file paths and environment KEY NAMES.
+# Quote every date/version ('2026-11-22', '1.0') so YAML does not convert its type.
+# After editing, run: scripts/check-agents-yaml.sh
+schema_version: '1.0'
+
+meta:
+  name: dok3search
+  description: 'Air-gapped document and code search monorepo (React frontend + Rust Cargo workspace)'
+  owner: LeeYudok
+  updated: '2026-11-22'
+  repo_url: 'https://github.com/LeeYudok/dok3search'
+  tracker: github
+  issue_tracker_url: 'https://github.com/LeeYudok/dok3search/issues'
+
+environments:
+  local:
+    toolchain:
+      rust: 'stable (backend/rust/rust-toolchain.toml)'
+      node: 'npm (frontend/package-lock.json)'
+  ci: none
+
+nodes:
+- {id: frontend, type: vite-react-app, label: 'React + TypeScript + Vite web UI', path: frontend/src/main.tsx, module: frontend/package.json}
+- {id: rust_workspace, type: cargo-workspace, label: 'Rust backend Cargo workspace', path: backend/rust/Cargo.toml}
+- {id: dok3_server, type: rust-binary, label: 'Single server binary entrypoint (dok3search)', path: backend/rust/crates/dok3-server/src/main.rs}
+- {id: dok3_api, type: rust-crate, label: 'Axum HTTP router, auth, and admin API', path: backend/rust/crates/dok3-api/src/lib.rs}
+- {id: dok3_agent, type: rust-crate, label: 'Agent protocol adapters (MCP, A2A, ACP)', path: backend/rust/crates/dok3-agent/src/lib.rs}
+- {id: dok3_search, type: rust-crate, label: 'Search orchestration, ACL enforcement, original access', path: backend/rust/crates/dok3-search/src/lib.rs}
+- {id: dok3_index_manager, type: rust-crate, label: 'Blue-green generation build, activation, recovery', path: backend/rust/crates/dok3-index-manager/src/lib.rs}
+- {id: dok3_index, type: rust-crate, label: 'Tantivy schema, writer, reader management', path: backend/rust/crates/dok3-index/src/lib.rs}
+- {id: dok3_storage, type: rust-crate, label: 'SQLite change journal, metadata, active generation state', path: backend/rust/crates/dok3-storage/src/lib.rs}
+- {id: dok3_domain, type: rust-crate, label: 'Core domain types and port traits', path: backend/rust/crates/dok3-domain/src/lib.rs}
+- {id: dok3_core, type: rust-crate, label: 'Shared errors, config, common primitives', path: backend/rust/crates/dok3-core/src/lib.rs}
+- {id: dok3_parser, type: rust-crate, label: 'Document and code parsers', path: backend/rust/crates/dok3-parser/src/lib.rs}
+- {id: dok3_analyzer, type: rust-crate, label: 'Korean, English, n-gram, identifier analyzers', path: backend/rust/crates/dok3-analyzer/src/lib.rs}
+- {id: dok3_connectors, type: rust-crate, label: 'File, Git, SVN, DB source connectors', path: backend/rust/crates/dok3-connectors/src/lib.rs}
+- {id: dok3_benchmark, type: rust-crate, label: 'Reproducible indexing and search load benchmarks', path: backend/rust/crates/dok3-benchmark/src/lib.rs}
+
+edges:
+- {from: frontend, to: dok3_api, rel: planned_rest_client}
+- {from: rust_workspace, to: dok3_server, rel: contains_binary_crate}
+- {from: dok3_server, to: dok3_api, rel: hosts_router}
+- {from: dok3_server, to: dok3_agent, rel: hosts_agent_protocols}
+- {from: dok3_server, to: dok3_search, rel: wires_search}
+- {from: dok3_server, to: dok3_index_manager, rel: wires_index_manager}
+- {from: dok3_server, to: dok3_index, rel: wires_index}
+- {from: dok3_server, to: dok3_storage, rel: wires_storage}
+- {from: dok3_server, to: dok3_connectors, rel: wires_connectors}
+- {from: dok3_server, to: dok3_parser, rel: wires_parser}
+- {from: dok3_server, to: dok3_analyzer, rel: wires_analyzer}
+- {from: dok3_server, to: dok3_domain, rel: wires_domain}
+- {from: dok3_server, to: dok3_core, rel: uses_core}
+- {from: dok3_api, to: dok3_search, rel: calls_search}
+- {from: dok3_api, to: dok3_index_manager, rel: manages_generations}
+- {from: dok3_api, to: dok3_domain, rel: uses_domain}
+- {from: dok3_api, to: dok3_core, rel: uses_core}
+- {from: dok3_agent, to: dok3_search, rel: calls_search}
+- {from: dok3_agent, to: dok3_domain, rel: uses_domain}
+- {from: dok3_agent, to: dok3_core, rel: uses_core}
+- {from: dok3_benchmark, to: dok3_search, rel: benchmarks_search}
+- {from: dok3_benchmark, to: dok3_index_manager, rel: benchmarks_indexing}
+- {from: dok3_benchmark, to: dok3_domain, rel: uses_domain}
+- {from: dok3_benchmark, to: dok3_core, rel: uses_core}
+- {from: dok3_search, to: dok3_index, rel: queries_index}
+- {from: dok3_search, to: dok3_storage, rel: reads_originals}
+- {from: dok3_search, to: dok3_domain, rel: uses_domain}
+- {from: dok3_search, to: dok3_core, rel: uses_core}
+- {from: dok3_index_manager, to: dok3_index, rel: builds_and_swaps_index}
+- {from: dok3_index_manager, to: dok3_storage, rel: checkpoints_journal}
+- {from: dok3_index_manager, to: dok3_domain, rel: uses_domain}
+- {from: dok3_index_manager, to: dok3_core, rel: uses_core}
+- {from: dok3_index, to: dok3_analyzer, rel: uses_analyzers}
+- {from: dok3_index, to: dok3_domain, rel: uses_domain}
+- {from: dok3_index, to: dok3_core, rel: uses_core}
+- {from: dok3_storage, to: dok3_domain, rel: implements_storage_ports}
+- {from: dok3_storage, to: dok3_core, rel: uses_core}
+- {from: dok3_connectors, to: dok3_domain, rel: implements_source_ports}
+- {from: dok3_connectors, to: dok3_core, rel: uses_core}
+- {from: dok3_parser, to: dok3_domain, rel: implements_parser_ports}
+- {from: dok3_parser, to: dok3_core, rel: uses_core}
+- {from: dok3_analyzer, to: dok3_domain, rel: uses_domain}
+- {from: dok3_analyzer, to: dok3_core, rel: uses_core}
+- {from: dok3_domain, to: dok3_core, rel: uses_core}
+
+commands:
+  frontend:
+    install: 'npm --prefix frontend ci'
+    dev: 'npm --prefix frontend run dev'
+    build: 'npm --prefix frontend run build'
+  rust:
+    fmt: 'cargo fmt --manifest-path backend/rust/Cargo.toml --all -- --check'
+    clippy: 'cargo clippy --manifest-path backend/rust/Cargo.toml --workspace --all-targets -- -D warnings'
+    test: 'cargo test --manifest-path backend/rust/Cargo.toml --workspace'
+    build: 'cargo build --manifest-path backend/rust/Cargo.toml --workspace'
+  checks:
+    agents_yaml: scripts/check-agents-yaml.sh
+
+policies:
+- {id: agents_yaml_sync, rule: 'Update AGENTS.md and AGENTS.yaml together when components, paths, commands or env keys change; run scripts/check-agents-yaml.sh', source: AGENTS.md}
+- {id: dependency_direction, rule: 'Keep dok3-domain free of external crate implementations; prevent dok3-parser from depending on dok3-index; route API and agent calls through dok3-search', source: AGENTS.md}
+
+known_issues: []
+
+docs:
+- {path: AGENTS.md, what: 'Agent instructions (human SoT)'}
+- {path: README.md, what: 'Monorepo overview and commands'}
+- {path: DESIGN.md, what: 'UI design overview'}

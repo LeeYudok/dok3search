@@ -1,0 +1,23 @@
+[package]
+name = "dok3-server"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "dok3search"
+path = "src/main.rs"
+
+[dependencies]
+dok3-core.workspace = true
+dok3-domain.workspace = true
+dok3-storage.workspace = true
+dok3-connectors.workspace = true
+dok3-parser.workspace = true
+dok3-analyzer.workspace = true
+dok3-index.workspace = true
+dok3-index-manager.workspace = true
+dok3-search.workspace = true
+dok3-agent.workspace = true
+dok3-api.workspace = true
