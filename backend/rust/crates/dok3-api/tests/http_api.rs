@@ -261,3 +261,45 @@ async fn spa_fallback_serves_200_for_routes_and_404_for_missing_assets() {
 
     let _ = std::fs::remove_dir_all(&static_dir);
 }
+
+#[tokio::test]
+async fn invalid_json_and_query_params_return_unified_json_error() {
+    let repo = Arc::new(InMemorySearchRepository::from_seed(None));
+    let service = Arc::new(SearchService::new(repo.clone(), repo));
+    let app = build_router(ApiState::new(service), None);
+
+    let cases = [
+        Request::post("/api/v1/search")
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from("{bad"))
+            .unwrap(),
+        Request::post("/api/v1/search")
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from(r#"{"requested_scope":"private"}"#))
+            .unwrap(),
+        Request::get("/api/v1/documents/index-rollbacks/sections/body?cursor=abc")
+            .body(Body::empty())
+            .unwrap(),
+        Request::get("/api/v1/documents/index-rollbacks/sections/body?max_chars=-5")
+            .body(Body::empty())
+            .unwrap(),
+    ];
+
+    for req in cases {
+        let resp = app.clone().oneshot(req).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::BAD_REQUEST);
+        let content_type = resp
+            .headers()
+            .get(header::CONTENT_TYPE)
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("");
+        assert!(
+            content_type.contains("application/json"),
+            "expected application/json, got {content_type}"
+        );
+        let body: serde_json::Value =
+            serde_json::from_slice(&resp.into_body().collect().await.unwrap().to_bytes()).unwrap();
+        assert_eq!(body["error"]["code"], "INVALID_INPUT");
+        assert!(body["error"]["message"].is_string());
+    }
+}

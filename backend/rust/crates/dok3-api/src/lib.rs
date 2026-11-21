@@ -4,6 +4,7 @@ use std::future::Future;
 use std::path::PathBuf;
 use std::sync::Arc;
 
+use axum::extract::rejection::{JsonRejection, QueryRejection};
 use axum::extract::{Path, Query, State};
 use axum::http::{HeaderValue, Request, StatusCode, header};
 use axum::middleware::{self, Next};
@@ -176,8 +177,9 @@ async fn health_ready(State(state): State<ApiState>) -> impl IntoResponse {
 
 async fn search(
     State(state): State<ApiState>,
-    Json(req): Json<SearchRequest>,
+    payload: Result<Json<SearchRequest>, JsonRejection>,
 ) -> Result<impl IntoResponse, ApiError> {
+    let Json(req) = payload.map_err(|err| ApiError(Dok3Error::InvalidInput(err.body_text())))?;
     let response = state.search.search(&state.default_principal, &req)?;
     Ok(Json(response))
 }
@@ -201,8 +203,9 @@ struct SectionQueryParams {
 async fn get_section(
     State(state): State<ApiState>,
     Path((id, sid)): Path<(String, String)>,
-    Query(query): Query<SectionQueryParams>,
+    query: Result<Query<SectionQueryParams>, QueryRejection>,
 ) -> Result<impl IntoResponse, ApiError> {
+    let Query(query) = query.map_err(|err| ApiError(Dok3Error::InvalidInput(err.body_text())))?;
     let mut req = SectionReadRequest {
         document_id: DocumentId::new(id),
         section_id: SectionId::new(sid),
