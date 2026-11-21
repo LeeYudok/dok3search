@@ -30,6 +30,15 @@ function loadReferenceCorpora(documentId?: string): Promise<ReferenceCorpus[]> {
   return Promise.all(sources.map(({ load }) => load()))
 }
 
+function mergeSearchHits(...groups: ReadonlyArray<SearchViewResult['hits']>): SearchViewResult['hits'] {
+  const seen = new Set<string>()
+  return groups.flat().filter((hit) => {
+    if (seen.has(hit.documentId)) return false
+    seen.add(hit.documentId)
+    return true
+  })
+}
+
 async function fetchSearchPage(
   query: string, category: string, topic: string, page: number, signal: AbortSignal,
 ): Promise<{ result: SearchViewResult; mode: DataSourceMode }> {
@@ -48,35 +57,80 @@ async function fetchSearchPage(
       mode: 'local-fallback',
     }
   }
-  if (isReferenceTopicFilter(topic)) {
+  async function searchGuideMerged(topicFilter = ''): Promise<{ result: SearchViewResult; mode: DataSourceMode }> {
     const corpora = await references
     const allDocuments = [...new Map(documents.concat(corpora.flatMap(({ documents }) => documents)).map((doc) => [doc.id, doc])).values()]
     const allLocal = searchLocalDocuments(query, '', 1, pageSize, allDocuments)
-    const local = searchLocalDocuments(query, 'guide', page, pageSize, allDocuments, topic)
-    return {
+    const guideDocuments = allDocuments.filter((doc) => doc.category === 'guide')
+    const localGuideAll = searchLocalDocuments(query, 'guide', 1, Math.max(1, guideDocuments.length), guideDocuments)
+    const localGuide = topicFilter
+      ? searchLocalDocuments(query, 'guide', 1, Math.max(1, guideDocuments.length), guideDocuments, topicFilter)
+      : localGuideAll
+    const localFallback = () => ({
       result: {
-        ...local,
+        ...localGuide,
         totalUnfilteredHits: allLocal.totalUnfilteredHits,
         categoryCounts: allLocal.categoryCounts,
       },
-      mode: 'local-reference',
+      mode: 'local-reference' as const,
+    })
+
+    let apiFirst: SearchViewResult | undefined
+    const serverHits: SearchViewResult['hits'] = []
+    try {
+      const first = await fetchSearch({ query, category: 'guide', page: 1, limit: 100 }, signal)
+      if (first.mode !== 'api') return localFallback()
+      apiFirst = first.result
+      serverHits.push(...first.result.hits)
+      for (let serverPage = 2; serverPage <= first.result.totalPages; serverPage++) {
+        const next = await fetchSearch({ query, category: 'guide', page: serverPage, limit: 100 }, signal)
+        if (next.mode !== 'api') return localFallback()
+        serverHits.push(...next.result.hits)
+      }
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') throw error
+      return localFallback()
     }
+
+    const allGuideHits = mergeSearchHits(serverHits, localGuideAll.hits)
+    const visibleHits = topicFilter ? allGuideHits.filter((hit) => hit.topic === topicFilter) : allGuideHits
+    const pageCount = Math.ceil(visibleHits.length / pageSize)
+    const currentPage = pageCount > 0 ? Math.max(1, Math.min(page, pageCount)) : 1
+    const apiCounts = new Map(apiFirst.categoryCounts.map(({ id, count }) => [id, count]))
+    const localCounts = new Map(allLocal.categoryCounts.map(({ id, count }) => [id, count]))
+    const categoryCounts = categories.map((item) => ({
+      ...item,
+      count: item.id === 'guide'
+        ? allGuideHits.length
+        : Math.max(apiCounts.get(item.id) ?? 0, localCounts.get(item.id) ?? 0),
+    }))
+
+    return {
+      result: {
+        query,
+        page: currentPage,
+        limit: pageSize,
+        totalHits: visibleHits.length,
+        totalPages: pageCount,
+        totalUnfilteredHits: categoryCounts.reduce((total, item) => total + item.count, 0),
+        categoryCounts,
+        topicCounts: topics.map((item) => ({
+          ...item,
+          count: allGuideHits.filter((hit) => hit.topic === item.id).length,
+        })),
+        relatedSearches: localGuide.relatedSearches,
+        hits: visibleHits.slice((currentPage - 1) * pageSize, currentPage * pageSize),
+        snapshot: apiFirst.snapshot,
+      },
+      mode: 'api',
+    }
+  }
+  if (isReferenceTopicFilter(topic)) {
+    return searchGuideMerged(topic)
   }
 
   if (category === 'guide') {
-    const corpora = await references
-    const allDocuments = [...new Map(documents.concat(corpora.flatMap(({ documents }) => documents)).map((doc) => [doc.id, doc])).values()]
-    const guideDocuments = allDocuments.filter((doc) => doc.category === 'guide')
-    const allLocal = searchLocalDocuments(query, '', 1, pageSize, allDocuments)
-    const local = searchLocalDocuments(query, 'guide', page, pageSize, guideDocuments)
-    return {
-      result: {
-        ...local,
-        totalUnfilteredHits: allLocal.totalUnfilteredHits,
-        categoryCounts: allLocal.categoryCounts,
-      },
-      mode: 'local-reference',
-    }
+    return searchGuideMerged()
   }
 
   if (category && documents.some((doc) => doc.category === category)) {
