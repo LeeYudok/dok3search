@@ -246,3 +246,155 @@ fn journal_recovers_from_torn_trailing_write() {
     );
     assert_eq!(reopened.read_after(Sequence::new(0), 10).unwrap().len(), 2);
 }
+
+#[test]
+fn exclusive_lock_blocks_second_store_writer_and_allows_coexisting_journal() {
+    let root = TempRoot::new("store-lock");
+    let store = FileDocumentStore::open(&root.0).unwrap();
+
+    let second = FileDocumentStore::open(&root.0).unwrap_err();
+    assert!(matches!(second, Dok3Error::Storage(msg) if msg.contains("writer lock")));
+
+    // Journal uses its own lock file and can coexist on the same root.
+    let journal = FileChangeJournal::open(&root.0).unwrap();
+    drop(journal);
+    drop(store);
+
+    // Reopening succeeds once the previous store guard is dropped.
+    let reopened = FileDocumentStore::open(&root.0).unwrap();
+    assert_eq!(reopened.document_count(), 0);
+}
+
+#[test]
+fn exclusive_lock_blocks_second_journal_writer() {
+    let root = TempRoot::new("jrn-lock");
+    let journal = FileChangeJournal::open(&root.0).unwrap();
+
+    let second = FileChangeJournal::open(&root.0).unwrap_err();
+    assert!(matches!(second, Dok3Error::Storage(msg) if msg.contains("writer lock")));
+
+    drop(journal);
+    let reopened = FileChangeJournal::open(&root.0).unwrap();
+    assert_eq!(reopened.read_after(Sequence::new(0), 10).unwrap().len(), 0);
+}
+
+#[test]
+fn put_persists_metadata_and_section_updates_with_unchanged_content() {
+    let root = TempRoot::new("meta-update");
+    let store = FileDocumentStore::open(&root.0).unwrap();
+    let content = b"unchanged original markdown";
+
+    let first = store
+        .put(doc("m1", AclScope::Public, "v1 body"), content)
+        .unwrap();
+    assert!(matches!(first, PutOutcome::Stored(_)));
+
+    let mut updated = doc("m1", AclScope::Public, "v1 body");
+    updated.title = "수정된 제목".into();
+    updated.summary = "분류 요약 갱신".into();
+    updated.tags = vec!["Rust".into(), "Storage".into()];
+    updated.sections[0].heading = "수정된 절 제목".into();
+
+    let second = store.put(updated, content).unwrap();
+    assert_eq!(second, PutOutcome::Stored(content_revision(content)));
+    drop(store);
+
+    let reopened = FileDocumentStore::open(&root.0).unwrap();
+    let detail = reopened
+        .get_document(&public(), &DocumentId::new("m1"))
+        .unwrap();
+    assert_eq!(detail.title, "수정된 제목");
+    assert_eq!(detail.summary, "분류 요약 갱신");
+    assert_eq!(detail.tags, vec!["Rust", "Storage"]);
+    assert_eq!(detail.sections[0].heading, "수정된 절 제목");
+}
+
+#[test]
+fn put_heals_corrupted_object_file_on_same_hash() {
+    let root = TempRoot::new("heal-obj");
+    let store = FileDocumentStore::open(&root.0).unwrap();
+    let content = b"canonical original payload";
+    let d = doc("h1", AclScope::Public, "body");
+
+    assert!(matches!(
+        store.put(d.clone(), content).unwrap(),
+        PutOutcome::Stored(_)
+    ));
+    let hash = content_revision(content)
+        .as_str()
+        .trim_start_matches("sha256:")
+        .to_string();
+    fs::write(root.0.join("objects").join(&hash), b"corrupted bytes").unwrap();
+    assert!(matches!(
+        store.read_original(&public(), &DocumentId::new("h1")),
+        Err(Dok3Error::Storage(_))
+    ));
+
+    // Re-putting identical Document + content must detect corruption and rewrite the object.
+    assert_eq!(
+        store.put(d, content).unwrap(),
+        PutOutcome::Stored(content_revision(content))
+    );
+    assert_eq!(
+        store
+            .read_original(&public(), &DocumentId::new("h1"))
+            .unwrap(),
+        content
+    );
+}
+
+#[test]
+fn journal_recovers_corrupt_newline_terminated_trailing_line_and_rejects_midfile_corruption() {
+    let root = TempRoot::new("corrupt-nl");
+    let journal = FileChangeJournal::open(&root.0).unwrap();
+    journal.append(event("a", ChangeKind::Upsert)).unwrap();
+    drop(journal);
+
+    // Append corrupt NUL + newline at EOF -> open recovers by truncating it.
+    let jpath = root.0.join("journal.jsonl");
+    let mut f = OpenOptions::new().append(true).open(&jpath).unwrap();
+    f.write_all(b"\0\0corrupt-line\n").unwrap();
+    drop(f);
+
+    let reopened = FileChangeJournal::open(&root.0).unwrap();
+    assert_eq!(reopened.read_after(Sequence::new(0), 10).unwrap().len(), 1);
+    assert_eq!(
+        reopened.append(event("b", ChangeKind::Upsert)).unwrap(),
+        Sequence::new(2)
+    );
+    drop(reopened);
+
+    // Mid-file corruption (corrupt line followed by valid line) must fail loudly.
+    let mut original = fs::read(&jpath).unwrap();
+    let valid_line = b"{\"sequence\":3,\"document_id\":\"c\",\"revision_id\":\"sha256:x\",\"kind\":\"upsert\"}\n";
+    let mut mid_corrupt = Vec::new();
+    let first_nl = original.iter().position(|&b| b == b'\n').unwrap() + 1;
+    mid_corrupt.extend_from_slice(&original[..first_nl]);
+    mid_corrupt.extend_from_slice(b"{not-json}\n");
+    mid_corrupt.extend_from_slice(valid_line);
+    original.clear();
+    let _ = original;
+    fs::write(&jpath, &mid_corrupt).unwrap();
+
+    assert!(matches!(
+        FileChangeJournal::open(&root.0),
+        Err(Dok3Error::Storage(_))
+    ));
+}
+
+#[test]
+fn open_cleans_up_stale_temp_files_without_removing_locks() {
+    let root = TempRoot::new("clean-tmp");
+    let objects = root.0.join("objects");
+    fs::create_dir_all(&objects).unwrap();
+
+    let stale_root = root.0.join(".documents.json.tmp.99999.0");
+    let stale_obj = objects.join(".deadbeef.tmp.99999.1");
+    fs::write(&stale_root, b"partial").unwrap();
+    fs::write(&stale_obj, b"partial").unwrap();
+
+    let _store = FileDocumentStore::open(&root.0).unwrap();
+    assert!(!stale_root.exists());
+    assert!(!stale_obj.exists());
+    assert!(root.0.join(".store.lock").exists());
+}
