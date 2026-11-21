@@ -409,10 +409,9 @@ dependencies = [
 name = "dok3-index-manager"
 version = "0.1.0"
 dependencies = [
- "dok3-core",
- "dok3-domain",
- "dok3-index",
  "dok3-storage",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
