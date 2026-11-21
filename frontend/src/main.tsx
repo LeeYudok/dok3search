@@ -242,7 +242,7 @@ function SearchPage() {
   const activeCategory = categories.find((item) => item.id === rawCategory) ??
     (legacyTopic ? categories.find((item) => item.id === 'guide') : undefined)
   const category = activeCategory?.id ?? ''
-  const requestedTopic = params.get('topic') ?? legacyTopic
+  const requestedTopic = params.get('topic')?.trim() || legacyTopic
   const topic = category === 'guide' && isReferenceTopicFilter(requestedTopic) ? requestedTopic : ''
   const rawPage = Number(params.get('page'))
   const requestedPage = Number.isSafeInteger(rawPage) && rawPage > 0 ? rawPage : 1
