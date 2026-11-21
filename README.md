@@ -66,6 +66,8 @@ cargo build --workspace
 
 설계 원본은 [설계 저장소 (`dok3search-design`)](https://github.com/LeeYudok/dok3search-design)에 있으며, 샘플 문서 라이선스는 [샘플 라이선스](frontend/src/samples/design/LICENSE)를 함께 둡니다.
 
+앱에 포함한 설계 사본의 원본 커밋과 파일 해시는 [출처 기록](frontend/src/samples/design/provenance.json)에 있습니다. `python3 scripts/check-design-copy.py`로 사본을 검사합니다. 설계 저장소도 내려받았다면 `--source ../dok3search-design`를 추가해 원본의 현재 커밋과 대조합니다.
+
 ## 라이선스 및 변경 이력
 
 - 라이선스: [MIT License](LICENSE)
