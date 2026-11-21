@@ -1,8 +1,10 @@
 //! AI agent protocol adapters (MCP first, A2A and ACP follow-up).
 
+pub mod http;
 pub mod protocol;
 pub mod server;
 
+pub use http::{MCP_PROTOCOL_VERSION_HEADER, build_mcp_router};
 pub use protocol::{
     DEFAULT_PROTOCOL_VERSION, JSONRPC_INTERNAL_ERROR, JSONRPC_INVALID_PARAMS,
     JSONRPC_INVALID_REQUEST, JSONRPC_METHOD_NOT_FOUND, JSONRPC_PARSE_ERROR,

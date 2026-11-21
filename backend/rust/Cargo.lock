@@ -120,11 +120,15 @@ dependencies = [
 name = "dok3-agent"
 version = "0.1.0"
 dependencies = [
+ "axum",
  "dok3-core",
  "dok3-domain",
  "dok3-search",
+ "http-body-util",
  "serde",
  "serde_json",
+ "tokio",
+ "tower",
 ]
 
 [[package]]
