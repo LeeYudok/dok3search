@@ -4,12 +4,19 @@ import remarkGfm from 'remark-gfm'
 import remarkParse from 'remark-parse'
 import { unified } from 'unified'
 import { toString } from 'mdast-util-to-string'
-import { categories, categoryLabels, designDocuments, documentFormats, documentHeadingId, searchUrl, type Document } from './documents'
-import type { RustCorpus } from './rust-corpus'
+import { fetchDocument, type ReaderDocument } from './api'
+import { categories, categoryLabels, designDocuments, documentHeadingId, searchUrl } from './documents'
+import type { ReferenceCorpus } from './reference-corpus'
 
 const designParser = unified().use(remarkParse).use(remarkGfm)
 
 type DocumentSection = { id: string; label: string; line?: number; depth?: number }
+
+type ReaderState =
+  | { status: 'loading' }
+  | { status: 'ready'; doc: ReaderDocument }
+  | { status: 'not-found' }
+  | { status: 'error'; message: string }
 
 function markdownSections(markdown: string, includeSubsections = false): DocumentSection[] {
   const ids = new Set<string>()
@@ -28,7 +35,7 @@ function MarkdownBody({ markdown, sections, samplePath, corpus }: {
   markdown: string
   sections: DocumentSection[]
   samplePath?: string
-  corpus?: RustCorpus
+  corpus?: ReferenceCorpus
 }) {
   function headingId(line?: number) {
     return sections.find((entry) => entry.line === line)?.id
@@ -72,11 +79,49 @@ function MarkdownBody({ markdown, sections, samplePath, corpus }: {
   )
 }
 
-export function DocumentPage({ doc, corpus }: { doc?: Document; corpus?: RustCorpus }) {
-  const formats = doc && documentFormats(doc.id)
+export function DocumentPage({ id, corpus }: { id: string; corpus?: ReferenceCorpus }) {
+  const localDoc = corpus?.documents.find((item) => item.id === id)
+  const [apiState, setApiState] = useState<ReaderState>({ status: 'loading' })
+  const readerState: ReaderState = corpus
+    ? (localDoc ? { status: 'ready', doc: localDoc } : { status: 'not-found' })
+    : apiState
   const reader = useRef<HTMLElement>(null)
   const progress = useRef<HTMLDivElement>(null)
   const [activeSection, setActiveSection] = useState('overview')
+
+  useEffect(() => {
+    if (corpus) {
+      document.title = (localDoc?.title ?? '문서를 찾을 수 없습니다') + ' · dok3search'
+      return
+    }
+
+    const controller = new AbortController()
+    setApiState({ status: 'loading' })
+
+    void fetchDocument(id, controller.signal).then(
+      ({ doc }) => {
+        if (controller.signal.aborted) return
+        if (!doc) {
+          document.title = '문서를 찾을 수 없습니다 · dok3search'
+          setApiState({ status: 'not-found' })
+          return
+        }
+        document.title = doc.title + ' · dok3search'
+        setApiState({ status: 'ready', doc })
+      },
+      (error: unknown) => {
+        if (controller.signal.aborted) return
+        if (error instanceof DOMException && error.name === 'AbortError') return
+        const message = error instanceof Error ? error.message : '문서를 불러오지 못했습니다.'
+        document.title = '문서 오류 · dok3search'
+        setApiState({ status: 'error', message })
+      },
+    )
+
+    return () => controller.abort()
+  }, [id, corpus, localDoc])
+
+  const doc = readerState.status === 'ready' ? readerState.doc : null
 
   useEffect(() => {
     if (!doc || !reader.current || !progress.current) return
@@ -142,6 +187,7 @@ export function DocumentPage({ doc, corpus }: { doc?: Document; corpus?: RustCor
       if (frame) window.cancelAnimationFrame(frame)
     }
   }, [doc])
+
   const sections = useMemo(
     () => doc?.markdown ? markdownSections(doc.markdown, Boolean(corpus)) : [{ label: '본문', id: 'body' }],
     [doc, corpus],
@@ -169,20 +215,31 @@ export function DocumentPage({ doc, corpus }: { doc?: Document; corpus?: RustCor
         {doc && <div className="read-progress" aria-hidden="true"><div ref={progress} /></div>}
       </header>
       <main id="content" className="shell reader" ref={reader}>
-        {doc ? (
+        {readerState.status === 'loading' && (
+          <p className="empty" role="status">문서를 불러오는 중입니다.</p>
+        )}
+        {readerState.status === 'error' && (
+          <p className="empty" role="alert">{readerState.message}</p>
+        )}
+        {readerState.status === 'not-found' && (
+          <h1>문서를 찾을 수 없습니다</h1>
+        )}
+        {doc && (
           <>
             <header className="article-header">
-              <a className="article-category" href={searchUrl('', doc.category)}>{categoryLabels.get(doc.category)}</a>
+              <a className="article-category" href={searchUrl('', doc.category)}>
+                {categoryLabels.get(doc.category as typeof categories[number]['id']) ?? doc.category}
+              </a>
               <h1>{doc.title}</h1>
               <p className="article-meta">
                 <span>{corpus ? doc.source : doc.samplePath ?? doc.source}</span>{doc.date && <time dateTime={doc.date}>{doc.date}</time>}
                 {corpus?.licenses.map(({ label, url }) => <a href={url} key={label}>{label}</a>)}
               </p>
-              {formats && (
+              {doc.formats && (
                 <nav className="category-filters article-formats" aria-label="문서 형식">
                   {[
-                    { id: formats.markdown.id, label: 'Markdown' },
-                    { id: formats.yaml.id, label: 'YAML' },
+                    { id: doc.formats.markdownId, label: 'Markdown' },
+                    { id: doc.formats.yamlId, label: 'YAML' },
                   ].map((format) => (
                     <a key={format.id} href={'/docs/' + format.id + window.location.search} aria-current={format.id === doc.id ? 'page' : undefined}>
                       {format.label}
@@ -212,13 +269,13 @@ export function DocumentPage({ doc, corpus }: { doc?: Document; corpus?: RustCor
               </article>
               <nav className="article-toc" aria-label="이 문서의 목차">
                 <strong>목차</strong>
-                {tocSections.map(({ id, label }) => (
-                  <a key={id} href={'#' + id} aria-current={activeSection === id ? 'location' : undefined}>{label}</a>
+                {tocSections.map(({ id: secId, label }) => (
+                  <a key={secId} href={'#' + secId} aria-current={activeSection === secId ? 'location' : undefined}>{label}</a>
                 ))}
               </nav>
             </div>
           </>
-        ) : <h1>문서를 찾을 수 없습니다</h1>}
+        )}
       </main>
     </>
   )

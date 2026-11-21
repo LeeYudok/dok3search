@@ -1,11 +1,58 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { DotsThreeVerticalIcon as More, FileTextIcon as FileText, MagnifyingGlassIcon as Search, XIcon as X } from '@phosphor-icons/react'
 import { createRoot } from 'react-dom/client'
-import { categories, categoryLabels, documentFormats, documents, searchDocuments, searchUrl, type Document } from './documents'
-import { rustDocumentPrefix, type RustCorpus } from './rust-corpus'
+import { type DataSourceMode, fetchSearch, searchLocalDocuments, type SearchViewResult } from './api'
+import { categories, categoryLabels, documents, isReferenceCategory, searchUrl } from './documents'
+import { referenceIdPrefix, type ReferenceCorpus } from './reference-corpus'
 import './style.css'
 
 const pageSize = 15
+
+type SearchState =
+  | { status: 'loading' }
+  | { status: 'ready'; data: SearchViewResult; mode: DataSourceMode }
+  | { status: 'error'; message: string }
+
+const referenceSources = [
+  { prefix: referenceIdPrefix('rust', 'comprehensive-rust'), load: () => import('./comprehensive-rust').then(({ comprehensiveRust }) => comprehensiveRust) },
+  { prefix: referenceIdPrefix('rust', 'rust-book'), load: () => import('./rust-book').then(({ rustBook }) => rustBook) },
+  { prefix: referenceIdPrefix('go', 'go-reference'), load: () => import('./go-reference').then(({ goReference }) => goReference) },
+]
+
+function loadReferenceCorpora(documentId?: string): Promise<ReferenceCorpus[]> {
+  return Promise.all(referenceSources
+    .filter(({ prefix }) => !documentId || documentId.startsWith(prefix))
+    .map(({ load }) => load()))
+}
+
+async function fetchSearchPage(
+  query: string, category: string, page: number, signal: AbortSignal,
+): Promise<{ result: SearchViewResult; mode: DataSourceMode }> {
+  const references = loadReferenceCorpora()
+  if (isReferenceCategory(category)) {
+    const corpus = (await references).flatMap(({ documents }) => documents)
+    return {
+      result: searchLocalDocuments(query, category, page, pageSize, documents.concat(corpus)),
+      mode: 'local-reference',
+    }
+  }
+
+  const [search, corpora] = await Promise.all([
+    fetchSearch({ query, category, page, limit: pageSize }, signal),
+    references.catch(() => []),
+  ])
+  const local = searchLocalDocuments(query, '', 1, pageSize, corpora.flatMap(({ documents }) => documents))
+  const categoryCounts = search.result.categoryCounts.filter(({ id }) => !isReferenceCategory(id))
+  return {
+    mode: search.mode,
+    result: {
+      ...search.result,
+      totalUnfilteredHits: search.result.totalUnfilteredHits + local.totalUnfilteredHits,
+      categoryCounts: categoryCounts.concat(local.categoryCounts.filter(({ id }) => isReferenceCategory(id))),
+    },
+  }
+}
+
 function SearchForm({ query = '', category = '' }: { query?: string; category?: string }) {
   return (
     <form role="search" action="/search">
@@ -30,37 +77,41 @@ function HomePage() {
   )
 }
 
-function SearchPage({ corpus }: { corpus: readonly Document[] }) {
+function SearchPage() {
   const params = new URLSearchParams(window.location.search)
   const query = params.get('q')?.trim() ?? ''
   const activeCategory = categories.find((item) => item.id === params.get('category'))
   const category = activeCategory?.id ?? ''
-  const requestedPage = Number(params.get('page'))
+  const rawPage = Number(params.get('page'))
+  const requestedPage = Number.isSafeInteger(rawPage) && rawPage > 0 ? rawPage : 1
   const [openMenu, setOpenMenu] = useState('')
   const [copyStatus, setCopyStatus] = useState('')
-  const matches = searchDocuments(query, corpus)
-  const visible = category ? matches.filter((doc) => doc.category === category) : matches
-  if (category === 'rust' && query) {
-    const normalizedQuery = query.toLowerCase()
-    const titleMatch = (doc: Document) => Number(doc.title.toLowerCase().includes(normalizedQuery))
-    visible.sort((a, b) => titleMatch(b) - titleMatch(a))
-  }
+  const [searchState, setSearchState] = useState<SearchState>({ status: 'loading' })
+
+  useEffect(() => {
+    const controller = new AbortController()
+    setSearchState({ status: 'loading' })
+
+    void fetchSearchPage(query, category, requestedPage, controller.signal).then(
+      ({ result, mode }) => {
+        if (!controller.signal.aborted) {
+          setSearchState({ status: 'ready', data: result, mode })
+        }
+      },
+      (error: unknown) => {
+        if (controller.signal.aborted) return
+        if (error instanceof DOMException && error.name === 'AbortError') return
+        const message = error instanceof Error ? error.message : '검색 결과를 불러오지 못했습니다.'
+        setSearchState({ status: 'error', message })
+      },
+    )
+
+    return () => controller.abort()
+  }, [query, category, requestedPage])
+
   const browseDesign = category === 'design' && !query
 
-  const pageCount = Math.ceil(visible.length / pageSize)
-  const page = Number.isSafeInteger(requestedPage) ? Math.max(1, Math.min(requestedPage, pageCount)) : 1
-  const pageDocuments = visible.slice((page - 1) * pageSize, page * pageSize)
-
-  const firstPage = Math.max(1, Math.min(page - 2, pageCount - 4))
-  const lastPage = Math.min(firstPage + 4, pageCount)
-  const matchedCategories = new Set(visible.map((doc) => doc.category))
-  const relatedSearches = query && visible.length
-    ? [...new Set(corpus.filter((doc) => matchedCategories.has(doc.category)).map((doc) => doc.tag))]
-        .filter((tag) => !query.toLowerCase().includes(tag.toLowerCase()))
-        .slice(0, 6)
-    : []
-
-  function documentUrl(id: string) {
+  function documentUrl(id: string, page: number) {
     return searchUrl(query, category, page).replace('/search', '/docs/' + id)
   }
 
@@ -72,6 +123,17 @@ function SearchPage({ corpus }: { corpus: readonly Document[] }) {
       setCopyStatus('문서 제목을 복사할 수 없습니다.')
     }
   }
+
+  const readyData = searchState.status === 'ready' ? searchState.data : null
+  const page = readyData?.page ?? 1
+  const pageCount = readyData?.totalPages ?? 0
+  const firstPage = Math.max(1, Math.min(page - 2, pageCount - 4))
+  const lastPage = Math.min(firstPage + 4, pageCount)
+
+  const countByCategory = new Map(
+    readyData?.categoryCounts.map((item) => [item.id, item.count]) ?? [],
+  )
+  const hasReferenceMatches = readyData?.categoryCounts.some(({ id, count }) => isReferenceCategory(id) && count > 0)
 
   return (
     <>
@@ -86,10 +148,12 @@ function SearchPage({ corpus }: { corpus: readonly Document[] }) {
         <h1 className="visually-hidden">문서 검색</h1>
         <div className="shell library">
           <div className="category-filters" role="group" aria-label="문서 카테고리">
-            <a href={searchUrl(query)} aria-current={!category ? 'page' : undefined}>전체 <span className="category-count">{matches.length}</span></a>
+            <a href={searchUrl(query)} aria-current={!category ? 'page' : undefined}>
+              전체 {readyData && <span className="category-count">{readyData.totalUnfilteredHits}</span>}
+            </a>
             {categories.map((item) => (
               <a key={item.id} href={searchUrl(query, item.id)} aria-current={category === item.id ? 'page' : undefined}>
-                {item.label} <span className="category-count">{matches.filter((doc) => doc.category === item.id).length}</span>
+                {item.label} {readyData && <span className="category-count">{countByCategory.get(item.id) ?? 0}</span>}
               </a>
             ))}
           </div>
@@ -100,76 +164,99 @@ function SearchPage({ corpus }: { corpus: readonly Document[] }) {
                 {query && <a className="text-button" href={searchUrl('', category)}>초기화 <X size={14} /></a>}
               </div>
             ) : <h2 id="documents-heading" className="visually-hidden">검색 결과</h2>}
-            <span className="visually-hidden" role="status">문서 {visible.length}개{pageCount > 1 && ' · ' + page + '/' + pageCount + ' 페이지'}</span>
-            {visible.length > 0 ? <ul className="document-list">{pageDocuments.map((doc) => (
-              <li className="result-row" key={doc.id}>
-                <a className="document" href={documentUrl(doc.id)}>
-                  <span className="file-icon"><FileText size={18} aria-hidden="true" /></span>
-                  <span className="doc-copy">
-                    <small>{doc.category === 'rust' ? doc.source : categoryLabels.get(doc.category)} · {documentFormats(doc.id) ? 'Markdown · YAML' : doc.tag}</small>
-                    <strong>{doc.title}</strong>
-                    <span className="snippet">{doc.summary} {doc.body}</span>
-                  </span>
-                </a>
-                {doc.date && <time dateTime={doc.date}>{doc.date}</time>}
-                <div className="document-actions"
-                  onBlur={(event) => {
-                    if (!event.currentTarget.contains(event.relatedTarget)) setOpenMenu('')
-                  }}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Escape' && openMenu === doc.id) {
-                      event.stopPropagation()
-                      event.currentTarget.querySelector('button')?.focus()
-                      setOpenMenu('')
-                    }
-                  }}
-                >
-                  <button type="button" className="more-button"
-                    aria-label={doc.title + ' 옵션'}
-                    aria-expanded={openMenu === doc.id}
-                    onClick={(event) => {
-                      event.currentTarget.focus()
-                      setOpenMenu(openMenu === doc.id ? '' : doc.id)
-                    }}
-                  ><More size={20} weight="bold" aria-hidden="true" /></button>
-                  {openMenu === doc.id && (
-                    <div className="document-options" onPointerDown={(event) => event.preventDefault()}>
-                      <a href={documentUrl(doc.id)}>문서 열기</a>
-                      <button type="button" onClick={() => void copyTitle(doc.title)}>제목 복사</button>
-                    </div>
-                  )}
-                </div>
-              </li>
-            ))}</ul> : <p className="empty">검색 조건에 맞는 샘플 문서가 없습니다.</p>}
-            {relatedSearches.length > 0 && (
-              <section className="related" aria-labelledby="related-heading">
-                <h3 id="related-heading">관련 검색어</h3>
-                <ul>
-                  {relatedSearches.map((term) => (
-                    <li key={term}>
-                      <a href={searchUrl(term, category)}>
-                        <Search size={16} aria-hidden="true" />{term}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </section>
+
+            {searchState.status === 'loading' && (
+              <p className="empty" role="status">문서를 불러오는 중입니다.</p>
             )}
-            {pageCount > 1 && (
-              <nav className="pagination" aria-label="문서 페이지">
-                {page > 1 && <a href={searchUrl(query, category, page - 1)}>이전</a>}
-                {firstPage > 1 && <span aria-hidden="true">…</span>}
-                {Array.from({ length: lastPage - firstPage + 1 }, (_, index) => firstPage + index).map((number) => (
-                  <a key={number} href={searchUrl(query, category, number)} aria-label={number + ' 페이지'} aria-current={number === page ? 'page' : undefined}>{number}</a>
-                ))}
-                {lastPage < pageCount && <span aria-hidden="true">…</span>}
-                {page < pageCount && <a href={searchUrl(query, category, page + 1)}>다음</a>}
-              </nav>
+
+            {searchState.status === 'error' && (
+              <p className="empty" role="alert">{searchState.message}</p>
+            )}
+
+            {readyData && (
+              <>
+                <span className="visually-hidden" role="status">
+                  문서 {readyData.totalHits}개{pageCount > 1 && ' · ' + page + '/' + pageCount + ' 페이지'}
+                </span>
+                {readyData.hits.length > 0 ? <ul className="document-list">{readyData.hits.map((hit) => (
+                  <li className="result-row" key={hit.documentId}>
+                    <a className="document" href={documentUrl(hit.documentId, page)}>
+                      <span className="file-icon"><FileText size={18} aria-hidden="true" /></span>
+                      <span className="doc-copy">
+                        <small>{isReferenceCategory(hit.category) ? hit.source : categoryLabels.get(hit.category as typeof categories[number]['id']) ?? hit.source} · {hit.hasPairedFormats ? 'Markdown · YAML' : hit.tag}</small>
+                        <strong>{hit.title}</strong>
+                        <span className="snippet">{hit.snippet}</span>
+                      </span>
+                    </a>
+                    {hit.date && <time dateTime={hit.date}>{hit.date}</time>}
+                    <div className="document-actions"
+                      onBlur={(event) => {
+                        if (!event.currentTarget.contains(event.relatedTarget)) setOpenMenu('')
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Escape' && openMenu === hit.documentId) {
+                          event.stopPropagation()
+                          event.currentTarget.querySelector('button')?.focus()
+                          setOpenMenu('')
+                        }
+                      }}
+                    >
+                      <button type="button" className="more-button"
+                        aria-label={hit.title + ' 옵션'}
+                        aria-expanded={openMenu === hit.documentId}
+                        onClick={(event) => {
+                          event.currentTarget.focus()
+                          setOpenMenu(openMenu === hit.documentId ? '' : hit.documentId)
+                        }}
+                      ><More size={20} weight="bold" aria-hidden="true" /></button>
+                      {openMenu === hit.documentId && (
+                        <div className="document-options" onPointerDown={(event) => event.preventDefault()}>
+                          <a href={documentUrl(hit.documentId, page)}>문서 열기</a>
+                          <button type="button" onClick={() => void copyTitle(hit.title)}>제목 복사</button>
+                        </div>
+                      )}
+                    </div>
+                  </li>
+                ))}</ul> : <p className="empty">{!category && hasReferenceMatches
+                  ? '일치하는 개발 참고 자료는 위 카테고리에서 열 수 있습니다.'
+                  : '검색 조건에 맞는 문서가 없습니다.'}</p>}
+                {readyData.relatedSearches.length > 0 && (
+                  <section className="related" aria-labelledby="related-heading">
+                    <h3 id="related-heading">관련 검색어</h3>
+                    <ul>
+                      {readyData.relatedSearches.map((term) => (
+                        <li key={term}>
+                          <a href={searchUrl(term, category)}>
+                            <Search size={16} aria-hidden="true" />{term}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+                {pageCount > 1 && (
+                  <nav className="pagination" aria-label="문서 페이지">
+                    {page > 1 && <a href={searchUrl(query, category, page - 1)}>이전</a>}
+                    {firstPage > 1 && <span aria-hidden="true">…</span>}
+                    {Array.from({ length: lastPage - firstPage + 1 }, (_, index) => firstPage + index).map((number) => (
+                      <a key={number} href={searchUrl(query, category, number)} aria-label={number + ' 페이지'} aria-current={number === page ? 'page' : undefined}>{number}</a>
+                    ))}
+                    {lastPage < pageCount && <span aria-hidden="true">…</span>}
+                    {page < pageCount && <a href={searchUrl(query, category, page + 1)}>다음</a>}
+                  </nav>
+                )}
+              </>
             )}
           </section>
         </div>
       </main>
-      <footer className="shell footer"><span>샘플 데이터로 구동되는 로컬 미리보기</span></footer>
+      <footer className="shell footer">
+        <span>
+          {searchState.status === 'ready' && (searchState.mode === 'api'
+            ? `Rust API 연결됨 · ${searchState.data.snapshot.generationId}`
+            : searchState.mode === 'local-reference' ? '로컬 개발 참고 자료' : '샘플 데이터로 구동되는 로컬 미리보기')}
+        </span>
+      </footer>
       <div className="visually-hidden" role="status">{copyStatus}</div>
     </>
   )
@@ -182,38 +269,16 @@ const legacyIds: Record<string, string> = {
   'design-design-yaml': 'design-map-yaml',
 }
 const detailId = detail ? legacyIds[detail[1]] ?? detail[1] : undefined
-const container = document.getElementById('root')
-if (!container) throw new Error('화면을 표시할 요소를 찾을 수 없습니다.')
-const root = createRoot(container)
 
-function loadRustCorpora(documentId?: string): Promise<RustCorpus[]> {
-  const sources = [
-    { folder: 'comprehensive-rust', load: () => import('./comprehensive-rust').then(({ comprehensiveRust }) => comprehensiveRust) },
-    { folder: 'rust-book', load: () => import('./rust-book').then(({ rustBook }) => rustBook) },
-  ]
-  return Promise.all(sources
-    .filter(({ folder }) => !documentId || documentId.startsWith(rustDocumentPrefix + folder + '-'))
-    .map(({ load }) => load()))
-}
-
-async function renderPage() {
+const rootElement = document.getElementById('root')
+if (rootElement) {
+  const root = createRoot(rootElement)
   if (detailId) {
-    const [{ DocumentPage }, corpora] = await Promise.all([
-      import('./document-reader'),
-      loadRustCorpora(detailId),
-    ])
-    const corpus = corpora.find(({ idPrefix }) => detailId.startsWith(idPrefix))
-    const doc = (corpus?.documents ?? documents).find(({ id }) => id === detailId)
-    document.title = (doc?.title ?? '문서를 찾을 수 없습니다') + ' · dok3search'
-    root.render(<DocumentPage doc={doc} corpus={corpus} />)
-  } else if (path === '/search') {
-    const corpora = await loadRustCorpora()
-    root.render(<SearchPage corpus={documents.concat(corpora.flatMap((corpus) => corpus.documents))} />)
+    void Promise.all([import('./document-reader'), loadReferenceCorpora(detailId)]).then(
+      ([{ DocumentPage }, [corpus]]) => root.render(<DocumentPage id={detailId} corpus={corpus} />),
+      () => root.render(<main className="shell reader"><p role="alert">문서를 불러올 수 없습니다.</p></main>),
+    )
   } else {
-    root.render(<HomePage />)
+    root.render(path === '/search' ? <SearchPage /> : <HomePage />)
   }
 }
-
-void renderPage().catch(() => {
-  root.render(<main className="shell library"><p role="alert">문서를 불러올 수 없습니다.</p></main>)
-})

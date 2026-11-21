@@ -1,3 +1,7 @@
-//! Shared errors, configuration, and common primitives for dok3search.
+//! Shared errors, configuration, and common primitives.
 
-pub fn init() {}
+pub mod config;
+pub mod error;
+
+pub use config::ServerConfig;
+pub use error::Dok3Error;

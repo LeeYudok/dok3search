@@ -7,6 +7,7 @@ export const categories = [
   { id: 'code', label: '코드 레퍼런스' },
   { id: 'policy', label: '내부 규정' },
   { id: 'rust', label: 'Rust 자료' },
+  { id: 'go', label: 'Go 자료' },
   { id: 'design', label: 'dok3search-design' },
 ] as const
 
@@ -26,6 +27,37 @@ export function documentHeadingId(label: string) {
 
 type Category = typeof categories[number]['id']
 
+const searchAliases = {
+  rust: new Map([
+    ['빌림', ['대여', 'borrow']],
+  ]),
+  go: new Map([
+    ['고루틴', ['goroutine']],
+    ['채널', ['channel']],
+    ['동시성', ['concurrency']],
+    ['모듈', ['module']],
+    ['벤더링', ['vendor']],
+    ['폐쇄망', ['offline', 'goproxy', 'go mod vendor']],
+    ['오프라인', ['offline', 'goproxy', 'go mod vendor']],
+  ]),
+}
+
+export function isReferenceCategory(category: string): category is keyof typeof searchAliases {
+  return category === 'rust' || category === 'go'
+}
+
+function matchesTerm(text: string, term: string, category: Category) {
+  return text.includes(term) || (
+    isReferenceCategory(category) &&
+    searchAliases[category].get(term)?.some((alias) => text.includes(alias))
+  )
+}
+
+export function titleMatches(query: string, doc: Document) {
+  const title = doc.title.toLowerCase()
+  return query.toLowerCase().split(/\s+/).every((term) => matchesTerm(title, term, doc.category))
+}
+
 export type Document = {
   id: string
   title: string
@@ -37,7 +69,6 @@ export type Document = {
   body: string
   markdown?: string
   samplePath?: string
-  keywords?: string
 }
 
 const designFiles = import.meta.glob<string>('./samples/design/**/*.{md,yaml,yml}', {
@@ -264,7 +295,7 @@ export const documents: Document[] = [
   },
 ]
 
-export function searchDocuments(query: string, corpus: readonly Document[]) {
+export function searchDocuments(query: string, corpus: readonly Document[] = documents) {
   const terms = query.toLowerCase().split(/\s+/)
 
   return corpus.filter((doc) => {
@@ -274,8 +305,8 @@ export function searchDocuments(query: string, corpus: readonly Document[]) {
 
     const variants = formats ? [formats.markdown, formats.yaml] : [doc]
     return variants.some((variant) => {
-      const searchable = [variant.title, variant.summary, variant.source, variant.tag, variant.body, variant.markdown, variant.samplePath, variant.keywords].join(' ').toLowerCase()
-      return terms.every((term) => searchable.includes(term))
+      const searchable = [variant.title, variant.summary, variant.source, variant.tag, variant.body, variant.markdown, variant.samplePath].join(' ').toLowerCase()
+      return terms.every((term) => matchesTerm(searchable, term, variant.category))
     })
   })
 }

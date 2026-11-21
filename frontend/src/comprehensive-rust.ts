@@ -1,7 +1,7 @@
 import index from './samples/comprehensive-rust/index.json'
 import contentLicense from './samples/comprehensive-rust/LICENSE-CC-BY?url&no-inline'
 import codeLicense from './samples/comprehensive-rust/LICENSE-APACHE?url&no-inline'
-import { createRustCorpus } from './rust-corpus'
+import { createReferenceCorpus } from './reference-corpus'
 
 const markdown = import.meta.glob<string>('./samples/comprehensive-rust/chapters/**/*.md', {
   eager: true, import: 'default', query: '?raw',
@@ -11,8 +11,9 @@ const images = import.meta.glob<string>('./samples/comprehensive-rust/assets/**/
   eager: true, import: 'default', query: '?url',
 })
 
-export const comprehensiveRust = createRustCorpus({
+export const comprehensiveRust = createReferenceCorpus({
   folder: 'comprehensive-rust',
+  category: 'rust',
   source: 'Google Android 팀 · Comprehensive Rust',
   language: '한국어',
   chapters: index.chapters,

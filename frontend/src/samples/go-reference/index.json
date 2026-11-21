@@ -1,0 +1,311 @@
+{
+  "source": "Go 공식 문서",
+  "chapters": [
+    {
+      "path": "chapters/spec/introduction.md",
+      "title": "Introduction",
+      "summary": "This is the reference manual for the Go programming language. For more information and other documents, see go.dev .",
+      "source": "Go 언어 명세"
+    },
+    {
+      "path": "chapters/spec/notation.md",
+      "title": "Notation",
+      "summary": "The syntax is specified using a variant of Extended Backus-Naur Form (EBNF):",
+      "source": "Go 언어 명세"
+    },
+    {
+      "path": "chapters/spec/source-code-representation.md",
+      "title": "Source code representation",
+      "summary": "Source code is Unicode text encoded in UTF-8 . The text is not canonicalized, so a single accented code point is distinct from the same character constructed from combining an accent and a letter; those are treated as two code poi",
+      "source": "Go 언어 명세"
+    },
+    {
+      "path": "chapters/spec/lexical-elements.md",
+      "title": "Lexical elements",
+      "summary": "Comments serve as program documentation. There are two forms:",
+      "source": "Go 언어 명세"
+    },
+    {
+      "path": "chapters/spec/constants.md",
+      "title": "Constants",
+      "summary": "There are boolean constants , rune constants , integer constants , floating-point constants , complex constants , and string constants . Rune, integer, floating-point, and complex constants are collectively called numeric constant",
+      "source": "Go 언어 명세"
+    },
+    {
+      "path": "chapters/spec/variables.md",
+      "title": "Variables",
+      "summary": "A variable is a storage location for holding a value . The set of permissible values is determined by the variable's type .",
+      "source": "Go 언어 명세"
+    },
+    {
+      "path": "chapters/spec/types.md",
+      "title": "Types",
+      "summary": "A type determines a set of values together with operations and methods specific to those values. A type may be denoted by a type name , if it has one, which must be followed by type arguments if the type is generic. A type may als",
+      "source": "Go 언어 명세"
+    },
+    {
+      "path": "chapters/spec/properties-of-types-and-values.md",
+      "title": "Properties of types and values",
+      "summary": "Values of predeclared types (see below for the interfaces any and error ), arrays, and structs are self-contained: Each such value contains a complete copy of all its data, and variables of such types store the entire value. For i",
+      "source": "Go 언어 명세"
+    },
+    {
+      "path": "chapters/spec/blocks.md",
+      "title": "Blocks",
+      "summary": "A block is a possibly empty sequence of declarations and statements within matching brace brackets.",
+      "source": "Go 언어 명세"
+    },
+    {
+      "path": "chapters/spec/declarations-and-scope.md",
+      "title": "Declarations and scope",
+      "summary": "A declaration binds a non- blank identifier to a constant , type , type parameter , variable , function , label , or package . Every identifier in a program must be declared. No identifier may be declared twice in the same block, ",
+      "source": "Go 언어 명세"
+    },
+    {
+      "path": "chapters/spec/expressions.md",
+      "title": "Expressions",
+      "summary": "An expression specifies the computation of a value by applying operators and functions to operands.",
+      "source": "Go 언어 명세"
+    },
+    {
+      "path": "chapters/spec/statements.md",
+      "title": "Statements",
+      "summary": "A terminating statement interrupts the regular flow of control in a block . The following statements are terminating:",
+      "source": "Go 언어 명세"
+    },
+    {
+      "path": "chapters/spec/built-in-functions.md",
+      "title": "Built-in functions",
+      "summary": "Built-in functions are predeclared . They are called like any other function but some of them accept a type instead of an expression as the first argument.",
+      "source": "Go 언어 명세"
+    },
+    {
+      "path": "chapters/spec/packages.md",
+      "title": "Packages",
+      "summary": "Go programs are constructed by linking together packages . A package in turn is constructed from one or more source files that together declare constants, types, variables and functions belonging to the package and which are acces",
+      "source": "Go 언어 명세"
+    },
+    {
+      "path": "chapters/spec/program-initialization-and-execution.md",
+      "title": "Program initialization and execution",
+      "summary": "When storage is allocated for a variable , either through a declaration or a call of new , or when a new value is created, either through a composite literal or a call of make , and no explicit initialization is provided, the vari",
+      "source": "Go 언어 명세"
+    },
+    {
+      "path": "chapters/spec/errors.md",
+      "title": "Errors",
+      "summary": "The predeclared type error is defined as",
+      "source": "Go 언어 명세"
+    },
+    {
+      "path": "chapters/spec/run-time-panics.md",
+      "title": "Run-time panics",
+      "summary": "Execution errors such as attempting to index an array out of bounds trigger a run-time panic equivalent to a call of the built-in function panic with a value of the implementation-defined interface type runtime.Error . That type s",
+      "source": "Go 언어 명세"
+    },
+    {
+      "path": "chapters/spec/system-considerations.md",
+      "title": "System considerations",
+      "summary": "The built-in package unsafe , known to the compiler and accessible through the import path \"unsafe\" , provides facilities for low-level programming including operations that violate the type system. A package using unsafe must be ",
+      "source": "Go 언어 명세"
+    },
+    {
+      "path": "chapters/spec/appendix.md",
+      "title": "Appendix",
+      "summary": "The Go 1 compatibility guarantee ensures that programs written to the Go 1 specification will continue to compile and run correctly, unchanged, over the lifetime of that specification. More generally, as adjustments are made and f",
+      "source": "Go 언어 명세"
+    },
+    {
+      "path": "chapters/modules/introduction.md",
+      "title": "Introduction",
+      "summary": "Modules are how Go manages dependencies.",
+      "source": "Go Modules Reference"
+    },
+    {
+      "path": "chapters/modules/modules-overview.md",
+      "title": "Modules, packages, and versions",
+      "summary": "A module is a collection of packages that are released, versioned, and distributed together. Modules may be downloaded directly from version control repositories or from module proxy servers.",
+      "source": "Go Modules Reference"
+    },
+    {
+      "path": "chapters/modules/go-mod-file.md",
+      "title": "go.mod files",
+      "summary": "A module is defined by a UTF-8 encoded text file named go.mod in its root directory. The go.mod file is line-oriented. Each line holds a single directive, made up of a keyword followed by arguments. For example:",
+      "source": "Go Modules Reference"
+    },
+    {
+      "path": "chapters/modules/minimal-version-selection.md",
+      "title": "Minimal version selection (MVS)",
+      "summary": "Go uses an algorithm called Minimal version selection (MVS) to select a set of module versions to use when building packages. MVS is described in detail in Minimal Version Selection by Russ Cox.",
+      "source": "Go Modules Reference"
+    },
+    {
+      "path": "chapters/modules/graph-pruning.md",
+      "title": "Module graph pruning",
+      "summary": "If the main module is at go 1.17 or higher, the module graph used for minimal version selection includes only the immediate requirements for each module dependency that specifies go 1.17 or higher in its own go.mod file, unless th",
+      "source": "Go Modules Reference"
+    },
+    {
+      "path": "chapters/modules/workspaces.md",
+      "title": "Workspaces",
+      "summary": "A workspace is a collection of modules on disk that are used as the main modules when running minimal version selection (MVS) .",
+      "source": "Go Modules Reference"
+    },
+    {
+      "path": "chapters/modules/non-module-compat.md",
+      "title": "Compatibility with non-module repositories",
+      "summary": "To ensure a smooth transition from GOPATH to modules, the go command can download and build packages in module-aware mode from repositories that have not migrated to modules by adding a go.mod file .",
+      "source": "Go Modules Reference"
+    },
+    {
+      "path": "chapters/modules/mod-commands.md",
+      "title": "Module-aware commands",
+      "summary": "Most go commands may run in Module-aware mode or GOPATH mode . In module-aware mode, the go command uses go.mod files to find versioned dependencies, and it typically loads packages out of the module cache , downloading modules if",
+      "source": "Go Modules Reference"
+    },
+    {
+      "path": "chapters/modules/module-proxy.md",
+      "title": "Module proxies",
+      "summary": "A module proxy is an HTTP server that can respond to GET requests for paths specified below. The requests have no query parameters, and no specific headers are required, so even a site serving from a fixed file system (including a",
+      "source": "Go Modules Reference"
+    },
+    {
+      "path": "chapters/modules/vcs.md",
+      "title": "Version control systems",
+      "summary": "The go command may download module source code and metadata directly from a version control repository. Downloading a module from a proxy is usually faster, but connecting directly to a repository is necessary if a proxy is not av",
+      "source": "Go Modules Reference"
+    },
+    {
+      "path": "chapters/modules/zip-files.md",
+      "title": "Module zip files",
+      "summary": "Module versions are distributed as .zip files. There is rarely any need to interact directly with these files, since the go command creates, downloads, and extracts them automatically from module proxies and version control reposi",
+      "source": "Go Modules Reference"
+    },
+    {
+      "path": "chapters/modules/private-modules.md",
+      "title": "Private modules",
+      "summary": "Go modules are frequently developed and distributed on version control servers and module proxies that aren’t available on the public internet. The go command can download and build modules from private sources, though it usually ",
+      "source": "Go Modules Reference"
+    },
+    {
+      "path": "chapters/modules/module-cache.md",
+      "title": "Module cache",
+      "summary": "The module cache is the directory where the go command stores downloaded module files. The module cache is distinct from the build cache, which contains compiled packages and other build artifacts.",
+      "source": "Go Modules Reference"
+    },
+    {
+      "path": "chapters/modules/authenticating.md",
+      "title": "Authenticating modules",
+      "summary": "When the go command downloads a module zip file or go.mod file into the module cache , it computes a cryptographic hash and compares it with a known value to verify the file hasn’t changed since it was first downloaded. The go com",
+      "source": "Go Modules Reference"
+    },
+    {
+      "path": "chapters/modules/environment-variables.md",
+      "title": "Environment variables",
+      "summary": "Module behavior in the go command may be configured using the environment variables listed below. This list only includes module-related environment variables. See go help environment for a list of all environment variables recogn",
+      "source": "Go Modules Reference"
+    },
+    {
+      "path": "chapters/modules/glossary.md",
+      "title": "Glossary",
+      "summary": "build constraint: A condition that determines whether a Go source file is used when compiling a package. Build constraints may be expressed with file name suffixes (for example, foo_linux_amd64.go ) or with build constraint commen",
+      "source": "Go Modules Reference"
+    },
+    {
+      "path": "chapters/effective-go/introduction.md",
+      "title": "Introduction",
+      "summary": "Go is an open-source programming language that focuses on simplicity, reliability, and efficiency, specifically designed to make it easy to build software at scale. Although it borrows ideas from existing languages, it has unusual",
+      "source": "Effective Go"
+    },
+    {
+      "path": "chapters/effective-go/formatting.md",
+      "title": "Formatting",
+      "summary": "Formatting issues are the most contentious but the least consequential. People can adapt to different formatting styles but it's better if they don't have to, and less time is devoted to the topic if everyone adheres to the same s",
+      "source": "Effective Go"
+    },
+    {
+      "path": "chapters/effective-go/commentary.md",
+      "title": "Commentary",
+      "summary": "Go provides C-style /* */ block comments and C++-style // line comments. Line comments are the norm; block comments appear mostly as package comments, but are useful within an expression or to disable large swaths of code.",
+      "source": "Effective Go"
+    },
+    {
+      "path": "chapters/effective-go/names.md",
+      "title": "Names",
+      "summary": "Names are as important in Go as in any other language. They even have semantic effect: the visibility of a name outside a package is determined by whether its first character is upper case. It's therefore worth spending a little t",
+      "source": "Effective Go"
+    },
+    {
+      "path": "chapters/effective-go/semicolons.md",
+      "title": "Semicolons",
+      "summary": "Like C, Go's formal grammar uses semicolons to terminate statements, but unlike in C, those semicolons do not appear in the source. Instead the lexer uses a simple rule to insert semicolons automatically as it scans, so the input ",
+      "source": "Effective Go"
+    },
+    {
+      "path": "chapters/effective-go/control-structures.md",
+      "title": "Control structures",
+      "summary": "The control structures of Go are related to those of C but differ in important ways. There is no do or while loop, only a slightly generalized for ; switch is more flexible; if and switch accept an optional initialization statemen",
+      "source": "Effective Go"
+    },
+    {
+      "path": "chapters/effective-go/functions.md",
+      "title": "Functions",
+      "summary": "One of Go's unusual features is that functions and methods can return multiple values. This form can be used to improve on a couple of clumsy idioms in C programs: in-band error returns such as -1 for EOF and modifying an argument",
+      "source": "Effective Go"
+    },
+    {
+      "path": "chapters/effective-go/data.md",
+      "title": "Data",
+      "summary": "Go has two allocation primitives, the built-in functions new and make . They do different things and apply to different types, which can be confusing, but the rules are simple. Let's talk about new first. It's a built-in function ",
+      "source": "Effective Go"
+    },
+    {
+      "path": "chapters/effective-go/initialization.md",
+      "title": "Initialization",
+      "summary": "Although it doesn't look superficially very different from initialization in C or C++, initialization in Go is more powerful. Complex structures can be built during initialization and the ordering issues among initialized objects,",
+      "source": "Effective Go"
+    },
+    {
+      "path": "chapters/effective-go/methods.md",
+      "title": "Methods",
+      "summary": "As we saw with ByteSize , methods can be defined for any named type (except a pointer or an interface); the receiver does not have to be a struct.",
+      "source": "Effective Go"
+    },
+    {
+      "path": "chapters/effective-go/interfaces-and-types.md",
+      "title": "Interfaces and other types",
+      "summary": "Interfaces in Go provide a way to specify the behavior of an object: if something can do this , then it can be used here . We've seen a couple of simple examples already; custom printers can be implemented by a String method while",
+      "source": "Effective Go"
+    },
+    {
+      "path": "chapters/effective-go/blank.md",
+      "title": "The blank identifier",
+      "summary": "We've mentioned the blank identifier a couple of times now, in the context of for range loops and maps . The blank identifier can be assigned or declared with any value of any type, with the value discarded harmlessly. It's a bit ",
+      "source": "Effective Go"
+    },
+    {
+      "path": "chapters/effective-go/embedding.md",
+      "title": "Embedding",
+      "summary": "Go does not provide the typical, type-driven notion of subclassing, but it does have the ability to “borrow” pieces of an implementation by embedding types within a struct or interface.",
+      "source": "Effective Go"
+    },
+    {
+      "path": "chapters/effective-go/concurrency.md",
+      "title": "Concurrency",
+      "summary": "Concurrent programming is a large topic and there is space only for some Go-specific highlights here.",
+      "source": "Effective Go"
+    },
+    {
+      "path": "chapters/effective-go/errors.md",
+      "title": "Errors",
+      "summary": "Library routines must often return some sort of error indication to the caller. As mentioned earlier, Go's multivalue return makes it easy to return a detailed error description alongside the normal return value. It is good style ",
+      "source": "Effective Go"
+    },
+    {
+      "path": "chapters/effective-go/web-server.md",
+      "title": "A web server",
+      "summary": "Let's finish with a complete Go program, a web server. This one is actually a kind of web re-server. Google provides a service at chart.apis.google.com that does automatic formatting of data into charts and graphs. It's hard to us",
+      "source": "Effective Go"
+    }
+  ]
+}

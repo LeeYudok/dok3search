@@ -2,7 +2,7 @@ import index from './samples/rust-book/index.json'
 import copyright from './samples/rust-book/COPYRIGHT?url&no-inline'
 import mitLicense from './samples/rust-book/LICENSE-MIT?url&no-inline'
 import apacheLicense from './samples/rust-book/LICENSE-APACHE?url&no-inline'
-import { createRustCorpus } from './rust-corpus'
+import { createReferenceCorpus } from './reference-corpus'
 
 const markdown = import.meta.glob<string>('./samples/rust-book/chapters/**/*.md', {
   eager: true, import: 'default', query: '?raw',
@@ -12,8 +12,9 @@ const images = import.meta.glob<string>('./samples/rust-book/assets/**/*.{svg,pn
   eager: true, import: 'default', query: '?url',
 })
 
-export const rustBook = createRustCorpus({
+export const rustBook = createReferenceCorpus({
   folder: 'rust-book',
+  category: 'rust',
   source: 'Rust 공식 책 · The Rust Programming Language',
   language: '영어',
   chapters: index.chapters,

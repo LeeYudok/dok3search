@@ -1,0 +1,37 @@
+{
+  "retrieved_at": "2026-11-21",
+  "license_notice": "https://go.dev/copyright",
+  "docs_license": "CC BY 4.0",
+  "code_license": "BSD-3-Clause",
+  "sources": {
+    "spec": {
+      "title": "Go 언어 명세",
+      "url": "https://go.dev/ref/spec",
+      "snapshot": "Installed SDK",
+      "input_sha256": "e5806989624c1e9dd32bddaedd2f70a1dd208295cb6d0ff72b02625b2cd6f592",
+      "sdk_version": "go version go1.26.2 darwin/arm64",
+      "language_version": "go1.26"
+    },
+    "modules": {
+      "title": "Go Modules Reference",
+      "url": "https://go.dev/ref/mod",
+      "snapshot": "Published go.dev HTML",
+      "input_sha256": "76800e4390a4eee6fadd8778cacc668cf8cd2aaadb210ebf8c41fc9ed89d0a6e"
+    },
+    "effective-go": {
+      "title": "Effective Go",
+      "url": "https://go.dev/doc/effective_go",
+      "snapshot": "Published go.dev HTML",
+      "input_sha256": "9a72a7a4580f8852019a632d5bd07cf30a33adbd580752f4f800a685d9fa8ef3"
+    }
+  },
+  "asset_sha256": {
+    "assets/mvs/buildlist.svg": "0543fe5c3ebe8c1ec3ffb64b2e8ecd0573380f46498fc6c2921dca3aefd3339e",
+    "assets/mvs/downgrade.svg": "adc6b9b49a2c8ca494e92a80d571327a3b62248dbf37efeeb79f1ddfcef9ccc5",
+    "assets/mvs/exclude.svg": "75da5b66e4908f1de07342ca6003b8fa3d07ed144e209c68042d825cea811acb",
+    "assets/mvs/get-downgrade.svg": "730128c447dfa3fcd48526fe6e2594da0cbf44c79be903248e6357c457cad206",
+    "assets/mvs/get-upgrade.svg": "1097879be402b6b42e4a664b8b1b5512a127df49f1c91612c5069c5726c7edcd",
+    "assets/mvs/replace.svg": "1ae6eb946cb3c60463b319be8dafda10d1027ba80a12fd3d567d71720e569bf7",
+    "assets/mvs/upgrade.svg": "c7c32de86f9371c2c0ac0bbb1f9dfb26440e2fda31fe2cbfdb3223cc4737ecff"
+  }
+}
