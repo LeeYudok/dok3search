@@ -1,11 +1,13 @@
 use std::sync::Arc;
 
 use axum::body::Body;
-use axum::http::{Method, Request, StatusCode, header};
+use axum::http::{HeaderMap, Method, Request, StatusCode, header};
 use dok3_agent::{
-    JSONRPC_VERSION_MISMATCH, MAX_JSONRPC_LINE_BYTES, MCP_PROTOCOL_VERSION_HEADER, McpServer,
-    build_mcp_router,
+    JSONRPC_HEADER_MISMATCH, JSONRPC_VERSION_MISMATCH, MAX_JSONRPC_LINE_BYTES, MCP_METHOD_HEADER,
+    MCP_NAME_HEADER, MCP_PROTOCOL_VERSION_HEADER, McpServer, build_mcp_router,
+    build_mcp_router_with_auth,
 };
+use dok3_core::Dok3Error;
 use dok3_domain::{
     AclScope, Document, DocumentSection, Principal, RevisionId, SectionId, SourceId,
 };
@@ -83,12 +85,13 @@ async fn read_json(resp: axum::response::Response) -> Value {
 async fn streamable_http_supports_2026_stateless_and_2025_initialize_matrix() {
     let app = build_mcp_router(fixture_server(Principal::anonymous_public()));
 
-    // 2026-07-28 stateless discovery + tool call over single POST /mcp
+    // 2026-07-28 stateless discovery + required supportedVersions / resultType fields
     let discover_req = Request::builder()
         .method(Method::POST)
         .uri("/mcp")
         .header(header::CONTENT_TYPE, "application/json")
         .header(MCP_PROTOCOL_VERSION_HEADER, "2026-07-28")
+        .header(MCP_METHOD_HEADER, "server/discover")
         .body(Body::from(
             r#"{"jsonrpc":"2.0","id":1,"method":"server/discover"}"#,
         ))
@@ -103,6 +106,13 @@ async fn streamable_http_supports_2026_stateless_and_2025_initialize_matrix() {
         "2026-07-28"
     );
     let discover_json = read_json(discover_resp).await;
+    assert_eq!(discover_json["result"]["resultType"], "complete");
+    assert!(
+        discover_json["result"]["supportedVersions"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("2026-07-28"))
+    );
     assert_eq!(
         discover_json["result"]["tools"].as_array().unwrap().len(),
         7
@@ -146,7 +156,7 @@ async fn streamable_http_supports_2026_stateless_and_2025_initialize_matrix() {
         "2025-11-25"
     );
 
-    // Unsupported MCP-Protocol-Version header -> 400 + -32022
+    // Unsupported MCP-Protocol-Version header -> 400 + -32022 with data.supported & data.requested
     let bad_ver_req = Request::builder()
         .method(Method::POST)
         .uri("/mcp")
@@ -159,6 +169,13 @@ async fn streamable_http_supports_2026_stateless_and_2025_initialize_matrix() {
     assert_eq!(
         bad_ver_json["error"]["code"],
         json!(JSONRPC_VERSION_MISMATCH)
+    );
+    assert_eq!(bad_ver_json["error"]["data"]["requested"], "1999-01-01");
+    assert!(
+        bad_ver_json["error"]["data"]["supported"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("2026-07-28"))
     );
 
     // GET /mcp -> 405 Method Not Allowed + Allow: POST
@@ -177,10 +194,129 @@ async fn streamable_http_supports_2026_stateless_and_2025_initialize_matrix() {
 }
 
 #[tokio::test]
-async fn streamable_http_enforces_loopback_origin_body_cap_and_acl() {
-    let app = build_mcp_router(fixture_server(Principal::anonymous_public()));
+async fn streamable_http_rejects_header_body_mismatches_and_enforces_per_request_acl() {
+    // Even if constructed from a privileged stdio McpServer, default build_mcp_router stays anonymous_public.
+    let privileged_server = fixture_server(Principal {
+        subject: "local-admin".to_string(),
+        allowed_scopes: vec![AclScope::Public, AclScope::internal("security")],
+        is_admin: true,
+    });
+    let anon_app = build_mcp_router(privileged_server.clone());
 
-    // Reject non-loopback / spoofed Origin headers
+    let denied_doc = Request::builder()
+        .method(Method::POST)
+        .uri("/mcp")
+        .body(Body::from(
+            r#"{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"kb_get_document","arguments":{"document_id":"sec-doc"}}}"#,
+        ))
+        .unwrap();
+    let denied_resp = anon_app.clone().oneshot(denied_doc).await.unwrap();
+    assert_eq!(denied_resp.status(), StatusCode::OK);
+    let denied_json = read_json(denied_resp).await;
+    assert_eq!(denied_json["result"]["isError"], true);
+    assert_eq!(
+        denied_json["result"]["structuredContent"]["error"]["code"],
+        "FORBIDDEN"
+    );
+
+    // Authenticated per-request resolver grants internal access only to valid bearer token,
+    // failing closed (401/403) otherwise.
+    let auth_app = build_mcp_router_with_auth(
+        privileged_server,
+        Arc::new(|headers: &HeaderMap| {
+            match headers
+                .get(header::AUTHORIZATION)
+                .and_then(|v| v.to_str().ok())
+            {
+                Some("Bearer sec-token") => Ok(Principal {
+                    subject: "sec-user".to_string(),
+                    allowed_scopes: vec![AclScope::Public, AclScope::internal("security")],
+                    is_admin: false,
+                }),
+                Some(_) => Err(Dok3Error::Forbidden("invalid bearer token".to_string())),
+                None => Err(Dok3Error::InvalidInput("missing authorization".to_string())),
+            }
+        }),
+    );
+
+    let unauth_req = Request::builder()
+        .method(Method::POST)
+        .uri("/mcp")
+        .body(Body::from(r#"{"jsonrpc":"2.0","id":2,"method":"ping"}"#))
+        .unwrap();
+    assert_eq!(
+        auth_app.clone().oneshot(unauth_req).await.unwrap().status(),
+        StatusCode::UNAUTHORIZED
+    );
+
+    let bad_tok_req = Request::builder()
+        .method(Method::POST)
+        .uri("/mcp")
+        .header(header::AUTHORIZATION, "Bearer wrong")
+        .body(Body::from(r#"{"jsonrpc":"2.0","id":3,"method":"ping"}"#))
+        .unwrap();
+    assert_eq!(
+        auth_app
+            .clone()
+            .oneshot(bad_tok_req)
+            .await
+            .unwrap()
+            .status(),
+        StatusCode::FORBIDDEN
+    );
+
+    let sec_req = Request::builder()
+        .method(Method::POST)
+        .uri("/mcp")
+        .header(header::AUTHORIZATION, "Bearer sec-token")
+        .header(MCP_PROTOCOL_VERSION_HEADER, "2026-07-28")
+        .header(MCP_METHOD_HEADER, "tools/call")
+        .header(MCP_NAME_HEADER, "kb_get_document")
+        .body(Body::from(
+            r#"{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"kb_get_document","arguments":{"document_id":"sec-doc"},"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28"}}}"#,
+        ))
+        .unwrap();
+    let sec_resp = auth_app.oneshot(sec_req).await.unwrap();
+    assert_eq!(sec_resp.status(), StatusCode::OK);
+    let sec_json = read_json(sec_resp).await;
+    assert_eq!(sec_json["result"]["isError"], false);
+    assert_eq!(sec_json["result"]["structuredContent"]["id"], "sec-doc");
+
+    // Header-body mismatches (MCP-Protocol-Version vs _meta, Mcp-Method vs body.method, Mcp-Name vs params.name)
+    for (hdr_k, hdr_v, body_str) in [
+        (
+            MCP_PROTOCOL_VERSION_HEADER,
+            "2025-11-25",
+            r#"{"jsonrpc":"2.0","id":5,"method":"tools/list","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28"}}}"#,
+        ),
+        (
+            MCP_METHOD_HEADER,
+            "tools/list",
+            r#"{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"kb_list_categories"}}"#,
+        ),
+        (
+            MCP_NAME_HEADER,
+            "kb_search",
+            r#"{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"kb_get_document","arguments":{"document_id":"pub-doc"}}}"#,
+        ),
+    ] {
+        let req = Request::builder()
+            .method(Method::POST)
+            .uri("/mcp")
+            .header(hdr_k, hdr_v)
+            .body(Body::from(body_str))
+            .unwrap();
+        let resp = anon_app.clone().oneshot(req).await.unwrap();
+        assert_eq!(
+            resp.status(),
+            StatusCode::BAD_REQUEST,
+            "mismatch {hdr_k}={hdr_v}"
+        );
+        let json_body = read_json(resp).await;
+        assert_eq!(json_body["error"]["code"], json!(JSONRPC_HEADER_MISMATCH));
+    }
+
+    // Loopback Origin guard & 413 payload limit still enforced
     for evil_origin in [
         "https://evil.example",
         "http://127.0.0.1.evil.example",
@@ -191,44 +327,27 @@ async fn streamable_http_enforces_loopback_origin_body_cap_and_acl() {
             .method(Method::POST)
             .uri("/mcp")
             .header(header::ORIGIN, evil_origin)
-            .body(Body::from(r#"{"jsonrpc":"2.0","id":1,"method":"ping"}"#))
+            .body(Body::from(r#"{"jsonrpc":"2.0","id":8,"method":"ping"}"#))
             .unwrap();
-        let resp = app.clone().oneshot(req).await.unwrap();
         assert_eq!(
-            resp.status(),
-            StatusCode::FORBIDDEN,
-            "origin: {evil_origin}"
+            anon_app.clone().oneshot(req).await.unwrap().status(),
+            StatusCode::FORBIDDEN
         );
     }
 
-    // Accept loopback Origin and execute ACL-enforced document read
-    let allowed_req = Request::builder()
-        .method(Method::POST)
-        .uri("/mcp")
-        .header(header::ORIGIN, "http://127.0.0.1:18443")
-        .body(Body::from(
-            r#"{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"kb_get_document","arguments":{"document_id":"sec-doc"}}}"#,
-        ))
-        .unwrap();
-    let allowed_resp = app.clone().oneshot(allowed_req).await.unwrap();
-    assert_eq!(allowed_resp.status(), StatusCode::OK);
-    let body = read_json(allowed_resp).await;
-    assert_eq!(body["result"]["isError"], true);
-    assert_eq!(
-        body["result"]["structuredContent"]["error"]["code"],
-        "FORBIDDEN"
-    );
-
-    // Oversized payload hits Axum DefaultBodyLimit -> 413 Payload Too Large
     let oversized = format!(
-        "{{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"ping\",\"pad\":\"{}\"}}",
+        "{{\"jsonrpc\":\"2.0\",\"id\":9,\"method\":\"ping\",\"pad\":\"{}\"}}",
         "x".repeat(MAX_JSONRPC_LINE_BYTES + 128)
     );
-    let oversized_req = Request::builder()
-        .method(Method::POST)
-        .uri("/mcp")
-        .body(Body::from(oversized))
+    let oversized_resp = anon_app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri("/mcp")
+                .body(Body::from(oversized))
+                .unwrap(),
+        )
+        .await
         .unwrap();
-    let oversized_resp = app.oneshot(oversized_req).await.unwrap();
     assert_eq!(oversized_resp.status(), StatusCode::PAYLOAD_TOO_LARGE);
 }

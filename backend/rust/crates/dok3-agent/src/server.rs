@@ -15,8 +15,8 @@ use serde_json::{Map, Value, json};
 
 use crate::protocol::{
     DEFAULT_PROTOCOL_VERSION, JSONRPC_INVALID_PARAMS, JSONRPC_INVALID_REQUEST,
-    JSONRPC_METHOD_NOT_FOUND, JSONRPC_PARSE_ERROR, JSONRPC_VERSION_MISMATCH, JsonRpcResponse,
-    ListCategoriesResult, SUPPORTED_PROTOCOL_VERSIONS, tool_definitions,
+    JSONRPC_METHOD_NOT_FOUND, JSONRPC_PARSE_ERROR, JsonRpcResponse, ListCategoriesResult,
+    SUPPORTED_PROTOCOL_VERSIONS, tool_definitions, version_mismatch_error,
 };
 
 /// Maximum bytes accepted for a single newline-delimited JSON-RPC message on stdio.
@@ -51,9 +51,20 @@ impl McpServer {
         self
     }
 
-    /// Processes a single JSON-RPC 2.0 line and returns `None` for notifications.
+    /// Processes a single JSON-RPC 2.0 line under the server's configured stdio [`Principal`].
     #[must_use]
     pub fn handle_message(&self, raw_line: &str) -> Option<JsonRpcResponse> {
+        self.handle_message_for(&self.principal, raw_line)
+    }
+
+    /// Processes a single JSON-RPC 2.0 line for an explicit per-request caller [`Principal`].
+    /// Returns `None` for JSON-RPC notifications.
+    #[must_use]
+    pub fn handle_message_for(
+        &self,
+        principal: &Principal,
+        raw_line: &str,
+    ) -> Option<JsonRpcResponse> {
         if raw_line.len() > MAX_JSONRPC_LINE_BYTES {
             return Some(JsonRpcResponse::err(
                 Value::Null,
@@ -143,7 +154,7 @@ impl McpServer {
             "server/discover" => self.handle_discover(id, &params),
             "ping" => JsonRpcResponse::ok(id, json!({})),
             "tools/list" => JsonRpcResponse::ok(id, json!({ "tools": tool_definitions() })),
-            "tools/call" => self.handle_tools_call(id, &params),
+            "tools/call" => self.handle_tools_call(principal, id, &params),
             _ => JsonRpcResponse::err(
                 id,
                 JSONRPC_METHOD_NOT_FOUND,
@@ -239,11 +250,16 @@ impl McpServer {
             return version_mismatch_error(id, ver);
         }
 
+        let server_info = json!({
+            "name": self.server_name,
+            "version": self.server_version,
+        });
         JsonRpcResponse::ok(
             id,
             json!({
+                "resultType": "complete",
+                "supportedVersions": SUPPORTED_PROTOCOL_VERSIONS,
                 "protocolVersion": requested.unwrap_or(DEFAULT_PROTOCOL_VERSION),
-                "supportedProtocolVersions": SUPPORTED_PROTOCOL_VERSIONS,
                 "capabilities": {
                     "tools": { "listChanged": false }
                 },
@@ -251,16 +267,24 @@ impl McpServer {
                     "kind": "stdio",
                     "stateless": true
                 },
-                "serverInfo": {
-                    "name": self.server_name,
-                    "version": self.server_version,
+                "serverInfo": server_info,
+                "_meta": {
+                    "io.modelcontextprotocol/serverInfo": {
+                        "name": self.server_name,
+                        "version": self.server_version,
+                    }
                 },
                 "tools": tool_definitions(),
             }),
         )
     }
 
-    fn handle_tools_call(&self, id: Value, params: &Map<String, Value>) -> JsonRpcResponse {
+    fn handle_tools_call(
+        &self,
+        principal: &Principal,
+        id: Value,
+        params: &Map<String, Value>,
+    ) -> JsonRpcResponse {
         let Some(name) = params
             .get("name")
             .and_then(Value::as_str)
@@ -288,13 +312,19 @@ impl McpServer {
         };
 
         match name {
-            "kb_search" => self.call_kb_search(id, &args),
-            "kb_get_document" => self.call_kb_get_document(id, &args),
-            "kb_get_section" => self.call_kb_get_section(id, &args),
-            "kb_search_api" => self.call_kb_search_preset(id, &args, &["endpoint", "query"]),
-            "kb_search_error" => self.call_kb_search_preset(id, &args, &["error_code", "query"]),
-            "kb_search_code" => self.call_kb_search_preset(id, &args, &["symbol", "query"]),
-            "kb_list_categories" => self.call_kb_list_categories(id, &args),
+            "kb_search" => self.call_kb_search(principal, id, &args),
+            "kb_get_document" => self.call_kb_get_document(principal, id, &args),
+            "kb_get_section" => self.call_kb_get_section(principal, id, &args),
+            "kb_search_api" => {
+                self.call_kb_search_preset(principal, id, &args, &["endpoint", "query"])
+            }
+            "kb_search_error" => {
+                self.call_kb_search_preset(principal, id, &args, &["error_code", "query"])
+            }
+            "kb_search_code" => {
+                self.call_kb_search_preset(principal, id, &args, &["symbol", "query"])
+            }
+            "kb_list_categories" => self.call_kb_list_categories(principal, id, &args),
             _ => JsonRpcResponse::err(
                 id,
                 JSONRPC_INVALID_PARAMS,
@@ -304,7 +334,12 @@ impl McpServer {
         }
     }
 
-    fn call_kb_search(&self, id: Value, args: &Map<String, Value>) -> JsonRpcResponse {
+    fn call_kb_search(
+        &self,
+        principal: &Principal,
+        id: Value,
+        args: &Map<String, Value>,
+    ) -> JsonRpcResponse {
         let query = match optional_string(args, "query") {
             Ok(Some(q)) => q,
             Ok(None) => String::new(),
@@ -317,11 +352,12 @@ impl McpServer {
             }
             Err(InvalidOrDomain::Domain(dok3_err)) => return dok3_error_result(id, dok3_err),
         };
-        tool_result(id, self.search.search(&self.principal, &req))
+        tool_result(id, self.search.search(principal, &req))
     }
 
     fn call_kb_search_preset(
         &self,
+        principal: &Principal,
         id: Value,
         args: &Map<String, Value>,
         text_keys: &[&str],
@@ -354,10 +390,15 @@ impl McpServer {
             }
             Err(InvalidOrDomain::Domain(dok3_err)) => return dok3_error_result(id, dok3_err),
         };
-        tool_result(id, self.search.search(&self.principal, &req))
+        tool_result(id, self.search.search(principal, &req))
     }
 
-    fn call_kb_get_document(&self, id: Value, args: &Map<String, Value>) -> JsonRpcResponse {
+    fn call_kb_get_document(
+        &self,
+        principal: &Principal,
+        id: Value,
+        args: &Map<String, Value>,
+    ) -> JsonRpcResponse {
         let doc_id = match required_string(args, "document_id") {
             Ok(v) => v,
             Err(msg) => return JsonRpcResponse::err(id, JSONRPC_INVALID_PARAMS, msg, None),
@@ -365,11 +406,16 @@ impl McpServer {
         tool_result(
             id,
             self.search
-                .get_document(&self.principal, &DocumentId::new(doc_id)),
+                .get_document(principal, &DocumentId::new(doc_id)),
         )
     }
 
-    fn call_kb_get_section(&self, id: Value, args: &Map<String, Value>) -> JsonRpcResponse {
+    fn call_kb_get_section(
+        &self,
+        principal: &Principal,
+        id: Value,
+        args: &Map<String, Value>,
+    ) -> JsonRpcResponse {
         let document_id = match required_string(args, "document_id") {
             Ok(v) => v,
             Err(msg) => return JsonRpcResponse::err(id, JSONRPC_INVALID_PARAMS, msg, None),
@@ -393,10 +439,15 @@ impl McpServer {
             cursor,
             max_chars,
         };
-        tool_result(id, self.search.get_section(&self.principal, &req))
+        tool_result(id, self.search.get_section(principal, &req))
     }
 
-    fn call_kb_list_categories(&self, id: Value, args: &Map<String, Value>) -> JsonRpcResponse {
+    fn call_kb_list_categories(
+        &self,
+        principal: &Principal,
+        id: Value,
+        args: &Map<String, Value>,
+    ) -> JsonRpcResponse {
         let mut req = match build_search_request(String::new(), args) {
             Ok(r) => r,
             Err(InvalidOrDomain::InvalidParams(msg)) => {
@@ -412,7 +463,7 @@ impl McpServer {
 
         let res = self
             .search
-            .search(&self.principal, &req)
+            .search(principal, &req)
             .map(|resp| ListCategoriesResult {
                 total_documents: resp.total_unfiltered_hits,
                 categories: resp.category_counts,
@@ -487,15 +538,6 @@ fn check_meta_protocol_version(id: &Value, params: &Map<String, Value>) -> Optio
         return Some(version_mismatch_error(id.clone(), ver));
     }
     None
-}
-
-fn version_mismatch_error(id: Value, requested: &str) -> JsonRpcResponse {
-    JsonRpcResponse::err(
-        id,
-        JSONRPC_VERSION_MISMATCH,
-        format!("unsupported MCP protocol version '{requested}'"),
-        Some(json!({ "supportedProtocolVersions": SUPPORTED_PROTOCOL_VERSIONS })),
-    )
 }
 
 fn required_string(args: &Map<String, Value>, key: &str) -> Result<String, String> {

@@ -127,6 +127,13 @@ fn supports_initialize_2025_and_discover_2026_stateless() {
         .unwrap()
         .result
         .unwrap();
+    assert_eq!(discover["resultType"], "complete");
+    assert!(
+        discover["supportedVersions"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("2026-07-28"))
+    );
     assert_eq!(discover["protocolVersion"], "2026-07-28");
     assert_eq!(discover["transport"]["stateless"], true);
     let discover_tools = discover["tools"].as_array().unwrap();
@@ -137,7 +144,16 @@ fn supports_initialize_2025_and_discover_2026_stateless() {
             r#"{"jsonrpc":"2.0","id":3,"method":"tools/list","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"1999-01-01"}}}"#,
         )
         .unwrap();
-    assert_eq!(bad_meta_ver.error.unwrap().code, JSONRPC_VERSION_MISMATCH);
+    let bad_err = bad_meta_ver.error.unwrap();
+    assert_eq!(bad_err.code, JSONRPC_VERSION_MISMATCH);
+    let data = bad_err.data.unwrap();
+    assert_eq!(data["requested"], "1999-01-01");
+    assert!(
+        data["supported"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("2026-07-28"))
+    );
 }
 
 #[test]

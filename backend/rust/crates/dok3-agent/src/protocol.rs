@@ -15,8 +15,24 @@ pub const JSONRPC_INVALID_REQUEST: i32 = -32600;
 pub const JSONRPC_METHOD_NOT_FOUND: i32 = -32601;
 pub const JSONRPC_INVALID_PARAMS: i32 = -32602;
 pub const JSONRPC_INTERNAL_ERROR: i32 = -32603;
+/// MCP `2026-07-28` HTTP header/body mismatch error code.
+pub const JSONRPC_HEADER_MISMATCH: i32 = -32020;
 /// MCP `2026-07-28` incompatible protocol version error code.
 pub const JSONRPC_VERSION_MISMATCH: i32 = -32022;
+
+/// Builds a canonical `-32022` unsupported protocol version response with `data.supported` and `data.requested`.
+#[must_use]
+pub(crate) fn version_mismatch_error(id: Value, requested: &str) -> JsonRpcResponse {
+    JsonRpcResponse::err(
+        id,
+        JSONRPC_VERSION_MISMATCH,
+        format!("unsupported MCP protocol version '{requested}'"),
+        Some(json!({
+            "supported": SUPPORTED_PROTOCOL_VERSIONS,
+            "requested": requested,
+        })),
+    )
+}
 
 /// Standard JSON-RPC 2.0 response envelope.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
