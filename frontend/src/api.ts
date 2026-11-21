@@ -357,7 +357,8 @@ export async function fetchDocument(
     if (response.status === 404) {
       const contentType = response.headers.get('content-type') ?? ''
       if (contentType.includes('application/json')) {
-        return { doc: null, mode: 'api' }
+        const doc = localFallbackDocument(id)
+        return doc ? { doc, mode: 'local-fallback' } : { doc: null, mode: 'api' }
       }
       return { doc: localFallbackDocument(id), mode: 'local-fallback' }
     }
@@ -384,9 +385,8 @@ export async function fetchDocument(
     if (err instanceof DOMException && err.name === 'AbortError') {
       throw err
     }
-    if (err instanceof TypeError) {
-      return { doc: localFallbackDocument(id), mode: 'local-fallback' }
-    }
+    const doc = localFallbackDocument(id)
+    if (doc) return { doc, mode: 'local-fallback' }
     throw err
   }
 }

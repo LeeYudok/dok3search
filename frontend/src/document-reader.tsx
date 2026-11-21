@@ -12,6 +12,14 @@ const designParser = unified().use(remarkParse).use(remarkGfm)
 
 type DocumentSection = { id: string; label: string; line?: number; depth?: number; aliases?: string[] }
 
+type MarkdownNode = {
+  type: string
+  tagName?: string
+  url?: string
+  properties?: { href?: unknown }
+  children?: readonly MarkdownNode[]
+}
+
 function isExternalUrl(url: string) {
   try {
     const target = new URL(url, window.location.origin)
@@ -46,12 +54,52 @@ function markdownSections(markdown: string, includeSubsections = false): Documen
   })
 }
 
-function sectionForHash(sections: readonly DocumentSection[], hash: string, corpus?: ReferenceCorpus) {
+function grammarAnchorForNode(node: MarkdownNode | null | undefined) {
+  const link = node?.children?.find((child) => {
+    if (child.type !== 'link' && !(child.type === 'element' && child.tagName === 'a')) return false
+    const href = child.url ?? (typeof child.properties?.href === 'string' ? child.properties.href : undefined)
+    return Boolean(href?.startsWith('#railroad-') || href?.startsWith('#grammar-'))
+  })
+  const href = link?.url ?? (typeof link?.properties?.href === 'string' ? link.properties.href : undefined)
+  if (!href) return undefined
+  return href.startsWith('#railroad-') ? 'grammar-' + href.slice('#railroad-'.length) : href.slice(1)
+}
+
+function markdownBlockAnchorIds(markdown: string) {
+  const ids = new Set<string>()
+  for (const node of designParser.parse(markdown).children as MarkdownNode[]) {
+    const anchor = grammarAnchorForNode(node)
+    if (anchor) ids.add(anchor)
+  }
+  return ids
+}
+
+function decodedHash(hash: string) {
+  try {
+    return decodeURIComponent(hash.slice(1))
+  } catch {
+    return hash.slice(1)
+  }
+}
+
+function sectionIdForHash(
+  sections: readonly DocumentSection[],
+  hash: string,
+  corpus?: ReferenceCorpus,
+  blockAnchorIds?: ReadonlySet<string>,
+) {
+  const raw = decodedHash(hash)
+  const railroadAnchor = raw.startsWith('railroad-') ? 'grammar-' + raw.slice('railroad-'.length) : undefined
+  if (railroadAnchor && blockAnchorIds?.has(railroadAnchor)) return railroadAnchor
+  for (const id of blockAnchorIds ?? []) {
+    if (id === raw || '#' + encodeURIComponent(id) === hash) return id
+  }
   const punctuation = corpus ? /[^\p{L}\p{N}_ -]/gu : /[.,:/]/g
   return sections.find(({ label, id, aliases }) => {
     const slug = label.toLowerCase().replace(punctuation, '').replaceAll(' ', '-')
-    return aliases?.includes(hash) || '#' + encodeURIComponent(slug) === hash || '#' + encodeURIComponent(id) === hash
-  })
+    return aliases?.includes(hash) || aliases?.includes('#' + raw) ||
+      '#' + encodeURIComponent(slug) === hash || '#' + encodeURIComponent(id) === hash
+  })?.id
 }
 
 function MarkdownBody({ markdown, sections, samplePath, corpus, corpora }: {
@@ -65,6 +113,7 @@ function MarkdownBody({ markdown, sections, samplePath, corpus, corpora }: {
     return sections.find((entry) => entry.line === line)?.id
   }
   const referenceDocuments = corpora?.flatMap((item) => item.documents.map((doc) => ({ corpus: item, doc }))) ?? []
+  const blockAnchorIds = markdownBlockAnchorIds(markdown)
 
   return (
     <div className="markdown-body">
@@ -78,6 +127,7 @@ function MarkdownBody({ markdown, sections, samplePath, corpus, corpora }: {
           h4: ({ children, node }) => <h4 id={headingId(node?.position?.start.line)}>{children}</h4>,
           h5: ({ children, node }) => <h5 id={headingId(node?.position?.start.line)}>{children}</h5>,
           h6: ({ children, node }) => <h6 id={headingId(node?.position?.start.line)}>{children}</h6>,
+          p: ({ children, node }) => <p id={grammarAnchorForNode(node)}>{children}</p>,
           img: ({ src, alt }) => src ? <img src={src} alt={alt ?? ''} loading="lazy" /> : null,
           a: ({ href, title, children }) => !href
             ? <span>{children}</span>
@@ -94,8 +144,8 @@ function MarkdownBody({ markdown, sections, samplePath, corpus, corpora }: {
           if (!safeUrl) return ''
           if (isExternalUrl(safeUrl)) return key === 'src' ? '' : safeUrl
           if (safeUrl.startsWith('#')) {
-            const section = sectionForHash(sections, safeUrl, corpus)
-            return section ? '#' + encodeURIComponent(section.id) : ''
+            const sectionId = sectionIdForHash(sections, safeUrl, corpus, blockAnchorIds)
+            return sectionId ? '#' + encodeURIComponent(sectionId) : ''
           }
           if (!samplePath) return ''
 
@@ -112,10 +162,15 @@ function MarkdownBody({ markdown, sections, samplePath, corpus, corpora }: {
             designDocuments.find((entry) => '/' + entry.samplePath === target.pathname)
           if (!linkedDoc) return ''
           const linkedCorpus = referenceMatch?.corpus ?? corpus
-          const heading = target.hash && linkedDoc.markdown
-            ? sectionForHash(markdownSections(linkedDoc.markdown, Boolean(linkedCorpus)), target.hash, linkedCorpus)
+          const sectionId = target.hash && linkedDoc.markdown
+            ? sectionIdForHash(
+                markdownSections(linkedDoc.markdown, Boolean(linkedCorpus)),
+                target.hash,
+                linkedCorpus,
+                markdownBlockAnchorIds(linkedDoc.markdown),
+              )
             : undefined
-          const section = heading ? '#' + encodeURIComponent(heading.id) : ''
+          const section = sectionId ? '#' + encodeURIComponent(sectionId) : ''
           if (safeUrl.startsWith('#')) return section
           const params = new URLSearchParams({ category: linkedDoc.category })
           if (linkedDoc.topic) params.set('topic', linkedDoc.topic)

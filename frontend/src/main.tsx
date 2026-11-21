@@ -34,43 +34,78 @@ async function fetchSearchPage(
   query: string, category: string, topic: string, page: number, signal: AbortSignal,
 ): Promise<{ result: SearchViewResult; mode: DataSourceMode }> {
   const references = loadReferenceCorpora()
-  if (isReferenceTopicFilter(topic)) {
-    const [corpora, api] = await Promise.all([
-      references,
-      fetchSearch({ query, category: '', page: 1, limit: pageSize }, signal),
-    ])
-    const corpus = documents.filter((doc) => doc.topic).concat(corpora.flatMap(({ documents }) => documents))
-    const local = searchLocalDocuments(query, 'guide', page, pageSize, corpus, topic)
-    return {
-      result: {
-        ...local,
-        totalUnfilteredHits: api.result.totalUnfilteredHits,
-        categoryCounts: api.result.categoryCounts,
-      },
-      mode: 'local-reference',
-    }
-  }
-
-  const [search, corpora] = await Promise.all([
-    fetchSearch({ query, category, page, limit: pageSize }, signal),
-    references.catch(() => []),
-  ])
-  const referenceDocuments = documents.filter((doc) => doc.topic).concat(corpora.flatMap(({ documents }) => documents))
-  const categoryCounts = search.result.categoryCounts.filter(({ id }) => categories.some((item) => item.id === id))
-  if (category === 'guide') {
+  async function searchAllLocal(): Promise<{ result: SearchViewResult; mode: DataSourceMode }> {
+    const corpora = await references.catch(() => [])
     const allDocuments = [...new Map(documents.concat(corpora.flatMap(({ documents }) => documents)).map((doc) => [doc.id, doc])).values()]
-    const guideDocuments = allDocuments.filter((doc) => doc.category === 'guide')
     const allLocal = searchLocalDocuments(query, '', 1, pageSize, allDocuments)
-    const local = searchLocalDocuments(query, 'guide', page, pageSize, guideDocuments)
+    const local = searchLocalDocuments(query, '', page, pageSize, allDocuments)
     return {
-      mode: corpora.length ? 'local-reference' : search.mode,
       result: {
         ...local,
         totalUnfilteredHits: allLocal.totalUnfilteredHits,
         categoryCounts: allLocal.categoryCounts,
       },
+      mode: 'local-fallback',
     }
   }
+  if (isReferenceTopicFilter(topic)) {
+    const corpora = await references
+    const allDocuments = [...new Map(documents.concat(corpora.flatMap(({ documents }) => documents)).map((doc) => [doc.id, doc])).values()]
+    const allLocal = searchLocalDocuments(query, '', 1, pageSize, allDocuments)
+    const local = searchLocalDocuments(query, 'guide', page, pageSize, allDocuments, topic)
+    return {
+      result: {
+        ...local,
+        totalUnfilteredHits: allLocal.totalUnfilteredHits,
+        categoryCounts: allLocal.categoryCounts,
+      },
+      mode: 'local-reference',
+    }
+  }
+
+  if (category === 'guide') {
+    const corpora = await references
+    const allDocuments = [...new Map(documents.concat(corpora.flatMap(({ documents }) => documents)).map((doc) => [doc.id, doc])).values()]
+    const guideDocuments = allDocuments.filter((doc) => doc.category === 'guide')
+    const allLocal = searchLocalDocuments(query, '', 1, pageSize, allDocuments)
+    const local = searchLocalDocuments(query, 'guide', page, pageSize, guideDocuments)
+    return {
+      result: {
+        ...local,
+        totalUnfilteredHits: allLocal.totalUnfilteredHits,
+        categoryCounts: allLocal.categoryCounts,
+      },
+      mode: 'local-reference',
+    }
+  }
+
+  if (category && documents.some((doc) => doc.category === category)) {
+    const allLocal = searchLocalDocuments(query, '', 1, pageSize, documents)
+    const local = searchLocalDocuments(query, category, page, pageSize, documents)
+    return {
+      result: {
+        ...local,
+        totalUnfilteredHits: allLocal.totalUnfilteredHits,
+        categoryCounts: allLocal.categoryCounts,
+      },
+      mode: 'local-fallback',
+    }
+  }
+
+  let search: Awaited<ReturnType<typeof fetchSearch>>
+  let corpora: ReferenceCorpus[]
+  try {
+    [search, corpora] = await Promise.all([
+      fetchSearch({ query, category, page, limit: pageSize }, signal),
+      references.catch(() => []),
+    ])
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') throw error
+    return searchAllLocal()
+  }
+  if (search.mode !== 'api') return searchAllLocal()
+  const referenceDocuments = documents.filter((doc) => doc.topic).concat(corpora.flatMap(({ documents }) => documents))
+  const categoryCounts = search.result.categoryCounts.filter(({ id }) => categories.some((item) => item.id === id))
   const local = searchLocalDocuments(query, '', 1, pageSize, referenceDocuments)
   return {
     mode: search.mode,
@@ -323,7 +358,11 @@ if (detail) {
   } catch {
     detailId = detail[1]
   }
-  detailId = legacyIds[detailId] ?? detailId
+  const legacyId = legacyIds[detailId]
+  const canonicalDesignId = detailId.startsWith('design-')
+    ? documents.find((doc) => doc.category === 'design' && doc.id.toLowerCase() === detailId!.toLowerCase())?.id
+    : undefined
+  detailId = legacyId ?? canonicalDesignId ?? detailId
 }
 
 const rootElement = document.getElementById('root')
