@@ -14,7 +14,9 @@ dok3search/
 ├── docs/                      # 운영·아키텍처 문서 배치 디렉터리
 ├── tests/                     # 통합·장애 주입·성능 테스트 배치 디렉터리
 ├── scripts/                   # 저장소 검증·빌드 보조 스크립트
-└── DESIGN.md                  # UI 설계 개요
+├── CHANGELOG.md               # 주요 변경 이력
+├── DESIGN.md                  # UI 설계 개요
+└── LICENSE                    # MIT 라이선스
 ```
 
 ## 프론트엔드 실행
@@ -37,3 +39,8 @@ cargo build --workspace
 ```
 
 설계 문서 샘플은 [설계 저장소](https://github.com/LeeYudok/dok3search-design)에서 가져왔습니다. [샘플 라이선스](frontend/src/samples/design/LICENSE)를 함께 둡니다.
+
+## 라이선스 및 변경 이력
+
+- 라이선스: [MIT License](LICENSE)
+- 변경 이력: [CHANGELOG.md](CHANGELOG.md)
