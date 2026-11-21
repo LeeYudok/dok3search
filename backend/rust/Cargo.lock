@@ -367,6 +367,7 @@ version = "0.1.0"
 dependencies = [
  "dok3-core",
  "dok3-domain",
+ "dok3-parser",
 ]
 
 [[package]]

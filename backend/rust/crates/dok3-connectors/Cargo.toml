@@ -8,3 +8,6 @@ publish.workspace = true
 [dependencies]
 dok3-core.workspace = true
 dok3-domain.workspace = true
+
+[dev-dependencies]
+dok3-parser.workspace = true
