@@ -123,6 +123,8 @@ dependencies = [
  "dok3-core",
  "dok3-domain",
  "dok3-search",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
