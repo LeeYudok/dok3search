@@ -448,6 +448,7 @@ dependencies = [
  "dok3-parser",
  "dok3-search",
  "dok3-storage",
+ "tempfile",
  "tokio",
 ]
 

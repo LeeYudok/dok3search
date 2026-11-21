@@ -72,3 +72,14 @@ cargo build --workspace
 
 - 라이선스: [MIT License](LICENSE)
 - 변경 이력: [CHANGELOG.md](CHANGELOG.md)
+
+
+### 로컬 Markdown 폴더 색인
+
+```bash
+DOK3_SOURCE_DIR=/path/to/markdown cargo run --manifest-path backend/rust/Cargo.toml -p dok3-server
+```
+
+서버를 열기 전에 폴더를 읽고 Tantivy 색인과 임시 원문 저장소를 만든다. 이 모드의 API는 지정한 폴더를 검색하고 원문과 절을 제공한다. `/health/ready`의 모드는 `tantivy-local`이다. 서버는 IPv4 루프백에만 바인딩하며, 로컬 요청에는 별도 인증이 없다. 프런트 정적 파일 폴더와 색인할 문서 폴더는 분리한다.
+
+문서를 추가·수정·삭제한 뒤 서버를 다시 시작하면 현재 폴더 기준으로 갱신된다. 시작할 때 크기 제한을 넘는 파일은 건너뛰며, 읽거나 파싱할 수 없는 파일 때문에 색인에 실패하면 서버는 열리지 않는다. 환경변수를 지정하지 않으면 기본 샘플 검색이 동작한다.

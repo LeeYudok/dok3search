@@ -1,12 +1,14 @@
 //! dok3search server binary entrypoint.
 
+mod local_index;
+
+use std::net::Ipv4Addr;
 use std::path::PathBuf;
 use std::process::ExitCode;
 use std::sync::Arc;
 
 use dok3_api::{ApiState, build_router};
 use dok3_core::ServerConfig;
-use dok3_domain::DocumentStorePort;
 use dok3_search::{InMemorySearchRepository, SearchService};
 use tokio::net::TcpListener;
 
@@ -33,10 +35,29 @@ async fn run() -> Result<(), String> {
         .static_dir
         .or_else(|| resolve_static_dir(&["frontend/dist", "../../frontend/dist"]));
 
-    let repo = Arc::new(InMemorySearchRepository::from_seed(design_dir.as_deref()));
-    let doc_count = repo.document_count();
-    let service = Arc::new(SearchService::new(repo.clone(), repo));
-    let app = build_router(ApiState::new(service), static_dir.clone());
+    let (service, _snapshot, mode) = if let Some(root) = config.source_dir.as_deref() {
+        if !config
+            .bind
+            .parse::<Ipv4Addr>()
+            .is_ok_and(|ip| ip.is_loopback())
+        {
+            return Err("DOK3_SOURCE_DIR requires an IPv4 loopback DOK3_BIND".into());
+        }
+        let (service, snapshot, skipped) = local_index::build(root)?;
+        println!("local Markdown snapshot: skipped={skipped}");
+        (service, Some(snapshot), "tantivy-local")
+    } else {
+        let repo = Arc::new(InMemorySearchRepository::from_seed(design_dir.as_deref()));
+        (
+            SearchService::new(repo.clone(), repo),
+            None,
+            "in-memory-fake",
+        )
+    };
+    let doc_count = service.health_ready(mode).document_count;
+    let mut state = ApiState::new(Arc::new(service));
+    state.mode = mode.into();
+    let app = build_router(state, static_dir.clone());
 
     let addr = format!("{}:{}", config.bind, config.port);
     let listener = TcpListener::bind(&addr)

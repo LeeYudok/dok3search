@@ -22,3 +22,4 @@ dok3-search.workspace = true
 dok3-agent.workspace = true
 dok3-api.workspace = true
 tokio.workspace = true
+tempfile = "3"
