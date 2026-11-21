@@ -50,6 +50,7 @@ fn sample_doc(
         title: title.to_string(),
         summary: summary.to_string(),
         category: category.to_string(),
+        topic: None,
         tag: tag.to_string(),
         tags: vec![tag.to_string(), language.to_string()],
         keywords: vec![tag.to_string()],

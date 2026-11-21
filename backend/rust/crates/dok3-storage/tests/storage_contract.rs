@@ -41,6 +41,7 @@ fn doc(id: &str, scope: AclScope, body: &str) -> Document {
         title: format!("제목 {id}"),
         summary: String::new(),
         category: "guide".into(),
+        topic: None,
         tag: "Rust".into(),
         tags: vec!["Rust".into()],
         keywords: vec![],

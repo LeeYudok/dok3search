@@ -267,6 +267,7 @@ pub fn build_document(
         title: parsed.title.clone(),
         summary,
         category: config.category.clone(),
+        topic: None,
         tag: config.default_tag.clone(),
         tags,
         keywords: Vec::new(),

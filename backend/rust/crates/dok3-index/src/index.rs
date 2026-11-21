@@ -419,6 +419,7 @@ impl TantivyIndex {
                 summary: read_stored_str(&doc, self.fields.summary).to_string(),
                 snippet,
                 category: read_stored_str(&doc, self.fields.category).to_string(),
+                topic: None,
                 source: meta.source,
                 tag: meta.tag,
                 tags: meta.tags,
