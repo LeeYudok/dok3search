@@ -1,3 +1,7 @@
-//! Tantivy schema, single-writer indexer, and reader management.
+//! Tantivy schema, custom tokenizers, and reader/writer index adapter (P1-3).
 
-pub fn init() {}
+mod index;
+mod schema;
+
+pub use index::TantivyIndex;
+pub use schema::{IndexFields, SCHEMA_VERSION, TOKENIZER_NGRAM, TOKENIZER_TEXT};
