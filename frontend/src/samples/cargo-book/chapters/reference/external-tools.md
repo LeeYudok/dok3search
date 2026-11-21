@@ -40,7 +40,7 @@ If you are using Rust, the [cargo_metadata](https://crates.io/crates/cargo_metad
 
 ### Compiler messages
 
-The “compiler-message” message includes output from the compiler, such as warnings and errors. See the [rustc JSON chapter](https://doc.rust-lang.org/1.100.0/rustc/json.html) for details on `rustc`’s message format, which is embedded in the following structure:
+The “compiler-message” message includes output from the compiler, such as warnings and errors. See the [rustc JSON chapter](../../rustc/json.html) for details on `rustc`’s message format, which is embedded in the following structure:
 
 ``` javascript
 {

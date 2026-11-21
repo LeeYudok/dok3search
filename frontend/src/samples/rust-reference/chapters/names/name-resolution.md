@@ -276,9 +276,9 @@ Names in imports and macro invocations may not be resolved through glob imports 
 
 > ![](../../assets/inline/name-resolution-4.svg)Note
 >
-> When one of [`core::panic!`](https://doc.rust-lang.org/1.100.0/core/macro.panic.html) or [`std::panic!`](https://doc.rust-lang.org/1.100.0/std/macro.panic.html) is brought into scope due to the [standard library prelude](preludes.md#r-names.preludes.std), and a user-written [glob import](../items/use-declarations.md#r-items.use.glob) brings the other into scope, `rustc` currently allows use of `panic!`, even though it is ambiguous. The user-written glob import takes precedence to resolve this ambiguity.
+> When one of [`core::panic!`](../../core/macro.panic.html) or [`std::panic!`](../../std/macro.panic.html) is brought into scope due to the [standard library prelude](preludes.md#r-names.preludes.std), and a user-written [glob import](../items/use-declarations.md#r-items.use.glob) brings the other into scope, `rustc` currently allows use of `panic!`, even though it is ambiguous. The user-written glob import takes precedence to resolve this ambiguity.
 >
-> In Rust 2021 and later, [`core::panic!`](https://doc.rust-lang.org/1.100.0/core/macro.panic.html) and [`std::panic!`](https://doc.rust-lang.org/1.100.0/std/macro.panic.html) operate identically. But in earlier editions, they differ; only [`std::panic!`](https://doc.rust-lang.org/1.100.0/std/macro.panic.html) accepts a [`String`](https://doc.rust-lang.org/1.100.0/alloc/string/struct.String.html) as the format argument.
+> In Rust 2021 and later, [`core::panic!`](../../core/macro.panic.html) and [`std::panic!`](../../std/macro.panic.html) operate identically. But in earlier editions, they differ; only [`std::panic!`](../../std/macro.panic.html) accepts a [`String`](../../alloc/string/struct.String.html) as the format argument.
 >
 > E.g., this is an error:
 >

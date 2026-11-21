@@ -96,7 +96,7 @@ In each case, the escaped value is the character given in the corresponding entr
 
 The escape sequence consists of `\x` followed by two hexadecimal digits.
 
-The escaped value is the character whose [Unicode scalar value](http://www.unicode.org/glossary/#unicode_scalar_value) is the result of interpreting the final two characters in the escape sequence as a hexadecimal integer, as if by [`u8::from_str_radix`](https://doc.rust-lang.org/1.100.0/std/primitive.u8.html#method.from_str_radix) with radix 16.
+The escaped value is the character whose [Unicode scalar value](http://www.unicode.org/glossary/#unicode_scalar_value) is the result of interpreting the final two characters in the escape sequence as a hexadecimal integer, as if by [`u8::from_str_radix`](../../std/primitive.u8.html#method.from_str_radix) with radix 16.
 
 > ![](../../assets/inline/literal-expr-3.svg)Note
 >
@@ -108,7 +108,7 @@ The escaped value is the character whose [Unicode scalar value](http://www.unico
 
 The escape sequence consists of `\x` followed by an octal digit then a hexadecimal digit.
 
-The escaped value is the character whose [Unicode scalar value](http://www.unicode.org/glossary/#unicode_scalar_value) is the result of interpreting the final two characters in the escape sequence as a hexadecimal integer, as if by [`u8::from_str_radix`](https://doc.rust-lang.org/1.100.0/std/primitive.u8.html#method.from_str_radix) with radix 16.
+The escaped value is the character whose [Unicode scalar value](http://www.unicode.org/glossary/#unicode_scalar_value) is the result of interpreting the final two characters in the escape sequence as a hexadecimal integer, as if by [`u8::from_str_radix`](../../std/primitive.u8.html#method.from_str_radix) with radix 16.
 
 [expr.literal.escape.unicode](#r-expr.literal.escape.unicode)
 
@@ -116,7 +116,7 @@ The escaped value is the character whose [Unicode scalar value](http://www.unico
 
 The escape sequence consists of `\u{`, followed by a sequence of characters each of which is a hexadecimal digit or `_`, followed by `}`.
 
-The escaped value is the character whose [Unicode scalar value](http://www.unicode.org/glossary/#unicode_scalar_value) is the result of interpreting the hexadecimal digits contained in the escape sequence as a hexadecimal integer, as if by [`u32::from_str_radix`](https://doc.rust-lang.org/1.100.0/std/primitive.u32.html#method.from_str_radix) with radix 16.
+The escaped value is the character whose [Unicode scalar value](http://www.unicode.org/glossary/#unicode_scalar_value) is the result of interpreting the hexadecimal digits contained in the escape sequence as a hexadecimal integer, as if by [`u32::from_str_radix`](../../std/primitive.u32.html#method.from_str_radix) with radix 16.
 
 > ![](../../assets/inline/literal-expr-4.svg)Note
 >
@@ -391,7 +391,7 @@ A C string literal expression consists of a single [C_STRING_LITERAL](../tokens.
 
 [expr.literal.c-string.type](#r-expr.literal.c-string.type)
 
-The expression’s type is a shared reference (with `static` lifetime) to the standard library [CStr](https://doc.rust-lang.org/1.100.0/core/ffi/c_str/struct.CStr.html) type. That is, the type is `&'static core::ffi::CStr`.
+The expression’s type is a shared reference (with `static` lifetime) to the standard library [CStr](../../core/ffi/c_str/struct.CStr.html) type. That is, the type is `&'static core::ffi::CStr`.
 
 [expr.literal.c-string.no-suffix](#r-expr.literal.c-string.no-suffix)
 
@@ -424,7 +424,7 @@ The literal expression’s *represented bytes* are a sequence of bytes derived f
 
 [expr.literal.c-string.result](#r-expr.literal.c-string.result)
 
-The expression’s value is a reference to a statically allocated [CStr](https://doc.rust-lang.org/1.100.0/core/ffi/c_str/struct.CStr.html) whose array of bytes contains the represented bytes followed by a null byte.
+The expression’s value is a reference to a statically allocated [CStr](../../core/ffi/c_str/struct.CStr.html) whose array of bytes contains the represented bytes followed by a null byte.
 
 Examples of C string literal expressions:
 
@@ -528,7 +528,7 @@ The value of the expression is determined from the string representation of the 
 
 [expr.literal.int.u128-value](#r-expr.literal.int.u128-value)
 
-- The string is converted to a `u128` value as if by [`u128::from_str_radix`](https://doc.rust-lang.org/1.100.0/std/primitive.u128.html#method.from_str_radix) with the chosen radix. If the value does not fit in `u128`, it is a compiler error.
+- The string is converted to a `u128` value as if by [`u128::from_str_radix`](../../std/primitive.u128.html#method.from_str_radix) with the chosen radix. If the value does not fit in `u128`, it is a compiler error.
 
 [expr.literal.int.cast](#r-expr.literal.int.cast)
 
@@ -601,7 +601,7 @@ The value of the expression is determined from the string representation of the 
 
 [expr.literal.float.value](#r-expr.literal.float.value)
 
-- The string is converted to the expression’s type as if by [`f32::from_str`](https://doc.rust-lang.org/1.100.0/core/primitive.f32.html#method.from_str) or [`f64::from_str`](https://doc.rust-lang.org/1.100.0/core/primitive.f64.html#method.from_str).
+- The string is converted to the expression’s type as if by [`f32::from_str`](../../core/primitive.f32.html#method.from_str) or [`f64::from_str`](../../core/primitive.f64.html#method.from_str).
 
 > ![](../../assets/inline/literal-expr-12.svg)Note
 >
@@ -609,7 +609,7 @@ The value of the expression is determined from the string representation of the 
 
 > ![](../../assets/inline/literal-expr-13.svg)Note
 >
-> `inf` and `NaN` are not literal tokens. The [`f32::INFINITY`](https://doc.rust-lang.org/1.100.0/std/primitive.f32.html#associatedconstant.INFINITY), [`f64::INFINITY`](https://doc.rust-lang.org/1.100.0/std/primitive.f64.html#associatedconstant.INFINITY), [`f32::NAN`](https://doc.rust-lang.org/1.100.0/std/primitive.f32.html#associatedconstant.NAN), and [`f64::NAN`](https://doc.rust-lang.org/1.100.0/std/primitive.f64.html#associatedconstant.NAN) constants can be used instead of literal expressions. In `rustc`, a literal large enough to be evaluated as infinite will trigger the `overflowing_literals` lint check.
+> `inf` and `NaN` are not literal tokens. The [`f32::INFINITY`](../../std/primitive.f32.html#associatedconstant.INFINITY), [`f64::INFINITY`](../../std/primitive.f64.html#associatedconstant.INFINITY), [`f32::NAN`](../../std/primitive.f32.html#associatedconstant.NAN), and [`f64::NAN`](../../std/primitive.f64.html#associatedconstant.NAN) constants can be used instead of literal expressions. In `rustc`, a literal large enough to be evaluated as infinite will trigger the `overflowing_literals` lint check.
 
 [expr.literal.bool](#r-expr.literal.bool)
 

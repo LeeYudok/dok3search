@@ -6,7 +6,7 @@
 
 [lang-types.intro](#r-lang-types.intro)
 
-Certain types and traits that exist in [the standard library](https://doc.rust-lang.org/1.100.0/std/index.html) are known to the Rust compiler. This chapter documents the special features of these types and traits.
+Certain types and traits that exist in [the standard library](../std/index.html) are known to the Rust compiler. This chapter documents the special features of these types and traits.
 
 [lang-types.box](#r-lang-types.box)
 
@@ -14,7 +14,7 @@ Certain types and traits that exist in [the standard library](https://doc.rust-l
 
 [lang-types.box.intro](#r-lang-types.box.intro)
 
-[`Box<T>`](https://doc.rust-lang.org/1.100.0/alloc/boxed/struct.Box.html) has a few special features that Rust doesn’t currently allow for user defined types.
+[`Box<T>`](../alloc/boxed/struct.Box.html) has a few special features that Rust doesn’t currently allow for user defined types.
 
 [lang-types.box.deref](#r-lang-types.box.deref)
 
@@ -34,7 +34,7 @@ Certain types and traits that exist in [the standard library](https://doc.rust-l
 
 [lang-types.rc.receiver](#r-lang-types.rc.receiver)
 
-[Methods](items/associated-items.md#associated-functions-and-methods) can take [`Rc<Self>`](https://doc.rust-lang.org/1.100.0/alloc/rc/struct.Rc.html) as a receiver.
+[Methods](items/associated-items.md#associated-functions-and-methods) can take [`Rc<Self>`](../alloc/rc/struct.Rc.html) as a receiver.
 
 [lang-types.arc](#r-lang-types.arc)
 
@@ -42,7 +42,7 @@ Certain types and traits that exist in [the standard library](https://doc.rust-l
 
 [lang-types.arc.receiver](#r-lang-types.arc.receiver)
 
-[Methods](items/associated-items.md#associated-functions-and-methods) can take [`Arc<Self>`](https://doc.rust-lang.org/1.100.0/alloc/sync/struct.Arc.html) as a receiver.
+[Methods](items/associated-items.md#associated-functions-and-methods) can take [`Arc<Self>`](../alloc/sync/struct.Arc.html) as a receiver.
 
 [lang-types.pin](#r-lang-types.pin)
 
@@ -50,7 +50,7 @@ Certain types and traits that exist in [the standard library](https://doc.rust-l
 
 [lang-types.pin.receiver](#r-lang-types.pin.receiver)
 
-[Methods](items/associated-items.md#associated-functions-and-methods) can take [`Pin<P>`](https://doc.rust-lang.org/1.100.0/core/pin/struct.Pin.html) as a receiver.
+[Methods](items/associated-items.md#associated-functions-and-methods) can take [`Pin<P>`](../core/pin/struct.Pin.html) as a receiver.
 
 [lang-types.unsafe-cell](#r-lang-types.unsafe-cell)
 
@@ -58,7 +58,7 @@ Certain types and traits that exist in [the standard library](https://doc.rust-l
 
 [lang-types.unsafe-cell.interior-mut](#r-lang-types.unsafe-cell.interior-mut)
 
-[`std::cell::UnsafeCell<T>`](https://doc.rust-lang.org/1.100.0/core/cell/struct.UnsafeCell.html) is used for [interior mutability](interior-mutability.md). It ensures that the compiler doesn’t perform optimisations that are incorrect for such types.
+[`std::cell::UnsafeCell<T>`](../core/cell/struct.UnsafeCell.html) is used for [interior mutability](interior-mutability.md). It ensures that the compiler doesn’t perform optimisations that are incorrect for such types.
 
 [lang-types.unsafe-cell.read-only-alloc](#r-lang-types.unsafe-cell.read-only-alloc)
 
@@ -68,35 +68,35 @@ It also ensures that [`static` items](items/static-items.md) which have a type w
 
 ## `PhantomData<T>`
 
-[`std::marker::PhantomData<T>`](https://doc.rust-lang.org/1.100.0/core/marker/struct.PhantomData.html) is a [zero-sized](glossary.md#r-glossary.zst), minimum alignment, type that is considered to own a `T` for the purposes of [variance](subtyping.md#variance), [drop check](https://doc.rust-lang.org/1.100.0/nomicon/dropck.html), and [auto traits](#auto-traits).
+[`std::marker::PhantomData<T>`](../core/marker/struct.PhantomData.html) is a [zero-sized](glossary.md#r-glossary.zst), minimum alignment, type that is considered to own a `T` for the purposes of [variance](subtyping.md#variance), [drop check](../nomicon/dropck.html), and [auto traits](#auto-traits).
 
 [lang-types.va-list](#r-lang-types.va-list)
 
 ## `VaList<'_>`
 
-[`VaList`](https://doc.rust-lang.org/1.100.0/core/ffi/va_list/struct.VaList.html) is used for [C-variadic functions](items/functions.md#r-items.fn.c-variadic).
+[`VaList`](../core/ffi/va_list/struct.VaList.html) is used for [C-variadic functions](items/functions.md#r-items.fn.c-variadic).
 
 > ![](../assets/inline/special-types-and-traits-1.svg)Note
 >
-> [`VaList`](https://doc.rust-lang.org/1.100.0/core/ffi/va_list/struct.VaList.html) is ABI compatible with the C `va_list` type; see [items.fn.c-variadic.abi-compatibility](items/functions.md#r-items.fn.c-variadic.abi-compatibility).
+> [`VaList`](../core/ffi/va_list/struct.VaList.html) is ABI compatible with the C `va_list` type; see [items.fn.c-variadic.abi-compatibility](items/functions.md#r-items.fn.c-variadic.abi-compatibility).
 
 [lang-types.ops](#r-lang-types.ops)
 
 ## Operator traits
 
-The traits in [`std::ops`](https://doc.rust-lang.org/1.100.0/core/ops/index.html) and [`std::cmp`](https://doc.rust-lang.org/1.100.0/core/cmp/index.html) are used to overload [operators](expressions/operator-expr.md), [indexing expressions](expressions/array-expr.md#array-and-slice-indexing-expressions), and [call expressions](expressions/call-expr.md).
+The traits in [`std::ops`](../core/ops/index.html) and [`std::cmp`](../core/cmp/index.html) are used to overload [operators](expressions/operator-expr.md), [indexing expressions](expressions/array-expr.md#array-and-slice-indexing-expressions), and [call expressions](expressions/call-expr.md).
 
 [lang-types.deref](#r-lang-types.deref)
 
 ## `Deref` and `DerefMut`
 
-As well as overloading the unary `*` operator, [`Deref`](https://doc.rust-lang.org/1.100.0/core/ops/deref/trait.Deref.html) and [`DerefMut`](https://doc.rust-lang.org/1.100.0/core/ops/deref/trait.DerefMut.html) are also used in [method resolution](expressions/method-call-expr.md) and [deref coercions](type-coercions.md#coercion-types).
+As well as overloading the unary `*` operator, [`Deref`](../core/ops/deref/trait.Deref.html) and [`DerefMut`](../core/ops/deref/trait.DerefMut.html) are also used in [method resolution](expressions/method-call-expr.md) and [deref coercions](type-coercions.md#coercion-types).
 
 [lang-types.drop](#r-lang-types.drop)
 
 ## `Drop`
 
-The [`Drop`](https://doc.rust-lang.org/1.100.0/core/ops/drop/trait.Drop.html) trait provides a [destructor](destructors.md), to be run whenever a value of this type is to be destroyed.
+The [`Drop`](../core/ops/drop/trait.Drop.html) trait provides a [destructor](destructors.md), to be run whenever a value of this type is to be destroyed.
 
 [lang-types.copy](#r-lang-types.copy)
 
@@ -104,7 +104,7 @@ The [`Drop`](https://doc.rust-lang.org/1.100.0/core/ops/drop/trait.Drop.html) tr
 
 [lang-types.copy.intro](#r-lang-types.copy.intro)
 
-The [`Copy`](https://doc.rust-lang.org/1.100.0/core/marker/trait.Copy.html) trait changes the semantics of a type implementing it.
+The [`Copy`](../core/marker/trait.Copy.html) trait changes the semantics of a type implementing it.
 
 [lang-types.copy.behavior](#r-lang-types.copy.behavior)
 
@@ -143,7 +143,7 @@ Tests Tests with this rule:
 
 [lang-types.clone.intro](#r-lang-types.clone.intro)
 
-The [`Clone`](https://doc.rust-lang.org/1.100.0/core/clone/trait.Clone.html) trait is a supertrait of `Copy`, so it also needs compiler generated implementations.
+The [`Clone`](../core/clone/trait.Clone.html) trait is a supertrait of `Copy`, so it also needs compiler generated implementations.
 
 [lang-types.clone.builtin-types](#r-lang-types.clone.builtin-types)
 
@@ -165,7 +165,7 @@ It is implemented by the compiler for the following types:
 
 ## `Send`
 
-The [`Send`](https://doc.rust-lang.org/1.100.0/core/marker/trait.Send.html) trait indicates that a value of this type is safe to send from one thread to another.
+The [`Send`](../core/marker/trait.Send.html) trait indicates that a value of this type is safe to send from one thread to another.
 
 [lang-types.sync](#r-lang-types.sync)
 
@@ -173,7 +173,7 @@ The [`Send`](https://doc.rust-lang.org/1.100.0/core/marker/trait.Send.html) trai
 
 [lang-types.sync.intro](#r-lang-types.sync.intro)
 
-The [`Sync`](https://doc.rust-lang.org/1.100.0/core/marker/trait.Sync.html) trait indicates that a value of this type is safe to share between multiple threads.
+The [`Sync`](../core/marker/trait.Sync.html) trait indicates that a value of this type is safe to share between multiple threads.
 
 [lang-types.sync.static-constraint](#r-lang-types.sync.static-constraint)
 
@@ -183,7 +183,7 @@ This trait must be implemented for all types used in immutable [`static` items](
 
 ## `Termination`
 
-The [`Termination`](https://doc.rust-lang.org/1.100.0/std/process/trait.Termination.html) trait indicates the acceptable return types for the [main function](crates-and-source-files.md#main-functions) and [test functions](attributes/testing.md#the-test-attribute).
+The [`Termination`](../std/process/trait.Termination.html) trait indicates the acceptable return types for the [main function](crates-and-source-files.md#main-functions) and [test functions](attributes/testing.md#the-test-attribute).
 
 [lang-types.auto-traits](#r-lang-types.auto-traits)
 
@@ -191,7 +191,7 @@ The [`Termination`](https://doc.rust-lang.org/1.100.0/std/process/trait.Terminat
 
 [lang-types.auto-traits.intro](#r-lang-types.auto-traits.intro)
 
-The [`Send`](https://doc.rust-lang.org/1.100.0/core/marker/trait.Send.html), [`Sync`](https://doc.rust-lang.org/1.100.0/core/marker/trait.Sync.html), [`Unpin`](https://doc.rust-lang.org/1.100.0/core/marker/trait.Unpin.html), [`UnwindSafe`](https://doc.rust-lang.org/1.100.0/core/panic/unwind_safe/trait.UnwindSafe.html), and [`RefUnwindSafe`](https://doc.rust-lang.org/1.100.0/core/panic/unwind_safe/trait.RefUnwindSafe.html) traits are *auto traits*. Auto traits have special properties.
+The [`Send`](../core/marker/trait.Send.html), [`Sync`](../core/marker/trait.Sync.html), [`Unpin`](../core/marker/trait.Unpin.html), [`UnwindSafe`](../core/panic/unwind_safe/trait.UnwindSafe.html), and [`RefUnwindSafe`](../core/panic/unwind_safe/trait.RefUnwindSafe.html) traits are *auto traits*. Auto traits have special properties.
 
 [lang-types.auto-traits.auto-impl](#r-lang-types.auto-traits.auto-impl)
 
@@ -231,7 +231,7 @@ Auto traits may be added as an additional bound to any [trait object](types/trai
 
 [lang-types.sized.intro](#r-lang-types.sized.intro)
 
-The [`Sized`](https://doc.rust-lang.org/1.100.0/core/marker/trait.Sized.html) trait indicates that the size of this type is known at compile-time; that is, it’s not a [dynamically sized type](dynamically-sized-types.md).
+The [`Sized`](../core/marker/trait.Sized.html) trait indicates that the size of this type is known at compile-time; that is, it’s not a [dynamically sized type](dynamically-sized-types.md).
 
 [lang-types.sized.implicit-sized](#r-lang-types.sized.implicit-sized)
 

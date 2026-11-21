@@ -18,7 +18,7 @@ let greeting2: &str = "你好，世界";
 
 > ![](../../assets/inline/str-1.svg)Note
 >
-> See [the standard library docs](https://doc.rust-lang.org/1.100.0/std/primitive.str.html) for information on the impls of the `str` type.
+> See [the standard library docs](../../std/primitive.str.html) for information on the impls of the `str` type.
 
 [type.str.value](#r-type.str.value)
 

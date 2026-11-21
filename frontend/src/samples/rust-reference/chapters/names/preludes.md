@@ -8,7 +8,7 @@
 
 A *prelude* is a collection of names that are automatically brought into scope of every module in a crate.
 
-These prelude names are not part of the module itself: they are implicitly queried during [name resolution](name-resolution.md). For example, even though something like [`Box`](https://doc.rust-lang.org/1.100.0/alloc/boxed/struct.Box.html) is in scope in every module, you cannot refer to it as `self::Box` because it is not a member of the current module.
+These prelude names are not part of the module itself: they are implicitly queried during [name resolution](name-resolution.md). For example, even though something like [`Box`](../../alloc/boxed/struct.Box.html) is in scope in every module, you cannot refer to it as `self::Box` because it is not a member of the current module.
 
 [names.preludes.kinds](#r-names.preludes.kinds)
 
@@ -34,20 +34,20 @@ The module used depends on the crate’s edition, and on whether the [`no_std` a
 
 | Edition | `no_std` not applied | `no_std` applied |
 |----|----|----|
-| 2015 | [`std::prelude::rust_2015`](https://doc.rust-lang.org/1.100.0/std/prelude/rust_2015/index.html) | [`core::prelude::rust_2015`](https://doc.rust-lang.org/1.100.0/core/prelude/rust_2015/index.html) |
-| 2018 | [`std::prelude::rust_2018`](https://doc.rust-lang.org/1.100.0/std/prelude/rust_2018/index.html) | [`core::prelude::rust_2018`](https://doc.rust-lang.org/1.100.0/core/prelude/rust_2018/index.html) |
-| 2021 | [`std::prelude::rust_2021`](https://doc.rust-lang.org/1.100.0/std/prelude/rust_2021/index.html) | [`core::prelude::rust_2021`](https://doc.rust-lang.org/1.100.0/core/prelude/rust_2021/index.html) |
-| 2024 | [`std::prelude::rust_2024`](https://doc.rust-lang.org/1.100.0/std/prelude/rust_2024/index.html) | [`core::prelude::rust_2024`](https://doc.rust-lang.org/1.100.0/core/prelude/rust_2024/index.html) |
+| 2015 | [`std::prelude::rust_2015`](../../std/prelude/rust_2015/index.html) | [`core::prelude::rust_2015`](../../core/prelude/rust_2015/index.html) |
+| 2018 | [`std::prelude::rust_2018`](../../std/prelude/rust_2018/index.html) | [`core::prelude::rust_2018`](../../core/prelude/rust_2018/index.html) |
+| 2021 | [`std::prelude::rust_2021`](../../std/prelude/rust_2021/index.html) | [`core::prelude::rust_2021`](../../core/prelude/rust_2021/index.html) |
+| 2024 | [`std::prelude::rust_2024`](../../std/prelude/rust_2024/index.html) | [`core::prelude::rust_2024`](../../core/prelude/rust_2024/index.html) |
 
 > ![](../../assets/inline/preludes-1.svg)Note
 >
-> [`std::prelude::rust_2015`](https://doc.rust-lang.org/1.100.0/std/prelude/rust_2015/index.html) and [`std::prelude::rust_2018`](https://doc.rust-lang.org/1.100.0/std/prelude/rust_2018/index.html) have the same contents as [`std::prelude::v1`](https://doc.rust-lang.org/1.100.0/std/prelude/v1/index.html).
+> [`std::prelude::rust_2015`](../../std/prelude/rust_2015/index.html) and [`std::prelude::rust_2018`](../../std/prelude/rust_2018/index.html) have the same contents as [`std::prelude::v1`](../../std/prelude/v1/index.html).
 >
-> [`core::prelude::rust_2015`](https://doc.rust-lang.org/1.100.0/core/prelude/rust_2015/index.html) and [`core::prelude::rust_2018`](https://doc.rust-lang.org/1.100.0/core/prelude/rust_2018/index.html) have the same contents as [`core::prelude::v1`](https://doc.rust-lang.org/1.100.0/core/prelude/v1/index.html).
+> [`core::prelude::rust_2015`](../../core/prelude/rust_2015/index.html) and [`core::prelude::rust_2018`](../../core/prelude/rust_2018/index.html) have the same contents as [`core::prelude::v1`](../../core/prelude/v1/index.html).
 
 > ![](../../assets/inline/preludes-2.svg)Note
 >
-> When one of [`core::panic!`](https://doc.rust-lang.org/1.100.0/core/macro.panic.html) or [`std::panic!`](https://doc.rust-lang.org/1.100.0/std/macro.panic.html) is brought into scope due to the [standard library prelude](#r-names.preludes.std), and a user-written [glob import](../items/use-declarations.md#r-items.use.glob) brings the other into scope, `rustc` currently allows use of `panic!`, even though it is ambiguous. The user-written glob import takes precedence to resolve this ambiguity.
+> When one of [`core::panic!`](../../core/macro.panic.html) or [`std::panic!`](../../std/macro.panic.html) is brought into scope due to the [standard library prelude](#r-names.preludes.std), and a user-written [glob import](../items/use-declarations.md#r-items.use.glob) brings the other into scope, `rustc` currently allows use of `panic!`, even though it is ambiguous. The user-written glob import takes precedence to resolve this ambiguity.
 >
 > For details, see [names.resolution.expansion.imports.ambiguity.panic-hack](name-resolution.md#r-names.resolution.expansion.imports.ambiguity.panic-hack).
 
@@ -61,11 +61,11 @@ External crates imported with [`extern crate`](../items/extern-crates.md) in the
 
 [names.preludes.extern.core](#r-names.preludes.extern.core)
 
-The [`core`](https://doc.rust-lang.org/1.100.0/core/index.html) crate is always added to the extern prelude.
+The [`core`](../../core/index.html) crate is always added to the extern prelude.
 
 [names.preludes.extern.std](#r-names.preludes.extern.std)
 
-The [`std`](https://doc.rust-lang.org/1.100.0/std/index.html) crate is added as long as the [`no_std` attribute](#the-no_std-attribute) is not specified in the crate root.
+The [`std`](../../std/index.html) crate is added as long as the [`no_std` attribute](#the-no_std-attribute) is not specified in the crate root.
 
 [names.preludes.extern.edition2018](#r-names.preludes.extern.edition2018)
 
@@ -77,7 +77,7 @@ The [`std`](https://doc.rust-lang.org/1.100.0/std/index.html) crate is added as 
 
 > ![](../../assets/inline/preludes-3.svg)Note
 >
-> Additional crates that ship with `rustc`, such as [`alloc`](https://doc.rust-lang.org/1.100.0/alloc/index.html), and [`test`](https://doc.rust-lang.org/1.100.0/test/index.html), are not automatically included with the `--extern` flag when using Cargo. They must be brought into scope with an `extern crate` declaration, even in the 2018 edition.
+> Additional crates that ship with `rustc`, such as [`alloc`](../../alloc/index.html), and [`test`](../../test/index.html), are not automatically included with the `--extern` flag when using Cargo. They must be brought into scope with an `extern crate` declaration, even in the 2018 edition.
 >
 > ``` playground
 > #![allow(unused)]
@@ -95,7 +95,7 @@ The [`std`](https://doc.rust-lang.org/1.100.0/std/index.html) crate is added as 
 
 [names.preludes.extern.no_std.intro](#r-names.preludes.extern.no_std.intro)
 
-The *`no_std` [attribute](../attributes.md#r-attributes)* causes the [`std`](https://doc.rust-lang.org/1.100.0/std/index.html) crate to not be linked automatically and the [standard library prelude](#r-names.preludes.std) to instead use the `core` prelude.
+The *`no_std` [attribute](../attributes.md#r-attributes)* causes the [`std`](../../std/index.html) crate to not be linked automatically and the [standard library prelude](#r-names.preludes.std) to instead use the `core` prelude.
 
 > ![](../../assets/inline/preludes-4.svg)Example
 >
@@ -232,25 +232,25 @@ The `no_implicit_prelude` attribute prevents the [standard library prelude](#r-n
 >
 > Despite `#![no_implicit_prelude]`, `rustc` currently brings certain macros implicitly into scope. Those macros are:
 >
-> - [`assert!`](https://doc.rust-lang.org/1.100.0/core/macro.assert.html)
-> - [`cfg!`](https://doc.rust-lang.org/1.100.0/core/macro.cfg.html)
-> - [`cfg_select!`](https://doc.rust-lang.org/1.100.0/core/macros/macro.cfg_select.html)
-> - [`column!`](https://doc.rust-lang.org/1.100.0/core/macro.column.html)
-> - [`compile_error!`](https://doc.rust-lang.org/1.100.0/core/macro.compile_error.html)
-> - [`concat!`](https://doc.rust-lang.org/1.100.0/core/macro.concat.html)
-> - [`concat_bytes!`](https://doc.rust-lang.org/1.100.0/core/macro.concat_bytes.html)
-> - [`env!`](https://doc.rust-lang.org/1.100.0/core/macro.env.html)
-> - [`file!`](https://doc.rust-lang.org/1.100.0/core/macro.file.html)
-> - [`format_args!`](https://doc.rust-lang.org/1.100.0/core/macro.format_args.html)
-> - [`include!`](https://doc.rust-lang.org/1.100.0/core/macro.include.html)
-> - [`include_bytes!`](https://doc.rust-lang.org/1.100.0/core/macro.include_bytes.html)
-> - [`include_str!`](https://doc.rust-lang.org/1.100.0/core/macro.include_str.html)
-> - [`line!`](https://doc.rust-lang.org/1.100.0/core/macro.line.html)
-> - [`module_path!`](https://doc.rust-lang.org/1.100.0/core/macro.module_path.html)
-> - [`option_env!`](https://doc.rust-lang.org/1.100.0/core/macro.option_env.html)
-> - [`panic!`](https://doc.rust-lang.org/1.100.0/std/macro.panic.html)
-> - [`stringify!`](https://doc.rust-lang.org/1.100.0/core/macro.stringify.html)
-> - [`unreachable!`](https://doc.rust-lang.org/1.100.0/core/macro.unreachable.html)
+> - [`assert!`](../../core/macro.assert.html)
+> - [`cfg!`](../../core/macro.cfg.html)
+> - [`cfg_select!`](../../core/macros/macro.cfg_select.html)
+> - [`column!`](../../core/macro.column.html)
+> - [`compile_error!`](../../core/macro.compile_error.html)
+> - [`concat!`](../../core/macro.concat.html)
+> - [`concat_bytes!`](../../core/macro.concat_bytes.html)
+> - [`env!`](../../core/macro.env.html)
+> - [`file!`](../../core/macro.file.html)
+> - [`format_args!`](../../core/macro.format_args.html)
+> - [`include!`](../../core/macro.include.html)
+> - [`include_bytes!`](../../core/macro.include_bytes.html)
+> - [`include_str!`](../../core/macro.include_str.html)
+> - [`line!`](../../core/macro.line.html)
+> - [`module_path!`](../../core/macro.module_path.html)
+> - [`option_env!`](../../core/macro.option_env.html)
+> - [`panic!`](../../std/macro.panic.html)
+> - [`stringify!`](../../core/macro.stringify.html)
+> - [`unreachable!`](../../core/macro.unreachable.html)
 >
 > E.g., this works:
 >

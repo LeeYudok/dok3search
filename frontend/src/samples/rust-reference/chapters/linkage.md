@@ -10,7 +10,7 @@
 >
 > This section is described more in terms of the compiler than of the language.
 
-The compiler supports various methods to link crates together both statically and dynamically. This section will explore the various methods to link crates together, and more information about native libraries can be found in the [FFI section of the book](https://doc.rust-lang.org/1.100.0/book/ch20-01-unsafe-rust.html#using-extern-functions-to-call-external-code).
+The compiler supports various methods to link crates together both statically and dynamically. This section will explore the various methods to link crates together, and more information about native libraries can be found in the [FFI section of the book](../book/ch20-01-unsafe-rust.html#using-extern-functions-to-call-external-code).
 
 [link.type](#r-link.type)
 
@@ -135,7 +135,7 @@ fn foo() {
 }
 ```
 
-Also note that Cargo build scripts can learn about this feature through [environment variables](https://doc.rust-lang.org/1.100.0/cargo/reference/environment-variables.html#environment-variables-cargo-sets-for-build-scripts). In a build script you can detect the linkage via:
+Also note that Cargo build scripts can learn about this feature through [environment variables](../../cargo-book/chapters/reference/environment-variables.md#environment-variables-cargo-sets-for-build-scripts). In a build script you can detect the linkage via:
 
 ``` playground
 use std::env;
@@ -200,8 +200,8 @@ If a Rust artifact is potentially unwinding, then all its crates must be built w
 
 > ![](../assets/inline/linkage-4.svg)Note
 >
-> If you are using `rustc` to link, these rules are enforced automatically. If you are *not* using `rustc` to link, you must take care to ensure that unwinding is handled consistently across the entire binary. Linking without `rustc` includes using `dlopen` or similar facilities where linking is done by the system runtime without `rustc` being involved. This can only happen when mixing code with different [`-C panic`](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#panic) flags, so most users do not have to be concerned about this.
+> If you are using `rustc` to link, these rules are enforced automatically. If you are *not* using `rustc` to link, you must take care to ensure that unwinding is handled consistently across the entire binary. Linking without `rustc` includes using `dlopen` or similar facilities where linking is done by the system runtime without `rustc` being involved. This can only happen when mixing code with different [`-C panic`](../rustc/codegen-options/index.html#panic) flags, so most users do not have to be concerned about this.
 
 > ![](../assets/inline/linkage-5.svg)Note
 >
-> To guarantee that a library will be sound (and linkable with `rustc`) regardless of the panic runtime used at link-time, the [`ffi_unwind_calls` lint](https://doc.rust-lang.org/1.100.0/rustc/lints/listing/allowed-by-default.html#ffi-unwind-calls) may be used. The lint flags any calls to `-unwind` foreign functions or function pointers.
+> To guarantee that a library will be sound (and linkable with `rustc`) regardless of the panic runtime used at link-time, the [`ffi_unwind_calls` lint](../rustc/lints/listing/allowed-by-default.html#ffi-unwind-calls) may be used. The lint flags any calls to `-unwind` foreign functions or function pointers.

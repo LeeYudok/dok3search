@@ -293,7 +293,7 @@ One example where this can be useful is when you have split up a library into mu
 
 ## Platform specific dependencies
 
-Platform-specific dependencies take the same format, but are listed under a `target` section. Normally Rust-like [`#[cfg]` syntax](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html) will be used to define these sections:
+Platform-specific dependencies take the same format, but are listed under a `target` section. Normally Rust-like [`#[cfg]` syntax](../../../rust-reference/chapters/conditional-compilation.md) will be used to define these sections:
 
 ``` toml
 [target.'cfg(windows)'.dependencies]

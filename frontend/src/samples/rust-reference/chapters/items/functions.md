@@ -866,7 +866,7 @@ The attributes that have meaning on a function are:
 - [`cfg`](../conditional-compilation.md#the-cfg-attribute)
 - [`cold`](../attributes/codegen.md#the-cold-attribute)
 - [`deprecated`](../attributes/diagnostics.md#the-deprecated-attribute)
-- [`doc`](https://doc.rust-lang.org/1.100.0/rustdoc/the-doc-attribute.html)
+- [`doc`](../../rustdoc/the-doc-attribute.html)
 - [`export_name`](../abi.md#the-export_name-attribute)
 - [`inline`](../attributes/codegen.md#the-inline-attribute)
 - [`link_section`](../abi.md#the-link_section-attribute)

@@ -21,10 +21,13 @@ const referenceSources = [
   { prefix: referenceIdPrefix('go', 'go-reference'), load: () => import('./go-reference').then(({ goReference }) => goReference) },
 ]
 
+function isReferenceDocumentId(documentId: string) {
+  return referenceSources.some(({ prefix }) => documentId.startsWith(prefix))
+}
+
 function loadReferenceCorpora(documentId?: string): Promise<ReferenceCorpus[]> {
-  return Promise.all(referenceSources
-    .filter(({ prefix }) => !documentId || documentId.startsWith(prefix))
-    .map(({ load }) => load()))
+  const sources = !documentId || isReferenceDocumentId(documentId) ? referenceSources : []
+  return Promise.all(sources.map(({ load }) => load()))
 }
 
 async function fetchSearchPage(
@@ -53,8 +56,22 @@ async function fetchSearchPage(
     references.catch(() => []),
   ])
   const referenceDocuments = documents.filter((doc) => doc.topic).concat(corpora.flatMap(({ documents }) => documents))
-  const local = searchLocalDocuments(query, '', 1, pageSize, referenceDocuments)
   const categoryCounts = search.result.categoryCounts.filter(({ id }) => categories.some((item) => item.id === id))
+  if (category === 'guide') {
+    const allDocuments = [...new Map(documents.concat(corpora.flatMap(({ documents }) => documents)).map((doc) => [doc.id, doc])).values()]
+    const guideDocuments = allDocuments.filter((doc) => doc.category === 'guide')
+    const allLocal = searchLocalDocuments(query, '', 1, pageSize, allDocuments)
+    const local = searchLocalDocuments(query, 'guide', page, pageSize, guideDocuments)
+    return {
+      mode: corpora.length ? 'local-reference' : search.mode,
+      result: {
+        ...local,
+        totalUnfilteredHits: allLocal.totalUnfilteredHits,
+        categoryCounts: allLocal.categoryCounts,
+      },
+    }
+  }
+  const local = searchLocalDocuments(query, '', 1, pageSize, referenceDocuments)
   return {
     mode: search.mode,
     result: {
@@ -294,19 +311,27 @@ function SearchPage() {
 }
 
 const path = window.location.pathname
-const detail = /^\/docs\/([a-z0-9-]+)\/?$/.exec(path)
+const detail = /^\/docs\/([^/]+)\/?$/.exec(path)
 const legacyIds: Record<string, string> = {
   'design-design-md': 'design-index-md',
   'design-design-yaml': 'design-map-yaml',
 }
-const detailId = detail ? legacyIds[detail[1]] ?? detail[1] : undefined
+let detailId: string | undefined
+if (detail) {
+  try {
+    detailId = decodeURIComponent(detail[1])
+  } catch {
+    detailId = detail[1]
+  }
+  detailId = legacyIds[detailId] ?? detailId
+}
 
 const rootElement = document.getElementById('root')
 if (rootElement) {
   const root = createRoot(rootElement)
   if (detailId) {
     void Promise.all([import('./document-reader'), loadReferenceCorpora(detailId)]).then(
-      ([{ DocumentPage }, [corpus]]) => root.render(<DocumentPage id={detailId} corpus={corpus} />),
+      ([{ DocumentPage }, corpora]) => root.render(<DocumentPage id={detailId} corpora={corpora} />),
       () => root.render(<main className="shell reader"><p role="alert">문서를 불러올 수 없습니다.</p></main>),
     )
   } else {

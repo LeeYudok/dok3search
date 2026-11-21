@@ -53,7 +53,7 @@ let foo_ptr_2 = if want_i32 {
 
 All function items implement [`Copy`](../special-types-and-traits.md#copy), [`Clone`](../special-types-and-traits.md#clone), [`Send`](../special-types-and-traits.md#send), and [`Sync`](../special-types-and-traits.md#sync).
 
-[`Fn`](https://doc.rust-lang.org/1.100.0/core/ops/function/trait.Fn.html), [`FnMut`](https://doc.rust-lang.org/1.100.0/core/ops/function/trait.FnMut.html), and [`FnOnce`](https://doc.rust-lang.org/1.100.0/core/ops/function/trait.FnOnce.html) are implemented unless the function has any of the following:
+[`Fn`](../../core/ops/function/trait.Fn.html), [`FnMut`](../../core/ops/function/trait.FnMut.html), and [`FnOnce`](../../core/ops/function/trait.FnOnce.html) are implemented unless the function has any of the following:
 
 - an [`unsafe`](../unsafe-keyword.md#r-unsafe.fn) qualifier
 - a [`target_feature` attribute](../attributes/codegen.md#r-attributes.codegen.target_feature)

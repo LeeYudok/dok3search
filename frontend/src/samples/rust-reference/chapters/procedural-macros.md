@@ -31,11 +31,11 @@ Procedural macros must be defined in the root of a crate with the [crate type](l
 
 As functions, they must either return syntax, panic, or loop endlessly. Returned syntax either replaces or adds the syntax depending on the kind of procedural macro. Panics are caught by the compiler and are turned into a compiler error. Endless loops are not caught by the compiler which hangs the compiler.
 
-Procedural macros run during compilation, and thus have the same resources that the compiler has. For example, standard input, error, and output are the same that the compiler has access to. Similarly, file access is the same. Because of this, procedural macros have the same security concerns that [Cargo’s build scripts](https://doc.rust-lang.org/1.100.0/cargo/reference/build-scripts.html) have.
+Procedural macros run during compilation, and thus have the same resources that the compiler has. For example, standard input, error, and output are the same that the compiler has access to. Similarly, file access is the same. Because of this, procedural macros have the same security concerns that [Cargo’s build scripts](../../cargo-book/chapters/reference/build-scripts.md) have.
 
 [macro.proc.error](#r-macro.proc.error)
 
-Procedural macros have two ways of reporting errors. The first is to panic. The second is to emit a [`compile_error`](https://doc.rust-lang.org/1.100.0/core/macro.compile_error.html) macro invocation.
+Procedural macros have two ways of reporting errors. The first is to panic. The second is to emit a [`compile_error`](../core/macro.compile_error.html) macro invocation.
 
 [macro.proc.proc_macro-crate](#r-macro.proc.proc_macro-crate)
 
@@ -43,11 +43,11 @@ Procedural macros have two ways of reporting errors. The first is to panic. The 
 
 [macro.proc.proc_macro-crate.intro](#r-macro.proc.proc_macro-crate.intro)
 
-Procedural macro crates almost always will link to the compiler-provided [`proc_macro` crate](https://doc.rust-lang.org/1.100.0/proc_macro/index.html). The `proc_macro` crate provides types required for writing procedural macros and facilities to make it easier.
+Procedural macro crates almost always will link to the compiler-provided [`proc_macro` crate](../proc_macro/index.html). The `proc_macro` crate provides types required for writing procedural macros and facilities to make it easier.
 
 [macro.proc.proc_macro-crate.token-stream](#r-macro.proc.proc_macro-crate.token-stream)
 
-This crate primarily contains a [`TokenStream`](https://doc.rust-lang.org/1.100.0/proc_macro/struct.TokenStream.html) type. Procedural macros operate over *token streams* instead of AST nodes, which is a far more stable interface over time for both the compiler and for procedural macros to target. A *token stream* is roughly equivalent to `Vec<TokenTree>` where a `TokenTree` can roughly be thought of as lexical token. For example `foo` is an `Ident` token, `.` is a `Punct` token, and `1.2` is a `Literal` token. The `TokenStream` type, unlike `Vec<TokenTree>`, is cheap to clone.
+This crate primarily contains a [`TokenStream`](../proc_macro/struct.TokenStream.html) type. Procedural macros operate over *token streams* instead of AST nodes, which is a far more stable interface over time for both the compiler and for procedural macros to target. A *token stream* is roughly equivalent to `Vec<TokenTree>` where a `TokenTree` can roughly be thought of as lexical token. For example `foo` is an `Ident` token, `.` is a `Punct` token, and `1.2` is a `Literal` token. The `TokenStream` type, unlike `Vec<TokenTree>`, is cheap to clone.
 
 [macro.proc.proc_macro-crate.span](#r-macro.proc.proc_macro-crate.span)
 
@@ -103,7 +103,7 @@ The `proc_macro` attribute uses the [MetaWord](attributes.md#grammar-MetaWord) s
 
 [macro.proc.proc_macro.allowed-positions](#r-macro.proc.proc_macro.allowed-positions)
 
-The `proc_macro` attribute may only be applied to a `pub` function of type `fn(TokenStream) -> TokenStream` where [`TokenStream`](https://doc.rust-lang.org/1.100.0/proc_macro/struct.TokenStream.html) comes from the [`proc_macro` crate](https://doc.rust-lang.org/1.100.0/proc_macro/index.html). It must have the [“Rust” ABI](items/functions.md#r-items.fn.extern). No other function qualifiers are allowed. It must be located in the root of the crate.
+The `proc_macro` attribute may only be applied to a `pub` function of type `fn(TokenStream) -> TokenStream` where [`TokenStream`](../proc_macro/struct.TokenStream.html) comes from the [`proc_macro` crate](../proc_macro/index.html). It must have the [“Rust” ABI](items/functions.md#r-items.fn.extern). No other function qualifiers are allowed. It must be located in the root of the crate.
 
 [macro.proc.proc_macro.duplicates](#r-macro.proc.proc_macro.duplicates)
 
@@ -115,7 +115,7 @@ The `proc_macro` attribute publicly defines the macro in the [macro namespace](n
 
 [macro.proc.proc_macro.behavior](#r-macro.proc.proc_macro.behavior)
 
-A function-like macro invocation of a function-like procedural macro will pass what is inside the delimiters of the macro invocation as the input [`TokenStream`](https://doc.rust-lang.org/1.100.0/proc_macro/struct.TokenStream.html) argument and replace the entire macro invocation with the output [`TokenStream`](https://doc.rust-lang.org/1.100.0/proc_macro/struct.TokenStream.html) of the function.
+A function-like macro invocation of a function-like procedural macro will pass what is inside the delimiters of the macro invocation as the input [`TokenStream`](../proc_macro/struct.TokenStream.html) argument and replace the entire macro invocation with the output [`TokenStream`](../proc_macro/struct.TokenStream.html) of the function.
 
 [macro.proc.proc_macro.invocation](#r-macro.proc.proc_macro.invocation)
 
@@ -187,7 +187,7 @@ The name of the derive macro is given by [DeriveMacroName](#grammar-DeriveMacroN
 
 [macro.proc.derive.allowed-positions](#r-macro.proc.derive.allowed-positions)
 
-The `proc_macro_derive` attribute may only be applied to a `pub` function with the [Rust ABI](items/functions.md#r-items.fn.extern) defined in the root of the crate with a type of `fn(TokenStream) -> TokenStream` where [`TokenStream`](https://doc.rust-lang.org/1.100.0/proc_macro/struct.TokenStream.html) comes from the [`proc_macro` crate](https://doc.rust-lang.org/1.100.0/proc_macro/index.html). The function may be `const` and may use `extern` to explicitly specify the Rust ABI, but it may not use any other [qualifiers](items/functions.md#grammar-FunctionQualifiers) (e.g. it may not be `async` or `unsafe`).
+The `proc_macro_derive` attribute may only be applied to a `pub` function with the [Rust ABI](items/functions.md#r-items.fn.extern) defined in the root of the crate with a type of `fn(TokenStream) -> TokenStream` where [`TokenStream`](../proc_macro/struct.TokenStream.html) comes from the [`proc_macro` crate](../proc_macro/index.html). The function may be `const` and may use `extern` to explicitly specify the Rust ABI, but it may not use any other [qualifiers](items/functions.md#grammar-FunctionQualifiers) (e.g. it may not be `async` or `unsafe`).
 
 [macro.proc.derive.duplicates](#r-macro.proc.derive.duplicates)
 
@@ -199,7 +199,7 @@ The `proc_macro_derive` attribute publicly defines the derive macro in the [macr
 
 [macro.proc.derive.output](#r-macro.proc.derive.output)
 
-The input [`TokenStream`](https://doc.rust-lang.org/1.100.0/proc_macro/struct.TokenStream.html) is the token stream of the item to which the `derive` attribute is applied. The output [`TokenStream`](https://doc.rust-lang.org/1.100.0/proc_macro/struct.TokenStream.html) must be a (possibly empty) set of items. These items are appended following the input item within the same [module](items/modules.md) or [block](expressions/block-expr.md).
+The input [`TokenStream`](../proc_macro/struct.TokenStream.html) is the token stream of the item to which the `derive` attribute is applied. The output [`TokenStream`](../proc_macro/struct.TokenStream.html) must be a (possibly empty) set of items. These items are appended following the input item within the same [module](items/modules.md) or [block](expressions/block-expr.md).
 
 [macro.proc.derive.attributes](#r-macro.proc.derive.attributes)
 
@@ -280,7 +280,7 @@ The *`proc_macro_attribute` [attribute](attributes.md)* defines an *attribute ma
 
 > ![](../assets/inline/procedural-macros-10.svg)Example
 >
-> This shows, in the output of the compiler, the stringified [`TokenStream`s](https://doc.rust-lang.org/1.100.0/proc_macro/struct.TokenStream.html) that attribute macros see.
+> This shows, in the output of the compiler, the stringified [`TokenStream`s](../proc_macro/struct.TokenStream.html) that attribute macros see.
 >
 > ``` rust
 > // my-macro/src/lib.rs
@@ -331,7 +331,7 @@ The `proc_macro_attribute` attribute uses the [MetaWord](attributes.md#grammar-M
 
 [macro.proc.attribute.allowed-positions](#r-macro.proc.attribute.allowed-positions)
 
-The `proc_macro_attribute` attribute may only be applied to a `pub` function of type `fn(TokenStream, TokenStream) -> TokenStream` where [`TokenStream`](https://doc.rust-lang.org/1.100.0/proc_macro/struct.TokenStream.html) comes from the [`proc_macro` crate](https://doc.rust-lang.org/1.100.0/proc_macro/index.html). It must have the [“Rust” ABI](items/functions.md#r-items.fn.extern). No other function qualifiers are allowed. It must be located in the root of the crate.
+The `proc_macro_attribute` attribute may only be applied to a `pub` function of type `fn(TokenStream, TokenStream) -> TokenStream` where [`TokenStream`](../proc_macro/struct.TokenStream.html) comes from the [`proc_macro` crate](../proc_macro/index.html). It must have the [“Rust” ABI](items/functions.md#r-items.fn.extern). No other function qualifiers are allowed. It must be located in the root of the crate.
 
 [macro.proc.attribute.duplicates](#r-macro.proc.attribute.duplicates)
 
@@ -360,11 +360,11 @@ For any [outline modules](items/modules.md#r-items.mod.outlined) present in the 
 
 [macro.proc.attribute.behavior](#r-macro.proc.attribute.behavior)
 
-The first [`TokenStream`](https://doc.rust-lang.org/1.100.0/proc_macro/struct.TokenStream.html) parameter is the delimited token tree following the attribute’s name but not including the outer delimiters. If the applied attribute contains only the attribute name or the attribute name followed by empty delimiters, the [`TokenStream`](https://doc.rust-lang.org/1.100.0/proc_macro/struct.TokenStream.html) is empty.
+The first [`TokenStream`](../proc_macro/struct.TokenStream.html) parameter is the delimited token tree following the attribute’s name but not including the outer delimiters. If the applied attribute contains only the attribute name or the attribute name followed by empty delimiters, the [`TokenStream`](../proc_macro/struct.TokenStream.html) is empty.
 
-The second [`TokenStream`](https://doc.rust-lang.org/1.100.0/proc_macro/struct.TokenStream.html) is the rest of the [item](items.md), including other [attributes](attributes.md) on the [item](items.md).
+The second [`TokenStream`](../proc_macro/struct.TokenStream.html) is the rest of the [item](items.md), including other [attributes](attributes.md) on the [item](items.md).
 
-The item to which the attribute is applied is replaced by the zero or more items in the returned [`TokenStream`](https://doc.rust-lang.org/1.100.0/proc_macro/struct.TokenStream.html).
+The item to which the attribute is applied is replaced by the zero or more items in the returned [`TokenStream`](../proc_macro/struct.TokenStream.html).
 
 [macro.proc.token](#r-macro.proc.token)
 
@@ -372,7 +372,7 @@ The item to which the attribute is applied is replaced by the zero or more items
 
 [macro.proc.token.intro](#r-macro.proc.token.intro)
 
-Declarative `macro_rules` macros and procedural macros use similar, but different definitions for tokens (or rather [`TokenTree`s](https://doc.rust-lang.org/1.100.0/proc_macro/enum.TokenTree.html).)
+Declarative `macro_rules` macros and procedural macros use similar, but different definitions for tokens (or rather [`TokenTree`s](../proc_macro/enum.TokenTree.html).)
 
 [macro.proc.token.macro_rules](#r-macro.proc.token.macro_rules)
 
@@ -409,7 +409,7 @@ When passed to a proc-macro
 - Lifetimes are broken into a `'` character and an identifier.
 - The keyword metavariable [`$crate`](macros-by-example.md#r-macro.decl.hygiene.crate) is passed as a single identifier.
 - All other metavariable substitutions are represented as their underlying token streams.
-  - Such token streams may be wrapped into delimited groups ([`Group`](https://doc.rust-lang.org/1.100.0/proc_macro/struct.Group.html)) with implicit delimiters ([`Delimiter::None`](https://doc.rust-lang.org/1.100.0/proc_macro/enum.Delimiter.html#variant.None)) when it’s necessary for preserving parsing priorities.
+  - Such token streams may be wrapped into delimited groups ([`Group`](../proc_macro/struct.Group.html)) with implicit delimiters ([`Delimiter::None`](../proc_macro/enum.Delimiter.html#variant.None)) when it’s necessary for preserving parsing priorities.
   - `tt` and `ident` substitutions are never wrapped into such groups and always represented as their underlying token trees.
 
 [macro.proc.token.conversion.from-proc_macro](#r-macro.proc.token.conversion.from-proc_macro)
@@ -418,7 +418,7 @@ When emitted from a proc macro
 
 - Punctuation characters are glued into multi-character operators when applicable.
 - Single quotes `'` joined with identifiers are glued into lifetimes.
-- Negative literals are converted into two tokens (the `-` and the literal) possibly wrapped into a delimited group ([`Group`](https://doc.rust-lang.org/1.100.0/proc_macro/struct.Group.html)) with implicit delimiters ([`Delimiter::None`](https://doc.rust-lang.org/1.100.0/proc_macro/enum.Delimiter.html#variant.None)) when it’s necessary for preserving parsing priorities.
+- Negative literals are converted into two tokens (the `-` and the literal) possibly wrapped into a delimited group ([`Group`](../proc_macro/struct.Group.html)) with implicit delimiters ([`Delimiter::None`](../proc_macro/enum.Delimiter.html#variant.None)) when it’s necessary for preserving parsing priorities.
 
 [macro.proc.token.doc-comment](#r-macro.proc.token.doc-comment)
 

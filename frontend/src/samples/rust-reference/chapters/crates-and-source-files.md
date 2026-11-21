@@ -80,7 +80,7 @@ A crate that contains a `main` [function](items/functions.md) can be compiled to
 
 [crate.main.restriction](#r-crate.main.restriction)
 
-If a `main` function is present, it must take no arguments, must not declare any [trait or lifetime bounds](trait-bounds.md), must not have any [where clauses](items/generics.md#where-clauses), and its return type must implement the [`Termination`](https://doc.rust-lang.org/1.100.0/std/process/trait.Termination.html) trait.
+If a `main` function is present, it must take no arguments, must not declare any [trait or lifetime bounds](trait-bounds.md), must not have any [where clauses](items/generics.md#where-clauses), and its return type must implement the [`Termination`](../std/process/trait.Termination.html) trait.
 
 ``` playground
 fn main() {}
@@ -116,12 +116,12 @@ use foo::bar as main;
 
 > ![](../assets/inline/crates-and-source-files-4.svg)Note
 >
-> Types with implementations of [`Termination`](https://doc.rust-lang.org/1.100.0/std/process/trait.Termination.html) in the standard library include:
+> Types with implementations of [`Termination`](../std/process/trait.Termination.html) in the standard library include:
 >
 > - `()`
 > - [`!`](types/never.md)
-> - [`Infallible`](https://doc.rust-lang.org/1.100.0/core/convert/type.Infallible.html)
-> - [`ExitCode`](https://doc.rust-lang.org/1.100.0/std/process/struct.ExitCode.html)
+> - [`Infallible`](../core/convert/type.Infallible.html)
+> - [`ExitCode`](../std/process/struct.ExitCode.html)
 > - `Result<T, E> where T: Termination, E: Debug`
 
 [crate.uncaught-foreign-unwinding](#r-crate.uncaught-foreign-unwinding)
@@ -155,7 +155,7 @@ fn main() {
 
 [crate.crate_name.restriction](#r-crate.crate_name.restriction)
 
-The crate name must not be empty, and must only contain [Unicode alphanumeric](https://doc.rust-lang.org/1.100.0/std/primitive.char.html#method.is_alphanumeric) or `_` (U+005F) characters.
+The crate name must not be empty, and must only contain [Unicode alphanumeric](../std/primitive.char.html#method.is_alphanumeric) or `_` (U+005F) characters.
 
 ------------------------------------------------------------------------
 

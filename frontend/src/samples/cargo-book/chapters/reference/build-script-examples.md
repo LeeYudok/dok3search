@@ -80,7 +80,7 @@ fn main() {
 }
 ```
 
-This is where the real magic happens. The library is using the rustc-defined [`include!` macro](https://doc.rust-lang.org/1.100.0/std/macro.include.html) in combination with the [`concat!`](https://doc.rust-lang.org/1.100.0/std/macro.concat.html) and [`env!`](https://doc.rust-lang.org/1.100.0/std/macro.env.html) macros to include the generated file (`hello.rs`) into the crate’s compilation.
+This is where the real magic happens. The library is using the rustc-defined [`include!` macro](../../std/macro.include.html) in combination with the [`concat!`](../../std/macro.concat.html) and [`env!`](../../std/macro.env.html) macros to include the generated file (`hello.rs`) into the crate’s compilation.
 
 Using the structure shown here, crates can include any number of generated files from the build script itself.
 
@@ -383,7 +383,7 @@ if let Ok(version) = env::var("DEP_OPENSSL_VERSION_NUMBER") {
 }
 ```
 
-These `cfg` values can then be used with the [`cfg` attribute](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html#the-cfg-attribute) or the [`cfg` macro](https://doc.rust-lang.org/1.100.0/std/macro.cfg.html) to conditionally include code. For example, SHA3 support was added in OpenSSL 1.1.1, so it is [conditionally excluded](https://github.com/sfackler/rust-openssl/blob/dc72a8e2c429e46c275e528b61a733a66e7877fc/openssl/src/hash.rs#L67-L85) for older versions:
+These `cfg` values can then be used with the [`cfg` attribute](../../../rust-reference/chapters/conditional-compilation.md#the-cfg-attribute) or the [`cfg` macro](../../std/macro.cfg.html) to conditionally include code. For example, SHA3 support was added in OpenSSL 1.1.1, so it is [conditionally excluded](https://github.com/sfackler/rust-openssl/blob/dc72a8e2c429e46c275e528b61a733a66e7877fc/openssl/src/hash.rs#L67-L85) for older versions:
 
 ``` rust
 // (portion of openssl crate)

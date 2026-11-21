@@ -14,7 +14,7 @@ This section documents features that define some aspects of the Rust runtime.
 
 [runtime.global_allocator.intro](#r-runtime.global_allocator.intro)
 
-The *`global_allocator` [attribute](attributes.md#r-attributes)* selects a [memory allocator](https://doc.rust-lang.org/1.100.0/std/alloc/index.html).
+The *`global_allocator` [attribute](attributes.md#r-attributes)* selects a [memory allocator](../std/alloc/index.html).
 
 > ![](../assets/inline/runtime-1.svg)Example
 >
@@ -46,7 +46,7 @@ The `global_allocator` attribute uses the [MetaWord](attributes.md#grammar-MetaW
 
 [runtime.global_allocator.allowed-positions](#r-runtime.global_allocator.allowed-positions)
 
-The `global_allocator` attribute may only be applied to a [static item](items/static-items.md) whose type implements the [`GlobalAlloc`](https://doc.rust-lang.org/1.100.0/core/alloc/global/trait.GlobalAlloc.html) trait.
+The `global_allocator` attribute may only be applied to a [static item](items/static-items.md) whose type implements the [`GlobalAlloc`](../core/alloc/global/trait.GlobalAlloc.html) trait.
 
 [runtime.global_allocator.duplicates](#r-runtime.global_allocator.duplicates)
 
@@ -58,7 +58,7 @@ The `global_allocator` attribute may only be used once in the crate graph.
 
 [runtime.global_allocator.stdlib](#r-runtime.global_allocator.stdlib)
 
-The `global_allocator` attribute is exported from the [standard library prelude](https://doc.rust-lang.org/1.100.0/core/prelude/v1/index.html).
+The `global_allocator` attribute is exported from the [standard library prelude](../core/prelude/v1/index.html).
 
 [runtime.windows_subsystem](#r-runtime.windows_subsystem)
 

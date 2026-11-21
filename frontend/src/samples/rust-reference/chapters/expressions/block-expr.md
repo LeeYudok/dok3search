@@ -219,7 +219,7 @@ Executing an async block is similar to executing a closure expression: its immed
 
 [expr.block.async.future](#r-expr.block.async.future)
 
-Whereas closures return a type that implements one or more of the [`std::ops::Fn`](https://doc.rust-lang.org/1.100.0/core/ops/function/trait.Fn.html) traits, however, the type returned for an async block implements the [`std::future::Future`](https://doc.rust-lang.org/1.100.0/core/future/future/trait.Future.html) trait.
+Whereas closures return a type that implements one or more of the [`std::ops::Fn`](../../core/ops/function/trait.Fn.html) traits, however, the type returned for an async block implements the [`std::future::Future`](../../core/future/future/trait.Future.html) trait.
 
 [expr.block.async.layout-unspecified](#r-expr.block.async.layout-unspecified)
 

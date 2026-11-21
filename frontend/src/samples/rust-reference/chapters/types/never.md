@@ -77,4 +77,4 @@ Expressions of type `!` can be coerced into any type.
 
 > ![](../../assets/inline/never-3.svg)Note
 >
-> The standard library type [`Infallible`](https://doc.rust-lang.org/1.100.0/core/convert/type.Infallible.html) is a type alias for `!`.
+> The standard library type [`Infallible`](../../core/convert/type.Infallible.html) is a type alias for `!`.

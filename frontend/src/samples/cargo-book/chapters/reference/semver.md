@@ -79,7 +79,7 @@ All of the examples below contain three parts: the original code, the code after
 
 ### Major: renaming/moving/removing any public items
 
-The absence of a publicly exposed [item](https://doc.rust-lang.org/1.100.0/reference/items.html) will cause any uses of that item to fail to compile.
+The absence of a publicly exposed [item](../../../rust-reference/chapters/items.md) will cause any uses of that item to fail to compile.
 
 ``` rust
 // MAJOR CHANGE
@@ -99,16 +99,16 @@ fn main() {
 }
 ```
 
-This includes adding any sort of [`cfg` attribute](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html#the-cfg-attribute) which can change which items or behavior is available based on [conditional compilation](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html).
+This includes adding any sort of [`cfg` attribute](../../../rust-reference/chapters/conditional-compilation.md#the-cfg-attribute) which can change which items or behavior is available based on [conditional compilation](../../../rust-reference/chapters/conditional-compilation.md).
 
 Mitigating strategies:
 
-- Mark items to be removed as [deprecated](https://doc.rust-lang.org/1.100.0/reference/attributes/diagnostics.html#the-deprecated-attribute), and then remove them at a later date in a SemVer-breaking release.
-- Mark renamed items as [deprecated](https://doc.rust-lang.org/1.100.0/reference/attributes/diagnostics.html#the-deprecated-attribute), and use a [`pub use`](https://doc.rust-lang.org/1.100.0/reference/items/use-declarations.html) item to re-export to the old name.
+- Mark items to be removed as [deprecated](../../../rust-reference/chapters/attributes/diagnostics.md#the-deprecated-attribute), and then remove them at a later date in a SemVer-breaking release.
+- Mark renamed items as [deprecated](../../../rust-reference/chapters/attributes/diagnostics.md#the-deprecated-attribute), and use a [`pub use`](../../../rust-reference/chapters/items/use-declarations.md) item to re-export to the old name.
 
 ### Minor: adding new public items
 
-Adding new, public [items](https://doc.rust-lang.org/1.100.0/reference/items.html) is a minor change.
+Adding new, public [items](../../../rust-reference/chapters/items.md) is a minor change.
 
 ``` rust
 // MINOR CHANGE
@@ -164,7 +164,7 @@ This is not considered a major change because conventionally glob imports are a 
 
 It is a breaking change to change the alignment, layout, or size of a type that was previously well-defined.
 
-In general, types that use the [the default representation](https://doc.rust-lang.org/1.100.0/reference/type-layout.html#the-default-representation) do not have a well-defined alignment, layout, or size. The compiler is free to alter the alignment, layout, or size, so code should not make any assumptions about it.
+In general, types that use the [the default representation](../../../rust-reference/chapters/type-layout.md#the-default-representation) do not have a well-defined alignment, layout, or size. The compiler is free to alter the alignment, layout, or size, so code should not make any assumptions about it.
 
 > ![](../../assets/inline/semver-1.svg)Note
 >
@@ -177,14 +177,14 @@ Some examples of changes that are not a breaking change are (assuming no other r
 - Adding, removing, reordering, or changing private fields of a `repr(C)` struct, union, or enum, following the other rules in this guide (for example, using `non_exhaustive`, or adding private fields when other private fields already exist). See [repr-c-private-change](#repr-c-private-change).
 - Adding variants to a `repr(C)` enum, if the enum uses `non_exhaustive`. See [repr-c-enum-variant-new](#repr-c-enum-variant-new).
 - Adding `repr(C)` to a default representation struct, union, or enum. See [repr-c-add](#repr-c-add).
-- Adding `repr(<int>)` [primitive representation](https://doc.rust-lang.org/1.100.0/reference/type-layout.html#primitive-representations) to an enum. See [repr-int-enum-add](#repr-int-enum-add).
+- Adding `repr(<int>)` [primitive representation](../../../rust-reference/chapters/type-layout.md#primitive-representations) to an enum. See [repr-int-enum-add](#repr-int-enum-add).
 - Adding `repr(transparent)` to a default representation struct or enum. See [repr-transparent-add](#repr-transparent-add).
 
-Types that use the [`repr` attribute](https://doc.rust-lang.org/1.100.0/reference/type-layout.html#representations) can be said to have an alignment and layout that is defined in some way that code may make some assumptions about that may break as a result of changing that type.
+Types that use the [`repr` attribute](../../../rust-reference/chapters/type-layout.md#representations) can be said to have an alignment and layout that is defined in some way that code may make some assumptions about that may break as a result of changing that type.
 
 In some cases, types with a `repr` attribute may not have an alignment, layout, or size that is well-defined. In these cases, it may be safe to make changes to the types, though care should be exercised. For example, types with private fields that do not otherwise document their alignment, layout, or size guarantees cannot be relied upon by external crates since the public API does not fully define the alignment, layout, or size of the type.
 
-A common example where a type with *private* fields is well-defined is a type with a single private field with a generic type, using `repr(transparent)`, and the prose of the documentation discusses that it is transparent to the generic type. For example, see [`UnsafeCell`](https://doc.rust-lang.org/1.100.0/std/cell/struct.UnsafeCell.html#memory-layout).
+A common example where a type with *private* fields is well-defined is a type with a single private field with a generic type, using `repr(transparent)`, and the prose of the documentation discusses that it is transparent to the generic type. For example, see [`UnsafeCell`](../../std/cell/struct.UnsafeCell.html#memory-layout).
 
 Some examples of breaking changes are:
 
@@ -279,7 +279,7 @@ fn main() {
 
 #### Minor: Adding `repr(C)` to a default representation
 
-It is safe to add `repr(C)` to a struct, union, or enum with [the default representation](https://doc.rust-lang.org/1.100.0/reference/type-layout.html#the-default-representation). This is safe because users should not make assumptions about the alignment, layout, or size of types with the default representation.
+It is safe to add `repr(C)` to a struct, union, or enum with [the default representation](../../../rust-reference/chapters/type-layout.md#the-default-representation). This is safe because users should not make assumptions about the alignment, layout, or size of types with the default representation.
 
 ``` rust
 // MINOR CHANGE
@@ -308,7 +308,7 @@ fn main() {
 
 #### Minor: Adding `repr(<int>)` to an enum
 
-It is safe to add `repr(<int>)` [primitive representation](https://doc.rust-lang.org/1.100.0/reference/type-layout.html#primitive-representations) to an enum with [the default representation](https://doc.rust-lang.org/1.100.0/reference/type-layout.html#the-default-representation). This is safe because users should not make assumptions about the alignment, layout, or size of an enum with the default representation.
+It is safe to add `repr(<int>)` [primitive representation](../../../rust-reference/chapters/type-layout.md#primitive-representations) to an enum with [the default representation](../../../rust-reference/chapters/type-layout.md#the-default-representation). This is safe because users should not make assumptions about the alignment, layout, or size of an enum with the default representation.
 
 ``` rust
 // MINOR CHANGE
@@ -339,7 +339,7 @@ fn main() {
 
 #### Minor: Adding `repr(transparent)` to a default representation struct or enum
 
-It is safe to add `repr(transparent)` to a struct or enum with [the default representation](https://doc.rust-lang.org/1.100.0/reference/type-layout.html#the-default-representation). This is safe because users should not make assumptions about the alignment, layout, or size of a struct or enum with the default representation.
+It is safe to add `repr(transparent)` to a struct or enum with [the default representation](../../../rust-reference/chapters/type-layout.md#the-default-representation). This is safe because users should not make assumptions about the alignment, layout, or size of a struct or enum with the default representation.
 
 ``` rust
 // MINOR CHANGE
@@ -458,7 +458,7 @@ fn main() {
 
 It is a breaking change to remove `repr(packed)` from a struct or union. This may change the alignment or layout that extern crates are relying on.
 
-If any fields are public, then removing `repr(packed)` may change the way disjoint closure captures work. In some cases, this can cause code to break, similar to those outlined in the [edition guide](https://doc.rust-lang.org/1.100.0/edition-guide/rust-2021/disjoint-capture-in-closures.html).
+If any fields are public, then removing `repr(packed)` may change the way disjoint closure captures work. In some cases, this can cause code to break, similar to those outlined in the [edition guide](../../edition-guide/rust-2021/disjoint-capture-in-closures.html).
 
 ``` rust
 // MAJOR CHANGE
@@ -753,7 +753,7 @@ mod cdep {
 
 #### Major: Removing `repr(<int>)` from an enum
 
-It is a breaking change to remove `repr(<int>)` from an enum. External crates may be assuming that the discriminant is a specific size. For example, [`std::mem::transmute`](https://doc.rust-lang.org/1.100.0/std/mem/fn.transmute.html) of an enum may fail.
+It is a breaking change to remove `repr(<int>)` from an enum. External crates may be assuming that the discriminant is a specific size. For example, [`std::mem::transmute`](../../std/mem/fn.transmute.html) of an enum may fail.
 
 ``` rust
 // MAJOR CHANGE
@@ -787,7 +787,7 @@ fn main() {
 
 #### Major: Changing the primitive representation of a `repr(<int>)` enum
 
-It is a breaking change to change the primitive representation of a `repr(<int>)` enum. External crates may be assuming that the discriminant is a specific size. For example, [`std::mem::transmute`](https://doc.rust-lang.org/1.100.0/std/mem/fn.transmute.html) of an enum may fail.
+It is a breaking change to change the primitive representation of a `repr(<int>)` enum. External crates may be assuming that the discriminant is a specific size. For example, [`std::mem::transmute`](../../std/mem/fn.transmute.html) of an enum may fail.
 
 ``` rust
 // MAJOR CHANGE
@@ -850,7 +850,7 @@ fn main() {}
 
 ### Major: adding a private struct field when all current fields are public
 
-When a private field is added to a struct that previously had all public fields, this will break any code that attempts to construct it with a [struct literal](https://doc.rust-lang.org/1.100.0/reference/expressions/struct-expr.html).
+When a private field is added to a struct that previously had all public fields, this will break any code that attempts to construct it with a [struct literal](../../../rust-reference/chapters/expressions/struct-expr.md).
 
 ``` rust
 // MAJOR CHANGE
@@ -878,11 +878,11 @@ fn main() {
 Mitigation strategies:
 
 - Do not add new fields to all-public field structs.
-- Mark structs as [`#[non_exhaustive]`](https://doc.rust-lang.org/1.100.0/reference/attributes/type_system.html#the-non_exhaustive-attribute) when first introducing a struct to prevent users from using struct literal syntax, and instead provide a constructor method and/or [Default](https://doc.rust-lang.org/1.100.0/std/default/trait.Default.html) implementation.
+- Mark structs as [`#[non_exhaustive]`](../../../rust-reference/chapters/attributes/type_system.md#the-non_exhaustive-attribute) when first introducing a struct to prevent users from using struct literal syntax, and instead provide a constructor method and/or [Default](../../std/default/trait.Default.html) implementation.
 
 ### Major: adding a public field when no private field exists
 
-When a public field is added to a struct that has all public fields, this will break any code that attempts to construct it with a [struct literal](https://doc.rust-lang.org/1.100.0/reference/expressions/struct-expr.html).
+When a public field is added to a struct that has all public fields, this will break any code that attempts to construct it with a [struct literal](../../../rust-reference/chapters/expressions/struct-expr.md).
 
 ``` rust
 // MAJOR CHANGE
@@ -910,7 +910,7 @@ fn main() {
 Mitigation strategies:
 
 - Do not add new fields to all-public field structs.
-- Mark structs as [`#[non_exhaustive]`](https://doc.rust-lang.org/1.100.0/reference/attributes/type_system.html#the-non_exhaustive-attribute) when first introducing a struct to prevent users from using struct literal syntax, and instead provide a constructor method and/or [Default](https://doc.rust-lang.org/1.100.0/std/default/trait.Default.html) implementation.
+- Mark structs as [`#[non_exhaustive]`](../../../rust-reference/chapters/attributes/type_system.md#the-non_exhaustive-attribute) when first introducing a struct to prevent users from using struct literal syntax, and instead provide a constructor method and/or [Default](../../std/default/trait.Default.html) implementation.
 
 ### Minor: adding or removing private fields when at least one already exists
 
@@ -941,7 +941,7 @@ fn main() {
 }
 ```
 
-This is safe because existing code cannot use a [struct literal](https://doc.rust-lang.org/1.100.0/reference/expressions/struct-expr.html) to construct it, nor exhaustively match its contents.
+This is safe because existing code cannot use a [struct literal](../../../rust-reference/chapters/expressions/struct-expr.md) to construct it, nor exhaustively match its contents.
 
 Note that for tuple structs, this is a **major change** if the tuple contains public fields, and the addition or removal of a private field changes the index of any public field.
 
@@ -993,11 +993,11 @@ fn main() {
 }
 ```
 
-This is safe because existing code cannot use a [struct literal](https://doc.rust-lang.org/1.100.0/reference/expressions/struct-expr.html) to construct it, nor match its contents.
+This is safe because existing code cannot use a [struct literal](../../../rust-reference/chapters/expressions/struct-expr.md) to construct it, nor match its contents.
 
 ### Major: adding new enum variants (without `non_exhaustive`)
 
-It is a breaking change to add a new enum variant if the enum does not use the [`#[non_exhaustive]`](https://doc.rust-lang.org/1.100.0/reference/attributes/type_system.html#the-non_exhaustive-attribute) attribute.
+It is a breaking change to add a new enum variant if the enum does not use the [`#[non_exhaustive]`](../../../rust-reference/chapters/attributes/type_system.md#the-non_exhaustive-attribute) attribute.
 
 ``` rust
 // MAJOR CHANGE
@@ -1028,7 +1028,7 @@ fn main() {
 
 Mitigation strategies:
 
-- When introducing the enum, mark it as [`#[non_exhaustive]`](https://doc.rust-lang.org/1.100.0/reference/attributes/type_system.html#the-non_exhaustive-attribute) to force users to use [wildcard patterns](https://doc.rust-lang.org/1.100.0/reference/patterns.html#wildcard-pattern) to catch new variants.
+- When introducing the enum, mark it as [`#[non_exhaustive]`](../../../rust-reference/chapters/attributes/type_system.md#the-non_exhaustive-attribute) to force users to use [wildcard patterns](../../../rust-reference/chapters/patterns.md#wildcard-pattern) to catch new variants.
 
 ### Major: adding new fields to an enum variant
 
@@ -1062,7 +1062,7 @@ fn main() {
 
 Mitigation strategies:
 
-- When introducing the enum, mark the variant as [`non_exhaustive`](https://doc.rust-lang.org/1.100.0/reference/attributes/type_system.html#the-non_exhaustive-attribute) so that it cannot be constructed or matched without wildcards.
+- When introducing the enum, mark the variant as [`non_exhaustive`](../../../rust-reference/chapters/attributes/type_system.md#the-non_exhaustive-attribute) so that it cannot be constructed or matched without wildcards.
 
   ``` rust
   pub enum E {
@@ -1185,17 +1185,17 @@ fn main() {
 }
 ```
 
-Note that this ambiguity does *not* exist for name collisions on [inherent implementations](https://doc.rust-lang.org/1.100.0/reference/items/implementations.html#inherent-implementations), as they take priority over trait items.
+Note that this ambiguity does *not* exist for name collisions on [inherent implementations](../../../rust-reference/chapters/items/implementations.md#inherent-implementations), as they take priority over trait items.
 
 See [trait-object-safety](#trait-object-safety) for a special case to consider when adding trait items.
 
 Mitigation strategies:
 
-- Some projects may deem this acceptable breakage, particularly if the new item name is unlikely to collide with any existing code. Choose names carefully to help avoid these collisions. Additionally, it may be acceptable to require downstream users to add [disambiguation syntax](https://doc.rust-lang.org/1.100.0/reference/expressions/call-expr.html#disambiguating-function-calls) to select the correct function when updating the dependency.
+- Some projects may deem this acceptable breakage, particularly if the new item name is unlikely to collide with any existing code. Choose names carefully to help avoid these collisions. Additionally, it may be acceptable to require downstream users to add [disambiguation syntax](../../../rust-reference/chapters/expressions/call-expr.md#disambiguating-function-calls) to select the correct function when updating the dependency.
 
 ### Major: adding a trait item that makes the trait non-object safe
 
-It is a breaking change to add a trait item that changes the trait to not be [object safe](https://doc.rust-lang.org/1.100.0/reference/items/traits.html#object-safety).
+It is a breaking change to add a trait item that changes the trait to not be [object safe](../../../rust-reference/chapters/items/traits.md#object-safety).
 
 ``` rust
 // MAJOR CHANGE
@@ -1314,7 +1314,7 @@ Note that if the signatures match, there would not be a compile-time error, but 
 
 Mitigation strategies:
 
-- Some projects may deem this acceptable breakage, particularly if the new item name is unlikely to collide with any existing code. Choose names carefully to help avoid these collisions. Additionally, it may be acceptable to require downstream users to add [disambiguation syntax](https://doc.rust-lang.org/1.100.0/reference/expressions/call-expr.html#disambiguating-function-calls) to select the correct function when updating the dependency.
+- Some projects may deem this acceptable breakage, particularly if the new item name is unlikely to collide with any existing code. Choose names carefully to help avoid these collisions. Additionally, it may be acceptable to require downstream users to add [disambiguation syntax](../../../rust-reference/chapters/expressions/call-expr.md#disambiguating-function-calls) to select the correct function when updating the dependency.
 
 ### Major: tightening generic bounds
 
@@ -1476,7 +1476,7 @@ fn main() {
 
 ### Major: capturing more generic parameters in RPIT
 
-It is a breaking change to capture additional generic parameters in an [RPIT](https://doc.rust-lang.org/1.100.0/reference/types/impl-trait.html#abstract-return-types) (return-position impl trait).
+It is a breaking change to capture additional generic parameters in an [RPIT](../../../rust-reference/chapters/types/impl-trait.md#abstract-return-types) (return-position impl trait).
 
 ``` rust
 // MAJOR CHANGE
@@ -1507,7 +1507,7 @@ Adding generic parameters to an RPIT places additional constraints on how the re
 
 Note that there are implicit captures when the `use<>` syntax is not specified. In Rust 2021 and earlier editions, the lifetime parameters are only captured if they appear syntactically within a bound in the RPIT type signature. Starting in Rust 2024, all lifetime parameters are unconditionally captured. This means that starting in Rust 2024, the default is maximally compatible, requiring you to be explicit when you want to capture less, which is a SemVer commitment.
 
-See the [edition guide](https://doc.rust-lang.org/1.100.0/edition-guide/rust-2024/rpit-lifetime-capture.html) and the [reference](https://doc.rust-lang.org/1.100.0/reference/types/impl-trait.html#capturing) for more information on RPIT capturing.
+See the [edition guide](../../edition-guide/rust-2024/rpit-lifetime-capture.html) and the [reference](../../../rust-reference/chapters/types/impl-trait.md#capturing) for more information on RPIT capturing.
 
 It is a minor change to capture fewer generic parameters in an RPIT.
 
@@ -1539,7 +1539,7 @@ fn main() {
 
 Mitigating strategies:
 
-- Introduce a new function with the new signature and possibly [deprecate](https://doc.rust-lang.org/1.100.0/reference/attributes/diagnostics.html#the-deprecated-attribute) the old one.
+- Introduce a new function with the new signature and possibly [deprecate](../../../rust-reference/chapters/attributes/diagnostics.md#the-deprecated-attribute) the old one.
 - Introduce functions that take a struct argument, where the struct is built with the builder pattern. This allows new fields to be added to the struct in the future.
 
 ### Possibly-breaking: introducing a new function type parameter
@@ -1686,7 +1686,7 @@ fn main() {
 
 A previously `unsafe` function can be made safe without breaking code.
 
-Note however that it may cause the [`unused_unsafe`](https://doc.rust-lang.org/1.100.0/rustc/lints/listing/warn-by-default.html#unused-unsafe) lint to trigger as in the example below, which will cause local crates that have specified `#![deny(warnings)]` to stop compiling. Per [introducing new lints](#new-lints), it is allowed for updates to introduce new warnings.
+Note however that it may cause the [`unused_unsafe`](../../rustc/lints/listing/warn-by-default.html#unused-unsafe) lint to trigger as in the example below, which will cause local crates that have specified `#![deny(warnings)]` to stop compiling. Per [introducing new lints](#new-lints), it is allowed for updates to introduce new warnings.
 
 Going the other way (making a safe function `unsafe`) is a breaking change.
 
@@ -1719,7 +1719,7 @@ Making a previously `unsafe` associated function or method on structs / enums sa
 
 ### Major: switching from `no_std` support to requiring `std`
 
-If your library specifically supports a [`no_std`](https://doc.rust-lang.org/1.100.0/reference/names/preludes.html#the-no_std-attribute) environment, it is a breaking change to make a new release that requires `std`.
+If your library specifically supports a [`no_std`](../../../rust-reference/chapters/names/preludes.md#the-no_std-attribute) environment, it is a breaking change to make a new release that requires `std`.
 
 ``` rust
 // MAJOR CHANGE
@@ -1752,13 +1752,13 @@ Mitigation strategies:
 
 ### Major: adding `non_exhaustive` to an existing enum, variant, or struct with no private fields
 
-Making items [`#[non_exhaustive]`](https://doc.rust-lang.org/1.100.0/reference/attributes/type_system.html#the-non_exhaustive-attribute) changes how they may be used outside the crate where they are defined:
+Making items [`#[non_exhaustive]`](../../../rust-reference/chapters/attributes/type_system.md#the-non_exhaustive-attribute) changes how they may be used outside the crate where they are defined:
 
-- Non-exhaustive structs and enum variants cannot be constructed using [struct literal](https://doc.rust-lang.org/1.100.0/reference/expressions/struct-expr.html) syntax, including [functional update syntax](https://doc.rust-lang.org/1.100.0/reference/expressions/struct-expr.html#functional-update-syntax).
+- Non-exhaustive structs and enum variants cannot be constructed using [struct literal](../../../rust-reference/chapters/expressions/struct-expr.md) syntax, including [functional update syntax](../../../rust-reference/chapters/expressions/struct-expr.md#functional-update-syntax).
 - Pattern matching on non-exhaustive structs requires `..` and matching on enums does not count towards exhaustiveness.
 - Casting enum variants to their discriminant with `as` is not allowed.
 
-Structs with private fields cannot be constructed using [struct literal](https://doc.rust-lang.org/1.100.0/reference/expressions/struct-expr.html) syntax regardless of whether [`#[non_exhaustive]`](https://doc.rust-lang.org/1.100.0/reference/attributes/type_system.html#the-non_exhaustive-attribute) is used. Adding [`#[non_exhaustive]`](https://doc.rust-lang.org/1.100.0/reference/attributes/type_system.html#the-non_exhaustive-attribute) to such a struct is not a breaking change.
+Structs with private fields cannot be constructed using [struct literal](../../../rust-reference/chapters/expressions/struct-expr.md) syntax regardless of whether [`#[non_exhaustive]`](../../../rust-reference/chapters/attributes/type_system.md#the-non_exhaustive-attribute) is used. Adding [`#[non_exhaustive]`](../../../rust-reference/chapters/attributes/type_system.md#the-non_exhaustive-attribute) to such a struct is not a breaking change.
 
 ``` rust
 // MAJOR CHANGE
@@ -1823,7 +1823,7 @@ fn main() {
 
 Mitigation strategies:
 
-- Mark structs, enums, and enum variants as [`#[non_exhaustive]`](https://doc.rust-lang.org/1.100.0/reference/attributes/type_system.html#the-non_exhaustive-attribute) when first introducing them, rather than adding [`#[non_exhaustive]`](https://doc.rust-lang.org/1.100.0/reference/attributes/type_system.html#the-non_exhaustive-attribute) later on.
+- Mark structs, enums, and enum variants as [`#[non_exhaustive]`](../../../rust-reference/chapters/attributes/type_system.md#the-non_exhaustive-attribute) when first introducing them, rather than adding [`#[non_exhaustive]`](../../../rust-reference/chapters/attributes/type_system.md#the-non_exhaustive-attribute) later on.
 
 ## Tooling and environment compatibility
 
@@ -1881,13 +1881,13 @@ Beware that it may be possible for this to technically cause a project to fail i
 
 The following lints are examples of those that may be introduced when updating a dependency:
 
-- [`deprecated`](https://doc.rust-lang.org/1.100.0/rustc/lints/listing/warn-by-default.html#deprecated) — Introduced when a dependency adds the [`#[deprecated]` attribute](https://doc.rust-lang.org/1.100.0/reference/attributes/diagnostics.html#the-deprecated-attribute) to an item you are using.
-- [`unused_must_use`](https://doc.rust-lang.org/1.100.0/rustc/lints/listing/warn-by-default.html#unused-must-use) — Introduced when a dependency adds the [`#[must_use]` attribute](https://doc.rust-lang.org/1.100.0/reference/attributes/diagnostics.html#the-must_use-attribute) to an item where you are not consuming the result.
-- [`unused_unsafe`](https://doc.rust-lang.org/1.100.0/rustc/lints/listing/warn-by-default.html#unused-unsafe) — Introduced when a dependency *removes* the `unsafe` qualifier from a function, and that is the only unsafe function called in an unsafe block.
+- [`deprecated`](../../rustc/lints/listing/warn-by-default.html#deprecated) — Introduced when a dependency adds the [`#[deprecated]` attribute](../../../rust-reference/chapters/attributes/diagnostics.md#the-deprecated-attribute) to an item you are using.
+- [`unused_must_use`](../../rustc/lints/listing/warn-by-default.html#unused-must-use) — Introduced when a dependency adds the [`#[must_use]` attribute](../../../rust-reference/chapters/attributes/diagnostics.md#the-must_use-attribute) to an item where you are not consuming the result.
+- [`unused_unsafe`](../../rustc/lints/listing/warn-by-default.html#unused-unsafe) — Introduced when a dependency *removes* the `unsafe` qualifier from a function, and that is the only unsafe function called in an unsafe block.
 
 Additionally, updating `rustc` to a new version may introduce new lints.
 
-Transitive dependencies which introduce new lints should not usually cause a failure because Cargo uses [`--cap-lints`](https://doc.rust-lang.org/1.100.0/rustc/lints/levels.html#capping-lints) to suppress all lints in dependencies.
+Transitive dependencies which introduce new lints should not usually cause a failure because Cargo uses [`--cap-lints`](../../rustc/lints/levels.html#capping-lints) to suppress all lints in dependencies.
 
 Mitigating strategies:
 

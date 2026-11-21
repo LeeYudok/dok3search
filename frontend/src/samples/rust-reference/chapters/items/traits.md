@@ -132,7 +132,7 @@ A dyn-compatible trait can be the base trait of a [trait object](../types/trait-
 
 [items.traits.dyn-compatible.async-traits](#r-items.traits.dyn-compatible.async-traits)
 
-- The [`AsyncFn`](https://doc.rust-lang.org/1.100.0/core/ops/async_function/trait.AsyncFn.html), [`AsyncFnMut`](https://doc.rust-lang.org/1.100.0/core/ops/async_function/trait.AsyncFnMut.html), and [`AsyncFnOnce`](https://doc.rust-lang.org/1.100.0/core/ops/async_function/trait.AsyncFnOnce.html) traits are not dyn-compatible.
+- The [`AsyncFn`](../../core/ops/async_function/trait.AsyncFn.html), [`AsyncFnMut`](../../core/ops/async_function/trait.AsyncFnMut.html), and [`AsyncFnOnce`](../../core/ops/async_function/trait.AsyncFnOnce.html) traits are not dyn-compatible.
 
 > ![](../../assets/inline/traits-2.svg)Note
 >

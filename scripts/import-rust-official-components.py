@@ -311,11 +311,17 @@ def convert_component(component_name, docs_root, output_root, license_root, vers
                 if not parts.scheme and not parts.netloc and parts.path.endswith('.html'):
                     cross_component = posixpath.normpath(posixpath.join(component_name, posixpath.dirname(source_page), unquote(parts.path)))
                     if (docs_root / cross_component).is_file():
-                        version_number = version.split()[0]
-                        url = f'https://doc.rust-lang.org/{version_number}/{cross_component}'
-                        if parts.fragment:
-                            url += '#' + parts.fragment
-                        return f'{attribute}={quote}{url}{quote}'
+                        cross_path = PurePosixPath(cross_component)
+                        target_component = cross_path.parts[0]
+                        if target_component in COMPONENTS:
+                            target_page = PurePosixPath(*cross_path.parts[1:]).with_suffix('.md')
+                            target_markdown = PurePosixPath('chapters') / target_page
+                            target_virtual = PurePosixPath(COMPONENTS[target_component][0]) / target_markdown
+                            current_virtual = PurePosixPath(folder) / PurePosixPath(markdown_page)
+                            relative = posixpath.relpath(str(target_virtual), start=posixpath.dirname(str(current_virtual)))
+                            if parts.fragment:
+                                relative += '#' + parts.fragment
+                            return f'{attribute}={quote}{relative}{quote}'
                 return match.group(0)
             target_page, fragment = target
             markdown_target = page_outputs.get(target_page)

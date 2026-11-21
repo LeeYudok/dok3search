@@ -22,7 +22,7 @@ The following is a list of settings that can be controlled in a profile.
 
 ### opt-level
 
-The `opt-level` setting controls the [`-C opt-level` flag](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#opt-level) which controls the level of optimization. Higher optimization levels may produce faster runtime code at the expense of longer compiler times. Higher levels may also change and rearrange the compiled code which may make it harder to use with a debugger.
+The `opt-level` setting controls the [`-C opt-level` flag](../../rustc/codegen-options/index.html#opt-level) which controls the level of optimization. Higher optimization levels may produce faster runtime code at the expense of longer compiler times. Higher levels may also change and rearrange the compiled code which may make it harder to use with a debugger.
 
 The valid options are:
 
@@ -35,11 +35,11 @@ The valid options are:
 
 It is recommended to experiment with different levels to find the right balance for your project. There may be surprising results, such as level `3` being slower than `2`, or the `"s"` and `"z"` levels not being necessarily smaller. You may also want to reevaluate your settings over time as newer versions of `rustc` change optimization behavior.
 
-See also [Profile Guided Optimization](https://doc.rust-lang.org/1.100.0/rustc/profile-guided-optimization.html) for more advanced optimization techniques.
+See also [Profile Guided Optimization](../../rustc/profile-guided-optimization.html) for more advanced optimization techniques.
 
 ### debug
 
-The `debug` setting controls the [`-C debuginfo` flag](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#debuginfo) which controls the amount of debug information included in the compiled binary.
+The `debug` setting controls the [`-C debuginfo` flag](../../rustc/codegen-options/index.html#debuginfo) which controls the amount of debug information included in the compiled binary.
 
 The valid options are:
 
@@ -49,7 +49,7 @@ The valid options are:
 - `1` or `"limited"`: debug info without type or variable-level information. Generates more detailed module-level info than `line-tables-only`.
 - `2`, `true`, or `"full"`: full debug info, default for [`dev`](#dev)
 
-For more information on what each option does see `rustc`’s docs on [debuginfo](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#debuginfo).
+For more information on what each option does see `rustc`’s docs on [debuginfo](../../rustc/codegen-options/index.html#debuginfo).
 
 You may wish to also configure the [`split-debuginfo`](#split-debuginfo) option depending on your needs as well.
 
@@ -57,15 +57,15 @@ You may wish to also configure the [`split-debuginfo`](#split-debuginfo) option 
 
 ### split-debuginfo
 
-The `split-debuginfo` setting controls the [`-C split-debuginfo` flag](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#split-debuginfo) which controls whether debug information, if generated, is either placed in the executable itself or adjacent to it.
+The `split-debuginfo` setting controls the [`-C split-debuginfo` flag](../../rustc/codegen-options/index.html#split-debuginfo) which controls whether debug information, if generated, is either placed in the executable itself or adjacent to it.
 
-This option is a string and acceptable values are the same as those the [compiler accepts](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#split-debuginfo). The default value for this option is `unpacked` on macOS for profiles that have debug information otherwise enabled. Otherwise the default for this option is [documented with rustc](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#split-debuginfo) and is platform-specific. Some options are only available on the [nightly channel](https://doc.rust-lang.org/1.100.0/book/appendix-07-nightly-rust.html). The Cargo default may change in the future once more testing has been performed, and support for DWARF is stabilized.
+This option is a string and acceptable values are the same as those the [compiler accepts](../../rustc/codegen-options/index.html#split-debuginfo). The default value for this option is `unpacked` on macOS for profiles that have debug information otherwise enabled. Otherwise the default for this option is [documented with rustc](../../rustc/codegen-options/index.html#split-debuginfo) and is platform-specific. Some options are only available on the [nightly channel](../../book/appendix-07-nightly-rust.html). The Cargo default may change in the future once more testing has been performed, and support for DWARF is stabilized.
 
 Be aware that Cargo and rustc have different defaults for this option. This option exists to allow Cargo to experiment on different combinations of flags thus providing better debugging and developer experience.
 
 ### strip
 
-The `strip` option controls the [`-C strip` flag](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#strip), which directs rustc to strip either symbols or debuginfo from a binary. This can be enabled like so:
+The `strip` option controls the [`-C strip` flag](../../rustc/codegen-options/index.html#strip), which directs rustc to strip either symbols or debuginfo from a binary. This can be enabled like so:
 
 ``` toml
 [package]
@@ -81,7 +81,7 @@ You can also configure this option with the boolean values `true` or `false`. `s
 
 ### debug-assertions
 
-The `debug-assertions` setting controls the [`-C debug-assertions` flag](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#debug-assertions) which turns `cfg(debug_assertions)` [conditional compilation](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html#debug_assertions) on or off. Debug assertions are intended to include runtime validation which is only available in debug/development builds. These may be things that are too expensive or otherwise undesirable in a release build. Debug assertions enables the [`debug_assert!` macro](https://doc.rust-lang.org/1.100.0/std/macro.debug_assert.html) in the standard library.
+The `debug-assertions` setting controls the [`-C debug-assertions` flag](../../rustc/codegen-options/index.html#debug-assertions) which turns `cfg(debug_assertions)` [conditional compilation](../../../rust-reference/chapters/conditional-compilation.md#debug_assertions) on or off. Debug assertions are intended to include runtime validation which is only available in debug/development builds. These may be things that are too expensive or otherwise undesirable in a release build. Debug assertions enables the [`debug_assert!` macro](../../std/macro.debug_assert.html) in the standard library.
 
 The valid options are:
 
@@ -90,7 +90,7 @@ The valid options are:
 
 ### overflow-checks
 
-The `overflow-checks` setting controls the [`-C overflow-checks` flag](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#overflow-checks) which controls the behavior of [runtime integer overflow](https://doc.rust-lang.org/1.100.0/reference/expressions/operator-expr.html#overflow). When overflow-checks are enabled, a panic will occur on overflow.
+The `overflow-checks` setting controls the [`-C overflow-checks` flag](../../rustc/codegen-options/index.html#overflow-checks) which controls the behavior of [runtime integer overflow](../../../rust-reference/chapters/expressions/operator-expr.md#overflow). When overflow-checks are enabled, a panic will occur on overflow.
 
 The valid options are:
 
@@ -99,7 +99,7 @@ The valid options are:
 
 ### lto
 
-The `lto` setting controls `rustc`’s [`-C lto`](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#lto), [`-C linker-plugin-lto`](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#linker-plugin-lto), and [`-C embed-bitcode`](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#embed-bitcode) options, which control LLVM’s [link time optimizations](https://llvm.org/docs/LinkTimeOptimization.html). LTO can produce better optimized code, using whole-program analysis, at the cost of longer linking time.
+The `lto` setting controls `rustc`’s [`-C lto`](../../rustc/codegen-options/index.html#lto), [`-C linker-plugin-lto`](../../rustc/codegen-options/index.html#linker-plugin-lto), and [`-C embed-bitcode`](../../rustc/codegen-options/index.html#embed-bitcode) options, which control LLVM’s [link time optimizations](https://llvm.org/docs/LinkTimeOptimization.html). LTO can produce better optimized code, using whole-program analysis, at the cost of longer linking time.
 
 The valid options are:
 
@@ -108,11 +108,11 @@ The valid options are:
 - `false`: Performs “thin local LTO” which performs “thin” LTO on the local crate only across its [codegen units](#codegen-units). No LTO is performed if codegen units is 1 or [opt-level](#opt-level) is 0.
 - `"off"`: Disables LTO.
 
-See the [linker-plugin-lto chapter](https://doc.rust-lang.org/1.100.0/rustc/linker-plugin-lto.html) if you are interested in cross-language LTO. This is not yet supported natively in Cargo, but can be performed via `RUSTFLAGS`.
+See the [linker-plugin-lto chapter](../../rustc/linker-plugin-lto.html) if you are interested in cross-language LTO. This is not yet supported natively in Cargo, but can be performed via `RUSTFLAGS`.
 
 ### panic
 
-The `panic` setting controls the [`-C panic` flag](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#panic) which controls which panic strategy to use.
+The `panic` setting controls the [`-C panic` flag](../../rustc/codegen-options/index.html#panic) which controls which panic strategy to use.
 
 The valid options are:
 
@@ -127,7 +127,7 @@ Additionally, when using the `abort` strategy and building a test, all of the de
 
 ### incremental
 
-The `incremental` setting controls the [`-C incremental` flag](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#incremental) which controls whether or not incremental compilation is enabled. Incremental compilation causes `rustc` to save additional information to disk which will be reused when recompiling the crate, improving re-compile times. The additional information is stored in the `target` directory.
+The `incremental` setting controls the [`-C incremental` flag](../../rustc/codegen-options/index.html#incremental) which controls whether or not incremental compilation is enabled. Incremental compilation causes `rustc` to save additional information to disk which will be reused when recompiling the crate, improving re-compile times. The additional information is stored in the `target` directory.
 
 The valid options are:
 
@@ -140,7 +140,7 @@ The incremental value can be overridden globally with the `CARGO_INCREMENTAL` [e
 
 ### codegen-units
 
-The `codegen-units` setting controls the [`-C codegen-units` flag](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#codegen-units) which controls how many “code generation units” a crate will be split into. More code generation units allows more of a crate to be processed in parallel possibly reducing compile time, but may produce slower code.
+The `codegen-units` setting controls the [`-C codegen-units` flag](../../rustc/codegen-options/index.html#codegen-units) which controls how many “code generation units” a crate will be split into. More code generation units allows more of a crate to be processed in parallel possibly reducing compile time, but may produce slower code.
 
 This option takes an integer greater than 0.
 
@@ -148,7 +148,7 @@ The default is 256 for [incremental](#incremental) builds, and 16 for non-increm
 
 ### rpath
 
-The `rpath` setting controls the [`-C rpath` flag](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#rpath) which controls whether or not [`rpath`](https://en.wikipedia.org/wiki/Rpath) is enabled.
+The `rpath` setting controls the [`-C rpath` flag](../../rustc/codegen-options/index.html#rpath) which controls whether or not [`rpath`](https://en.wikipedia.org/wiki/Rpath) is enabled.
 
 ## Default profiles
 

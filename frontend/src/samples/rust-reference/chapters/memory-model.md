@@ -28,7 +28,7 @@ Each byte may have one of the following values:
 
 [memory.bytes.init](#r-memory.bytes.init)
 
-- An initialized byte containing a `u8` value and optional [provenance](https://doc.rust-lang.org/1.100.0/core/ptr/index.html#provenance),
+- An initialized byte containing a `u8` value and optional [provenance](../core/ptr/index.html#provenance),
 
 [memory.bytes.uninit](#r-memory.bytes.uninit)
 

@@ -12,7 +12,7 @@ When an [initialized](glossary.md#initialized) [variable](variables.md) or [temp
 
 The destructor of a type `T` consists of:
 
-1.  If `T: Drop`, calling [`<T as core::ops::Drop>::drop`](https://doc.rust-lang.org/1.100.0/core/ops/drop/trait.Drop.html#method.drop)
+1.  If `T: Drop`, calling [`<T as core::ops::Drop>::drop`](../core/ops/drop/trait.Drop.html#method.drop)
 2.  Recursively running the destructor of all of its fields.
     - The fields of a [struct](types/struct.md) are dropped in declaration order.
     - The fields of the active [enum variant](types/enum.md) are dropped in declaration order.
@@ -24,7 +24,7 @@ The destructor of a type `T` consists of:
 
 [destructors.drop_in_place](#r-destructors.drop_in_place)
 
-If a destructor must be run manually, such as when implementing your own smart pointer, [`core::ptr::drop_in_place`](https://doc.rust-lang.org/1.100.0/core/ptr/fn.drop_in_place.html) can be used.
+If a destructor must be run manually, such as when implementing your own smart pointer, [`core::ptr::drop_in_place`](../core/ptr/fn.drop_in_place.html) can be used.
 
 Some examples:
 
@@ -772,11 +772,11 @@ Tests Tests with this rule:
 
 ### Manually suppressing destructors
 
-[`core::mem::forget`](https://doc.rust-lang.org/1.100.0/core/mem/fn.forget.html) can be used to prevent the destructor of a variable from being run, and [`core::mem::ManuallyDrop`](https://doc.rust-lang.org/1.100.0/core/mem/manually_drop/struct.ManuallyDrop.html) provides a wrapper to prevent a variable or field from being dropped automatically.
+[`core::mem::forget`](../core/mem/fn.forget.html) can be used to prevent the destructor of a variable from being run, and [`core::mem::ManuallyDrop`](../core/mem/manually_drop/struct.ManuallyDrop.html) provides a wrapper to prevent a variable or field from being dropped automatically.
 
 > ![](../assets/inline/destructors-6.svg)Note
 >
-> Preventing a destructor from being run via [`core::mem::forget`](https://doc.rust-lang.org/1.100.0/core/mem/fn.forget.html) or other means is safe even if it has a type that isn’t `'static`. Besides the places where destructors are guaranteed to run as defined by this document, types may *not* safely rely on a destructor being run for soundness.
+> Preventing a destructor from being run via [`core::mem::forget`](../core/mem/fn.forget.html) or other means is safe even if it has a type that isn’t `'static`. Besides the places where destructors are guaranteed to run as defined by this document, types may *not* safely rely on a destructor being run for soundness.
 
 [destructors.process-termination](#r-destructors.process-termination)
 
@@ -784,6 +784,6 @@ Tests Tests with this rule:
 
 There are some ways to terminate the process without [unwinding](panic.md#unwinding), in which case destructors will not be run.
 
-The standard library provides [`std::process::exit`](https://doc.rust-lang.org/1.100.0/std/process/fn.exit.html) and [`std::process::abort`](https://doc.rust-lang.org/1.100.0/std/process/fn.abort.html) to do this explicitly. Additionally, if the [panic handler](panic.md#r-panic.panic_handler.std) is set to `abort`, panicking will always terminate the process without destructors being run.
+The standard library provides [`std::process::exit`](../std/process/fn.exit.html) and [`std::process::abort`](../std/process/fn.abort.html) to do this explicitly. Additionally, if the [panic handler](panic.md#r-panic.panic_handler.std) is set to `abort`, panicking will always terminate the process without destructors being run.
 
 There is one additional case to be aware of: when a panic reaches a [non-unwinding ABI boundary](items/functions.md#unwinding), either no destructors will run, or all destructors up until the ABI boundary will run.

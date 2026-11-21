@@ -89,7 +89,7 @@ Bounds that don’t use the item’s parameters or [higher-ranked lifetimes](#hi
 
 [bound.special](#r-bound.special)
 
-[`Copy`](https://doc.rust-lang.org/1.100.0/core/marker/trait.Copy.html), [`Clone`](https://doc.rust-lang.org/1.100.0/core/clone/trait.Clone.html), and [`Sized`](https://doc.rust-lang.org/1.100.0/core/marker/trait.Sized.html) bounds are also checked for certain generic types when using the item, even if the use does not provide a concrete type. It is an error to have `Copy` or `Clone` as a bound on a mutable reference, [trait object](types/trait-object.md), or [slice](types/slice.md). It is an error to have `Sized` as a bound on a trait object or slice.
+[`Copy`](../core/marker/trait.Copy.html), [`Clone`](../core/clone/trait.Clone.html), and [`Sized`](../core/marker/trait.Sized.html) bounds are also checked for certain generic types when using the item, even if the use does not provide a concrete type. It is an error to have `Copy` or `Clone` as a bound on a mutable reference, [trait object](types/trait-object.md), or [slice](types/slice.md). It is an error to have `Sized` as a bound on a trait object or slice.
 
 ``` playground
 #![allow(unused)]
@@ -115,7 +115,7 @@ Trait and lifetime bounds are also used to name [trait objects](types/trait-obje
 
 ## `?Sized`
 
-`?` is only used to relax the implicit [`Sized`](https://doc.rust-lang.org/1.100.0/core/marker/trait.Sized.html) trait bound for [type parameters](types/parameters.md) or [associated types](items/associated-items.md#associated-types). `?Sized` may not be used as a bound for other types.
+`?` is only used to relax the implicit [`Sized`](../core/marker/trait.Sized.html) trait bound for [type parameters](types/parameters.md) or [associated types](items/associated-items.md#associated-types). `?Sized` may not be used as a bound for other types.
 
 [bound.lifetime](#r-bound.lifetime)
 

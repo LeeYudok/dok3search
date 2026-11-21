@@ -12,7 +12,7 @@ The layout of a type is its size, alignment, and the relative offsets of its fie
 
 Type layout can be changed with each compilation. Instead of trying to document exactly what is done, we only document what is guaranteed today.
 
-Note that even types with the same layout can still differ in how they are passed across function boundaries. For function call ABI compatibility of types, see [here](https://doc.rust-lang.org/1.100.0/core/primitive.fn.html#abi-compatibility).
+Note that even types with the same layout can still differ in how they are passed across function boundaries. For function call ABI compatibility of types, see [here](../core/primitive.fn.html#abi-compatibility).
 
 [layout.properties](#r-layout.properties)
 
@@ -24,15 +24,15 @@ All values have an alignment and size.
 
 [layout.properties.align](#r-layout.properties.align)
 
-The *alignment* of a value specifies what addresses are valid to store the value at. A value of alignment `n` must only be stored at an address that is a multiple of n. For example, a value with an alignment of 2 must be stored at an even address, while a value with an alignment of 1 can be stored at any address. Alignment is measured in bytes, and must be at least 1, and always a power of 2. The alignment of a value can be checked with the [`align_of_val`](https://doc.rust-lang.org/1.100.0/core/mem/fn.align_of_val.html) function.
+The *alignment* of a value specifies what addresses are valid to store the value at. A value of alignment `n` must only be stored at an address that is a multiple of n. For example, a value with an alignment of 2 must be stored at an even address, while a value with an alignment of 1 can be stored at any address. Alignment is measured in bytes, and must be at least 1, and always a power of 2. The alignment of a value can be checked with the [`align_of_val`](../core/mem/fn.align_of_val.html) function.
 
 [layout.properties.size](#r-layout.properties.size)
 
-The *size* of a value is the offset in bytes between successive elements in an array with that item type including alignment padding. The size of a value is always a multiple of its alignment. Note that some types are [zero-sized](glossary.md#r-glossary.zst); 0 is considered a multiple of any alignment (for example, on some platforms, the type `[u16; 0]` has size 0 and alignment 2). The size of a value can be checked with the [`size_of_val`](https://doc.rust-lang.org/1.100.0/core/mem/fn.size_of_val.html) function.
+The *size* of a value is the offset in bytes between successive elements in an array with that item type including alignment padding. The size of a value is always a multiple of its alignment. Note that some types are [zero-sized](glossary.md#r-glossary.zst); 0 is considered a multiple of any alignment (for example, on some platforms, the type `[u16; 0]` has size 0 and alignment 2). The size of a value can be checked with the [`size_of_val`](../core/mem/fn.size_of_val.html) function.
 
 [layout.properties.sized](#r-layout.properties.sized)
 
-Types where all values have the same size and alignment, and both are known at compile time, implement the [`Sized`](https://doc.rust-lang.org/1.100.0/core/marker/trait.Sized.html) trait and can be checked with the [`size_of`](https://doc.rust-lang.org/1.100.0/core/mem/fn.size_of.html) and [`align_of`](https://doc.rust-lang.org/1.100.0/core/mem/fn.align_of.html) functions. Types that are not [`Sized`](https://doc.rust-lang.org/1.100.0/core/marker/trait.Sized.html) are known as [dynamically sized types](dynamically-sized-types.md). Since all values of a `Sized` type share the same size and alignment, we refer to those shared values as the size of the type and the alignment of the type respectively.
+Types where all values have the same size and alignment, and both are known at compile time, implement the [`Sized`](../core/marker/trait.Sized.html) trait and can be checked with the [`size_of`](../core/mem/fn.size_of.html) and [`align_of`](../core/mem/fn.align_of.html) functions. Types that are not [`Sized`](../core/marker/trait.Sized.html) are known as [dynamically sized types](dynamically-sized-types.md). Since all values of a `Sized` type share the same size and alignment, we refer to those shared values as the size of the type and the alignment of the type respectively.
 
 [layout.primitive](#r-layout.primitive)
 
@@ -417,7 +417,7 @@ assert_eq!(std::mem::size_of::<Demo>(), demo_layout.size);
 
 > ![](../assets/inline/type-layout-6.svg)Warning
 >
-> This mock implementation uses a naive algorithm that ignores overflow issues for the sake of clarity. To perform memory layout computations in actual code, use [`Layout`](https://doc.rust-lang.org/1.100.0/core/alloc/layout/struct.Layout.html).
+> This mock implementation uses a naive algorithm that ignores overflow issues for the sake of clarity. To perform memory layout computations in actual code, use [`Layout`](../core/alloc/layout/struct.Layout.html).
 
 > ![](../assets/inline/type-layout-7.svg)Note
 >

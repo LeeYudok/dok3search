@@ -25,9 +25,9 @@ If the function eventually returns, then the expression completes.
 
 For [non-function types](../types/function-item.md), the expression `f(...)` uses the method on one of the following traits based on the function operand:
 
-- [`Fn`](https://doc.rust-lang.org/1.100.0/core/ops/function/trait.Fn.html) or [`AsyncFn`](https://doc.rust-lang.org/1.100.0/core/ops/async_function/trait.AsyncFn.html) — shared reference.
-- [`FnMut`](https://doc.rust-lang.org/1.100.0/core/ops/function/trait.FnMut.html) or [`AsyncFnMut`](https://doc.rust-lang.org/1.100.0/core/ops/async_function/trait.AsyncFnMut.html) — mutable reference.
-- [`FnOnce`](https://doc.rust-lang.org/1.100.0/core/ops/function/trait.FnOnce.html) or [`AsyncFnOnce`](https://doc.rust-lang.org/1.100.0/core/ops/async_function/trait.AsyncFnOnce.html) — value.
+- [`Fn`](../../core/ops/function/trait.Fn.html) or [`AsyncFn`](../../core/ops/async_function/trait.AsyncFn.html) — shared reference.
+- [`FnMut`](../../core/ops/function/trait.FnMut.html) or [`AsyncFnMut`](../../core/ops/async_function/trait.AsyncFnMut.html) — mutable reference.
+- [`FnOnce`](../../core/ops/function/trait.FnOnce.html) or [`AsyncFnOnce`](../../core/ops/async_function/trait.AsyncFnOnce.html) — value.
 
 [expr.call.autoref-deref](#r-expr.call.autoref-deref)
 
@@ -66,7 +66,7 @@ Several situations often occur which result in ambiguities about the receiver or
 
 - Multiple in-scope traits define methods with the same name for the same types
 - Auto-`deref` is undesirable; for example, distinguishing between methods on a smart pointer itself and the pointer’s referent
-- Methods which take no arguments, like [`default()`](https://doc.rust-lang.org/1.100.0/core/default/trait.Default.html#tymethod.default), and return properties of a type, like [`size_of()`](https://doc.rust-lang.org/1.100.0/core/mem/fn.size_of.html)
+- Methods which take no arguments, like [`default()`](../../core/default/trait.Default.html#tymethod.default), and return properties of a type, like [`size_of()`](../../core/mem/fn.size_of.html)
 
 [expr.call.desugar.explicit-path](#r-expr.call.desugar.explicit-path)
 

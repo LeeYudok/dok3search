@@ -16,7 +16,7 @@ It is the programmer’s responsibility when writing `unsafe` code to ensure tha
 >
 > The following list is not exhaustive; it may grow or shrink. There is no formal model of Rust’s semantics for what is and is not allowed in unsafe code, so there may be more behavior considered unsafe. We also reserve the right to make some of the behavior in that list defined in the future. In other words, this list does not say that anything will *definitely* always be undefined in all future Rust versions (but we might make such commitments for some list items in the future).
 >
-> Please read the [Rustonomicon](https://doc.rust-lang.org/1.100.0/nomicon/index.html) before writing unsafe code.
+> Please read the [Rustonomicon](../nomicon/index.html) before writing unsafe code.
 
 [undefined.race](#r-undefined.race)
 
@@ -28,13 +28,13 @@ It is the programmer’s responsibility when writing `unsafe` code to ensure tha
 
 [undefined.place-projection](#r-undefined.place-projection)
 
-- Performing an offsetting place projection that violates the requirements of [in-bounds pointer arithmetic](https://doc.rust-lang.org/1.100.0/std/primitive.pointer.html#method.offset). An offsetting place projection is a [field expression](expressions/field-expr.md), a [tuple index expression](expressions/tuple-expr.md#tuple-indexing-expressions), or an [array/slice index expression](expressions/array-expr.md#array-and-slice-indexing-expressions).
+- Performing an offsetting place projection that violates the requirements of [in-bounds pointer arithmetic](../std/primitive.pointer.html#method.offset). An offsetting place projection is a [field expression](expressions/field-expr.md), a [tuple index expression](expressions/tuple-expr.md#tuple-indexing-expressions), or an [array/slice index expression](expressions/array-expr.md#array-and-slice-indexing-expressions).
 
 [undefined.alias](#r-undefined.alias)
 
 - Breaking the pointer aliasing rules. The exact aliasing rules are not determined yet, but here is an outline of the general principles:
 
-  - `&T` must point to memory that is not mutated while they are live (except for data inside an [`UnsafeCell<U>`](https://doc.rust-lang.org/1.100.0/core/cell/struct.UnsafeCell.html)).
+  - `&T` must point to memory that is not mutated while they are live (except for data inside an [`UnsafeCell<U>`](../core/cell/struct.UnsafeCell.html)).
   - `&mut T` must point to memory that is not read or written by any pointer not derived from the reference and that no other reference points to while they are live (with no exceptions).
   - `Box<T>` is treated similar to `&'static mut T` for the purpose of these rules.
 
@@ -45,13 +45,13 @@ It is the programmer’s responsibility when writing `unsafe` code to ensure tha
   - For references, the liveness duration is upper-bounded by the syntactic lifetime assigned by the borrow checker; it cannot be live any *longer* than that lifetime.
   - Each time a reference or box is dereferenced or reborrowed, it is considered live.
   - Each time a reference or box is passed to or returned from a function, it is considered live.
-  - When a reference (but not a `Box`!) is passed to a function, it is live at least as long as that function call, again except if the `&T` contains an [`UnsafeCell<U>`](https://doc.rust-lang.org/1.100.0/core/cell/struct.UnsafeCell.html).
+  - When a reference (but not a `Box`!) is passed to a function, it is live at least as long as that function call, again except if the `&T` contains an [`UnsafeCell<U>`](../core/cell/struct.UnsafeCell.html).
 
   All this also applies when values of these types are passed in a (nested) field of a compound type, but not behind pointer indirections.
 
 [undefined.immutable](#r-undefined.immutable)
 
-- Mutating immutable bytes. All bytes reachable through a [const-promoted](destructors.md#constant-promotion) expression are immutable, as well as bytes reachable through borrows in `static` and `const` initializers that have been [lifetime-extended](destructors.md#temporary-lifetime-extension) to `'static`. The bytes owned by an immutable binding or immutable `static` are immutable, unless those bytes are part of an [`UnsafeCell<U>`](https://doc.rust-lang.org/1.100.0/core/cell/struct.UnsafeCell.html).
+- Mutating immutable bytes. All bytes reachable through a [const-promoted](destructors.md#constant-promotion) expression are immutable, as well as bytes reachable through borrows in `static` and `const` initializers that have been [lifetime-extended](destructors.md#temporary-lifetime-extension) to `'static`. The bytes owned by an immutable binding or immutable `static` are immutable, unless those bytes are part of an [`UnsafeCell<U>`](../core/cell/struct.UnsafeCell.html).
 
   Moreover, the bytes [pointed to](#pointed-to-bytes) by a shared reference, including transitively through other references (both shared and mutable) and `Box`es, are immutable; transitivity includes those references stored in fields of compound types.
 
@@ -125,7 +125,7 @@ Taking a reference will lead to a compiler error in cases where the field type m
 
 [undefined.dangling.def](#r-undefined.dangling.def)
 
-A reference/pointer is “dangling” if not all of the bytes it [points to](#pointed-to-bytes) are part of the same live [allocation](https://doc.rust-lang.org/1.100.0/core/ptr/index.html#allocation) (so in particular they all have to be part of *some* allocation).
+A reference/pointer is “dangling” if not all of the bytes it [points to](#pointed-to-bytes) are part of the same live [allocation](../core/ptr/index.html#allocation) (so in particular they all have to be part of *some* allocation).
 
 > ![](../assets/inline/behavior-considered-undefined-3.svg)Note
 >
@@ -183,16 +183,16 @@ Whether a value is valid depends on the type:
 
 [undefined.validity.reference-box](#r-undefined.validity.reference-box)
 
-- A reference or [`Box<T>`](https://doc.rust-lang.org/1.100.0/alloc/boxed/struct.Box.html) must be aligned and non-null, it cannot be [dangling](#dangling-pointers), and it must point to a valid value (in case of dynamically sized types, using the actual dynamic type of the pointee as determined by the [metadata](dynamically-sized-types.md#r-dynamic-sized.pointer-types)). Note that the last point (about pointing to a valid value) remains a subject of some debate.
+- A reference or [`Box<T>`](../alloc/boxed/struct.Box.html) must be aligned and non-null, it cannot be [dangling](#dangling-pointers), and it must point to a valid value (in case of dynamically sized types, using the actual dynamic type of the pointee as determined by the [metadata](dynamically-sized-types.md#r-dynamic-sized.pointer-types)). Note that the last point (about pointing to a valid value) remains a subject of some debate.
 
 [undefined.validity.wide](#r-undefined.validity.wide)
 
-- The [metadata](dynamically-sized-types.md#r-dynamic-sized.pointer-types) of a wide reference, [`Box<T>`](https://doc.rust-lang.org/1.100.0/alloc/boxed/struct.Box.html), or raw pointer must match the type of the [unsized tail](dynamically-sized-types.md#r-dynamic-sized.tail):
+- The [metadata](dynamically-sized-types.md#r-dynamic-sized.pointer-types) of a wide reference, [`Box<T>`](../alloc/boxed/struct.Box.html), or raw pointer must match the type of the [unsized tail](dynamically-sized-types.md#r-dynamic-sized.tail):
 
   - `dyn Trait` metadata must be a pointer to a compiler-generated vtable for `Trait`. (For raw pointers, this requirement remains a subject of some debate.)
   - Slice (`[T]`) and `str` metadata must be a valid `usize`.
 
-  In addition, for a wide reference or [`Box<T>`](https://doc.rust-lang.org/1.100.0/alloc/boxed/struct.Box.html), the metadata is invalid if it makes the total size of the pointed-to value (as determined by `size_of_val`) bigger than `isize::MAX`.
+  In addition, for a wide reference or [`Box<T>`](../alloc/boxed/struct.Box.html), the metadata is invalid if it makes the total size of the pointed-to value (as determined by `size_of_val`) bigger than `isize::MAX`.
 
   > ![](../assets/inline/behavior-considered-undefined-5.svg)Note
   >
@@ -200,7 +200,7 @@ Whether a value is valid depends on the type:
 
 [undefined.validity.valid-range](#r-undefined.validity.valid-range)
 
-- If a type has a custom range of valid values, then a valid value must be in that range. In the standard library, this affects [`NonNull<T>`](https://doc.rust-lang.org/1.100.0/core/ptr/non_null/struct.NonNull.html) and [`NonZero<T>`](https://doc.rust-lang.org/1.100.0/core/num/nonzero/struct.NonZero.html).
+- If a type has a custom range of valid values, then a valid value must be in that range. In the standard library, this affects [`NonNull<T>`](../core/ptr/non_null/struct.NonNull.html) and [`NonZero<T>`](../core/num/nonzero/struct.NonZero.html).
 
   > ![](../assets/inline/behavior-considered-undefined-6.svg)Note
   >

@@ -38,4 +38,4 @@ All elements of arrays are always initialized, and access to an array is always 
 
 > ![](../../assets/inline/array-2.svg)Note
 >
-> The [`Vec<T>`](https://doc.rust-lang.org/1.100.0/alloc/vec/struct.Vec.html) standard library type provides a heap-allocated resizable array type.
+> The [`Vec<T>`](../../alloc/vec/struct.Vec.html) standard library type provides a heap-allocated resizable array type.

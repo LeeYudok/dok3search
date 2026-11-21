@@ -18,7 +18,7 @@ This goes against the usual [requirement](behavior-considered-undefined.md) that
 
 [interior-mut.unsafe-cell](#r-interior-mut.unsafe-cell)
 
-[`std::cell::UnsafeCell<T>`](https://doc.rust-lang.org/1.100.0/core/cell/struct.UnsafeCell.html) type is the only allowed way to disable this requirement. When `UnsafeCell<T>` is immutably aliased, it is still safe to mutate, or obtain a mutable reference to, the `T` it contains.
+[`std::cell::UnsafeCell<T>`](../core/cell/struct.UnsafeCell.html) type is the only allowed way to disable this requirement. When `UnsafeCell<T>` is immutably aliased, it is still safe to mutate, or obtain a mutable reference to, the `T` it contains.
 
 [interior-mut.mut-unsafe-cell](#r-interior-mut.mut-unsafe-cell)
 
@@ -30,8 +30,8 @@ Other types with interior mutability can be created by using `UnsafeCell<T>` as 
 
 [interior-mut.ref-cell](#r-interior-mut.ref-cell)
 
-For example, [`std::cell::RefCell<T>`](https://doc.rust-lang.org/1.100.0/core/cell/struct.RefCell.html) uses run-time borrow checks to ensure the usual rules around multiple references.
+For example, [`std::cell::RefCell<T>`](../core/cell/struct.RefCell.html) uses run-time borrow checks to ensure the usual rules around multiple references.
 
 [interior-mut.atomic](#r-interior-mut.atomic)
 
-The [`std::sync::atomic`](https://doc.rust-lang.org/1.100.0/core/sync/atomic/index.html) module contains types that wrap a value that is only accessed with atomic operations, allowing the value to be shared and mutated across threads.
+The [`std::sync::atomic`](../core/sync/atomic/index.html) module contains types that wrap a value that is only accessed with atomic operations, allowing the value to be shared and mutated across threads.

@@ -70,7 +70,7 @@ The only field required by Cargo is [`name`](#the-name-field). If publishing to 
 
 The package name is an identifier used to refer to the package. It is used when listed as a dependency in another package, and as the default name of inferred lib and bin targets.
 
-The name must use only [alphanumeric](https://doc.rust-lang.org/1.100.0/std/primitive.char.html#method.is_alphanumeric) characters or `-` or `_`, and cannot be empty.
+The name must use only [alphanumeric](../../std/primitive.char.html#method.is_alphanumeric) characters or `-` or `_`, and cannot be empty.
 
 Note that [`cargo new`](../commands/cargo-new.md) and [`cargo init`](../commands/cargo-init.md) impose some additional restrictions on the package name, such as enforcing that it is a valid Rust identifier and not a keyword. [crates.io](https://crates.io/) imposes even more restrictions, such as:
 
@@ -113,7 +113,7 @@ This field is surfaced in package metadata and in the `CARGO_PKG_AUTHORS` enviro
 
 ### The `edition` field
 
-The `edition` key is an optional key that affects which [Rust Edition](https://doc.rust-lang.org/1.100.0/edition-guide/index.html) your package is compiled with. Setting the `edition` key in `[package]` will affect all targets/crates in the package, including test suites, benchmarks, binaries, examples, etc.
+The `edition` key is an optional key that affects which [Rust Edition](../../edition-guide/index.html) your package is compiled with. Setting the `edition` key in `[package]` will affect all targets/crates in the package, including test suites, benchmarks, binaries, examples, etc.
 
 ``` toml
 [package]
@@ -433,7 +433,7 @@ enum_glob_use = "deny"
 unused_dependencies = "deny"
 ```
 
-Generally, these will only affect local development of the current package. Cargo only applies these to the current package and not to dependencies. As for dependents, Cargo suppresses lints from non-path dependencies with features like [`--cap-lints`](https://doc.rust-lang.org/1.100.0/rustc/lints/levels.html#capping-lints).
+Generally, these will only affect local development of the current package. Cargo only applies these to the current package and not to dependencies. As for dependents, Cargo suppresses lints from non-path dependencies with features like [`--cap-lints`](../../rustc/lints/levels.html#capping-lints).
 
 See also the [lints chapter](lints.md) for the available lints emitted by Cargo itself.
 

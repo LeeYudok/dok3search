@@ -73,7 +73,7 @@ Non-doc comments are interpreted as a form of whitespace.
 
 [comments.doc.syntax](#r-comments.doc.syntax)
 
-Line doc comments beginning with exactly *three* slashes (`///`), and block doc comments (`/** ... */`), both outer doc comments, are interpreted as a special syntax for [`doc` attributes](https://doc.rust-lang.org/1.100.0/rustdoc/the-doc-attribute.html).
+Line doc comments beginning with exactly *three* slashes (`///`), and block doc comments (`/** ... */`), both outer doc comments, are interpreted as a special syntax for [`doc` attributes](../rustdoc/the-doc-attribute.html).
 
 [comments.doc.attributes](#r-comments.doc.attributes)
 

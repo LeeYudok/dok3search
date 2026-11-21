@@ -149,4 +149,4 @@ Modules, like all items, accept outer attributes. They also accept inner attribu
 
 [items.mod.attributes.supported](#r-items.mod.attributes.supported)
 
-The built-in attributes that have meaning on a module are [`cfg`](../conditional-compilation.md), [`deprecated`](../attributes/diagnostics.md#the-deprecated-attribute), [`doc`](https://doc.rust-lang.org/1.100.0/rustdoc/the-doc-attribute.html), [the lint check attributes](../attributes/diagnostics.md#lint-check-attributes), [`path`](#the-path-attribute), and [`no_implicit_prelude`](../names/preludes.md#the-no_implicit_prelude-attribute). Modules also accept macro attributes.
+The built-in attributes that have meaning on a module are [`cfg`](../conditional-compilation.md), [`deprecated`](../attributes/diagnostics.md#the-deprecated-attribute), [`doc`](../../rustdoc/the-doc-attribute.html), [the lint check attributes](../attributes/diagnostics.md#lint-check-attributes), [`path`](#the-path-attribute), and [`no_implicit_prelude`](../names/preludes.md#the-no_implicit_prelude-attribute). Modules also accept macro attributes.

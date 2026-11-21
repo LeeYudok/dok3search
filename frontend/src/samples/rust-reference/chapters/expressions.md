@@ -338,7 +338,7 @@ Certain built-in macros may create [temporaries](#r-expr.temporary) whose [scope
 
 [expr.super-macros.format_args.super-operands](#r-expr.super-macros.format_args.super-operands)
 
-Except for the format string argument, all arguments passed to [`format_args!`](https://doc.rust-lang.org/1.100.0/core/macro.format_args.html) are *super operands*.
+Except for the format string argument, all arguments passed to [`format_args!`](../core/macro.format_args.html) are *super operands*.
 
 ``` playground
 #![allow(unused)]
@@ -354,7 +354,7 @@ let _ = format_args!("{}", { &temp() }); // OK
 
 [expr.super-macros.format_args.super-temporaries](#r-expr.super-macros.format_args.super-temporaries)
 
-The super operands of [`format_args!`](https://doc.rust-lang.org/1.100.0/core/macro.format_args.html) are [implicitly borrowed](#r-expr.implicit-borrow) and are therefore [place expression contexts](#r-expr.place-value). When a [value expression](#r-expr.place-value) is passed as an argument, it creates a *super temporary*.
+The super operands of [`format_args!`](../core/macro.format_args.html) are [implicitly borrowed](#r-expr.implicit-borrow) and are therefore [place expression contexts](#r-expr.place-value). When a [value expression](#r-expr.place-value) is passed as an argument, it creates a *super temporary*.
 
 ``` playground
 #![allow(unused)]
@@ -365,7 +365,7 @@ x; // <-- The temporary is extended, allowing use here.
 }
 ```
 
-The expansion of a call to [`format_args!`](https://doc.rust-lang.org/1.100.0/core/macro.format_args.html) sometimes creates other internal *super temporaries*.
+The expansion of a call to [`format_args!`](../core/macro.format_args.html) sometimes creates other internal *super temporaries*.
 
 ``` playground
 #![allow(unused)]
@@ -390,7 +390,7 @@ x; // OK
 
 > ![](../assets/inline/expressions-11.svg)Note
 >
-> The details of when [`format_args!`](https://doc.rust-lang.org/1.100.0/core/macro.format_args.html) does or does not create internal temporaries are currently unspecified.
+> The details of when [`format_args!`](../core/macro.format_args.html) does or does not create internal temporaries are currently unspecified.
 
 [expr.super-macros.pin](#r-expr.super-macros.pin)
 
@@ -398,7 +398,7 @@ x; // OK
 
 [expr.super-macros.pin.super-operands](#r-expr.super-macros.pin.super-operands)
 
-The argument to [`pin!`](https://doc.rust-lang.org/1.100.0/core/pin/macro.pin.html) is a *super operand*.
+The argument to [`pin!`](../core/pin/macro.pin.html) is a *super operand*.
 
 ``` playground
 #![allow(unused)]
@@ -412,7 +412,7 @@ let _ = pin!({ &temp() }); // OK
 
 [expr.super-macros.pin.super-temporaries](#r-expr.super-macros.pin.super-temporaries)
 
-The argument to [`pin!`](https://doc.rust-lang.org/1.100.0/core/pin/macro.pin.html) is a [value expression context](#r-expr.place-value) and creates a *super temporary*.
+The argument to [`pin!`](../core/pin/macro.pin.html) is a [value expression context](#r-expr.place-value) and creates a *super temporary*.
 
 ``` playground
 #![allow(unused)]
@@ -461,7 +461,7 @@ Implicit borrows may be taken in the following expressions:
 - Operand of the [dereference operator](expressions/operator-expr.md#the-dereference-operator) (`*`).
 - Operands of [comparison](expressions/operator-expr.md#comparison-operators).
 - Left operands of the [compound assignment](expressions/operator-expr.md#compound-assignment-expressions).
-- Arguments to [`format_args!`](https://doc.rust-lang.org/1.100.0/core/macro.format_args.html) except the format string.
+- Arguments to [`format_args!`](../core/macro.format_args.html) except the format string.
 
 [expr.overload](#r-expr.overload)
 

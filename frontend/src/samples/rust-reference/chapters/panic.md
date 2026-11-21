@@ -21,7 +21,7 @@ There are also language features that provide a level of control over panic beha
 
 > ![](../assets/inline/panic-1.svg)Note
 >
-> The standard library provides the capability to explicitly panic via the [`panic!` macro](https://doc.rust-lang.org/1.100.0/std/macro.panic.html).
+> The standard library provides the capability to explicitly panic via the [`panic!` macro](../std/macro.panic.html).
 
 [panic.panic_handler](#r-panic.panic_handler)
 
@@ -37,7 +37,7 @@ The `panic_handler` attribute can only be applied to a function with signature `
 
 > ![](../assets/inline/panic-2.svg)Note
 >
-> The [`PanicInfo`](https://doc.rust-lang.org/1.100.0/core/panic/panic_info/struct.PanicInfo.html) struct contains information about the location of the panic.
+> The [`PanicInfo`](../core/panic/panic_info/struct.PanicInfo.html) struct contains information about the location of the panic.
 
 [panic.panic_handler.unique](#r-panic.panic_handler.unique)
 
@@ -90,9 +90,9 @@ Not all targets may provide the `unwind` handler.
 
 > ![](../assets/inline/panic-3.svg)Note
 >
-> The panic handler used when linking with `std` can be set with the [`-C panic`](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#panic) CLI flag. The default for most targets is `unwind`.
+> The panic handler used when linking with `std` can be set with the [`-C panic`](../rustc/codegen-options/index.html#panic) CLI flag. The default for most targets is `unwind`.
 >
-> The standard library’s panic behavior can be modified at runtime with the [`std::panic::set_hook`](https://doc.rust-lang.org/1.100.0/std/panicking/fn.set_hook.html) function.
+> The standard library’s panic behavior can be modified at runtime with the [`std::panic::set_hook`](../std/panicking/fn.set_hook.html) function.
 
 [panic.panic_handler.std.no_std](#r-panic.panic_handler.std.no_std)
 
@@ -108,7 +108,7 @@ The *panic strategy* defines the kind of panic behavior that a crate is built to
 
 > ![](../assets/inline/panic-4.svg)Note
 >
-> The panic strategy can be chosen in `rustc` with the [`-C panic`](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#panic) CLI flag.
+> The panic strategy can be chosen in `rustc` with the [`-C panic`](../rustc/codegen-options/index.html#panic) CLI flag.
 >
 > When generating a binary, dylib, cdylib, or staticlib and linking with `std`, the `-C panic` CLI flag also influences which [panic handler](#the-panic_handler-attribute) is used.
 
@@ -138,7 +138,7 @@ When a panic occurs, the `unwind` handler “unwinds” Rust frames, just as C++
 
 > ![](../assets/inline/panic-8.svg)Note
 >
-> The standard library provides two mechanisms for recovering from a panic, [`std::panic::catch_unwind`](https://doc.rust-lang.org/1.100.0/std/panic/fn.catch_unwind.html) (which enables recovery within the panicking thread) and [`std::thread::spawn`](https://doc.rust-lang.org/1.100.0/std/thread/functions/fn.spawn.html) (which automatically sets up panic recovery for the spawned thread so that other threads may continue running).
+> The standard library provides two mechanisms for recovering from a panic, [`std::panic::catch_unwind`](../std/panic/fn.catch_unwind.html) (which enables recovery within the panicking thread) and [`std::thread::spawn`](../std/thread/functions/fn.spawn.html) (which automatically sets up panic recovery for the spawned thread so that other threads may continue running).
 
 [panic.unwind.ffi](#r-panic.unwind.ffi)
 
@@ -157,10 +157,10 @@ Unwinding with the wrong ABI is undefined behavior:
 
 [panic.unwind.ffi.catch-foreign](#r-panic.unwind.ffi.catch-foreign)
 
-Catching a foreign unwinding operation (such as a C++ exception) using [`std::panic::catch_unwind`](https://doc.rust-lang.org/1.100.0/std/panic/fn.catch_unwind.html), [`std::thread::JoinHandle::join`](https://doc.rust-lang.org/1.100.0/std/thread/join_handle/struct.JoinHandle.html#method.join), or by letting it propagate beyond the Rust `main()` function or thread root will have one of two behaviors, and it is unspecified which will occur:
+Catching a foreign unwinding operation (such as a C++ exception) using [`std::panic::catch_unwind`](../std/panic/fn.catch_unwind.html), [`std::thread::JoinHandle::join`](../std/thread/join_handle/struct.JoinHandle.html#method.join), or by letting it propagate beyond the Rust `main()` function or thread root will have one of two behaviors, and it is unspecified which will occur:
 
 - The process aborts.
-- The function returns a [`Result::Err`](https://doc.rust-lang.org/1.100.0/core/result/enum.Result.html#variant.Err) containing an opaque type.
+- The function returns a [`Result::Err`](../core/result/enum.Result.html#variant.Err) containing an opaque type.
 
 > ![](../assets/inline/panic-9.svg)Note
 >

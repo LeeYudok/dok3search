@@ -323,7 +323,7 @@ enum E<'a, T, const N: u32> {
 
 [items.enum.discriminant.access-opaque](#r-items.enum.discriminant.access-opaque)
 
-[`std::mem::discriminant`](https://doc.rust-lang.org/1.100.0/core/mem/fn.discriminant.html) returns an opaque reference to the discriminant of an enum value which can be compared. This cannot be used to get the value of the discriminant.
+[`std::mem::discriminant`](../../core/mem/fn.discriminant.html) returns an opaque reference to the discriminant of an enum value which can be compared. This cannot be used to get the value of the discriminant.
 
 [items.enum.discriminant.coercion](#r-items.enum.discriminant.coercion)
 

@@ -52,7 +52,7 @@ The directory name above is calculated based on the package name converted to lo
 
 ## Name restrictions
 
-Registries should consider enforcing limitations on package names added to their index. Cargo itself allows names with any [alphanumeric](https://doc.rust-lang.org/1.100.0/std/primitive.char.html#method.is_alphanumeric), `-`, or `_` characters. [crates.io](https://crates.io/) imposes its own limitations, including the following:
+Registries should consider enforcing limitations on package names added to their index. Cargo itself allows names with any [alphanumeric](../../std/primitive.char.html#method.is_alphanumeric), `-`, or `_` characters. [crates.io](https://crates.io/) imposes its own limitations, including the following:
 
 - Only allows ASCII characters.
 - Only alphanumeric, `-`, and `_` characters.

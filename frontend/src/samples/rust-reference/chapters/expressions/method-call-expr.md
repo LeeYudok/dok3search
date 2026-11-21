@@ -94,7 +94,7 @@ If a step is reached where there is more than one possible method, such as where
 
 > 2021 Edition differences
 >
-> Before the 2021 edition, during the search for visible methods, if the candidate receiver type is an [array type](../types/array.md), methods provided by the standard library [`IntoIterator`](https://doc.rust-lang.org/1.100.0/core/iter/traits/collect/trait.IntoIterator.html) trait are ignored.
+> Before the 2021 edition, during the search for visible methods, if the candidate receiver type is an [array type](../types/array.md), methods provided by the standard library [`IntoIterator`](../../core/iter/traits/collect/trait.IntoIterator.html) trait are ignored.
 >
 > The edition used for this purpose is determined by the token representing the method name.
 >

@@ -42,7 +42,7 @@ All access to a static is safe, but there are a number of restrictions on static
 
 [items.static.sync](#r-items.static.sync)
 
-- The type must have the [`Sync`](https://doc.rust-lang.org/1.100.0/core/marker/trait.Sync.html) trait bound to allow thread-safe access.
+- The type must have the [`Sync`](../../core/marker/trait.Sync.html) trait bound to allow thread-safe access.
 
 [items.static.init-omission](#r-items.static.init-omission)
 

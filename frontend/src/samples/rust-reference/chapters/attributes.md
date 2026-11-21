@@ -311,7 +311,7 @@ The following is an index of all built-in attributes.
 
 - Documentation
 
-  - `doc` — Specifies documentation. See [The Rustdoc Book](https://doc.rust-lang.org/1.100.0/rustdoc/the-doc-attribute.html) for more information. [Doc comments](comments.md#doc-comments) are transformed into `doc` attributes.
+  - `doc` — Specifies documentation. See [The Rustdoc Book](../rustdoc/the-doc-attribute.html) for more information. [Doc comments](comments.md#doc-comments) are transformed into `doc` attributes.
 
 - Preludes
 
@@ -335,7 +335,7 @@ The following is an index of all built-in attributes.
 
 - Features
 
-  - `feature` — Used to enable unstable or experimental compiler features. See [The Unstable Book](https://doc.rust-lang.org/1.100.0/unstable-book/index.html) for features implemented in `rustc`.
+  - `feature` — Used to enable unstable or experimental compiler features. See [The Unstable Book](../unstable-book/index.html) for features implemented in `rustc`.
 
 - Type System
 

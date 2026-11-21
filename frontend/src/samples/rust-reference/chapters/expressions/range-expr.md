@@ -35,12 +35,12 @@ The `..` and `..=` operators will construct an object of one of the `std::ops::R
 
 | Production | Syntax | Type | Range |
 |----|----|----|----|
-| [RangeExpr](#grammar-RangeExpr) | start`..`end | [std::ops::Range](https://doc.rust-lang.org/1.100.0/core/ops/range/struct.Range.html) | start ≤ x \< end |
-| [RangeFromExpr](#grammar-RangeFromExpr) | start`..` | [std::ops::RangeFrom](https://doc.rust-lang.org/1.100.0/core/ops/range/struct.RangeFrom.html) | start ≤ x |
-| [RangeToExpr](#grammar-RangeToExpr) | `..`end | [std::ops::RangeTo](https://doc.rust-lang.org/1.100.0/core/ops/range/struct.RangeTo.html) | x \< end |
-| [RangeFullExpr](#grammar-RangeFullExpr) | `..` | [std::ops::RangeFull](https://doc.rust-lang.org/1.100.0/core/ops/range/struct.RangeFull.html) | \- |
-| [RangeInclusiveExpr](#grammar-RangeInclusiveExpr) | start`..=`end | [std::ops::RangeInclusive](https://doc.rust-lang.org/1.100.0/core/ops/range/struct.RangeInclusive.html) | start ≤ x ≤ end |
-| [RangeToInclusiveExpr](#grammar-RangeToInclusiveExpr) | `..=`end | [std::ops::RangeToInclusive](https://doc.rust-lang.org/1.100.0/core/ops/range/struct.RangeToInclusive.html) | x ≤ end |
+| [RangeExpr](#grammar-RangeExpr) | start`..`end | [std::ops::Range](../../core/ops/range/struct.Range.html) | start ≤ x \< end |
+| [RangeFromExpr](#grammar-RangeFromExpr) | start`..` | [std::ops::RangeFrom](../../core/ops/range/struct.RangeFrom.html) | start ≤ x |
+| [RangeToExpr](#grammar-RangeToExpr) | `..`end | [std::ops::RangeTo](../../core/ops/range/struct.RangeTo.html) | x \< end |
+| [RangeFullExpr](#grammar-RangeFullExpr) | `..` | [std::ops::RangeFull](../../core/ops/range/struct.RangeFull.html) | \- |
+| [RangeInclusiveExpr](#grammar-RangeInclusiveExpr) | start`..=`end | [std::ops::RangeInclusive](../../core/ops/range/struct.RangeInclusive.html) | start ≤ x ≤ end |
+| [RangeToInclusiveExpr](#grammar-RangeToInclusiveExpr) | `..=`end | [std::ops::RangeToInclusive](../../core/ops/range/struct.RangeToInclusive.html) | x ≤ end |
 
 Examples:
 

@@ -425,7 +425,7 @@ This modifier has no effect when building other targets like executables or dyna
 
 The default for this modifier is `+bundle`.
 
-More implementation details about this modifier can be found in [`bundle` documentation for rustc](https://doc.rust-lang.org/1.100.0/rustc/command-line-arguments.html#linking-modifiers-bundle).
+More implementation details about this modifier can be found in [`bundle` documentation for rustc](../../rustc/command-line-arguments.html#linking-modifiers-bundle).
 
 [items.extern.attributes.link.modifiers-whole-archive](#r-items.extern.attributes.link.modifiers-whole-archive)
 
@@ -443,7 +443,7 @@ This modifier is only compatible with the `static` linking kind. Using any other
 
 The default for this modifier is `-whole-archive`.
 
-More implementation details about this modifier can be found in [`whole-archive` documentation for rustc](https://doc.rust-lang.org/1.100.0/rustc/command-line-arguments.html#linking-modifiers-whole-archive).
+More implementation details about this modifier can be found in [`whole-archive` documentation for rustc](../../rustc/command-line-arguments.html#linking-modifiers-whole-archive).
 
 [items.extern.attributes.link.modifiers-verbatim](#r-items.extern.attributes.link.modifiers-verbatim)
 
@@ -465,7 +465,7 @@ This modifier is compatible with all linking kinds.
 
 The default for this modifier is `-verbatim`.
 
-More implementation details about this modifier can be found in [`verbatim` documentation for rustc](https://doc.rust-lang.org/1.100.0/rustc/command-line-arguments.html#linking-modifiers-verbatim).
+More implementation details about this modifier can be found in [`verbatim` documentation for rustc](../../rustc/command-line-arguments.html#linking-modifiers-verbatim).
 
 [items.extern.attributes.link.kind-raw-dylib](#r-items.extern.attributes.link.kind-raw-dylib)
 

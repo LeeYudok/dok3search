@@ -1,6 +1,6 @@
 # Tests
 
-Cargo can run your tests with the `cargo test` command. Cargo looks for tests to run in two places: in each of your `src` files and any tests in `tests/`. Tests in your `src` files should be unit tests and [documentation tests](https://doc.rust-lang.org/1.100.0/rustdoc/write-documentation/documentation-tests.html). Tests in `tests/` should be integration-style tests. As such, you’ll need to import your crates into the files in `tests`.
+Cargo can run your tests with the `cargo test` command. Cargo looks for tests to run in two places: in each of your `src` files and any tests in `tests/`. Tests in your `src` files should be unit tests and [documentation tests](../../rustdoc/write-documentation/documentation-tests.html). Tests in `tests/` should be integration-style tests. As such, you’ll need to import your crates into the files in `tests`.
 
 Here’s an example of running `cargo test` in our [package](../appendix/glossary.md#package ""package" (glossary entry)"), which currently has no tests:
 
@@ -25,4 +25,4 @@ $ cargo test foo
 
 This will run any test with `foo` in its name.
 
-`cargo test` runs additional checks as well. It will compile any examples you’ve included to ensure they still compile. It also runs documentation tests to ensure your code samples from documentation comments compile. Please see the [testing guide](https://doc.rust-lang.org/1.100.0/book/ch11-00-testing.html) in the Rust documentation for a general view of writing and organizing tests. See [Cargo Targets: Tests](../reference/cargo-targets.md#tests) to learn more about different styles of tests in Cargo.
+`cargo test` runs additional checks as well. It will compile any examples you’ve included to ensure they still compile. It also runs documentation tests to ensure your code samples from documentation comments compile. Please see the [testing guide](../../book/ch11-00-testing.html) in the Rust documentation for a general view of writing and organizing tests. See [Cargo Targets: Tests](../reference/cargo-targets.md#tests) to learn more about different styles of tests in Cargo.

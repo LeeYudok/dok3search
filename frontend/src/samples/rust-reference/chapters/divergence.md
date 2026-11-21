@@ -37,7 +37,7 @@ See the following rules for specific expression divergence behavior:
 
 > ![](../assets/inline/divergence-1.svg)Note
 >
-> The [`panic!`](https://doc.rust-lang.org/1.100.0/std/macro.panic.html) macro and related panic-generating macros like [`unreachable!`](https://doc.rust-lang.org/1.100.0/core/macro.unreachable.html) also have the type [`!`](types/never.md#r-type.never) and are diverging.
+> The [`panic!`](../std/macro.panic.html) macro and related panic-generating macros like [`unreachable!`](../core/macro.unreachable.html) also have the type [`!`](types/never.md#r-type.never) and are diverging.
 
 [divergence.never](#r-divergence.never)
 

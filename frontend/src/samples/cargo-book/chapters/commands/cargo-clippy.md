@@ -8,7 +8,7 @@ cargo-clippy — Checks a package to catch common mistakes and improve your Rust
 
 This is an external command distributed with the Rust toolchain as an optional component. It is not built into Cargo, and may require additional installation.
 
-For information about usage and installation, see [Clippy Documentation](https://doc.rust-lang.org/1.100.0/clippy/index.html).
+For information about usage and installation, see [Clippy Documentation](../../clippy/index.html).
 
 ## SEE ALSO
 

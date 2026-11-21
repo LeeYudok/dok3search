@@ -275,7 +275,7 @@ Show Railroad
 
 ![](../../assets/inline/operator-expr-5.svg) [expr.try.intro](#r-expr.try.intro)
 
-The try propagation expression uses the value of the inner expression and the [`Try`](https://doc.rust-lang.org/1.100.0/core/ops/try_trait/trait.Try.html) trait to decide whether to produce a value, and if so, what value to produce, or whether to return a value to the caller, and if so, what value to return.
+The try propagation expression uses the value of the inner expression and the [`Try`](../../core/ops/try_trait/trait.Try.html) trait to decide whether to produce a value, and if so, what value to produce, or whether to return a value to the caller, and if so, what value to return.
 
 > ![](../../assets/inline/operator-expr-6.svg)Example
 >
@@ -353,7 +353,7 @@ The try propagation expression uses the value of the inner expression and the [`
 
 > ![](../../assets/inline/operator-expr-7.svg)Note
 >
-> The [`Try`](https://doc.rust-lang.org/1.100.0/core/ops/try_trait/trait.Try.html) trait is currently unstable, and thus cannot be implemented for user types.
+> The [`Try`](../../core/ops/try_trait/trait.Try.html) trait is currently unstable, and thus cannot be implemented for user types.
 >
 > The try propagation expression is currently roughly equivalent to:
 >
@@ -381,20 +381,20 @@ The try propagation expression uses the value of the inner expression and the [`
 
 The try propagation operator can be applied to expressions with the type of:
 
-- [`Result<T, E>`](https://doc.rust-lang.org/1.100.0/core/result/enum.Result.html)
+- [`Result<T, E>`](../../core/result/enum.Result.html)
   - `Result::Ok(val)` evaluates to `val`.
   - `Result::Err(e)` returns `Result::Err(From::from(e))`.
-- [`Option<T>`](https://doc.rust-lang.org/1.100.0/core/option/enum.Option.html)
+- [`Option<T>`](../../core/option/enum.Option.html)
   - `Option::Some(val)` evaluates to `val`.
   - `Option::None` returns `Option::None`.
-- [`ControlFlow<B, C>`](https://doc.rust-lang.org/1.100.0/core/ops/control_flow/enum.ControlFlow.html)
+- [`ControlFlow<B, C>`](../../core/ops/control_flow/enum.ControlFlow.html)
   - `ControlFlow::Continue(c)` evaluates to `c`.
   - `ControlFlow::Break(b)` returns `ControlFlow::Break(b)`.
-- [`Poll<Result<T, E>>`](https://doc.rust-lang.org/1.100.0/core/task/poll/enum.Poll.html)
+- [`Poll<Result<T, E>>`](../../core/task/poll/enum.Poll.html)
   - `Poll::Ready(Ok(val))` evaluates to `Poll::Ready(val)`.
   - `Poll::Ready(Err(e))` returns `Poll::Ready(Err(From::from(e)))`.
   - `Poll::Pending` evaluates to `Poll::Pending`.
-- [`Poll<Option<Result<T, E>>>`](https://doc.rust-lang.org/1.100.0/core/task/poll/enum.Poll.html)
+- [`Poll<Option<Result<T, E>>>`](../../core/task/poll/enum.Poll.html)
   - `Poll::Ready(Some(Ok(val)))` evaluates to `Poll::Ready(Some(val))`.
   - `Poll::Ready(Some(Err(e)))` returns `Poll::Ready(Some(Err(From::from(e))))`.
   - `Poll::Ready(None)` evaluates to `Poll::Ready(None)`.
@@ -827,7 +827,7 @@ assert_eq!(Enum::C as i32, 2);
 
 [expr.as.enum.no-drop](#r-expr.as.enum.no-drop)
 
-Casting is not allowed if the enum implements [`Drop`](https://doc.rust-lang.org/1.100.0/core/ops/drop/trait.Drop.html).
+Casting is not allowed if the enum implements [`Drop`](../../core/ops/drop/trait.Drop.html).
 
 [expr.as.bool-char-as-int](#r-expr.as.bool-char-as-int)
 

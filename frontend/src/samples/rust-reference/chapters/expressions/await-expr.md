@@ -17,7 +17,7 @@ An `await` expression is a syntactic construct for suspending a computation prov
 
 [expr.await.construct](#r-expr.await.construct)
 
-The syntax for an await expression is an expression with a type that implements the [`IntoFuture`](https://doc.rust-lang.org/1.100.0/core/future/into_future/trait.IntoFuture.html) trait, called the *future operand*, then the token `.`, and then the `await` keyword.
+The syntax for an await expression is an expression with a type that implements the [`IntoFuture`](../../core/future/into_future/trait.IntoFuture.html) trait, called the *future operand*, then the token `.`, and then the `await` keyword.
 
 [expr.await.allowed-positions](#r-expr.await.allowed-positions)
 
@@ -27,12 +27,12 @@ Await expressions are legal only within an [async context](block-expr.md#async-c
 
 More specifically, an await expression has the following effect.
 
-1.  Create a future by calling [`IntoFuture::into_future`](https://doc.rust-lang.org/1.100.0/core/future/into_future/trait.IntoFuture.html#tymethod.into_future) on the future operand.
-2.  Evaluate the future to a [future](https://doc.rust-lang.org/1.100.0/core/future/future/trait.Future.html) `tmp`;
-3.  Pin `tmp` using [`Pin::new_unchecked`](https://doc.rust-lang.org/1.100.0/core/pin/struct.Pin.html#method.new_unchecked);
-4.  This pinned future is then polled by calling the [`Future::poll`](https://doc.rust-lang.org/1.100.0/core/future/future/trait.Future.html#tymethod.poll) method and passing it the current [task context](#task-context);
-5.  If the call to `poll` returns [`Poll::Pending`](https://doc.rust-lang.org/1.100.0/core/task/poll/enum.Poll.html#variant.Pending), then the future returns `Poll::Pending`, suspending its state so that, when the surrounding async context is re-polled, execution returns to step 3;
-6.  Otherwise the call to `poll` must have returned [`Poll::Ready`](https://doc.rust-lang.org/1.100.0/core/task/poll/enum.Poll.html#variant.Ready), in which case the value contained in the [`Poll::Ready`](https://doc.rust-lang.org/1.100.0/core/task/poll/enum.Poll.html#variant.Ready) variant is used as the result of the `await` expression itself.
+1.  Create a future by calling [`IntoFuture::into_future`](../../core/future/into_future/trait.IntoFuture.html#tymethod.into_future) on the future operand.
+2.  Evaluate the future to a [future](../../core/future/future/trait.Future.html) `tmp`;
+3.  Pin `tmp` using [`Pin::new_unchecked`](../../core/pin/struct.Pin.html#method.new_unchecked);
+4.  This pinned future is then polled by calling the [`Future::poll`](../../core/future/future/trait.Future.html#tymethod.poll) method and passing it the current [task context](#task-context);
+5.  If the call to `poll` returns [`Poll::Pending`](../../core/task/poll/enum.Poll.html#variant.Pending), then the future returns `Poll::Pending`, suspending its state so that, when the surrounding async context is re-polled, execution returns to step 3;
+6.  Otherwise the call to `poll` must have returned [`Poll::Ready`](../../core/task/poll/enum.Poll.html#variant.Ready), in which case the value contained in the [`Poll::Ready`](../../core/task/poll/enum.Poll.html#variant.Ready) variant is used as the result of the `await` expression itself.
 
 [expr.await.edition2018](#r-expr.await.edition2018)
 
@@ -44,7 +44,7 @@ More specifically, an await expression has the following effect.
 
 ## Task context
 
-The task context refers to the [`Context`](https://doc.rust-lang.org/1.100.0/core/task/wake/struct.Context.html) which was supplied to the current [async context](block-expr.md#async-context) when the async context itself was polled. Because `await` expressions are only legal in an async context, there must be some task context available.
+The task context refers to the [`Context`](../../core/task/wake/struct.Context.html) which was supplied to the current [async context](block-expr.md#async-context) when the async context itself was polled. Because `await` expressions are only legal in an async context, there must be some task context available.
 
 [expr.await.desugar](#r-expr.await.desugar)
 

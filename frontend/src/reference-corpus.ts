@@ -16,6 +16,7 @@ type CorpusLicense = { label: string; url: string }
 
 export type ReferenceCorpus = {
   idPrefix: string
+  folder: string
   documents: Document[]
   topic: ReferenceTopic
   images: ReadonlyMap<string, string>
@@ -55,9 +56,10 @@ export function createReferenceCorpus({
 
   return {
     idPrefix,
+    folder,
     topic,
     documents,
-    images: new Map(Object.entries(images).map(([path, url]) => ['/' + path.slice(root.length), url])),
+    images: new Map(Object.entries(images).map(([path, url]) => ['/samples/' + folder + '/' + path.slice(root.length), url])),
     licenses,
   }
 }

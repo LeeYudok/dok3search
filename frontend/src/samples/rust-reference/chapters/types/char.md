@@ -21,7 +21,7 @@ The `char` type represents a single [Unicode scalar value](http://www.unicode.or
 
 > ![](../../assets/inline/char-2.svg)Note
 >
-> See [the standard library docs](https://doc.rust-lang.org/1.100.0/std/primitive.char.html) for information on the impls of the `char` type.
+> See [the standard library docs](../../std/primitive.char.html) for information on the impls of the `char` type.
 
 [type.char.value](#r-type.char.value)
 

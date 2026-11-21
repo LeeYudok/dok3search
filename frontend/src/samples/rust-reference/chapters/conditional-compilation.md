@@ -123,11 +123,11 @@ It is not possible to set a configuration option from within the source code of 
 
 > ![](../assets/inline/conditional-compilation-8.svg)Note
 >
-> For `rustc`, arbitrary-set configuration options are set using the [`--cfg`](https://doc.rust-lang.org/1.100.0/rustc/command-line-arguments.html#--cfg-configure-the-compilation-environment) flag. Configuration values for a specified target can be displayed with `rustc --print cfg --target $TARGET`.
+> For `rustc`, arbitrary-set configuration options are set using the [`--cfg`](../rustc/command-line-arguments.html#--cfg-configure-the-compilation-environment) flag. Configuration values for a specified target can be displayed with `rustc --print cfg --target $TARGET`.
 
 > ![](../assets/inline/conditional-compilation-9.svg)Note
 >
-> Configuration options with the key `feature` are a convention used by [Cargo](https://doc.rust-lang.org/1.100.0/cargo/reference/features.html) for specifying compile-time options and optional dependencies.
+> Configuration options with the key `feature` are a convention used by [Cargo](../../cargo-book/chapters/reference/features.md) for specifying compile-time options and optional dependencies.
 
 [cfg.target_arch](#r-cfg.target_arch)
 
@@ -345,7 +345,7 @@ Key-value option set for each bit width that the target supports atomic loads, s
 
 [cfg.target_has_atomic.stdlib](#r-cfg.target_has_atomic.stdlib)
 
-When this cfg is present, all of the stable [`core::sync::atomic`](https://doc.rust-lang.org/1.100.0/core/sync/atomic/index.html) APIs are available for the relevant atomic width.
+When this cfg is present, all of the stable [`core::sync::atomic`](../core/sync/atomic/index.html) APIs are available for the relevant atomic width.
 
 [cfg.target_has_atomic.values](#r-cfg.target_has_atomic.values)
 
@@ -364,11 +364,11 @@ Possible values:
 
 [cfg.target_has_atomic_primitive_alignment.def](#r-cfg.target_has_atomic_primitive_alignment.def)
 
-Key-value option set for each bit width where the [atomic](https://doc.rust-lang.org/1.100.0/core/sync/atomic/index.html) type has the same alignment as the corresponding integer type.
+Key-value option set for each bit width where the [atomic](../core/sync/atomic/index.html) type has the same alignment as the corresponding integer type.
 
 > ![](../assets/inline/conditional-compilation-10.svg)Note
 >
-> The alignment is usually the same for a given bit width. However, on some targets such as 32-bit x86, 64-bit atomic types such as [`AtomicI64`](https://doc.rust-lang.org/1.100.0/core/sync/atomic/type.AtomicI64.html) have an alignment of 8 bytes while `i64` is only aligned to 4 bytes. In this situation, `target_has_atomic_primitive_alignment = "64"` is not set.
+> The alignment is usually the same for a given bit width. However, on some targets such as 32-bit x86, 64-bit atomic types such as [`AtomicI64`](../core/sync/atomic/type.AtomicI64.html) have an alignment of 8 bytes while `i64` is only aligned to 4 bytes. In this situation, `target_has_atomic_primitive_alignment = "64"` is not set.
 
 [cfg.target_has_atomic_primitive_alignment.values](#r-cfg.target_has_atomic_primitive_alignment.values)
 
@@ -388,13 +388,13 @@ Tests Tests with this rule:
 
 ### `test`
 
-Enabled when compiling the test harness. Done with `rustc` by using the [`--test`](https://doc.rust-lang.org/1.100.0/rustc/command-line-arguments.html#--test-build-a-test-harness) flag. See [Testing](attributes/testing.md) for more on testing support.
+Enabled when compiling the test harness. Done with `rustc` by using the [`--test`](../rustc/command-line-arguments.html#--test-build-a-test-harness) flag. See [Testing](attributes/testing.md) for more on testing support.
 
 [cfg.debug_assertions](#r-cfg.debug_assertions)
 
 ### `debug_assertions`
 
-Enabled by default when compiling without optimizations. This can be used to enable extra debugging code in development but not in production. For example, it controls the behavior of the standard library’s [`debug_assert!`](https://doc.rust-lang.org/1.100.0/core/macro.debug_assert.html) macro.
+Enabled by default when compiling without optimizations. This can be used to enable extra debugging code in development but not in production. For example, it controls the behavior of the standard library’s [`debug_assert!`](../core/macro.debug_assert.html) macro.
 
 [cfg.proc_macro](#r-cfg.proc_macro)
 
@@ -634,7 +634,7 @@ println!("I'm running on a {} machine!", machine_kind);
 
 [cfg.cfg_select.intro](#r-cfg.cfg_select.intro)
 
-The built-in [`cfg_select!`](https://doc.rust-lang.org/1.100.0/core/macros/macro.cfg_select.html) macro can be used to select code at compile-time based on multiple configuration predicates.
+The built-in [`cfg_select!`](../core/macros/macro.cfg_select.html) macro can be used to select code at compile-time based on multiple configuration predicates.
 
 > ![](../assets/inline/conditional-compilation-19.svg)Example
 >

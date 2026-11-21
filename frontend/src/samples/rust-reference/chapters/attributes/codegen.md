@@ -259,7 +259,7 @@ The compiler may not duplicate the assembly code except when monomorphizing a po
 
 [attributes.codegen.naked.unused-variables](#r-attributes.codegen.naked.unused-variables)
 
-The [`unused_variables` lint](https://doc.rust-lang.org/1.100.0/rustc/lints/listing/warn-by-default.html#unused-variables) is suppressed in naked functions.
+The [`unused_variables` lint](../../rustc/lints/listing/warn-by-default.html#unused-variables) is suppressed in naked functions.
 
 [attributes.codegen.naked.inline](#r-attributes.codegen.naked.inline)\
 Tests Tests with this rule:
@@ -672,11 +672,11 @@ See the [`target_feature` conditional compilation option](../conditional-compila
 
 [attributes.codegen.target_feature.remark-rt](#r-attributes.codegen.target_feature.remark-rt)
 
-Whether a feature is enabled can be checked at runtime using a platform-specific macro from the standard library, for instance [`is_x86_feature_detected`](https://doc.rust-lang.org/1.100.0/std/arch/macro.is_x86_feature_detected.html) or [`is_aarch64_feature_detected`](https://doc.rust-lang.org/1.100.0/std/arch/macro.is_aarch64_feature_detected.html).
+Whether a feature is enabled can be checked at runtime using a platform-specific macro from the standard library, for instance [`is_x86_feature_detected`](../../std/arch/macro.is_x86_feature_detected.html) or [`is_aarch64_feature_detected`](../../std/arch/macro.is_aarch64_feature_detected.html).
 
 > ![](../../assets/inline/codegen-20.svg)Note
 >
-> `rustc` has a default set of features enabled for each target and CPU. The CPU may be chosen with the [`-C target-cpu`](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#target-cpu) flag. Individual features may be enabled or disabled for an entire crate with the [`-C target-feature`](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#target-feature) flag.
+> `rustc` has a default set of features enabled for each target and CPU. The CPU may be chosen with the [`-C target-cpu`](../../rustc/codegen-options/index.html#target-cpu) flag. Individual features may be enabled or disabled for an entire crate with the [`-C target-feature`](../../rustc/codegen-options/index.html#target-feature) flag.
 
 [attributes.codegen.track_caller](#r-attributes.codegen.track_caller)
 
@@ -698,7 +698,7 @@ When applied to a function in an `extern` block the attribute must also be appli
 
 ### Behavior
 
-Applying the attribute to a function `f` allows code within `f` to get a hint of the [`Location`](https://doc.rust-lang.org/1.100.0/core/panic/location/struct.Location.html) of the “topmost” tracked call that led to `f`’s invocation. At the point of observation, an implementation behaves as if it walks up the stack from `f`’s frame to find the nearest frame of an *unattributed* function `outer`, and it returns the [`Location`](https://doc.rust-lang.org/1.100.0/core/panic/location/struct.Location.html) of the tracked call in `outer`.
+Applying the attribute to a function `f` allows code within `f` to get a hint of the [`Location`](../../core/panic/location/struct.Location.html) of the “topmost” tracked call that led to `f`’s invocation. At the point of observation, an implementation behaves as if it walks up the stack from `f`’s frame to find the nearest frame of an *unattributed* function `outer`, and it returns the [`Location`](../../core/panic/location/struct.Location.html) of the tracked call in `outer`.
 
 ``` playground
 #![allow(unused)]
@@ -712,7 +712,7 @@ fn f() {
 
 > ![](../../assets/inline/codegen-21.svg)Note
 >
-> `core` provides [`core::panic::Location::caller`](https://doc.rust-lang.org/1.100.0/core/panic/location/struct.Location.html#method.caller) for observing caller locations. It wraps the [`core::intrinsics::caller_location`](https://doc.rust-lang.org/1.100.0/core/intrinsics/fn.caller_location.html) intrinsic implemented by `rustc`.
+> `core` provides [`core::panic::Location::caller`](../../core/panic/location/struct.Location.html#method.caller) for observing caller locations. It wraps the [`core::intrinsics::caller_location`](../../core/intrinsics/fn.caller_location.html) intrinsic implemented by `rustc`.
 
 > ![](../../assets/inline/codegen-22.svg)Note
 >

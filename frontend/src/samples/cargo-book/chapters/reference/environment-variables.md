@@ -132,7 +132,7 @@ Note that if one of these values is not provided in the manifest, the correspond
 - `CARGO_CRATE_NAME` — The name of the crate that is currently being compiled. It is the name of the [Cargo target](cargo-targets.md) with `-` converted to `_`, such as the name of the library, binary, example, integration test, or benchmark.
 - `CARGO_BIN_NAME` — The name of the binary that is currently being compiled. Only set for [binaries](cargo-targets.md#binaries) or binary [examples](cargo-targets.md#examples). This name does not include any file extension, such as `.exe`.
 - `OUT_DIR` — If the package has a build script, this is set to the folder where the build script should place its output. See below for more information. (Only set during compilation.) Cargo does not guarantee that this directory is empty, and it is not cleaned between builds.
-- `CARGO_BIN_EXE_<name>` — The absolute path to a binary target’s executable. This is only set when building an [integration test](cargo-targets.md#integration-tests) or benchmark. This may be used with the [`env` macro](https://doc.rust-lang.org/1.100.0/std/macro.env.html) to find the executable to run for testing purposes. The `<name>` is the name of the binary target, exactly as-is. For example, `CARGO_BIN_EXE_my-program` for a binary named `my-program`. Binaries are automatically built when the test is built, unless the binary has required features that are not enabled.
+- `CARGO_BIN_EXE_<name>` — The absolute path to a binary target’s executable. This is only set when building an [integration test](cargo-targets.md#integration-tests) or benchmark. This may be used with the [`env` macro](../../std/macro.env.html) to find the executable to run for testing purposes. The `<name>` is the name of the binary target, exactly as-is. For example, `CARGO_BIN_EXE_my-program` for a binary named `my-program`. Binaries are automatically built when the test is built, unless the binary has required features that are not enabled.
 - `CARGO_PRIMARY_PACKAGE` — This environment variable will be set if the package being built is primary. Primary packages are the ones the user selected on the command-line, either with `-p` flags or the defaults based on the current directory and the default workspace members. This variable will not be set when building dependencies, unless a dependency is also a workspace member that was also selected on the command-line. This is only set when compiling the package (not when running binaries or tests).
 - `CARGO_TARGET_TMPDIR` — Only set when building [integration test](cargo-targets.md#integration-tests) or benchmark code. This is a path to a directory inside the target directory where integration tests or benchmarks are free to put any data needed by the tests/benches. Cargo initially creates this directory but doesn’t manage its content in any way, this is the responsibility of the test code.
 
@@ -176,20 +176,20 @@ let out_dir = env::var("OUT_DIR").unwrap();
 
 - `CARGO_FEATURE_<name>` — For each activated feature of the package being built, this environment variable will be present where `<name>` is the name of the feature uppercased and having `-` translated to `_`.
 
-- `CARGO_CFG_<cfg>` — For each [configuration option](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html) of the package being built, this environment variable will contain the value of the configuration, where `<cfg>` is the name of the configuration uppercased and having `-` translated to `_`. Boolean configurations are present if they are set, and not present otherwise. Configurations with multiple values are joined to a single variable with the values delimited by `,`. This includes values built-in to the compiler (which can be seen with `rustc --print=cfg`) and values set by build scripts and extra flags passed to `rustc` (such as those defined in `RUSTFLAGS`). Some examples of what these variables are:
+- `CARGO_CFG_<cfg>` — For each [configuration option](../../../rust-reference/chapters/conditional-compilation.md) of the package being built, this environment variable will contain the value of the configuration, where `<cfg>` is the name of the configuration uppercased and having `-` translated to `_`. Boolean configurations are present if they are set, and not present otherwise. Configurations with multiple values are joined to a single variable with the values delimited by `,`. This includes values built-in to the compiler (which can be seen with `rustc --print=cfg`) and values set by build scripts and extra flags passed to `rustc` (such as those defined in `RUSTFLAGS`). Some examples of what these variables are:
 
   - `CARGO_CFG_FEATURE` — Each activated feature of the package being built.
-  - `CARGO_CFG_UNIX` — Set on [unix-like platforms](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html#unix-and-windows).
-  - `CARGO_CFG_WINDOWS` — Set on [windows-like platforms](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html#unix-and-windows).
-  - `CARGO_CFG_TARGET_FAMILY=unix,wasm` — The [target family](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html#target_family).
-  - `CARGO_CFG_TARGET_OS=macos` — The [target operating system](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html#target_os).
-  - `CARGO_CFG_TARGET_ARCH=x86_64` — The CPU [target architecture](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html#target_arch).
-  - `CARGO_CFG_TARGET_VENDOR=apple` — The [target vendor](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html#target_vendor).
-  - `CARGO_CFG_TARGET_ENV=gnu` — The [target environment](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html#target_env) ABI.
-  - `CARGO_CFG_TARGET_ABI=eabihf` — The [target ABI](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html#target_abi).
-  - `CARGO_CFG_TARGET_POINTER_WIDTH=64` — The CPU [pointer width](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html#target_pointer_width).
-  - `CARGO_CFG_TARGET_ENDIAN=little` — The CPU [target endianness](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html#target_endian).
-  - `CARGO_CFG_TARGET_FEATURE=mmx,sse` — List of CPU [target features](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html#target_feature) enabled.
+  - `CARGO_CFG_UNIX` — Set on [unix-like platforms](../../../rust-reference/chapters/conditional-compilation.md#unix-and-windows).
+  - `CARGO_CFG_WINDOWS` — Set on [windows-like platforms](../../../rust-reference/chapters/conditional-compilation.md#unix-and-windows).
+  - `CARGO_CFG_TARGET_FAMILY=unix,wasm` — The [target family](../../../rust-reference/chapters/conditional-compilation.md#target_family).
+  - `CARGO_CFG_TARGET_OS=macos` — The [target operating system](../../../rust-reference/chapters/conditional-compilation.md#target_os).
+  - `CARGO_CFG_TARGET_ARCH=x86_64` — The CPU [target architecture](../../../rust-reference/chapters/conditional-compilation.md#target_arch).
+  - `CARGO_CFG_TARGET_VENDOR=apple` — The [target vendor](../../../rust-reference/chapters/conditional-compilation.md#target_vendor).
+  - `CARGO_CFG_TARGET_ENV=gnu` — The [target environment](../../../rust-reference/chapters/conditional-compilation.md#target_env) ABI.
+  - `CARGO_CFG_TARGET_ABI=eabihf` — The [target ABI](../../../rust-reference/chapters/conditional-compilation.md#target_abi).
+  - `CARGO_CFG_TARGET_POINTER_WIDTH=64` — The CPU [pointer width](../../../rust-reference/chapters/conditional-compilation.md#target_pointer_width).
+  - `CARGO_CFG_TARGET_ENDIAN=little` — The CPU [target endianness](../../../rust-reference/chapters/conditional-compilation.md#target_endian).
+  - `CARGO_CFG_TARGET_FEATURE=mmx,sse` — List of CPU [target features](../../../rust-reference/chapters/conditional-compilation.md#target_feature) enabled.
 
   > ![](../../assets/inline/environment-variables-1.svg)Note
   >

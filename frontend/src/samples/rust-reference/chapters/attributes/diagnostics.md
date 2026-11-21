@@ -44,7 +44,7 @@ For any lint check `C`:
 
 > ![](../../assets/inline/diagnostics-1.svg)Note
 >
-> The lint checks supported by `rustc` can be found via `rustc -W help`, along with their default settings and are documented in the [rustc book](https://doc.rust-lang.org/1.100.0/rustc/lints/index.html).
+> The lint checks supported by `rustc` can be found via `rustc -W help`, along with their default settings and are documented in the [rustc book](../../rustc/lints/index.html).
 
 ``` playground
 #![allow(unused)]
@@ -110,7 +110,7 @@ pub mod m3 {
 
 > ![](../../assets/inline/diagnostics-2.svg)Note
 >
-> `rustc` allows setting lint levels on the [command-line](https://doc.rust-lang.org/1.100.0/rustc/lints/levels.html#via-compiler-flag), and also supports [setting caps](https://doc.rust-lang.org/1.100.0/rustc/lints/levels.html#capping-lints) on the lints that are reported.
+> `rustc` allows setting lint levels on the [command-line](../../rustc/lints/levels.html#via-compiler-flag), and also supports [setting caps](../../rustc/lints/levels.html#capping-lints) on the lints that are reported.
 
 [attributes.diagnostics.lint.reason](#r-attributes.diagnostics.lint.reason)
 
@@ -327,7 +327,7 @@ fn foo() {
 
 > ![](../../assets/inline/diagnostics-4.svg)Note
 >
-> `rustc` currently recognizes the tool lints for “[clippy](https://github.com/rust-lang/rust-clippy)” and “[rustdoc](https://doc.rust-lang.org/1.100.0/rustdoc/lints.html)”.
+> `rustc` currently recognizes the tool lints for “[clippy](https://github.com/rust-lang/rust-clippy)” and “[rustdoc](../../rustdoc/lints.html)”.
 
 [attributes.diagnostics.deprecated](#r-attributes.diagnostics.deprecated)
 
@@ -694,7 +694,7 @@ A warning is generated for any unknown keys.
 
 [attributes.diagnostic.on_unimplemented.format-string](#r-attributes.diagnostic.on_unimplemented.format-string)
 
-All three options accept a string as an argument, interpreted using the same formatting as a [`std::fmt`](https://doc.rust-lang.org/1.100.0/alloc/fmt/index.html) string.
+All three options accept a string as an argument, interpreted using the same formatting as a [`std::fmt`](../../alloc/fmt/index.html) string.
 
 [attributes.diagnostic.on_unimplemented.format-parameters](#r-attributes.diagnostic.on_unimplemented.format-parameters)\
 Tests Tests with this rule:

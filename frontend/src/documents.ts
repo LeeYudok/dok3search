@@ -131,7 +131,7 @@ export const designDocuments: Document[] = Object.entries(designFiles).map(([pat
     (isMarkdown ? '' : '설계 저장소의 YAML 예시입니다.')
 
   return {
-    id: isArchitecture ? 'final-architecture' : 'design-' + samplePath.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+    id: isArchitecture ? 'final-architecture' : 'design-' + samplePath.replace(/[^a-zA-Z0-9]+/g, '-'),
     title: (pair?.title ?? heading?.[1].replace(/[`*]/g, '') ?? samplePath) + (samplePath.endsWith('-download.md') ? ' (다운로드본)' : ''),
     summary,
     source: 'dok3search-design',

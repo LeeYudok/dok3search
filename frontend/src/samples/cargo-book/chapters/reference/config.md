@@ -455,7 +455,7 @@ Possible values:
 
 - Any supported target in `rustc --print target-list`.
 - `"host-tuple"`, which will internally be substituted by the host’s target. This can be particularly useful if you’re cross-compiling some crates, and don’t want to specify your host’s machine as a target (for instance, an `xtask` in a shared project that may be worked on by many hosts).
-- A path to a custom target specification. See [Custom Target Lookup Path](https://doc.rust-lang.org/1.100.0/rustc/targets/custom.html#custom-target-lookup-path) for more information.
+- A path to a custom target specification. See [Custom Target Lookup Path](../../rustc/targets/custom.html#custom-target-lookup-path) for more information.
 
 Can be overridden with the `--target` CLI option.
 
@@ -1230,7 +1230,7 @@ If none of `branch`, `tag`, or `rev` is set, defaults to the `master` branch.
 
 ### `[target]`
 
-The `[target]` table is used for specifying settings for specific platform targets. It consists of a sub-table which is either a [platform tuple](../appendix/glossary.md#target ""target" (glossary)") or a [`cfg()` expression](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html). The given values will be used if the target platform matches either the `<tuple>` value or the `<cfg>` expression.
+The `[target]` table is used for specifying settings for specific platform targets. It consists of a sub-table which is either a [platform tuple](../appendix/glossary.md#target ""target" (glossary)") or a [`cfg()` expression](../../../rust-reference/chapters/conditional-compilation.md). The given values will be used if the target platform matches either the `<tuple>` value or the `<cfg>` expression.
 
 ``` toml
 [target.thumbv7m-none-eabi]
@@ -1257,11 +1257,11 @@ This option is deprecated and unused.
 - Default: none
 - Environment: `CARGO_TARGET_<tuple>_LINKER`
 
-Specifies the linker which is passed to `rustc` (via [`-C linker`](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#linker)) when the [`<tuple>`](../appendix/glossary.md#target ""target" (glossary)") is being compiled for. By default, the linker is not overridden.
+Specifies the linker which is passed to `rustc` (via [`-C linker`](../../rustc/codegen-options/index.html#linker)) when the [`<tuple>`](../appendix/glossary.md#target ""target" (glossary)") is being compiled for. By default, the linker is not overridden.
 
 #### `target.<cfg>.linker`
 
-This is similar to the [target linker](#targettuplelinker), but using a [`cfg()` expression](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html). If both a [`<tuple>`](../appendix/glossary.md#target ""target" (glossary)") and `<cfg>` linker match, the `<tuple>` will take precedence. It is an error if more than one `<cfg>` linker matches the current target.
+This is similar to the [target linker](#targettuplelinker), but using a [`cfg()` expression](../../../rust-reference/chapters/conditional-compilation.md). If both a [`<tuple>`](../appendix/glossary.md#target ""target" (glossary)") and `<cfg>` linker match, the `<tuple>` will take precedence. It is an error if more than one `<cfg>` linker matches the current target.
 
 #### `target.<tuple>.runner`
 
@@ -1273,7 +1273,7 @@ If a runner is provided, executables for the target [`<tuple>`](../appendix/glos
 
 #### `target.<cfg>.runner`
 
-This is similar to the [target runner](#targettuplerunner), but using a [`cfg()` expression](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html). If both a [`<tuple>`](../appendix/glossary.md#target ""target" (glossary)") and `<cfg>` runner match, the `<tuple>` will take precedence. It is an error if more than one `<cfg>` runner matches the current target.
+This is similar to the [target runner](#targettuplerunner), but using a [`cfg()` expression](../../../rust-reference/chapters/conditional-compilation.md). If both a [`<tuple>`](../appendix/glossary.md#target ""target" (glossary)") and `<cfg>` runner match, the `<tuple>` will take precedence. It is an error if more than one `<cfg>` runner matches the current target.
 
 #### `target.<tuple>.rustflags`
 
@@ -1287,7 +1287,7 @@ See [`build.rustflags`](#buildrustflags) for more details on the different ways 
 
 #### `target.<cfg>.rustflags`
 
-This is similar to the [target rustflags](#targettuplerustflags), but using a [`cfg()` expression](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html). If several `<cfg>` and [`<tuple>`](../appendix/glossary.md#target ""target" (glossary)") entries match the current target, the flags are joined together.
+This is similar to the [target rustflags](#targettuplerustflags), but using a [`cfg()` expression](../../../rust-reference/chapters/conditional-compilation.md). If several `<cfg>` and [`<tuple>`](../appendix/glossary.md#target ""target" (glossary)") entries match the current target, the flags are joined together.
 
 #### `target.<tuple>.rustdocflags`
 
@@ -1301,7 +1301,7 @@ See [`build.rustdocflags`](#buildrustdocflags) for more details on the different
 
 #### `target.<cfg>.rustdocflags`
 
-This is similar to the [target rustdocflags](#targettuplerustdocflags), but using a [`cfg()` expression](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html). If several `<cfg>` and [`<tuple>`](../appendix/glossary.md#target ""target" (glossary)") entries match the current target, the flags are joined together.
+This is similar to the [target rustdocflags](#targettuplerustdocflags), but using a [`cfg()` expression](../../../rust-reference/chapters/conditional-compilation.md). If several `<cfg>` and [`<tuple>`](../appendix/glossary.md#target ""target" (glossary)") entries match the current target, the flags are joined together.
 
 #### `target.<tuple>.<links>`
 

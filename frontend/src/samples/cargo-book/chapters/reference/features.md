@@ -1,6 +1,6 @@
 # Features
 
-Cargo “features” provide a mechanism to express [conditional compilation](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html) and [optional dependencies](#optional-dependencies). A package defines a set of named features in the `[features]` table of `Cargo.toml`, and each feature can either be enabled or disabled. Features for the package being built can be enabled on the command-line with flags such as `--features`. Features for dependencies can be enabled in the dependency declaration in `Cargo.toml`.
+Cargo “features” provide a mechanism to express [conditional compilation](../../../rust-reference/chapters/conditional-compilation.md) and [optional dependencies](#optional-dependencies). A package defines a set of named features in the `[features]` table of `Cargo.toml`, and each feature can either be enabled or disabled. Features for the package being built can be enabled on the command-line with flags such as `--features`. Features for dependencies can be enabled in the dependency declaration in `Cargo.toml`.
 
 > ![](../../assets/inline/features-1.svg)Note
 >
@@ -18,7 +18,7 @@ Features are defined in the `[features]` table in `Cargo.toml`. Each feature spe
 webp = []
 ```
 
-With this feature defined, [`cfg` expressions](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html) can be used to conditionally include code to support the requested feature at compile time. For example, inside `lib.rs` of the package could include this:
+With this feature defined, [`cfg` expressions](../../../rust-reference/chapters/conditional-compilation.md) can be used to conditionally include code to support the requested feature at compile time. For example, inside `lib.rs` of the package could include this:
 
 ``` playground
 #![allow(unused)]
@@ -29,7 +29,7 @@ pub mod webp;
 }
 ```
 
-Cargo sets features in the package using the `rustc` [`--cfg` flag](https://doc.rust-lang.org/1.100.0/rustc/command-line-arguments.html#option-cfg), and code can test for their presence with the [`cfg` attribute](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html#the-cfg-attribute) or the [`cfg` macro](https://doc.rust-lang.org/1.100.0/std/macro.cfg.html).
+Cargo sets features in the package using the `rustc` [`--cfg` flag](../../rustc/command-line-arguments.html#option-cfg), and code can test for their presence with the [`cfg` attribute](../../../rust-reference/chapters/conditional-compilation.md#the-cfg-attribute) or the [`cfg` macro](../../std/macro.cfg.html).
 
 Features can list other features to enable. For example, the ICO image format can contain BMP and PNG images, so when it is enabled, it should make sure those other features are enabled, too:
 
@@ -45,7 +45,7 @@ Feature names may include characters from the [Unicode XID standard](https://uni
 
 > ![](../../assets/inline/features-2.svg)Note
 >
-> [crates.io](https://crates.io/) imposes additional constraints on feature name syntax that they must only be [ASCII alphanumeric](https://doc.rust-lang.org/1.100.0/std/primitive.char.html#method.is_ascii_alphanumeric) characters or `_`, `-`, or `+`.
+> [crates.io](https://crates.io/) imposes additional constraints on feature name syntax that they must only be [ASCII alphanumeric](../../std/primitive.char.html#method.is_ascii_alphanumeric) characters or `_`, `-`, or `+`.
 
 ## The `default` feature
 
@@ -187,7 +187,7 @@ For example, let’s look at the [`winapi`](https://crates.io/crates/winapi) pac
 
 A consequence of this is that features should be *additive*. That is, enabling a feature should not disable functionality, and it should usually be safe to enable any combination of features. A feature should not introduce a [SemVer-incompatible change](#semver-compatibility).
 
-For example, if you want to optionally support [`no_std`](https://doc.rust-lang.org/1.100.0/reference/names/preludes.html#the-no_std-attribute) environments, **do not** use a `no_std` feature. Instead, use a `std` feature that *enables* `std`. For example:
+For example, if you want to optionally support [`no_std`](../../../rust-reference/chapters/names/preludes.md#the-no_std-attribute) environments, **do not** use a `no_std` feature. Instead, use a `std` feature that *enables* `std`. For example:
 
 ``` playground
 #![allow(unused)]
@@ -295,7 +295,7 @@ See the links for caveats and examples.
 
 ## Feature documentation and discovery
 
-You are encouraged to document which features are available in your package. This can be done by adding [doc comments](https://doc.rust-lang.org/1.100.0/rustdoc/how-to-write-documentation.html) at the top of `lib.rs`. As an example, see the [regex crate source](https://github.com/rust-lang/regex/blob/1.4.2/src/lib.rs#L488-L583), which when rendered can be viewed on [docs.rs](https://docs.rs/regex/1.4.2/regex/#crate-features). If you have other documentation, such as a user guide, consider adding the documentation there (for example, see [serde.rs](https://serde.rs/feature-flags.html)). If you have a binary project, consider documenting the features in the README or other documentation for the project (for example, see [sccache](https://github.com/mozilla/sccache/blob/0.2.13/README.md#build-requirements)).
+You are encouraged to document which features are available in your package. This can be done by adding [doc comments](../../rustdoc/how-to-write-documentation.html) at the top of `lib.rs`. As an example, see the [regex crate source](https://github.com/rust-lang/regex/blob/1.4.2/src/lib.rs#L488-L583), which when rendered can be viewed on [docs.rs](https://docs.rs/regex/1.4.2/regex/#crate-features). If you have other documentation, such as a user guide, consider adding the documentation there (for example, see [serde.rs](https://serde.rs/feature-flags.html)). If you have a binary project, consider documenting the features in the README or other documentation for the project (for example, see [sccache](https://github.com/mozilla/sccache/blob/0.2.13/README.md#build-requirements)).
 
 Clearly documenting the features can set expectations about features that are considered “unstable” or otherwise shouldn’t be used. For example, if there is an optional dependency, but you don’t want users to explicitly list that optional dependency as a feature, exclude it from the documented list.
 

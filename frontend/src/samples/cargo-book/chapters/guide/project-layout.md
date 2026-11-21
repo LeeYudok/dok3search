@@ -47,6 +47,6 @@ If a binary, example, bench, or integration test consists of multiple source fil
 >
 > By convention, binaries, examples, benches and integration tests follow `kebab-case` naming style, unless there are compatibility reasons to do otherwise (e.g. compatibility with a pre-existing binary name). Modules within those targets are `snake_case` following the [Rust standard](https://rust-lang.github.io/rfcs/0430-finalizing-naming-conventions.html).
 
-You can learn more about Rust’s module system in [the book](https://doc.rust-lang.org/1.100.0/book/ch07-00-managing-growing-projects-with-packages-crates-and-modules.html).
+You can learn more about Rust’s module system in [the book](../../book/ch07-00-managing-growing-projects-with-packages-crates-and-modules.html).
 
 See [Configuring a target](../reference/cargo-targets.md#configuring-a-target) for more details on manually configuring targets. See [Target auto-discovery](../reference/cargo-targets.md#target-auto-discovery) for more information on controlling how Cargo automatically infers target names.

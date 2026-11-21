@@ -47,7 +47,7 @@ In addition to environment variables, the build script’s current directory is 
 
 > ![](../../assets/inline/build-scripts-2.svg)Warning
 >
-> When checking [configuration options](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html) like `target_os` or `target_arch` in a build script, do not use the `cfg!` macro or `#[cfg]` attribute, these check the **host** machine (where the build script runs), not the **target** platform you’re compiling for. This distinction matters when cross-compiling.
+> When checking [configuration options](../../../rust-reference/chapters/conditional-compilation.md) like `target_os` or `target_arch` in a build script, do not use the `cfg!` macro or `#[cfg]` attribute, these check the **host** machine (where the build script runs), not the **target** platform you’re compiling for. This distinction matters when cross-compiling.
 >
 > Instead, read the corresponding [`CARGO_CFG_*`](environment-variables.md#environment-variables-cargo-sets-for-build-scripts) environment variables, which correctly reflect the target’s configuration. For a typed API, consider using the [`build-rs`](https://crates.io/crates/build-rs) crate. See the [build script examples](build-script-examples.md#conditional-compilation) for more details.
 
@@ -96,50 +96,50 @@ The following is a summary of the instructions that Cargo recognizes, with each 
 
 ### `cargo::rustc-link-arg=FLAG`
 
-The `rustc-link-arg` instruction tells Cargo to pass the [`-C link-arg=FLAG` option](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#link-arg) to the compiler, but only when building supported targets (benchmarks, binaries, `cdylib` crates, examples, and tests). Its usage is highly platform specific. It is useful to set the shared library version or linker script.
+The `rustc-link-arg` instruction tells Cargo to pass the [`-C link-arg=FLAG` option](../../rustc/codegen-options/index.html#link-arg) to the compiler, but only when building supported targets (benchmarks, binaries, `cdylib` crates, examples, and tests). Its usage is highly platform specific. It is useful to set the shared library version or linker script.
 
 ### `cargo::rustc-link-arg-cdylib=FLAG`
 
-The `rustc-link-arg-cdylib` instruction tells Cargo to pass the [`-C link-arg=FLAG` option](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#link-arg) to the compiler, but only when building a `cdylib` library target. Its usage is highly platform specific. It is useful to set the shared library version or the runtime-path.
+The `rustc-link-arg-cdylib` instruction tells Cargo to pass the [`-C link-arg=FLAG` option](../../rustc/codegen-options/index.html#link-arg) to the compiler, but only when building a `cdylib` library target. Its usage is highly platform specific. It is useful to set the shared library version or the runtime-path.
 
 For historical reasons, the `cargo::rustc-cdylib-link-arg` form is an alias for `cargo::rustc-link-arg-cdylib`, and has the same meaning.
 
 ### `cargo::rustc-link-arg-bin=BIN=FLAG`
 
-The `rustc-link-arg-bin` instruction tells Cargo to pass the [`-C link-arg=FLAG` option](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#link-arg) to the compiler, but only when building the binary target with name `BIN`. Its usage is highly platform specific. It is useful to set a linker script or other linker options.
+The `rustc-link-arg-bin` instruction tells Cargo to pass the [`-C link-arg=FLAG` option](../../rustc/codegen-options/index.html#link-arg) to the compiler, but only when building the binary target with name `BIN`. Its usage is highly platform specific. It is useful to set a linker script or other linker options.
 
 ### `cargo::rustc-link-arg-bins=FLAG`
 
-The `rustc-link-arg-bins` instruction tells Cargo to pass the [`-C link-arg=FLAG` option](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#link-arg) to the compiler, but only when building a binary target. Its usage is highly platform specific. It is useful to set a linker script or other linker options.
+The `rustc-link-arg-bins` instruction tells Cargo to pass the [`-C link-arg=FLAG` option](../../rustc/codegen-options/index.html#link-arg) to the compiler, but only when building a binary target. Its usage is highly platform specific. It is useful to set a linker script or other linker options.
 
 ### `cargo::rustc-link-arg-tests=FLAG`
 
-The `rustc-link-arg-tests` instruction tells Cargo to pass the [`-C link-arg=FLAG` option](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#link-arg) to the compiler, but only when building a tests target.
+The `rustc-link-arg-tests` instruction tells Cargo to pass the [`-C link-arg=FLAG` option](../../rustc/codegen-options/index.html#link-arg) to the compiler, but only when building a tests target.
 
 ### `cargo::rustc-link-arg-examples=FLAG`
 
-The `rustc-link-arg-examples` instruction tells Cargo to pass the [`-C link-arg=FLAG` option](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#link-arg) to the compiler, but only when building an examples target.
+The `rustc-link-arg-examples` instruction tells Cargo to pass the [`-C link-arg=FLAG` option](../../rustc/codegen-options/index.html#link-arg) to the compiler, but only when building an examples target.
 
 ### `cargo::rustc-link-arg-benches=FLAG`
 
-The `rustc-link-arg-benches` instruction tells Cargo to pass the [`-C link-arg=FLAG` option](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#link-arg) to the compiler, but only when building a benchmark target.
+The `rustc-link-arg-benches` instruction tells Cargo to pass the [`-C link-arg=FLAG` option](../../rustc/codegen-options/index.html#link-arg) to the compiler, but only when building a benchmark target.
 
 ### `cargo::rustc-link-lib=LIB`
 
-The `rustc-link-lib` instruction tells Cargo to link the given library using the compiler’s [`-l` flag](https://doc.rust-lang.org/1.100.0/rustc/command-line-arguments.html#option-l-link-lib). This is typically used to link a native library using [FFI](https://doc.rust-lang.org/1.100.0/nomicon/ffi.html).
+The `rustc-link-lib` instruction tells Cargo to link the given library using the compiler’s [`-l` flag](../../rustc/command-line-arguments.html#option-l-link-lib). This is typically used to link a native library using [FFI](../../nomicon/ffi.html).
 
 The `LIB` string is passed directly to rustc, so it supports any syntax that `-l` does.\
 Currently the fully supported syntax for `LIB` is `[KIND[:MODIFIERS]=]NAME[:RENAME]`.
 
 The `-l` flag is only passed to the library target of the package, unless there is no library target, in which case it is passed to all targets. This is done because all other targets have an implicit dependency on the library target, and the given library to link should only be included once. This means that if a package has both a library and a binary target, the *library* has access to the symbols from the given lib, and the binary should access them through the library target’s public API.
 
-The optional `KIND` may be one of `dylib`, `static`, or `framework`. See the [rustc book](https://doc.rust-lang.org/1.100.0/rustc/command-line-arguments.html#option-l-link-lib) for more detail.
+The optional `KIND` may be one of `dylib`, `static`, or `framework`. See the [rustc book](../../rustc/command-line-arguments.html#option-l-link-lib) for more detail.
 
 ### `cargo::rustc-link-search=[KIND=]PATH`
 
-The `rustc-link-search` instruction tells Cargo to pass the [`-L` flag](https://doc.rust-lang.org/1.100.0/rustc/command-line-arguments.html#option-l-search-path) to the compiler to add a directory to the library search path.
+The `rustc-link-search` instruction tells Cargo to pass the [`-L` flag](../../rustc/command-line-arguments.html#option-l-search-path) to the compiler to add a directory to the library search path.
 
-The optional `KIND` may be one of `dependency`, `crate`, `native`, `framework`, or `all`. See the [rustc book](https://doc.rust-lang.org/1.100.0/rustc/command-line-arguments.html#option-l-search-path) for more detail.
+The optional `KIND` may be one of `dependency`, `crate`, `native`, `framework`, or `all`. See the [rustc book](../../rustc/command-line-arguments.html#option-l-search-path) for more detail.
 
 These paths are also added to the [dynamic library search path environment variable](environment-variables.md#dynamic-library-paths) if they are within the `OUT_DIR`. Depending on this behavior is discouraged since this makes it difficult to use the resulting binary. In general, it is best to avoid creating dynamic libraries in a build script (using existing system libraries is fine).
 
@@ -149,7 +149,7 @@ The `rustc-flags` instruction tells Cargo to pass the given space-separated flag
 
 ### `cargo::rustc-cfg=KEY[="VALUE"]`
 
-The `rustc-cfg` instruction tells Cargo to pass the given value to the [`--cfg` flag](https://doc.rust-lang.org/1.100.0/rustc/command-line-arguments.html#option-cfg) to the compiler. This may be used for compile-time detection of features to enable [conditional compilation](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html). Custom cfgs must either be expected using the [`cargo::rustc-check-cfg`](#rustc-check-cfg) instruction or usage will need to allow the [`unexpected_cfgs`](https://doc.rust-lang.org/1.100.0/rustc/lints/listing/warn-by-default.html#unexpected-cfgs) lint to avoid unexpected cfgs warnings.
+The `rustc-cfg` instruction tells Cargo to pass the given value to the [`--cfg` flag](../../rustc/command-line-arguments.html#option-cfg) to the compiler. This may be used for compile-time detection of features to enable [conditional compilation](../../../rust-reference/chapters/conditional-compilation.md). Custom cfgs must either be expected using the [`cargo::rustc-check-cfg`](#rustc-check-cfg) instruction or usage will need to allow the [`unexpected_cfgs`](../../rustc/lints/listing/warn-by-default.html#unexpected-cfgs) lint to avoid unexpected cfgs warnings.
 
 Note that this does *not* affect Cargo’s dependency resolution. This cannot be used to enable an optional dependency, or enable other Cargo features.
 
@@ -157,9 +157,9 @@ Be aware that [Cargo features](features.md) use the form `feature="foo"`. `cfg` 
 
 ### `cargo::rustc-check-cfg=CHECK_CFG`
 
-Add to the list of expected config names and values that is used when checking the *reachable* cfg expressions with the [`unexpected_cfgs`](https://doc.rust-lang.org/1.100.0/rustc/lints/listing/warn-by-default.html#unexpected-cfgs) lint.
+Add to the list of expected config names and values that is used when checking the *reachable* cfg expressions with the [`unexpected_cfgs`](../../rustc/lints/listing/warn-by-default.html#unexpected-cfgs) lint.
 
-The syntax of `CHECK_CFG` mirrors the `rustc` [`--check-cfg` flag](https://doc.rust-lang.org/1.100.0/rustc/command-line-arguments.html#option-check-cfg), see [Checking conditional configurations](https://doc.rust-lang.org/1.100.0/rustc/check-cfg.html) for more details.
+The syntax of `CHECK_CFG` mirrors the `rustc` [`--check-cfg` flag](../../rustc/command-line-arguments.html#option-check-cfg), see [Checking conditional configurations](../../rustc/check-cfg.html) for more details.
 
 The instruction can be used like this:
 
@@ -176,7 +176,7 @@ if foo_bar_condition {
 
 Note that all possible cfgs should be defined, regardless of which cfgs are currently enabled. This includes all possible values of a given cfg name.
 
-It is recommended to group the `cargo::rustc-check-cfg` and [`cargo::rustc-cfg`](https://doc.rust-lang.org/1.100.0/rustc/command-line-arguments.html#option-cfg) instructions as closely as possible in order to avoid typos, missing check-cfg, stale cfgs…
+It is recommended to group the `cargo::rustc-check-cfg` and [`cargo::rustc-cfg`](../../rustc/command-line-arguments.html#option-cfg) instructions as closely as possible in order to avoid typos, missing check-cfg, stale cfgs…
 
 See also the [conditional compilation](build-script-examples.md#conditional-compilation) example.
 
@@ -184,7 +184,7 @@ See also the [conditional compilation](build-script-examples.md#conditional-comp
 
 ### `cargo::rustc-env=VAR=VALUE`
 
-The `rustc-env` instruction tells Cargo to set the given environment variable when compiling the package. The value can be then retrieved by the [`env!` macro](https://doc.rust-lang.org/1.100.0/std/macro.env.html) in the compiled crate. This is useful for embedding additional metadata in crate’s code, such as the hash of git HEAD or the unique identifier of a continuous integration server.
+The `rustc-env` instruction tells Cargo to set the given environment variable when compiling the package. The value can be then retrieved by the [`env!` macro](../../std/macro.env.html) in the compiled crate. This is useful for embedding additional metadata in crate’s code, such as the hash of git HEAD or the unique identifier of a continuous integration server.
 
 See also the [environment variables automatically included by Cargo](environment-variables.md#environment-variables-cargo-sets-for-crates).
 
@@ -237,7 +237,7 @@ The `rerun-if-env-changed` instruction tells Cargo to re-run the build script if
 
 Note that the environment variables here are intended for global environment variables like `CC` and such, it is not possible to use this for environment variables like `TARGET` that [Cargo sets for build scripts](environment-variables.md#environment-variables-cargo-sets-for-build-scripts). The environment variables in use are those received by `cargo` invocations, not those received by the executable of the build script.
 
-As of 1.46, using [`env!`](https://doc.rust-lang.org/1.100.0/std/macro.env.html) and [`option_env!`](https://doc.rust-lang.org/1.100.0/std/macro.option_env.html) in source code will automatically detect changes and trigger rebuilds. `rerun-if-env-changed` is no longer needed for variables already referenced by these macros.
+As of 1.46, using [`env!`](../../std/macro.env.html) and [`option_env!`](../../std/macro.option_env.html) in source code will automatically detect changes and trigger rebuilds. `rerun-if-env-changed` is no longer needed for variables already referenced by these macros.
 
 ## The `links` Manifest Key
 

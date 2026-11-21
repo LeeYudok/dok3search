@@ -10,7 +10,7 @@ The *`derive` [attribute](../attributes.md#r-attributes)* invokes one or more [d
 
 > ![](../../assets/inline/derive-1.svg)Example
 >
-> The [`PartialEq`](https://doc.rust-lang.org/1.100.0/core/cmp/derive.PartialEq.html) derive macro emits an [implementation](../items/implementations.md) of [`PartialEq`](https://doc.rust-lang.org/1.100.0/core/cmp/trait.PartialEq.html) for `Foo<T> where T: PartialEq`. The [`Clone`](https://doc.rust-lang.org/1.100.0/core/clone/derive.Clone.html) derive macro does likewise for [`Clone`](https://doc.rust-lang.org/1.100.0/core/clone/trait.Clone.html).
+> The [`PartialEq`](../../core/cmp/derive.PartialEq.html) derive macro emits an [implementation](../items/implementations.md) of [`PartialEq`](../../core/cmp/trait.PartialEq.html) for `Foo<T> where T: PartialEq`. The [`Clone`](../../core/clone/derive.Clone.html) derive macro does likewise for [`Clone`](../../core/clone/trait.Clone.html).
 >
 > ``` playground
 > #![allow(unused)]
@@ -59,24 +59,24 @@ The `derive` attribute may be used any number of times on an item. All derive ma
 
 The `derive` attribute is exported in the standard library as:
 
-- [`core::derive`](https://doc.rust-lang.org/1.100.0/core/macros/builtin/attr.derive.html)
-- [`std::derive`](https://doc.rust-lang.org/1.100.0/core/macros/builtin/attr.derive.html)
-- [`core::prelude::v1::derive`](https://doc.rust-lang.org/1.100.0/core/macros/builtin/attr.derive.html)
-- [`std::prelude::v1::derive`](https://doc.rust-lang.org/1.100.0/core/macros/builtin/attr.derive.html)
+- [`core::derive`](../../core/macros/builtin/attr.derive.html)
+- [`std::derive`](../../core/macros/builtin/attr.derive.html)
+- [`core::prelude::v1::derive`](../../core/macros/builtin/attr.derive.html)
+- [`std::prelude::v1::derive`](../../core/macros/builtin/attr.derive.html)
 
 [attributes.derive.built-in](#r-attributes.derive.built-in)
 
 Built-in derives are defined in the [language prelude](../names/preludes.md#r-names.preludes.lang). The list of built-in derives are:
 
-- [`Clone`](https://doc.rust-lang.org/1.100.0/core/clone/trait.Clone.html)
-- [`Copy`](https://doc.rust-lang.org/1.100.0/core/marker/trait.Copy.html)
-- [`Debug`](https://doc.rust-lang.org/1.100.0/core/fmt/macros/derive.Debug.html)
-- [`Default`](https://doc.rust-lang.org/1.100.0/core/default/trait.Default.html)
-- [`Eq`](https://doc.rust-lang.org/1.100.0/core/cmp/trait.Eq.html)
-- [`Hash`](https://doc.rust-lang.org/1.100.0/core/hash/macros/derive.Hash.html)
-- [`Ord`](https://doc.rust-lang.org/1.100.0/core/cmp/trait.Ord.html)
-- [`PartialEq`](https://doc.rust-lang.org/1.100.0/core/cmp/trait.PartialEq.html)
-- [`PartialOrd`](https://doc.rust-lang.org/1.100.0/core/cmp/trait.PartialOrd.html)
+- [`Clone`](../../core/clone/trait.Clone.html)
+- [`Copy`](../../core/marker/trait.Copy.html)
+- [`Debug`](../../core/fmt/macros/derive.Debug.html)
+- [`Default`](../../core/default/trait.Default.html)
+- [`Eq`](../../core/cmp/trait.Eq.html)
+- [`Hash`](../../core/hash/macros/derive.Hash.html)
+- [`Ord`](../../core/cmp/trait.Ord.html)
+- [`PartialEq`](../../core/cmp/trait.PartialEq.html)
+- [`PartialOrd`](../../core/cmp/trait.PartialOrd.html)
 
 [attributes.derive.built-in-automatically_derived](#r-attributes.derive.built-in-automatically_derived)
 
@@ -96,7 +96,7 @@ The *`automatically_derived` [attribute](../attributes.md#r-attributes)* is used
 
 > ![](../../assets/inline/derive-2.svg)Example
 >
-> Given [`#[derive(Clone)]`](https://doc.rust-lang.org/1.100.0/core/clone/derive.Clone.html) on `struct Example`, the [derive macro](../procedural-macros.md#r-macro.proc.derive) may produce:
+> Given [`#[derive(Clone)]`](../../core/clone/derive.Clone.html) on `struct Example`, the [derive macro](../procedural-macros.md#r-macro.proc.derive) may produce:
 >
 > ``` playground
 > #![allow(unused)]

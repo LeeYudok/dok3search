@@ -745,19 +745,19 @@ In the above example, uncommenting the declaration of `y` will produce an error 
 
 [type.closure.call.intro](#r-type.closure.call.intro)
 
-Closure types all implement [`FnOnce`](https://doc.rust-lang.org/1.100.0/core/ops/function/trait.FnOnce.html), indicating that they can be called once by consuming ownership of the closure. Additionally, some closures implement more specific call traits:
+Closure types all implement [`FnOnce`](../../core/ops/function/trait.FnOnce.html), indicating that they can be called once by consuming ownership of the closure. Additionally, some closures implement more specific call traits:
 
 [type.closure.call.fn-mut](#r-type.closure.call.fn-mut)
 
-- A closure which does not move out of any captured variables implements [`FnMut`](https://doc.rust-lang.org/1.100.0/core/ops/function/trait.FnMut.html), indicating that it can be called by mutable reference.
+- A closure which does not move out of any captured variables implements [`FnMut`](../../core/ops/function/trait.FnMut.html), indicating that it can be called by mutable reference.
 
 [type.closure.call.fn](#r-type.closure.call.fn)
 
-- A closure which does not mutate or move out of any captured variables implements [`Fn`](https://doc.rust-lang.org/1.100.0/core/ops/function/trait.Fn.html), indicating that it can be called by shared reference.
+- A closure which does not mutate or move out of any captured variables implements [`Fn`](../../core/ops/function/trait.Fn.html), indicating that it can be called by shared reference.
 
 > ![](../../assets/inline/closure-4.svg)Note
 >
-> `move` closures may still implement [`Fn`](https://doc.rust-lang.org/1.100.0/core/ops/function/trait.Fn.html) or [`FnMut`](https://doc.rust-lang.org/1.100.0/core/ops/function/trait.FnMut.html), even though they capture variables by move. This is because the traits implemented by a closure type are determined by what the closure does with captured values, not how it captures them.
+> `move` closures may still implement [`Fn`](../../core/ops/function/trait.Fn.html) or [`FnMut`](../../core/ops/function/trait.FnMut.html), even though they capture variables by move. This is because the traits implemented by a closure type are determined by what the closure does with captured values, not how it captures them.
 
 [type.closure.non-capturing](#r-type.closure.non-capturing)
 
@@ -782,14 +782,14 @@ x = bo(5,7);
 
 [type.closure.async.traits.fn-family](#r-type.closure.async.traits.fn-family)
 
-Async closures have a further restriction of whether or not they implement [`FnMut`](https://doc.rust-lang.org/1.100.0/core/ops/function/trait.FnMut.html) or [`Fn`](https://doc.rust-lang.org/1.100.0/core/ops/function/trait.Fn.html).
+Async closures have a further restriction of whether or not they implement [`FnMut`](../../core/ops/function/trait.FnMut.html) or [`Fn`](../../core/ops/function/trait.Fn.html).
 
-The [`Future`](https://doc.rust-lang.org/1.100.0/core/future/future/trait.Future.html) returned by the async closure has similar capturing characteristics as a closure. It captures place expressions from the async closure based on how they are used. The async closure is said to be *lending* to its [`Future`](https://doc.rust-lang.org/1.100.0/core/future/future/trait.Future.html) if it has either of the following properties:
+The [`Future`](../../core/future/future/trait.Future.html) returned by the async closure has similar capturing characteristics as a closure. It captures place expressions from the async closure based on how they are used. The async closure is said to be *lending* to its [`Future`](../../core/future/future/trait.Future.html) if it has either of the following properties:
 
 - The `Future` includes a mutable capture.
 - The async closure captures by value, except when the value is accessed with a dereference projection.
 
-If the async closure is lending to its `Future`, then [`FnMut`](https://doc.rust-lang.org/1.100.0/core/ops/function/trait.FnMut.html) and [`Fn`](https://doc.rust-lang.org/1.100.0/core/ops/function/trait.Fn.html) are *not* implemented. [`FnOnce`](https://doc.rust-lang.org/1.100.0/core/ops/function/trait.FnOnce.html) is always implemented.
+If the async closure is lending to its `Future`, then [`FnMut`](../../core/ops/function/trait.FnMut.html) and [`Fn`](../../core/ops/function/trait.Fn.html) are *not* implemented. [`FnOnce`](../../core/ops/function/trait.FnOnce.html) is always implemented.
 
 > **Example**: The first clause for a mutable capture can be illustrated with the following:
 >
@@ -844,7 +844,7 @@ If the async closure is lending to its `Future`, then [`FnMut`](https://doc.rust
 
 [type.closure.async.traits.async-family](#r-type.closure.async.traits.async-family)
 
-Async closures implement [`AsyncFn`](https://doc.rust-lang.org/1.100.0/core/ops/async_function/trait.AsyncFn.html), [`AsyncFnMut`](https://doc.rust-lang.org/1.100.0/core/ops/async_function/trait.AsyncFnMut.html), and [`AsyncFnOnce`](https://doc.rust-lang.org/1.100.0/core/ops/async_function/trait.AsyncFnOnce.html) in an analogous way as regular closures implement [`Fn`](https://doc.rust-lang.org/1.100.0/core/ops/function/trait.Fn.html), [`FnMut`](https://doc.rust-lang.org/1.100.0/core/ops/function/trait.FnMut.html), and [`FnOnce`](https://doc.rust-lang.org/1.100.0/core/ops/function/trait.FnOnce.html); that is, depending on the use of the captured variables in its body.
+Async closures implement [`AsyncFn`](../../core/ops/async_function/trait.AsyncFn.html), [`AsyncFnMut`](../../core/ops/async_function/trait.AsyncFnMut.html), and [`AsyncFnOnce`](../../core/ops/async_function/trait.AsyncFnOnce.html) in an analogous way as regular closures implement [`Fn`](../../core/ops/function/trait.Fn.html), [`FnMut`](../../core/ops/function/trait.FnMut.html), and [`FnOnce`](../../core/ops/function/trait.FnOnce.html); that is, depending on the use of the captured variables in its body.
 
 [type.closure.traits](#r-type.closure.traits)
 

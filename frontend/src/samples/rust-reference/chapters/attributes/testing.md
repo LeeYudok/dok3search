@@ -42,11 +42,11 @@ Tests Tests with this rule:
 - [tests/ui/test-attrs/test-function-signature.rs](https://github.com/rust-lang/rust/blob/1.100.0/tests/ui/test-attrs/test-function-signature.rs)
 - [tests/ui/test-attrs/test-on-not-fn.rs](https://github.com/rust-lang/rust/blob/1.100.0/tests/ui/test-attrs/test-on-not-fn.rs)
 
-The `test` attribute may only be applied to [free functions](../glossary.md#free-item) that are monomorphic, that take no arguments, and where the return type implements the [`Termination`](https://doc.rust-lang.org/1.100.0/std/process/trait.Termination.html) trait.
+The `test` attribute may only be applied to [free functions](../glossary.md#free-item) that are monomorphic, that take no arguments, and where the return type implements the [`Termination`](../../std/process/trait.Termination.html) trait.
 
 > ![](../../assets/inline/testing-2.svg)Note
 >
-> Some of types that implement the [`Termination`](https://doc.rust-lang.org/1.100.0/std/process/trait.Termination.html) trait include:
+> Some of types that implement the [`Termination`](../../std/process/trait.Termination.html) trait include:
 >
 > - `()`
 > - `Result<T, E> where T: Termination, E: Debug`
@@ -61,7 +61,7 @@ Only the first use of `test` on a function has effect.
 
 [attributes.testing.test.stdlib](#r-attributes.testing.test.stdlib)
 
-The `test` attribute is exported from the standard library prelude as [`std::prelude::v1::test`](https://doc.rust-lang.org/1.100.0/core/macros/builtin/attr.test.html).
+The `test` attribute is exported from the standard library prelude as [`std::prelude::v1::test`](../../core/macros/builtin/attr.test.html).
 
 [attributes.testing.test.enabled](#r-attributes.testing.test.enabled)
 
@@ -76,7 +76,7 @@ Tests Tests with this rule:
 
 - [tests/ui/test-attrs/test-passed.rs](https://github.com/rust-lang/rust/blob/1.100.0/tests/ui/test-attrs/test-passed.rs)
 
-The test harness calls the returned value’s [`report`](https://doc.rust-lang.org/1.100.0/std/process/trait.Termination.html#tymethod.report) method, and classifies the test as passed or failed depending on whether the resulting [`ExitCode`](https://doc.rust-lang.org/1.100.0/std/process/struct.ExitCode.html) represents successful termination. In particular:
+The test harness calls the returned value’s [`report`](../../std/process/trait.Termination.html#tymethod.report) method, and classifies the test as passed or failed depending on whether the resulting [`ExitCode`](../../std/process/struct.ExitCode.html) represents successful termination. In particular:
 
 - Tests that return `()` pass as long as they terminate and do not panic.
 - Tests that return a `Result<(), E>` pass as long as they return `Ok(())`.

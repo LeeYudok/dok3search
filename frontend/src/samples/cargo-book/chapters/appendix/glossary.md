@@ -28,7 +28,7 @@ The source code for a given crate may be subdivided into [*modules*](#module).
 
 ## Edition
 
-A *Rust edition* is a developmental landmark of the Rust language. The [edition of a package](../reference/manifest.md#the-edition-field) is specified in the `Cargo.toml` [manifest](#manifest), and individual targets can specify which edition they use. See the [Edition Guide](https://doc.rust-lang.org/1.100.0/edition-guide/index.html) for more information.
+A *Rust edition* is a developmental landmark of the Rust language. The [edition of a package](../reference/manifest.md#the-edition-field) is specified in the `Cargo.toml` [manifest](#manifest), and individual targets can specify which edition they use. See the [Edition Guide](../../edition-guide/index.html) for more information.
 
 ## Feature
 
@@ -40,7 +40,7 @@ The meaning of *feature* depends on the context:
 
 - The Rust compiler and Rustdoc have their own unstable feature flags (see [The Unstable Book](https://doc.rust-lang.org/nightly/unstable-book/index.html) and [The Rustdoc Book](https://doc.rust-lang.org/nightly/rustdoc/unstable-features.html)).
 
-- CPU targets have [*target features*](https://doc.rust-lang.org/1.100.0/reference/attributes/codegen.html#the-target_feature-attribute) which specify capabilities of a CPU.
+- CPU targets have [*target features*](../../../rust-reference/chapters/attributes/codegen.md#the-target_feature-attribute) which specify capabilities of a CPU.
 
 ## Index
 

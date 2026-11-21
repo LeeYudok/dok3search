@@ -55,14 +55,14 @@ You can run individual executable examples with the [`cargo run`](../commands/ca
 
 There are two styles of tests within a Cargo project:
 
-- *Unit tests* which are functions marked with the [`#[test]` attribute](https://doc.rust-lang.org/1.100.0/reference/attributes/testing.html#the-test-attribute) located within your library or binaries (or any target enabled with [the `test` field](#the-test-field)). These tests have access to private APIs located within the target they are defined in.
+- *Unit tests* which are functions marked with the [`#[test]` attribute](../../../rust-reference/chapters/attributes/testing.md#the-test-attribute) located within your library or binaries (or any target enabled with [the `test` field](#the-test-field)). These tests have access to private APIs located within the target they are defined in.
 - *Integration tests* which is a separate executable binary, also containing `#[test]` functions, which is linked with the project’s library and has access to its *public* API.
 
-Tests are run with the [`cargo test`](../commands/cargo-test.md) command. By default, Cargo and `rustc` use the [libtest harness](https://doc.rust-lang.org/1.100.0/rustc/tests/index.html) which is responsible for collecting functions annotated with the [`#[test]` attribute](https://doc.rust-lang.org/1.100.0/reference/attributes/testing.html#the-test-attribute) and executing them in parallel, reporting the success and failure of each test. See [the `harness` field](#the-harness-field) if you want to use a different harness or test strategy.
+Tests are run with the [`cargo test`](../commands/cargo-test.md) command. By default, Cargo and `rustc` use the [libtest harness](../../rustc/tests/index.html) which is responsible for collecting functions annotated with the [`#[test]` attribute](../../../rust-reference/chapters/attributes/testing.md#the-test-attribute) and executing them in parallel, reporting the success and failure of each test. See [the `harness` field](#the-harness-field) if you want to use a different harness or test strategy.
 
 > ![](../../assets/inline/cargo-targets-1.svg)Note
 >
-> There is another special style of test in Cargo: [documentation tests](https://doc.rust-lang.org/1.100.0/rustdoc/documentation-tests.html). They are handled by `rustdoc` and have a slightly different execution model. For more information, please see [`cargo test`](../commands/cargo-test.md#documentation-tests).
+> There is another special style of test in Cargo: [documentation tests](../../rustdoc/documentation-tests.html). They are handled by `rustdoc` and have a slightly different execution model. For more information, please see [`cargo test`](../commands/cargo-test.md#documentation-tests).
 
 ### Integration tests
 
@@ -74,7 +74,7 @@ If you want to share code among multiple integration tests, you can place it in 
 
 Each integration test results in a separate executable binary, and [`cargo test`](../commands/cargo-test.md) will run them serially. In some cases this can be inefficient, as it can take longer to compile, and may not make full use of multiple CPUs when running the tests. If you have a lot of integration tests, you may want to consider creating a single integration test, and split the tests into multiple modules. The libtest harness will automatically find all of the `#[test]` annotated functions and run them in parallel. You can pass module names to [`cargo test`](../commands/cargo-test.md) to only run the tests within that module.
 
-Binary targets are automatically built if there is an integration test. This allows an integration test to execute the binary to exercise and test its behavior. The `CARGO_BIN_EXE_<name>` [environment variable](environment-variables.md#environment-variables-cargo-sets-for-crates) is set when the integration test is built and run so that it can use the [`env` macro](https://doc.rust-lang.org/1.100.0/std/macro.env.html) or [`var` function](https://doc.rust-lang.org/1.100.0/std/env/fn.var.html) to locate the executable.
+Binary targets are automatically built if there is an integration test. This allows an integration test to execute the binary to exercise and test its behavior. The `CARGO_BIN_EXE_<name>` [environment variable](environment-variables.md#environment-variables-cargo-sets-for-crates) is set when the integration test is built and run so that it can use the [`env` macro](../../std/macro.env.html) or [`var` function](../../std/env/fn.var.html) to locate the executable.
 
 ## Benchmarks
 
@@ -87,7 +87,7 @@ Benchmarks provide a way to test the performance of your code using the [`cargo 
 
 > ![](../../assets/inline/cargo-targets-2.svg)Note
 >
-> The [`#[bench]` attribute](https://doc.rust-lang.org/1.100.0/unstable-book/library-features/test.html) is currently unstable and only available on the [nightly channel](https://doc.rust-lang.org/1.100.0/book/appendix-07-nightly-rust.html). There are some packages available on [crates.io](https://crates.io/keywords/benchmark) that may help with running benchmarks on the stable channel, such as [Criterion](https://crates.io/crates/criterion).
+> The [`#[bench]` attribute](../../unstable-book/library-features/test.html) is currently unstable and only available on the [nightly channel](../../book/appendix-07-nightly-rust.html). There are some packages available on [crates.io](https://crates.io/keywords/benchmark) that may help with running benchmarks on the stable channel, such as [Criterion](https://crates.io/crates/criterion).
 
 ## Configuring a target
 
@@ -129,11 +129,11 @@ The `test` field indicates whether or not the target is tested by default by [`c
 
 > ![](../../assets/inline/cargo-targets-3.svg)Note
 >
-> Examples are built by [`cargo test`](../commands/cargo-test.md) by default to ensure they continue to compile, but they are not *tested* by default. Setting `test = true` for an example will also build it as a test and run any [`#[test]`](https://doc.rust-lang.org/1.100.0/reference/attributes/testing.html#the-test-attribute) functions defined in the example.
+> Examples are built by [`cargo test`](../commands/cargo-test.md) by default to ensure they continue to compile, but they are not *tested* by default. Setting `test = true` for an example will also build it as a test and run any [`#[test]`](../../../rust-reference/chapters/attributes/testing.md#the-test-attribute) functions defined in the example.
 
 ### The `doctest` field
 
-The `doctest` field indicates whether or not [documentation examples](https://doc.rust-lang.org/1.100.0/rustdoc/documentation-tests.html) are tested by default by [`cargo test`](../commands/cargo-test.md). This is only relevant for libraries, it has no effect on other sections. The default is `true` for the library.
+The `doctest` field indicates whether or not [documentation examples](../../rustdoc/documentation-tests.html) are tested by default by [`cargo test`](../commands/cargo-test.md). This is only relevant for libraries, it has no effect on other sections. The default is `true` for the library.
 
 ### The `bench` field
 
@@ -153,19 +153,19 @@ This option is deprecated and unused.
 
 ### The `proc-macro` field
 
-The `proc-macro` field indicates that the library is a [procedural macro](https://doc.rust-lang.org/1.100.0/book/ch19-06-macros.html) ([reference](https://doc.rust-lang.org/1.100.0/reference/procedural-macros.html)). This is only valid for the `[lib]` target.
+The `proc-macro` field indicates that the library is a [procedural macro](../../book/ch19-06-macros.html) ([reference](../../../rust-reference/chapters/procedural-macros.md)). This is only valid for the `[lib]` target.
 
 ### The `harness` field
 
-The `harness` field indicates that the [`--test` flag](https://doc.rust-lang.org/1.100.0/rustc/command-line-arguments.html#option-test) will be passed to `rustc` which will automatically include the libtest library which is the driver for collecting and running tests marked with the [`#[test]` attribute](https://doc.rust-lang.org/1.100.0/reference/attributes/testing.html#the-test-attribute) or benchmarks with the `#[bench]` attribute. The default is `true` for all targets.
+The `harness` field indicates that the [`--test` flag](../../rustc/command-line-arguments.html#option-test) will be passed to `rustc` which will automatically include the libtest library which is the driver for collecting and running tests marked with the [`#[test]` attribute](../../../rust-reference/chapters/attributes/testing.md#the-test-attribute) or benchmarks with the `#[bench]` attribute. The default is `true` for all targets.
 
 If set to `false`, then you are responsible for defining a `main()` function to run tests and benchmarks.
 
-Tests have the [`cfg(test)` conditional expression](https://doc.rust-lang.org/1.100.0/reference/conditional-compilation.html#test) enabled whether or not the harness is enabled.
+Tests have the [`cfg(test)` conditional expression](../../../rust-reference/chapters/conditional-compilation.md#test) enabled whether or not the harness is enabled.
 
 ### The `crate-type` field
 
-The `crate-type` field defines the [crate types](https://doc.rust-lang.org/1.100.0/reference/linkage.html) that will be generated by the target. It is an array of strings, allowing you to specify multiple crate types for a single target. This can only be specified for libraries and examples. Binaries, tests, and benchmarks are always the “bin” crate type. The defaults are:
+The `crate-type` field defines the [crate types](../../../rust-reference/chapters/linkage.md) that will be generated by the target. It is an array of strings, allowing you to specify multiple crate types for a single target. This can only be specified for libraries and examples. Binaries, tests, and benchmarks are always the “bin” crate type. The defaults are:
 
 | Target             | Crate Type     |
 |--------------------|----------------|
@@ -173,7 +173,7 @@ The `crate-type` field defines the [crate types](https://doc.rust-lang.org/1.100
 | Proc-macro library | `"proc-macro"` |
 | Example            | `"bin"`        |
 
-The available options are `bin`, `lib`, `rlib`, `dylib`, `cdylib`, `staticlib`, and `proc-macro`. You can read more about the different crate types in the [Rust Reference Manual](https://doc.rust-lang.org/1.100.0/reference/linkage.html).
+The available options are `bin`, `lib`, `rlib`, `dylib`, `cdylib`, `staticlib`, and `proc-macro`. You can read more about the different crate types in the [Rust Reference Manual](../../../rust-reference/chapters/linkage.md).
 
 ### The `required-features` field
 
@@ -193,7 +193,7 @@ required-features = ["postgres", "tools"]
 
 ### The `edition` field
 
-The `edition` field defines the [Rust edition](https://doc.rust-lang.org/1.100.0/edition-guide/index.html) the target will use. If not specified, it defaults to the [`edition` field](manifest.md#the-edition-field) for the `[package]`.
+The `edition` field defines the [Rust edition](../../edition-guide/index.html) the target will use. If not specified, it defaults to the [`edition` field](manifest.md#the-edition-field) for the `[package]`.
 
 > ![](../../assets/inline/cargo-targets-5.svg)Important
 >

@@ -48,7 +48,7 @@ The `usize` type is an unsigned integer type with the same number of bits as the
 
 > ![](../../assets/inline/numeric-1.svg)Note
 >
-> While a `usize` can represent every *address*, converting a *pointer* to a `usize` is not necessarily a reversible operation. For more information, see the documentation for [type cast expressions](../expressions/operator-expr.md#type-cast-expressions), [`std::ptr`](https://doc.rust-lang.org/1.100.0/core/ptr/index.html), and [provenance](https://doc.rust-lang.org/1.100.0/core/ptr/index.html#provenance) in particular.
+> While a `usize` can represent every *address*, converting a *pointer* to a `usize` is not necessarily a reversible operation. For more information, see the documentation for [type cast expressions](../expressions/operator-expr.md#type-cast-expressions), [`std::ptr`](../../core/ptr/index.html), and [provenance](../../core/ptr/index.html#provenance) in particular.
 
 [type.numeric.int.size.isize](#r-type.numeric.int.size.isize)
 

@@ -239,7 +239,7 @@ The `external` behavior is the default for macros that don’t have this attribu
 
 > ![](../../assets/inline/debugger-8.svg)Note
 >
-> `rustc` has a [`-C collapse-macro-debuginfo`](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#collapse-macro-debuginfo) CLI option to override both the default behavior and the values of any `#[collapse_debuginfo]` attributes.
+> `rustc` has a [`-C collapse-macro-debuginfo`](../../rustc/codegen-options/index.html#collapse-macro-debuginfo) CLI option to override both the default behavior and the values of any `#[collapse_debuginfo]` attributes.
 
 ------------------------------------------------------------------------
 

@@ -152,7 +152,7 @@ Fields might have a non-zero offset (except when [the C representation](../type-
 
 [items.union.fields.validity](#r-items.union.fields.validity)
 
-It is the programmer’s responsibility to make sure that the data is valid at the field’s type. Failing to do so results in [undefined behavior](../behavior-considered-undefined.md). For example, reading the value `3` from a field of the [boolean type](../types/boolean.md) is undefined behavior. Effectively, writing to and then reading from a union with [the C representation](../type-layout.md#reprc-unions) is analogous to a [`transmute`](https://doc.rust-lang.org/1.100.0/core/intrinsics/fn.transmute.html) from the type used for writing to the type used for reading.
+It is the programmer’s responsibility to make sure that the data is valid at the field’s type. Failing to do so results in [undefined behavior](../behavior-considered-undefined.md). For example, reading the value `3` from a field of the [boolean type](../types/boolean.md) is undefined behavior. Effectively, writing to and then reading from a union with [the C representation](../type-layout.md#reprc-unions) is analogous to a [`transmute`](../../core/intrinsics/fn.transmute.html) from the type used for writing to the type used for reading.
 
 [items.union.fields.read-safety](#r-items.union.fields.read-safety)\
 Tests Tests with this rule:

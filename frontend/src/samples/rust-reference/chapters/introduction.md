@@ -8,17 +8,17 @@ This book is the primary reference for the Rust programming language.
 
 ## Rust releases
 
-Rust has a new language release every six weeks. The first stable release of the language was Rust 1.0.0, followed by Rust 1.1.0 and so on. Tools (`rustc`, `cargo`, etc.) and documentation ([Standard library](https://doc.rust-lang.org/1.100.0/std/index.html), this book, etc.) are released with the language release.
+Rust has a new language release every six weeks. The first stable release of the language was Rust 1.0.0, followed by Rust 1.1.0 and so on. Tools (`rustc`, `cargo`, etc.) and documentation ([Standard library](../std/index.html), this book, etc.) are released with the language release.
 
 The latest release of this book, matching the latest Rust version, can always be found at . Prior versions can be found by adding the Rust version before the “reference” directory. For example, the Reference for Rust 1.49.0 is located at .
 
 ## What *The Reference* is not
 
-This book does not serve as an introduction to the language. Background familiarity with the language is assumed. A separate [book](https://doc.rust-lang.org/1.100.0/book/index.html) is available to help acquire such background familiarity.
+This book does not serve as an introduction to the language. Background familiarity with the language is assumed. A separate [book](../book/index.html) is available to help acquire such background familiarity.
 
-This book also does not serve as a reference to the [standard library](https://doc.rust-lang.org/1.100.0/std/index.html) included in the language distribution. Those libraries are documented separately by extracting documentation attributes from their source code. Many of the features that one might expect to be language features are library features in Rust, so what you’re looking for may be there, not here.
+This book also does not serve as a reference to the [standard library](../std/index.html) included in the language distribution. Those libraries are documented separately by extracting documentation attributes from their source code. Many of the features that one might expect to be language features are library features in Rust, so what you’re looking for may be there, not here.
 
-Similarly, this book does not usually document the specifics of `rustc` as a tool or of Cargo. `rustc` has its own [book](https://doc.rust-lang.org/1.100.0/rustc/index.html). Cargo has a [book](https://doc.rust-lang.org/1.100.0/cargo/index.html) that contains a [reference](https://doc.rust-lang.org/1.100.0/cargo/reference/index.html). There are a few pages such as [linkage](linkage.md) that still describe how `rustc` works.
+Similarly, this book does not usually document the specifics of `rustc` as a tool or of Cargo. `rustc` has its own [book](../rustc/index.html). Cargo has a [book](../../cargo-book/chapters/index.md) that contains a [reference](../../cargo-book/chapters/reference/index.md). There are a few pages such as [linkage](linkage.md) that still describe how `rustc` works.
 
 This book also only serves as a reference to what is available in stable Rust. For unstable features being worked on, see the [Unstable Book](https://doc.rust-lang.org/nightly/unstable-book/).
 

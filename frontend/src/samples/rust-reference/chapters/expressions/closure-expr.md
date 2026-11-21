@@ -71,7 +71,7 @@ Closures marked with the `async` keyword indicate that they are asynchronous in 
 
 [expr.closure.async.future](#r-expr.closure.async.future)
 
-Calling the async closure does not perform any work, but instead evaluates to a value that implements [`Future`](https://doc.rust-lang.org/1.100.0/core/future/future/trait.Future.html) that corresponds to the computation of the body of the closure.
+Calling the async closure does not perform any work, but instead evaluates to a value that implements [`Future`](../../core/future/future/trait.Future.html) that corresponds to the computation of the body of the closure.
 
 ``` playground
 #![allow(unused)]

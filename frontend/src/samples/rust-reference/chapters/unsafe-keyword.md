@@ -11,9 +11,9 @@ The `unsafe` keyword is used to create or discharge the obligation to prove some
 - It is used to mark code that *defines* extra safety conditions that must be upheld elsewhere.
   - This includes `unsafe fn`, `unsafe static`, and `unsafe trait`.
 - It is used to mark code that the programmer *asserts* satisfies safety conditions defined elsewhere.
-  - This includes `unsafe {}`, `unsafe impl`, `unsafe fn` without [`unsafe_op_in_unsafe_fn`](https://doc.rust-lang.org/1.100.0/rustc/lints/listing/allowed-by-default.html#unsafe-op-in-unsafe-fn), `unsafe extern`, and `#[unsafe(attr)]`.
+  - This includes `unsafe {}`, `unsafe impl`, `unsafe fn` without [`unsafe_op_in_unsafe_fn`](../rustc/lints/listing/allowed-by-default.html#unsafe-op-in-unsafe-fn), `unsafe extern`, and `#[unsafe(attr)]`.
 
-The following discusses each of these cases. See the [keyword documentation](https://doc.rust-lang.org/1.100.0/std/keyword.unsafe.html) for some illustrative examples.
+The following discusses each of these cases. See the [keyword documentation](../std/keyword.unsafe.html) for some illustrative examples.
 
 [unsafe.positions](#r-unsafe.positions)
 
@@ -33,11 +33,11 @@ The `unsafe` keyword can occur in several different contexts:
 
 [unsafe.fn.intro](#r-unsafe.fn.intro)
 
-Unsafe functions are functions that are not safe in all contexts and/or for all possible inputs. We say they have *extra safety conditions*, which are requirements that must be upheld by all callers and that the compiler does not check. For example, [`get_unchecked`](https://doc.rust-lang.org/1.100.0/std/primitive.slice.html#method.get_unchecked) has the extra safety condition that the index must be in-bounds. The unsafe function should come with documentation explaining what those extra safety conditions are.
+Unsafe functions are functions that are not safe in all contexts and/or for all possible inputs. We say they have *extra safety conditions*, which are requirements that must be upheld by all callers and that the compiler does not check. For example, [`get_unchecked`](../std/primitive.slice.html#method.get_unchecked) has the extra safety condition that the index must be in-bounds. The unsafe function should come with documentation explaining what those extra safety conditions are.
 
 [unsafe.fn.safety](#r-unsafe.fn.safety)
 
-Such a function must be prefixed with the keyword `unsafe` and can only be called from inside an `unsafe` block, or inside `unsafe fn` without the [`unsafe_op_in_unsafe_fn`](https://doc.rust-lang.org/1.100.0/rustc/lints/listing/allowed-by-default.html#unsafe-op-in-unsafe-fn) lint.
+Such a function must be prefixed with the keyword `unsafe` and can only be called from inside an `unsafe` block, or inside `unsafe fn` without the [`unsafe_op_in_unsafe_fn`](../rustc/lints/listing/allowed-by-default.html#unsafe-op-in-unsafe-fn) lint.
 
 [unsafe.block](#r-unsafe.block)
 
@@ -49,7 +49,7 @@ A block of code can be prefixed with the `unsafe` keyword to permit using the un
 
 [unsafe.block.fn-body](#r-unsafe.block.fn-body)
 
-By default, the body of an unsafe function is also considered to be an unsafe block; this can be changed by enabling the [`unsafe_op_in_unsafe_fn`](https://doc.rust-lang.org/1.100.0/rustc/lints/listing/allowed-by-default.html#unsafe-op-in-unsafe-fn) lint.
+By default, the body of an unsafe function is also considered to be an unsafe block; this can be changed by enabling the [`unsafe_op_in_unsafe_fn`](../rustc/lints/listing/allowed-by-default.html#unsafe-op-in-unsafe-fn) lint.
 
 By putting operations into an unsafe block, the programmer states that they have taken care of satisfying the extra safety conditions of all operations inside that block.
 

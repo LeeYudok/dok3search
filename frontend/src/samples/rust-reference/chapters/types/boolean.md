@@ -53,7 +53,7 @@ Like all primitives, the boolean type [implements](../items/implementations.md) 
 
 > ![](../../assets/inline/boolean-2.svg)Note
 >
-> See the [standard library docs](https://doc.rust-lang.org/1.100.0/std/primitive.bool.html) for library operations.
+> See the [standard library docs](../../std/primitive.bool.html) for library operations.
 
 [type.bool.expr](#r-type.bool.expr)
 

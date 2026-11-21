@@ -28,7 +28,7 @@ Since `'static` outlives the lifetime parameter `'a`, `&'static str` is a subtyp
 
 [subtype.higher-ranked](#r-subtype.higher-ranked)
 
-[Higher-ranked](https://doc.rust-lang.org/1.100.0/nomicon/hrtb.html) [function pointers](types/function-pointer.md) and [trait objects](types/trait-object.md) have another subtype relation. They are subtypes of types that are given by substitutions of the higher-ranked lifetimes. Some examples:
+[Higher-ranked](../nomicon/hrtb.html) [function pointers](types/function-pointer.md) and [trait objects](types/trait-object.md) have another subtype relation. They are subtypes of types that are given by substitutions of the higher-ranked lifetimes. Some examples:
 
 ``` playground
 #![allow(unused)]

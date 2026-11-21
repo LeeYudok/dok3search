@@ -171,4 +171,4 @@ arr[10];                  // warning: index out of bounds
 
 [expr.array.index.trait-impl](#r-expr.array.index.trait-impl)
 
-The array index expression can be implemented for types other than arrays and slices by implementing the [Index](https://doc.rust-lang.org/1.100.0/core/ops/index/trait.Index.html) and [IndexMut](https://doc.rust-lang.org/1.100.0/core/ops/index/trait.IndexMut.html) traits.
+The array index expression can be implemented for types other than arrays and slices by implementing the [Index](../../core/ops/index/trait.Index.html) and [IndexMut](../../core/ops/index/trait.IndexMut.html) traits.

@@ -83,10 +83,10 @@ The resulting sequence of characters is then converted into tokens as described 
 
 > ![](../assets/inline/input-format-5.svg)Note
 >
-> The standard library [`include!`](https://doc.rust-lang.org/1.100.0/core/macro.include.html) macro applies the following transformations to the file it reads:
+> The standard library [`include!`](../core/macro.include.html) macro applies the following transformations to the file it reads:
 >
 > - Byte order mark removal.
 > - CRLF normalization.
 > - Shebang removal when invoked in an item context (as opposed to expression or statement contexts).
 >
-> The [`include_str!`](https://doc.rust-lang.org/1.100.0/core/macro.include_str.html) and [`include_bytes!`](https://doc.rust-lang.org/1.100.0/core/macro.include_bytes.html) macros do not apply these transformations.
+> The [`include_str!`](../core/macro.include_str.html) and [`include_bytes!`](../core/macro.include_bytes.html) macros do not apply these transformations.

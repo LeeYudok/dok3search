@@ -237,7 +237,7 @@ The following coercions are called `unsized coercions`, since they relate to con
 
 [coerce.unsize.trait](#r-coerce.unsize.trait)
 
-Two traits, [`Unsize`](https://doc.rust-lang.org/1.100.0/core/marker/trait.Unsize.html) and [`CoerceUnsized`](https://doc.rust-lang.org/1.100.0/core/ops/unsize/trait.CoerceUnsized.html), are used to assist in this process and expose it for library use. The following coercions are built-ins and, if `T` can be coerced to `U` with one of them, then an implementation of `Unsize<U>` for `T` will be provided:
+Two traits, [`Unsize`](../core/marker/trait.Unsize.html) and [`CoerceUnsized`](../core/ops/unsize/trait.CoerceUnsized.html), are used to assist in this process and expose it for library use. The following coercions are built-ins and, if `T` can be coerced to `U` with one of them, then an implementation of `Unsize<U>` for `T` will be provided:
 
 [coerce.unsize.slice](#r-coerce.unsize.slice)\
 Tests Tests with this rule:

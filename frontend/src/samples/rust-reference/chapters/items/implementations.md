@@ -319,4 +319,4 @@ impl<'a> HasAssocType for Struct {
 
 ## Attributes on implementations
 
-Implementations may contain outer [attributes](../attributes.md) before the `impl` keyword and inner [attributes](../attributes.md) inside the brackets that contain the associated items. Inner attributes must come before any associated items. The attributes that have meaning here are [`cfg`](../conditional-compilation.md), [`deprecated`](../attributes/diagnostics.md#the-deprecated-attribute), [`doc`](https://doc.rust-lang.org/1.100.0/rustdoc/the-doc-attribute.html), and [the lint check attributes](../attributes/diagnostics.md#lint-check-attributes).
+Implementations may contain outer [attributes](../attributes.md) before the `impl` keyword and inner [attributes](../attributes.md) inside the brackets that contain the associated items. Inner attributes must come before any associated items. The attributes that have meaning here are [`cfg`](../conditional-compilation.md), [`deprecated`](../attributes/diagnostics.md#the-deprecated-attribute), [`doc`](../../rustdoc/the-doc-attribute.html), and [the lint check attributes](../attributes/diagnostics.md#lint-check-attributes).

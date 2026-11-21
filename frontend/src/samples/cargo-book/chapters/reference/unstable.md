@@ -1,6 +1,6 @@
 # Unstable Features
 
-Experimental Cargo features are only available on the [nightly channel](https://doc.rust-lang.org/1.100.0/book/appendix-07-nightly-rust.html). You are encouraged to experiment with these features to see if they meet your needs, and if there are any issues or problems. Check the linked tracking issues listed below for more information on the feature, and click the GitHub subscribe button if you want future updates.
+Experimental Cargo features are only available on the [nightly channel](../../book/appendix-07-nightly-rust.html). You are encouraged to experiment with these features to see if they meet your needs, and if there are any issues or problems. Check the linked tracking issues listed below for more information on the feature, and click the GitHub subscribe button if you want future updates.
 
 After some period of time, if the feature does not have any major concerns, it can be [stabilized](https://doc.crates.io/contrib/process/unstable.html#stabilization), which will make it available on stable once the current nightly release reaches the stable channel (anywhere from 6 to 12 weeks).
 
@@ -259,7 +259,7 @@ Note that `dep` and `key` in `CARGO_DEP_<dep>_<key>` are uppercased and hyphens 
 
 - Tracking Issue: [\#44663](https://github.com/rust-lang/rust/issues/44663)
 
-The ‘public-dependency’ feature allows marking dependencies as ‘public’ or ‘private’. When this feature is enabled, additional information is passed to rustc to allow the [exported_private_dependencies](https://doc.rust-lang.org/1.100.0/rustc/lints/listing/warn-by-default.html#exported-private-dependencies) lint to function properly.
+The ‘public-dependency’ feature allows marking dependencies as ‘public’ or ‘private’. When this feature is enabled, additional information is passed to rustc to allow the [exported_private_dependencies](../../rustc/lints/listing/warn-by-default.html#exported-private-dependencies) lint to function properly.
 
 To enable this feature, you can either use `-Zpublic-dependency`
 
@@ -1245,7 +1245,7 @@ The valid options are:
 >
 > The `"all"` option remaps compiler diagnostics, including [compiler JSON messages](external-tools.md#json-messages). Some remapped paths may not resolve to files on the local filesystem, which can affect editors and other tools that consume the diagnostic output.
 
-For details about each scope, see rustc’s [`--remap-path-scope`](https://doc.rust-lang.org/1.100.0/rustc/remap-source-paths.html#--remap-path-scope) documentation.
+For details about each scope, see rustc’s [`--remap-path-scope`](../../rustc/remap-source-paths.html#--remap-path-scope) documentation.
 
 By default, `trim-paths` is `"none"` and path sanitization is disabled for all profiles. You can enable it by specifying this option in `Cargo.toml`:
 
@@ -1308,7 +1308,7 @@ Since it is meant to be a debugging aid, it includes absolute paths of your syst
 
 ##### Limitations
 
-`trim-paths` supports remapping source path prefixes as a best effort. Linkers may add paths that rustc cannot remap. See [the limitations section](https://doc.rust-lang.org/1.100.0/rustc/remap-source-paths.html#caveats-and-limitations) on rustc’s documentation for more.
+`trim-paths` supports remapping source path prefixes as a best effort. Linkers may add paths that rustc cannot remap. See [the limitations section](../../rustc/remap-source-paths.html#caveats-and-limitations) on rustc’s documentation for more.
 
 For example, on macOS, linkers generate OSO entries containing absolute paths to object files when debuginfo is enabled. The following profile settings keep these paths out of the executable while preserving debuginfo in a separate dSYM bundle:
 
@@ -1408,7 +1408,7 @@ cargo-features = ["open-namespaces"]
 - Tracking Issue: [\#16042](https://github.com/rust-lang/cargo/issues/16042)
 - Upstream Tracking Issue: [rust-lang/rust#147286](https://github.com/rust-lang/rust/issues/147286)
 
-Extends the `panic` profile setting to support the [`immediate-abort`](https://doc.rust-lang.org/1.100.0/rustc/codegen-options/index.html#panic) panic strategy. This can be enabled like so:
+Extends the `panic` profile setting to support the [`immediate-abort`](../../rustc/codegen-options/index.html#panic) panic strategy. This can be enabled like so:
 
 ``` toml
 # Cargo.toml
@@ -1789,7 +1789,7 @@ The `-Z patch-in-config` flag, and the corresponding support for `[patch]` secti
 
 ## edition 2021
 
-The 2021 edition has been stabilized in the 1.56 release. See the [`edition` field](manifest.md#the-edition-field) for more information on setting the edition. See [`cargo fix --edition`](../commands/cargo-fix.md) and [The Edition Guide](https://doc.rust-lang.org/1.100.0/edition-guide/index.html) for more information on migrating existing projects.
+The 2021 edition has been stabilized in the 1.56 release. See the [`edition` field](manifest.md#the-edition-field) for more information on setting the edition. See [`cargo fix --edition`](../commands/cargo-fix.md) and [The Edition Guide](../../edition-guide/index.html) for more information on migrating existing projects.
 
 ## Custom named profiles
 
@@ -1875,7 +1875,7 @@ See the [build script documentation](build-scripts.md#rustc-check-cfg) for infor
 
 ## Edition 2024
 
-The 2024 edition has been stabilized in the 1.85 release. See the [`edition` field](manifest.md#the-edition-field) for more information on setting the edition. See [`cargo fix --edition`](../commands/cargo-fix.md) and [The Edition Guide](https://doc.rust-lang.org/1.100.0/edition-guide/index.html) for more information on migrating existing projects.
+The 2024 edition has been stabilized in the 1.85 release. See the [`edition` field](manifest.md#the-edition-field) for more information on setting the edition. See [`cargo fix --edition`](../commands/cargo-fix.md) and [The Edition Guide](../../edition-guide/index.html) for more information on migrating existing projects.
 
 ## Automatic garbage collection
 
