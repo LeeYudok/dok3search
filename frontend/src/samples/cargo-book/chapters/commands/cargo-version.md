@@ -1,0 +1,38 @@
+# cargo-version(1)
+
+## NAME
+
+cargo-version — Show version information
+
+## SYNOPSIS
+
+`cargo version` \[*options*\]
+
+## DESCRIPTION
+
+Displays the version of Cargo.
+
+## OPTIONS
+
+[-v](#option-cargo-version--v)\
+[--verbose](#option-cargo-version---verbose)  
+Display additional version information.
+
+## EXAMPLES
+
+1.  Display the version:
+
+        cargo version
+
+2.  The version is also available via flags:
+
+        cargo --version
+        cargo -V
+
+3.  Display extra version information:
+
+        cargo -Vv
+
+## SEE ALSO
+
+[cargo(1)](cargo.md)

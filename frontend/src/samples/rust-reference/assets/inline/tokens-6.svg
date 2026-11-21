@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 424 198">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-UNICODE_ESCAPE" class="link">
+<text class="comment" x="64" y="25">
+UNICODE_ESCAPE</text>
+</a>
+<g class="sequence">
+<path d=" M 10 116 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="sequence">
+<g class="terminal">
+<rect x="35" y="105" height="22" width="44" rx="10" ry="10" />
+<text x="57" y="121">
+\u{</text>
+</g>
+<g class="labeledbox">
+<rect x="89" y="42" height="146" width="262" />
+<path d=" M 89 116 h 8 m 246 0 h 8" />
+<text class="comment" x="175" y="65">
+valid hex char value</text>
+<g class="repeat">
+<path d=" M 97 116 h 5 h 12 m 212 0 h 12 h 5 m -17 0 a 12 12 0 0 1 12 12 v 25 a 12 12 0 0 1 -12 12 m -157 0 h -55 m 30 0 l 5 -5 m 0 10 l -5 -5 m -30 0 a 12 12 0 0 1 -12 -12 v -25 a 12 12 0 0 1 12 -12" />
+<text class="comment" x="247" y="170">
+at most 5 more times</text>
+<g class="sequence">
+<a xlink:href="#railroad-HEX_DIGIT" class="link">
+<g class="nonterminal">
+<rect x="114" y="105" height="22" width="92" />
+<text x="160" y="121">
+HEX_DIGIT</text>
+</g>
+</a>
+<g class="optional">
+<path d=" M 216 116 h 24 m -24 0 a 12 12 0 0 0 12 -12 v -4 a 12 12 0 0 1 12 -12 h 62 m -28 0 l -5 -5 m 0 10 l 5 -5 m 28 0 a 12 12 0 0 1 12 12 v 4 a 12 12 0 0 0 12 12 h -24" />
+<g class="repeat">
+<path d=" M 240 116 h 5 h 12 m 28 0 h 12 h 5 m -17 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 m 0 0 h -28 a 12 12 0 0 1 -12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<g>
+</g>
+<g class="terminal">
+<rect x="257" y="105" height="22" width="28" rx="10" ry="10" />
+<text x="271" y="121">
+_</text>
+</g>
+</g>
+</g>
+<path d=" M 206 116 h 10" />
+</g>
+</g>
+</g>
+<g class="terminal">
+<rect x="361" y="105" height="22" width="28" rx="10" ry="10" />
+<text x="375" y="121">
+}</text>
+</g>
+<path d=" M 79 116 h 10" />
+<path d=" M 351 116 h 10" />
+</g>
+<path d=" M 399 116 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 116 h 10" />
+<path d=" M 389 116 h 10" />
+</g>
+</g>
+</svg>

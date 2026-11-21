@@ -18,8 +18,8 @@
 
 ## 디렉터리 구조
 
-- `frontend/` — React + TypeScript + Vite 웹 UI (로컬 폰트·샘플 데이터 포함, 외부 CDN 미사용, 개발 프록시 `/api`·`/health`)
-- `frontend/src/samples/{comprehensive-rust,rust-book,go-reference}/chapters/` — Rust와 Go 참고 자료 검색에 쓰는 장별 Markdown. Comprehensive Rust는 한국어판, Rust 공식 책과 Go 공식 문서는 영문판이다.
+- `frontend/` — React + TypeScript + Vite 웹 UI (로컬 폰트·샘플 데이터 포함, 외부 CDN 미사용, 개발 프록시 `/api`·`/health`). Markdown의 외부 URL은 클릭 가능한 링크로 렌더하지 않고 폐쇄망에서 열 수 없는 출처로 표시한다.
+- `frontend/src/samples/{comprehensive-rust,rust-book,rust-reference,cargo-book,go-reference}/chapters/` — Rust와 Go 참고 자료 검색에 쓰는 장별 Markdown. 메인 `개발 가이드` 분류 안에서 Rust·Go 세부 분류로 나눈다. Comprehensive Rust와 `go-reference/chapters/practice/`의 Go 실무 가이드는 한국어이고 나머지는 영문이다.
 - `backend/rust/` — Cargo workspace (`crates/` 아래 13개 크레이트: `dok3-core` ~ `dok3-server`)
 - `config/` — 환경별 설정 예시 및 스키마 배치 위치
 - `contracts/` — REST·MCP·도메인 계약 정의 배치 위치
@@ -45,6 +45,7 @@
 
 - 프론트엔드 빌드: `npm --prefix frontend run build`
 - Comprehensive Rust 변환: `python3 scripts/import-comprehensive-rust.py <snapshot-dir> <output-dir>` ([준비할 입력과 라이선스](frontend/src/samples/comprehensive-rust/README.md))
+- Rust Reference·Cargo Book 변환: `python3 scripts/import-rust-official-components.py --rust-docs-root <toolchain>/share/doc/rust/html --license-root <toolchain>/share/doc/rust/licenses --output-root frontend/src/samples --version '<rustc version>'` ([출처와 라이선스](frontend/src/samples/rust-reference/README.md))
 - Rust 서버 실행: `cargo run --manifest-path backend/rust/Cargo.toml -p dok3-server`
 - Rust 정적/테스트 검증:
   - `cargo fmt --manifest-path backend/rust/Cargo.toml --all -- --check`

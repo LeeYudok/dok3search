@@ -5,12 +5,16 @@ import remarkParse from 'remark-parse'
 import { unified } from 'unified'
 import { toString } from 'mdast-util-to-string'
 import { fetchDocument, type ReaderDocument } from './api'
-import { categories, categoryLabels, designDocuments, documentHeadingId, searchUrl } from './documents'
+import { categories, categoryLabels, designDocuments, documentHeadingId, isReferenceTopic, searchUrl, topics } from './documents'
 import type { ReferenceCorpus } from './reference-corpus'
 
 const designParser = unified().use(remarkParse).use(remarkGfm)
 
 type DocumentSection = { id: string; label: string; line?: number; depth?: number }
+
+function isExternalUrl(url: string) {
+  return /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(url.trim())
+}
 
 type ReaderState =
   | { status: 'loading' }
@@ -52,6 +56,12 @@ function MarkdownBody({ markdown, sections, samplePath, corpus }: {
           h3: ({ children, node }) => <h3 id={headingId(node?.position?.start.line)}>{children}</h3>,
           h4: ({ children, node }) => <h4 id={headingId(node?.position?.start.line)}>{children}</h4>,
           img: ({ src, alt }) => src ? <img src={src} alt={alt ?? ''} loading="lazy" /> : null,
+          a: ({ href, title, children }) => href && isExternalUrl(href)
+            ? <span className="external-reference" title={href}>
+                {children}<span className="external-reference-label" aria-hidden="true">외부</span>
+                <span className="visually-hidden">, 폐쇄망에서 열 수 없는 외부 링크</span>
+              </span>
+            : <a href={href} title={title}>{children}</a>,
           table: ({ children }) => <div className="markdown-table" tabIndex={0}><table>{children}</table></div>,
         }}
         urlTransform={(url, key) => {
@@ -72,7 +82,8 @@ function MarkdownBody({ markdown, sections, samplePath, corpus }: {
               })
             : undefined
           const section = heading ? '#' + encodeURIComponent(heading.id) : target.hash
-          return safeUrl.startsWith('#') ? section : '/docs/' + linkedDoc.id + '?category=' + linkedDoc.category + section
+          const topic = linkedDoc.topic ? '&topic=' + linkedDoc.topic : ''
+          return safeUrl.startsWith('#') ? section : '/docs/' + linkedDoc.id + '?category=' + linkedDoc.category + topic + section
         }}
       >{markdown}</Markdown>
     </div>
@@ -200,9 +211,13 @@ export function DocumentPage({ id, corpus }: { id: string; corpus?: ReferenceCor
     ...(fallbackBody ? [{ id: 'body', label: '본문' }] : mainSections),
   ]
   const params = new URLSearchParams(window.location.search)
-  const category = categories.find((item) => item.id === params.get('category'))?.id
+  const rawCategory = params.get('category') ?? ''
+  const legacyTopic = isReferenceTopic(rawCategory) ? rawCategory : ''
+  const category = categories.find((item) => item.id === rawCategory)?.id ?? (legacyTopic ? 'guide' : undefined)
+  const requestedTopic = params.get('topic') ?? legacyTopic
+  const topic = topics.find((item) => item.id === requestedTopic)?.id ?? ''
   const page = Number(params.get('page'))
-  const backToResults = searchUrl(params.get('q') ?? '', category, Number.isSafeInteger(page) ? page : 1)
+  const backToResults = searchUrl(params.get('q') ?? '', category, Number.isSafeInteger(page) ? page : 1, topic)
 
   return (
     <>
@@ -227,9 +242,12 @@ export function DocumentPage({ id, corpus }: { id: string; corpus?: ReferenceCor
         {doc && (
           <>
             <header className="article-header">
-              <a className="article-category" href={searchUrl('', doc.category)}>
+              <a className="article-category" href={searchUrl('', doc.category, 1, doc.topic)}>
                 {categoryLabels.get(doc.category as typeof categories[number]['id']) ?? doc.category}
               </a>
+              {doc.topic && <a className="article-tag" href={searchUrl('', 'guide', 1, doc.topic)}>
+                {topics.find((item) => item.id === doc.topic)?.label}
+              </a>}
               <h1>{doc.title}</h1>
               <p className="article-meta">
                 <span>{corpus ? doc.source : doc.samplePath ?? doc.source}</span>{doc.date && <time dateTime={doc.date}>{doc.date}</time>}

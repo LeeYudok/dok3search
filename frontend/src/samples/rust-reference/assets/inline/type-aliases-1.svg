@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 686 256">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-TypeAlias" class="link">
+<text class="comment" x="46" y="25">
+TypeAlias</text>
+</a>
+<g class="sequence">
+<path d=" M 10 88 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="stack">
+<path d=" M 35 88 h 24" />
+<path d=" M 615 88 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 h -556 m 281 0 l 5 -5 m 0 10 l -5 -5 m -281 0 a 12 12 0 0 0 -12 12 v 17 v 0 a 12 12 0 0 0 12 12" />
+<g class="sequence">
+<g class="terminal">
+<rect x="59" y="77" height="22" width="52" rx="10" ry="10" />
+<text x="85" y="93">
+type</text>
+</g>
+<a xlink:href="../identifiers.md#railroad-IDENTIFIER" class="link">
+<g class="nonterminal">
+<rect x="121" y="77" height="22" width="100" />
+<text x="171" y="93">
+IDENTIFIER</text>
+</g>
+</a>
+<g class="optional">
+<path d=" M 231 88 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 124 m -59 0 l -5 -5 m 0 10 l 5 -5 m 59 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="generics.md#railroad-GenericParams" class="link">
+<g class="nonterminal">
+<rect x="255" y="77" height="22" width="124" />
+<text x="317" y="93">
+GenericParams</text>
+</g>
+</a>
+</g>
+<g class="optional">
+<path d=" M 413 88 h 24 m -24 0 a 12 12 0 0 0 12 -12 v -17 a 12 12 0 0 1 12 -12 h 154 m -74 0 l -5 -5 m 0 10 l 5 -5 m 74 0 a 12 12 0 0 1 12 12 v 17 a 12 12 0 0 0 12 12 h -24" />
+<g class="sequence">
+<g class="terminal">
+<rect x="437" y="77" height="22" width="28" rx="10" ry="10" />
+<text x="451" y="93">
+:</text>
+</g>
+<g class="optional">
+<path d=" M 475 88 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 68 m -31 0 l -5 -5 m 0 10 l 5 -5 m 31 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="../trait-bounds.md#railroad-Bounds" class="link">
+<g class="nonterminal">
+<rect x="499" y="77" height="22" width="68" />
+<text x="533" y="93">
+Bounds</text>
+</g>
+</a>
+</g>
+<path d=" M 465 88 h 10" />
+</g>
+</g>
+<path d=" M 111 88 h 10" />
+<path d=" M 221 88 h 10" />
+<path d=" M 403 88 h 10" />
+</g>
+<path d=" M 215 153 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 h -156 m 81 0 l 5 -5 m 0 10 l -5 -5 m -81 0 a 12 12 0 0 0 -12 12 v 34 v 0 a 12 12 0 0 0 12 12" />
+<g class="sequence">
+<g class="optional">
+<path d=" M 59 153 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 108 m -51 0 l -5 -5 m 0 10 l 5 -5 m 51 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="generics.md#railroad-WhereClause" class="link">
+<g class="nonterminal">
+<rect x="83" y="142" height="22" width="108" />
+<text x="137" y="158">
+WhereClause</text>
+</g>
+</a>
+</g>
+</g>
+<path d=" M 401 235 h 226 m -110 0 l -5 -5 m 0 10 l 5 -5 m 110 0 a 12 12 0 0 0 12 -12 v -123 m 0 64 l -5 5 m 10 0 l -5 -5 m 0 -64 a 12 12 0 0 1 12 -12" />
+<g class="sequence">
+<g class="optional">
+<path d=" M 59 235 h 24 m -24 0 a 12 12 0 0 0 12 -12 v -17 a 12 12 0 0 1 12 -12 h 256 m -125 0 l -5 -5 m 0 10 l 5 -5 m 125 0 a 12 12 0 0 1 12 12 v 17 a 12 12 0 0 0 12 12 h -24" />
+<g class="sequence">
+<g class="terminal">
+<rect x="83" y="224" height="22" width="28" rx="10" ry="10" />
+<text x="97" y="240">
+=</text>
+</g>
+<a xlink:href="../types.md#railroad-Type" class="link">
+<g class="nonterminal">
+<rect x="121" y="224" height="22" width="52" />
+<text x="147" y="240">
+Type</text>
+</g>
+</a>
+<g class="optional">
+<path d=" M 183 235 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 108 m -51 0 l -5 -5 m 0 10 l 5 -5 m 51 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="generics.md#railroad-WhereClause" class="link">
+<g class="nonterminal">
+<rect x="207" y="224" height="22" width="108" />
+<text x="261" y="240">
+WhereClause</text>
+</g>
+</a>
+</g>
+<path d=" M 111 235 h 10" />
+<path d=" M 173 235 h 10" />
+</g>
+</g>
+<g class="terminal">
+<rect x="373" y="224" height="22" width="28" rx="10" ry="10" />
+<text x="387" y="240">
+;</text>
+</g>
+<path d=" M 363 235 h 10" />
+</g>
+</g>
+<path d=" M 661 88 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 88 h 10" />
+<path d=" M 651 88 h 10" />
+</g>
+</g>
+</svg>

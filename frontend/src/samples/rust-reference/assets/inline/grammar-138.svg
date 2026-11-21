@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 642 131">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-GenericParams" class="link">
+<text class="comment" x="60" y="25">
+GenericParams</text>
+</a>
+<g class="sequence">
+<path d=" M 10 92 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="sequence">
+<g class="terminal">
+<rect x="35" y="81" height="22" width="28" rx="10" ry="10" />
+<text x="49" y="97">
+&lt;</text>
+</g>
+<g class="optional">
+<path d=" M 73 92 h 24 m -24 0 a 12 12 0 0 0 12 -12 v -21 a 12 12 0 0 1 12 -12 h 448 m -221 0 l -5 -5 m 0 10 l 5 -5 m 221 0 a 12 12 0 0 1 12 12 v 21 a 12 12 0 0 0 12 12 h -24" />
+<g class="sequence">
+<a xlink:href="#railroad-summary-GenericParam" class="link">
+<g class="nonterminal">
+<rect x="97" y="81" height="22" width="116" />
+<text x="155" y="97">
+GenericParam</text>
+</g>
+</a>
+<g class="optional">
+<path d=" M 223 92 h 24 m -24 0 a 12 12 0 0 0 12 -12 v -4 a 12 12 0 0 1 12 -12 h 188 m -91 0 l -5 -5 m 0 10 l 5 -5 m 91 0 a 12 12 0 0 1 12 12 v 4 a 12 12 0 0 0 12 12 h -24" />
+<g class="repeat">
+<path d=" M 247 92 h 5 h 12 m 154 0 h 12 h 5 m -17 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 m 0 0 h -154 m 80 0 l 5 -5 m 0 10 l -5 -5 m -80 0 a 12 12 0 0 1 -12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<g>
+</g>
+<g class="sequence">
+<g class="terminal">
+<rect x="264" y="81" height="22" width="28" rx="10" ry="10" />
+<text x="278" y="97">
+,</text>
+</g>
+<a xlink:href="#railroad-summary-GenericParam" class="link">
+<g class="nonterminal">
+<rect x="302" y="81" height="22" width="116" />
+<text x="360" y="97">
+GenericParam</text>
+</g>
+</a>
+<path d=" M 292 92 h 10" />
+</g>
+</g>
+</g>
+<g class="optional">
+<path d=" M 469 92 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 28 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<g class="terminal">
+<rect x="493" y="81" height="22" width="28" rx="10" ry="10" />
+<text x="507" y="97">
+,</text>
+</g>
+</g>
+<path d=" M 213 92 h 10" />
+<path d=" M 459 92 h 10" />
+</g>
+</g>
+<g class="terminal">
+<rect x="579" y="81" height="22" width="28" rx="10" ry="10" />
+<text x="593" y="97">
+&gt;</text>
+</g>
+<path d=" M 63 92 h 10" />
+<path d=" M 569 92 h 10" />
+</g>
+<path d=" M 617 92 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 92 h 10" />
+<path d=" M 607 92 h 10" />
+</g>
+</g>
+</svg>

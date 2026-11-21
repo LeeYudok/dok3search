@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 208 74">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-EnumVariantDiscriminant" class="link">
+<text class="comment" x="99" y="25">
+EnumVariantDiscriminant</text>
+</a>
+<g class="sequence">
+<path d=" M 10 53 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="sequence">
+<g class="terminal">
+<rect x="35" y="42" height="22" width="28" rx="10" ry="10" />
+<text x="49" y="58">
+=</text>
+</g>
+<a xlink:href="#railroad-summary-Expression" class="link">
+<g class="nonterminal">
+<rect x="73" y="42" height="22" width="100" />
+<text x="123" y="58">
+Expression</text>
+</g>
+</a>
+<path d=" M 63 53 h 10" />
+</g>
+<path d=" M 183 53 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 53 h 10" />
+<path d=" M 173 53 h 10" />
+</g>
+</g>
+</svg>

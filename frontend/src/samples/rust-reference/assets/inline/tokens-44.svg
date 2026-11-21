@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 686 222">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-RESERVED_TOKEN" class="link">
+<text class="comment" x="64" y="25">
+RESERVED_TOKEN</text>
+</a>
+<g class="sequence">
+<path d=" M 10 78 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="multichoice">
+<path d=" M 35 78 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<path d=" M 59 54 h 300 m -147 0 l -5 -5 m 0 10 l 5 -5 m 147 0" />
+<path d=" M 35 78 h 24" />
+<path d=" M 35 78 a 12 12 0 0 1 12 12" />
+<path d=" M 47 90 v 9" />
+<path d=" M 47 99 v 33" />
+<path d=" M 47 132 v 33" />
+<g class="sequence">
+<a xlink:href="#railroad-RESERVED_GUARDED_STRING_LITERAL" class="link">
+<g class="nonterminal">
+<rect x="59" y="67" height="22" width="276" />
+<text x="197" y="83">
+RESERVED_GUARDED_STRING_LITERAL</text>
+</g>
+</a>
+</g>
+<path d=" M 335 78 h 0 a 12 12 0 0 1 12 12" />
+<path d=" M 47 99 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-RESERVED_POUNDS" class="link">
+<g class="nonterminal">
+<rect x="59" y="100" height="22" width="140" />
+<text x="129" y="116">
+RESERVED_POUNDS</text>
+</g>
+</a>
+</g>
+<path d=" M 199 111 h 136 m -65 0 l -5 -5 m 0 10 l 5 -5 m 65 0 a 12 12 0 0 1 12 12" />
+<path d=" M 47 132 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="identifiers.md#railroad-RESERVED_RAW_IDENTIFIER" class="link">
+<g class="nonterminal">
+<rect x="59" y="133" height="22" width="212" />
+<text x="165" y="149">
+RESERVED_RAW_IDENTIFIER</text>
+</g>
+</a>
+</g>
+<path d=" M 271 144 h 64 m -29 0 l -5 -5 m 0 10 l 5 -5 m 29 0 a 12 12 0 0 1 12 12" />
+<path d=" M 47 165 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-RESERVED_RAW_LIFETIME" class="link">
+<g class="nonterminal">
+<rect x="59" y="166" height="22" width="196" />
+<text x="157" y="182">
+RESERVED_RAW_LIFETIME</text>
+</g>
+</a>
+</g>
+<path d=" M 255 177 h 80 m -37 0 l -5 -5 m 0 10 l 5 -5 m 37 0 a 12 12 0 0 1 12 12" />
+<path d=" M 347 90 v 33" />
+<path d=" M 347 123 v 33" />
+<path d=" M 347 156 v 33" />
+<path d=" M 347 189 v -1 a 12 12 0 0 0 12 12" />
+<path d=" M 359 54 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12" />
+<path d=" M 371 66 v 33" />
+<path d=" M 371 99 v 33" />
+<path d=" M 371 132 v 33" />
+<g class="sequence">
+<a xlink:href="#railroad-RESERVED_TOKEN_DOUBLE_QUOTE" class="link">
+<g class="nonterminal">
+<rect x="383" y="67" height="22" width="244" />
+<text x="505" y="83">
+RESERVED_TOKEN_DOUBLE_QUOTE</text>
+</g>
+</a>
+</g>
+<path d=" M 627 78 h 0 h 24" />
+<path d=" M 371 99 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-RESERVED_TOKEN_LIFETIME" class="link">
+<g class="nonterminal">
+<rect x="383" y="100" height="22" width="212" />
+<text x="489" y="116">
+RESERVED_TOKEN_LIFETIME</text>
+</g>
+</a>
+</g>
+<path d=" M 595 111 h 32 a 12 12 0 0 0 12 -12" />
+<path d=" M 371 132 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-RESERVED_TOKEN_POUND" class="link">
+<g class="nonterminal">
+<rect x="383" y="133" height="22" width="188" />
+<text x="477" y="149">
+RESERVED_TOKEN_POUND</text>
+</g>
+</a>
+</g>
+<path d=" M 571 144 h 56 m -25 0 l -5 -5 m 0 10 l 5 -5 m 25 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 371 165 a 12 12 0 0 0 12 12 h 0" />
+<a xlink:href="#railroad-RESERVED_TOKEN_SINGLE_QUOTE" class="link">
+<g class="nonterminal">
+<rect x="383" y="166" height="22" width="244" />
+<text x="505" y="182">
+RESERVED_TOKEN_SINGLE_QUOTE</text>
+</g>
+</a>
+<path d=" M 627 177 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 359 200 h 268 m -131 0 l -5 -5 m 0 10 l 5 -5 m 131 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 639 188 v -23" />
+<path d=" M 639 165 v -33" />
+<path d=" M 639 132 v -33" />
+<path d=" M 639 99 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 661 78 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 78 h 10" />
+<path d=" M 651 78 h 10" />
+</g>
+</g>
+</svg>

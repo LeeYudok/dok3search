@@ -13,7 +13,7 @@ const images = import.meta.glob<string>('./samples/comprehensive-rust/assets/**/
 
 export const comprehensiveRust = createReferenceCorpus({
   folder: 'comprehensive-rust',
-  category: 'rust',
+  topic: 'rust',
   source: 'Google Android 팀 · Comprehensive Rust',
   language: '한국어',
   chapters: index.chapters,

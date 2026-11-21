@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 610 92">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-IdentifierPattern" class="link">
+<text class="comment" x="74" y="25">
+IdentifierPattern</text>
+</a>
+<g class="sequence">
+<path d=" M 10 71 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="sequence">
+<g class="optional">
+<path d=" M 35 71 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 44 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<g class="terminal">
+<rect x="59" y="60" height="22" width="44" rx="10" ry="10" />
+<text x="81" y="76">
+ref</text>
+</g>
+</g>
+<g class="optional">
+<path d=" M 137 71 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 44 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<g class="terminal">
+<rect x="161" y="60" height="22" width="44" rx="10" ry="10" />
+<text x="183" y="76">
+mut</text>
+</g>
+</g>
+<a xlink:href="identifiers.md#railroad-IDENTIFIER" class="link">
+<g class="nonterminal">
+<rect x="239" y="60" height="22" width="100" />
+<text x="289" y="76">
+IDENTIFIER</text>
+</g>
+</a>
+<g class="optional">
+<path d=" M 349 71 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 178 m -86 0 l -5 -5 m 0 10 l 5 -5 m 86 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<g class="sequence">
+<g class="terminal">
+<rect x="373" y="60" height="22" width="28" rx="10" ry="10" />
+<text x="387" y="76">
+@</text>
+</g>
+<a xlink:href="#railroad-PatternNoTopAlt" class="link">
+<g class="nonterminal">
+<rect x="411" y="60" height="22" width="140" />
+<text x="481" y="76">
+PatternNoTopAlt</text>
+</g>
+</a>
+<path d=" M 401 71 h 10" />
+</g>
+</g>
+<path d=" M 127 71 h 10" />
+<path d=" M 229 71 h 10" />
+<path d=" M 339 71 h 10" />
+</g>
+<path d=" M 585 71 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 71 h 10" />
+<path d=" M 575 71 h 10" />
+</g>
+</g>
+</svg>

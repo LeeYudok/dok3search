@@ -13,14 +13,14 @@ const images = import.meta.glob<string>('./samples/go-reference/assets/**/*.svg'
 
 export const goReference = createReferenceCorpus({
   folder: 'go-reference',
-  category: 'go',
+  topic: 'go',
   source: index.source,
   language: '영어',
   chapters: index.chapters,
   markdown,
   images,
   licenses: [
-    { label: '문서 CC BY 4.0', url: contentLicense },
-    { label: '코드 BSD 3-Clause', url: codeLicense },
+    { label: 'Go 공식 문서 CC BY 4.0', url: contentLicense },
+    { label: 'Go 공식 예제 BSD 3-Clause', url: codeLicense },
   ],
 })

@@ -1,0 +1,158 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 642 328">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-MacroMatch" class="link">
+<text class="comment" x="50" y="25">
+MacroMatch</text>
+</a>
+<g class="sequence">
+<path d=" M 10 89 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="multichoice">
+<path d=" M 35 89 h 24" />
+<path d=" M 35 89 a 12 12 0 0 1 12 12" />
+<path d=" M 47 101 v 17" />
+<path d=" M 47 118 v 68 m 0 -31 l -5 -5 m 10 0 l -5 5 m 0 31" />
+<path d=" M 47 186 v 91 m 0 -42 l -5 -5 m 10 0 l -5 5 m 0 42" />
+<g class="sequence">
+<g class="labeledbox">
+<rect x="59" y="42" height="66" width="208" />
+<path d=" M 59 89 h 8 m 60 0 h 140 m -67 0 l -5 -5 m 0 10 l 5 -5 m 67 0" />
+<text class="comment" x="163" y="65">
+except `$` and delimiters</text>
+<a xlink:href="tokens.md#railroad-Token" class="link">
+<g class="nonterminal">
+<rect x="67" y="78" height="22" width="60" />
+<text x="97" y="94">
+Token</text>
+</g>
+</a>
+</g>
+</g>
+<path d=" M 267 89 h 340 m -167 0 l -5 -5 m 0 10 l 5 -5 m 167 0" />
+<path d=" M 47 118 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<a xlink:href="#railroad-MacroMatcher" class="link">
+<g class="nonterminal">
+<rect x="59" y="119" height="22" width="116" />
+<text x="117" y="135">
+MacroMatcher</text>
+</g>
+</a>
+</g>
+<path d=" M 175 130 h 408 m -201 0 l -5 -5 m 0 10 l 5 -5 m 201 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 47 186 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<g class="terminal">
+<rect x="59" y="187" height="22" width="28" rx="10" ry="10" />
+<text x="73" y="203">
+$</text>
+</g>
+<g class="multichoice">
+<path d=" M 97 198 h 24" />
+<path d=" M 97 198 a 12 12 0 0 1 12 12" />
+<path d=" M 109 210 v 17" />
+<g class="labeledbox">
+<rect x="121" y="151" height="66" width="212" />
+<path d=" M 121 198 h 8 m 196 0 h 8" />
+<text class="comment" x="183" y="174">
+except `crate`</text>
+<a xlink:href="identifiers.md#railroad-IDENTIFIER_OR_KEYWORD" class="link">
+<g class="nonterminal">
+<rect x="129" y="187" height="22" width="196" />
+<text x="227" y="203">
+IDENTIFIER_OR_KEYWORD</text>
+</g>
+</a>
+</g>
+<path d=" M 333 198 h 24" />
+<path d=" M 109 227 a 12 12 0 0 0 12 12 h 0" />
+<a xlink:href="identifiers.md#railroad-RAW_IDENTIFIER" class="link">
+<g class="nonterminal">
+<rect x="121" y="228" height="22" width="132" />
+<text x="187" y="244">
+RAW_IDENTIFIER</text>
+</g>
+</a>
+<path d=" M 253 239 h 80 m -37 0 l -5 -5 m 0 10 l 5 -5 m 37 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 345 227 v -17 a 12 12 0 0 1 12 -12" />
+</g>
+<g class="terminal">
+<rect x="367" y="187" height="22" width="28" rx="10" ry="10" />
+<text x="381" y="203">
+:</text>
+</g>
+<a xlink:href="#railroad-MacroFragSpec" class="link">
+<g class="nonterminal">
+<rect x="405" y="187" height="22" width="124" />
+<text x="467" y="203">
+MacroFragSpec</text>
+</g>
+</a>
+<path d=" M 87 198 h 10" />
+<path d=" M 357 198 h 10" />
+<path d=" M 395 198 h 10" />
+</g>
+<path d=" M 529 198 h 54 m -24 0 l -5 -5 m 0 10 l 5 -5 m 24 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 47 277 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<g class="terminal">
+<rect x="59" y="278" height="22" width="28" rx="10" ry="10" />
+<text x="73" y="294">
+$</text>
+</g>
+<g class="terminal">
+<rect x="97" y="278" height="22" width="28" rx="10" ry="10" />
+<text x="111" y="294">
+(</text>
+</g>
+<g class="repeat">
+<path d=" M 135 289 h 5 h 12 m 100 0 h 12 h 5 m -17 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 m 0 0 h -100 m 53 0 l 5 -5 m 0 10 l -5 -5 m -53 0 a 12 12 0 0 1 -12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<g>
+</g>
+<a xlink:href="#railroad-MacroMatch" class="link">
+<g class="nonterminal">
+<rect x="152" y="278" height="22" width="100" />
+<text x="202" y="294">
+MacroMatch</text>
+</g>
+</a>
+</g>
+<g class="terminal">
+<rect x="279" y="278" height="22" width="28" rx="10" ry="10" />
+<text x="293" y="294">
+)</text>
+</g>
+<g class="optional">
+<path d=" M 317 289 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 108 m -51 0 l -5 -5 m 0 10 l 5 -5 m 51 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="#railroad-MacroRepSep" class="link">
+<g class="nonterminal">
+<rect x="341" y="278" height="22" width="108" />
+<text x="395" y="294">
+MacroRepSep</text>
+</g>
+</a>
+</g>
+<a xlink:href="#railroad-MacroRepOp" class="link">
+<g class="nonterminal">
+<rect x="483" y="278" height="22" width="100" />
+<text x="533" y="294">
+MacroRepOp</text>
+</g>
+</a>
+<path d=" M 87 289 h 10" />
+<path d=" M 125 289 h 10" />
+<path d=" M 269 289 h 10" />
+<path d=" M 307 289 h 10" />
+<path d=" M 473 289 h 10" />
+</g>
+<path d=" M 583 289 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 595 277 v -91 m 0 48 l -5 5 m 10 0 l -5 -5 m 0 -48" />
+<path d=" M 595 186 v -68 m 0 37 l -5 5 m 10 0 l -5 -5 m 0 -37" />
+<path d=" M 595 118 v -17 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 617 89 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 89 h 10" />
+<path d=" M 607 89 h 10" />
+</g>
+</g>
+</svg>

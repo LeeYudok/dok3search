@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 493 150">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-LIFETIME_TOKEN" class="link">
+<text class="comment" x="64" y="25">
+LIFETIME_TOKEN</text>
+</a>
+<g class="sequence">
+<path d=" M 10 53 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="multichoice">
+<path d=" M 35 53 h 24" />
+<path d=" M 35 53 a 12 12 0 0 1 12 12" />
+<path d=" M 47 65 v 44" />
+<g class="sequence">
+<a xlink:href="#railroad-RAW_LIFETIME" class="link">
+<g class="nonterminal">
+<rect x="59" y="42" height="22" width="116" />
+<text x="117" y="58">
+RAW_LIFETIME</text>
+</g>
+</a>
+</g>
+<path d=" M 175 53 h 283 m -138 0 l -5 -5 m 0 10 l 5 -5 m 138 0" />
+<path d=" M 47 109 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<g class="terminal">
+<rect x="59" y="110" height="22" width="28" rx="10" ry="10" />
+<text x="73" y="126">
+'</text>
+</g>
+<a xlink:href="identifiers.md#railroad-IDENTIFIER_OR_KEYWORD" class="link">
+<g class="nonterminal">
+<rect x="97" y="110" height="22" width="196" />
+<text x="195" y="126">
+IDENTIFIER_OR_KEYWORD</text>
+</g>
+</a>
+<g class="labeledbox">
+<rect x="303" y="74" height="66" width="131" />
+<path d=" M 303 121 h 8 m 28 0 h 95 m -44 0 l -5 -5 m 0 10 l 5 -5 m 44 0" />
+<text class="comment" x="368" y="97">
+not followed by</text>
+<g class="terminal">
+<rect x="311" y="110" height="22" width="28" rx="10" ry="10" />
+<text x="325" y="126">
+'</text>
+</g>
+</g>
+<path d=" M 87 121 h 10" />
+<path d=" M 293 121 h 10" />
+</g>
+<path d=" M 434 121 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 446 109 v -44 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 468 53 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 53 h 10" />
+<path d=" M 458 53 h 10" />
+</g>
+</g>
+</svg>

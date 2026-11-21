@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 502 92">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-BreakExpression" class="link">
+<text class="comment" x="67" y="25">
+BreakExpression</text>
+</a>
+<g class="sequence">
+<path d=" M 10 71 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="sequence">
+<g class="terminal">
+<rect x="35" y="60" height="22" width="60" rx="10" ry="10" />
+<text x="65" y="76">
+break</text>
+</g>
+<g class="optional">
+<path d=" M 105 71 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 156 m -75 0 l -5 -5 m 0 10 l 5 -5 m 75 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="#railroad-summary-LIFETIME_OR_LABEL" class="link">
+<g class="nonterminal">
+<rect x="129" y="60" height="22" width="156" />
+<text x="207" y="76">
+LIFETIME_OR_LABEL</text>
+</g>
+</a>
+</g>
+<g class="optional">
+<path d=" M 319 71 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 100 m -47 0 l -5 -5 m 0 10 l 5 -5 m 47 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="#railroad-summary-Expression" class="link">
+<g class="nonterminal">
+<rect x="343" y="60" height="22" width="100" />
+<text x="393" y="76">
+Expression</text>
+</g>
+</a>
+</g>
+<path d=" M 95 71 h 10" />
+<path d=" M 309 71 h 10" />
+</g>
+<path d=" M 477 71 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 71 h 10" />
+<path d=" M 467 71 h 10" />
+</g>
+</g>
+</svg>

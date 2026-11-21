@@ -306,6 +306,41 @@
       "title": "A web server",
       "summary": "Let's finish with a complete Go program, a web server. This one is actually a kind of web re-server. Google provides a service at chart.apis.google.com that does automatic formatting of data into charts and graphs. It's hard to us",
       "source": "Effective Go"
+    },
+    {
+      "path": "chapters/practice/project-layout.md",
+      "title": "Go 프로젝트 구조: go.mod, cmd, internal",
+      "summary": "go.mod 단일 모듈, cmd 실행 진입점, internal 패키지와 import 경계를 정하는 방법.",
+      "source": "dok3search Go 실무 가이드",
+      "language": "한국어"
+    },
+    {
+      "path": "chapters/practice/testing.md",
+      "title": "Go 테스트 작성: _test.go, 테이블 테스트, E2E",
+      "summary": "_test.go 배치, 공개 API 테스트, 테이블 테스트, go test와 E2E 분리 기준.",
+      "source": "dok3search Go 실무 가이드",
+      "language": "한국어"
+    },
+    {
+      "path": "chapters/practice/error-handling.md",
+      "title": "Go 에러 처리: %w, errors.Is, errors.As",
+      "summary": "%w 오류 래핑, errors.Is와 errors.As, 로깅과 외부 오류 응답.",
+      "source": "dok3search Go 실무 가이드",
+      "language": "한국어"
+    },
+    {
+      "path": "chapters/practice/concurrency.md",
+      "title": "Go 동시성: context 취소, 타임아웃, 고루틴 종료",
+      "summary": "context.Context, 타임아웃, 고루틴 종료, 채널과 공유 상태 검증.",
+      "source": "dok3search Go 실무 가이드",
+      "language": "한국어"
+    },
+    {
+      "path": "chapters/practice/diagnostics.md",
+      "title": "Go 성능 진단: 벤치마크와 pprof",
+      "summary": "벤치마크, pprof, CPU와 메모리 프로필, 변경 전후 측정.",
+      "source": "dok3search Go 실무 가이드",
+      "language": "한국어"
     }
   ]
 }

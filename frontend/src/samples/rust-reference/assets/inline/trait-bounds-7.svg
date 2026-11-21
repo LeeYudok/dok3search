@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 738 146">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-UseBoundGenericArgs" class="link">
+<text class="comment" x="81" y="25">
+UseBoundGenericArgs</text>
+</a>
+<g class="sequence">
+<path d=" M 10 53 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="multichoice">
+<path d=" M 35 53 h 24" />
+<path d=" M 35 53 a 12 12 0 0 1 12 12" />
+<path d=" M 47 65 v 30" />
+<g class="sequence">
+<g class="terminal">
+<rect x="59" y="42" height="22" width="28" rx="10" ry="10" />
+<text x="73" y="58">
+&lt;</text>
+</g>
+<g class="terminal">
+<rect x="97" y="42" height="22" width="28" rx="10" ry="10" />
+<text x="111" y="58">
+&gt;</text>
+</g>
+<path d=" M 87 53 h 10" />
+</g>
+<path d=" M 125 53 h 578 m -286 0 l -5 -5 m 0 10 l 5 -5 m 286 0" />
+<path d=" M 47 95 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<g class="terminal">
+<rect x="59" y="96" height="22" width="28" rx="10" ry="10" />
+<text x="73" y="112">
+&lt;</text>
+</g>
+<g class="optional">
+<path d=" M 97 107 h 24 m -24 0 a 12 12 0 0 0 12 -12 v -4 a 12 12 0 0 1 12 -12 h 236 m -115 0 l -5 -5 m 0 10 l 5 -5 m 115 0 a 12 12 0 0 1 12 12 v 4 a 12 12 0 0 0 12 12 h -24" />
+<g class="repeat">
+<path d=" M 121 107 h 5 h 12 m 202 0 h 12 h 5 m -17 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 m 0 0 h -202 m 104 0 l 5 -5 m 0 10 l -5 -5 m -104 0 a 12 12 0 0 1 -12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<g>
+</g>
+<g class="sequence">
+<a xlink:href="#railroad-UseBoundGenericArg" class="link">
+<g class="nonterminal">
+<rect x="138" y="96" height="22" width="164" />
+<text x="220" y="112">
+UseBoundGenericArg</text>
+</g>
+</a>
+<g class="terminal">
+<rect x="312" y="96" height="22" width="28" rx="10" ry="10" />
+<text x="326" y="112">
+,</text>
+</g>
+<path d=" M 302 107 h 10" />
+</g>
+</g>
+</g>
+<a xlink:href="#railroad-UseBoundGenericArg" class="link">
+<g class="nonterminal">
+<rect x="391" y="96" height="22" width="164" />
+<text x="473" y="112">
+UseBoundGenericArg</text>
+</g>
+</a>
+<g class="optional">
+<path d=" M 565 107 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 28 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<g class="terminal">
+<rect x="589" y="96" height="22" width="28" rx="10" ry="10" />
+<text x="603" y="112">
+,</text>
+</g>
+</g>
+<g class="terminal">
+<rect x="651" y="96" height="22" width="28" rx="10" ry="10" />
+<text x="665" y="112">
+&gt;</text>
+</g>
+<path d=" M 87 107 h 10" />
+<path d=" M 381 107 h 10" />
+<path d=" M 555 107 h 10" />
+<path d=" M 641 107 h 10" />
+</g>
+<path d=" M 679 107 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 691 95 v -30 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 713 53 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 53 h 10" />
+<path d=" M 703 53 h 10" />
+</g>
+</g>
+</svg>

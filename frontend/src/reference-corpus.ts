@@ -1,4 +1,4 @@
-import type { Document } from './documents'
+import { type Document, type ReferenceTopic } from './documents'
 
 export function referenceIdPrefix(category: 'rust' | 'go', folder: string) {
   return category + '-ref-' + folder + '-'
@@ -9,6 +9,7 @@ type Chapter = {
   title: string
   summary: string
   source?: string
+  language?: string
 }
 
 type CorpusLicense = { label: string; url: string }
@@ -16,15 +17,16 @@ type CorpusLicense = { label: string; url: string }
 export type ReferenceCorpus = {
   idPrefix: string
   documents: Document[]
+  topic: ReferenceTopic
   images: ReadonlyMap<string, string>
   licenses: readonly CorpusLicense[]
 }
 
 export function createReferenceCorpus({
-  folder, category, source, language, chapters, markdown, images, licenses,
+  folder, topic, source, language, chapters, markdown, images, licenses,
 }: {
   folder: string
-  category: 'rust' | 'go'
+  topic: ReferenceTopic
   source: string
   language: string
   chapters: readonly Chapter[]
@@ -33,8 +35,8 @@ export function createReferenceCorpus({
   licenses: readonly CorpusLicense[]
 }): ReferenceCorpus {
   const root = './samples/' + folder + '/'
-  const idPrefix = referenceIdPrefix(category, folder)
-  const documents = chapters.map(({ path, title, summary, source: chapterSource }): Document => {
+  const idPrefix = referenceIdPrefix(topic, folder)
+  const documents = chapters.map(({ path, title, summary, source: chapterSource, language: chapterLanguage }): Document => {
     const original = markdown[root + path]
     if (original === undefined) throw new Error('강의 원문 파일 누락: ' + path)
     return {
@@ -42,8 +44,9 @@ export function createReferenceCorpus({
       title,
       summary,
       source: chapterSource ?? source,
-      tag: language,
-      category,
+      tag: chapterLanguage ?? language,
+      category: 'guide',
+      topic,
       body: '',
       markdown: original.replace(/^# .*\r?\n+/, ''),
       samplePath: path,
@@ -52,6 +55,7 @@ export function createReferenceCorpus({
 
   return {
     idPrefix,
+    topic,
     documents,
     images: new Map(Object.entries(images).map(([path, url]) => ['/' + path.slice(root.length), url])),
     licenses,

@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 527 199">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-RAW_BYTE_STRING_CONTENT_HASHED" class="link">
+<text class="comment" x="123" y="25">
+RAW_BYTE_STRING_CONTENT_HASHED</text>
+</a>
+<g class="sequence">
+<path d=" M 10 147 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="optional">
+<path d=" M 35 147 h 24 m -24 0 a 12 12 0 0 0 12 -12 v -76 m 0 41 l -5 5 m 10 0 l -5 -5 m 0 -41 a 12 12 0 0 1 12 -12 h 409 m -201 0 l -5 -5 m 0 10 l 5 -5 m 201 0 a 12 12 0 0 1 12 12 v 76 m 0 -35 l -5 -5 m 10 0 l -5 5 m 0 35 a 12 12 0 0 0 12 12 h -24" />
+<g class="repeat">
+<path d=" M 59 147 h 5 h 12 m 375 0 h 12 h 5 m -17 0 a 12 12 0 0 1 12 12 v 13 a 12 12 0 0 1 -12 12 m 0 0 h -375 m 190 0 l 5 -5 m 0 10 l -5 -5 m -190 0 a 12 12 0 0 1 -12 -12 v -13 a 12 12 0 0 1 12 -12" />
+<g>
+</g>
+<g class="sequence">
+<g class="labeledbox">
+<rect x="76" y="64" height="110" width="241" />
+<path d=" M 76 147 h 8 m 225 0 h 8" />
+<text class="comment" x="141" y="87">
+not followed by</text>
+<g class="sequence">
+<g class="terminal">
+<rect x="84" y="136" height="22" width="28" rx="10" ry="10" />
+<text x="98" y="152">
+"</text>
+</g>
+<g class="labeledbox">
+<rect x="122" y="100" height="66" width="187" />
+<path d=" M 122 147 h 8 m 28 0 h 151 m -72 0 l -5 -5 m 0 10 l 5 -5 m 72 0" />
+<text class="comment" x="215" y="123">
+repeat exactly n times</text>
+<g class="terminal">
+<rect x="130" y="136" height="22" width="28" rx="10" ry="10" />
+<text x="144" y="152">
+#</text>
+</g>
+</g>
+<path d=" M 112 147 h 10" />
+</g>
+</g>
+<a xlink:href="#railroad-summary-ASCII_FOR_RAW" class="link">
+<g class="nonterminal">
+<rect x="327" y="136" height="22" width="124" />
+<text x="389" y="152">
+ASCII_FOR_RAW</text>
+</g>
+</a>
+<path d=" M 317 147 h 10" />
+</g>
+</g>
+</g>
+<path d=" M 502 147 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 147 h 10" />
+<path d=" M 492 147 h 10" />
+</g>
+</g>
+</svg>

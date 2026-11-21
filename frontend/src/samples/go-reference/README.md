@@ -19,3 +19,7 @@ The documentation is attributed to the Go Authors. According to the [Go
 copyright notice](https://go.dev/copyright), site documentation is licensed
 under [CC BY 4.0](LICENSE-CC-BY) and source code under [BSD 3-Clause](LICENSE-BSD).
 The BSD notice is copied from the installed SDK.
+
+`chapters/practice/` contains five original Korean guides for offline development.
+They cover project layout, testing, errors, concurrency, and diagnostics.
+The guides and their examples follow the dok3search repository license.

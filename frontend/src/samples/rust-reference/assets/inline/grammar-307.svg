@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 630 158">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-StructPatternElements" class="link">
+<text class="comment" x="92" y="25">
+StructPatternElements</text>
+</a>
+<g class="sequence">
+<path d=" M 10 71 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="multichoice">
+<path d=" M 35 71 h 24" />
+<path d=" M 35 71 a 12 12 0 0 1 12 12" />
+<path d=" M 47 83 v 42" />
+<g class="sequence">
+<a xlink:href="#railroad-summary-StructPatternFields" class="link">
+<g class="nonterminal">
+<rect x="59" y="60" height="22" width="172" />
+<text x="145" y="76">
+StructPatternFields</text>
+</g>
+</a>
+<g class="optional">
+<path d=" M 241 71 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 282 m -138 0 l -5 -5 m 0 10 l 5 -5 m 138 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<g class="multichoice">
+<path d=" M 265 71 h 24" />
+<path d=" M 265 71 a 12 12 0 0 1 12 12" />
+<path d=" M 277 83 v 9" />
+<g class="terminal">
+<rect x="289" y="60" height="22" width="28" rx="10" ry="10" />
+<text x="303" y="76">
+,</text>
+</g>
+<path d=" M 317 71 h 230 m -112 0 l -5 -5 m 0 10 l 5 -5 m 112 0" />
+<path d=" M 277 92 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<g class="terminal">
+<rect x="289" y="93" height="22" width="28" rx="10" ry="10" />
+<text x="303" y="109">
+,</text>
+</g>
+<a xlink:href="#railroad-summary-StructPatternEtCetera" class="link">
+<g class="nonterminal">
+<rect x="327" y="93" height="22" width="196" />
+<text x="425" y="109">
+StructPatternEtCetera</text>
+</g>
+</a>
+<path d=" M 317 104 h 10" />
+</g>
+<path d=" M 523 104 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 535 92 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+</g>
+<path d=" M 231 71 h 10" />
+</g>
+<path d=" M 571 71 h 24" />
+<path d=" M 47 125 a 12 12 0 0 0 12 12 h 0" />
+<a xlink:href="#railroad-summary-StructPatternEtCetera" class="link">
+<g class="nonterminal">
+<rect x="59" y="126" height="22" width="196" />
+<text x="157" y="142">
+StructPatternEtCetera</text>
+</g>
+</a>
+<path d=" M 255 137 h 316 m -155 0 l -5 -5 m 0 10 l 5 -5 m 155 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 583 125 v -42 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 605 71 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 71 h 10" />
+<path d=" M 595 71 h 10" />
+</g>
+</g>
+</svg>

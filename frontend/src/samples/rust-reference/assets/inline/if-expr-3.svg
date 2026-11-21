@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 520 114">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-LetChain" class="link">
+<text class="comment" x="43" y="25">
+LetChain</text>
+</a>
+<g class="sequence">
+<path d=" M 10 75 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="sequence">
+<a xlink:href="#railroad-LetChainCondition" class="link">
+<g class="nonterminal">
+<rect x="35" y="64" height="22" width="156" />
+<text x="113" y="80">
+LetChainCondition</text>
+</g>
+</a>
+<g class="optional">
+<path d=" M 201 75 h 24 m -24 0 a 12 12 0 0 0 12 -12 v -4 a 12 12 0 0 1 12 -12 h 236 m -115 0 l -5 -5 m 0 10 l 5 -5 m 115 0 a 12 12 0 0 1 12 12 v 4 a 12 12 0 0 0 12 12 h -24" />
+<g class="repeat">
+<path d=" M 225 75 h 5 h 12 m 202 0 h 12 h 5 m -17 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 m 0 0 h -202 m 104 0 l 5 -5 m 0 10 l -5 -5 m -104 0 a 12 12 0 0 1 -12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<g>
+</g>
+<g class="sequence">
+<g class="terminal">
+<rect x="242" y="64" height="22" width="36" rx="10" ry="10" />
+<text x="260" y="80">
+&amp;&amp;</text>
+</g>
+<a xlink:href="#railroad-LetChainCondition" class="link">
+<g class="nonterminal">
+<rect x="288" y="64" height="22" width="156" />
+<text x="366" y="80">
+LetChainCondition</text>
+</g>
+</a>
+<path d=" M 278 75 h 10" />
+</g>
+</g>
+</g>
+<path d=" M 191 75 h 10" />
+</g>
+<path d=" M 495 75 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 75 h 10" />
+<path d=" M 485 75 h 10" />
+</g>
+</g>
+</svg>

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 248 92">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-ImplTraitType" class="link">
+<text class="comment" x="60" y="25">
+ImplTraitType</text>
+</a>
+<g class="sequence">
+<path d=" M 10 71 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="sequence">
+<g class="terminal">
+<rect x="35" y="60" height="22" width="52" rx="10" ry="10" />
+<text x="61" y="76">
+impl</text>
+</g>
+<g class="optional">
+<path d=" M 97 71 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 68 m -31 0 l -5 -5 m 0 10 l 5 -5 m 31 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="../trait-bounds.md#railroad-Bounds" class="link">
+<g class="nonterminal">
+<rect x="121" y="60" height="22" width="68" />
+<text x="155" y="76">
+Bounds</text>
+</g>
+</a>
+</g>
+<path d=" M 87 71 h 10" />
+</g>
+<path d=" M 223 71 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 71 h 10" />
+<path d=" M 213 71 h 10" />
+</g>
+</g>
+</svg>

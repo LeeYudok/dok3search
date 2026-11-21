@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 838 92">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-Union" class="link">
+<text class="comment" x="32" y="25">
+Union</text>
+</a>
+<g class="sequence">
+<path d=" M 10 71 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="sequence">
+<g class="terminal">
+<rect x="35" y="60" height="22" width="60" rx="10" ry="10" />
+<text x="65" y="76">
+union</text>
+</g>
+<a xlink:href="#railroad-summary-IDENTIFIER" class="link">
+<g class="nonterminal">
+<rect x="105" y="60" height="22" width="100" />
+<text x="155" y="76">
+IDENTIFIER</text>
+</g>
+</a>
+<g class="optional">
+<path d=" M 215 71 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 124 m -59 0 l -5 -5 m 0 10 l 5 -5 m 59 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="#railroad-summary-GenericParams" class="link">
+<g class="nonterminal">
+<rect x="239" y="60" height="22" width="124" />
+<text x="301" y="76">
+GenericParams</text>
+</g>
+</a>
+</g>
+<g class="optional">
+<path d=" M 397 71 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 108 m -51 0 l -5 -5 m 0 10 l 5 -5 m 51 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="#railroad-summary-WhereClause" class="link">
+<g class="nonterminal">
+<rect x="421" y="60" height="22" width="108" />
+<text x="475" y="76">
+WhereClause</text>
+</g>
+</a>
+</g>
+<g class="terminal">
+<rect x="563" y="60" height="22" width="28" rx="10" ry="10" />
+<text x="577" y="76">
+{</text>
+</g>
+<g class="optional">
+<path d=" M 601 71 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 116 m -55 0 l -5 -5 m 0 10 l 5 -5 m 55 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="#railroad-summary-StructFields" class="link">
+<g class="nonterminal">
+<rect x="625" y="60" height="22" width="116" />
+<text x="683" y="76">
+StructFields</text>
+</g>
+</a>
+</g>
+<g class="terminal">
+<rect x="775" y="60" height="22" width="28" rx="10" ry="10" />
+<text x="789" y="76">
+}</text>
+</g>
+<path d=" M 95 71 h 10" />
+<path d=" M 205 71 h 10" />
+<path d=" M 387 71 h 10" />
+<path d=" M 553 71 h 10" />
+<path d=" M 591 71 h 10" />
+<path d=" M 765 71 h 10" />
+</g>
+<path d=" M 813 71 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 71 h 10" />
+<path d=" M 803 71 h 10" />
+</g>
+</g>
+</svg>

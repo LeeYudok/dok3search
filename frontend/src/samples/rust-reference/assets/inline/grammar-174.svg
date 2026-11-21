@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 458 185">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-Statements" class="link">
+<text class="comment" x="50" y="25">
+Statements</text>
+</a>
+<g class="sequence">
+<path d=" M 10 58 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="multichoice">
+<path d=" M 35 58 h 24" />
+<path d=" M 35 58 a 12 12 0 0 1 12 12" />
+<path d=" M 47 70 v 31" />
+<path d=" M 47 101 v 51 m 0 -22 l -5 -5 m 10 0 l -5 5 m 0 22" />
+<g class="sequence">
+<g class="repeat">
+<path d=" M 59 58 h 5 h 12 m 92 0 h 12 h 5 m -17 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 m 0 0 h -92 m 49 0 l 5 -5 m 0 10 l -5 -5 m -49 0 a 12 12 0 0 1 -12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<g>
+</g>
+<a xlink:href="#railroad-summary-Statement" class="link">
+<g class="nonterminal">
+<rect x="76" y="47" height="22" width="92" />
+<text x="122" y="63">
+Statement</text>
+</g>
+</a>
+</g>
+</g>
+<path d=" M 185 58 h 238 m -116 0 l -5 -5 m 0 10 l 5 -5 m 116 0" />
+<path d=" M 47 101 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<g class="repeat">
+<path d=" M 59 113 h 5 h 12 m 92 0 h 12 h 5 m -17 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 m 0 0 h -92 m 49 0 l 5 -5 m 0 10 l -5 -5 m -49 0 a 12 12 0 0 1 -12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<g>
+</g>
+<a xlink:href="#railroad-summary-Statement" class="link">
+<g class="nonterminal">
+<rect x="76" y="102" height="22" width="92" />
+<text x="122" y="118">
+Statement</text>
+</g>
+</a>
+</g>
+<a xlink:href="#railroad-summary-ExpressionWithoutBlock" class="link">
+<g class="nonterminal">
+<rect x="195" y="102" height="22" width="204" />
+<text x="297" y="118">
+ExpressionWithoutBlock</text>
+</g>
+</a>
+<path d=" M 185 113 h 10" />
+</g>
+<path d=" M 399 113 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 47 152 a 12 12 0 0 0 12 12 h 0" />
+<a xlink:href="#railroad-summary-ExpressionWithoutBlock" class="link">
+<g class="nonterminal">
+<rect x="59" y="153" height="22" width="204" />
+<text x="161" y="169">
+ExpressionWithoutBlock</text>
+</g>
+</a>
+<path d=" M 263 164 h 136 m -65 0 l -5 -5 m 0 10 l 5 -5 m 65 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 411 152 v -51 m 0 28 l -5 5 m 10 0 l -5 -5 m 0 -28" />
+<path d=" M 411 101 v -31 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 433 58 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 58 h 10" />
+<path d=" M 423 58 h 10" />
+</g>
+</g>
+</svg>

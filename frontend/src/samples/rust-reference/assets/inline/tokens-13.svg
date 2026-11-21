@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 271 250">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-ASCII_FOR_CHAR" class="link">
+<text class="comment" x="64" y="25">
+ASCII_FOR_CHAR</text>
+</a>
+<g class="sequence">
+<path d=" M 10 89 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="sequence">
+<g class="labeledbox">
+<rect x="35" y="42" height="198" width="131" />
+<path d=" M 35 89 h 8 m 92 0 h 31" />
+<text class="comment" x="100" y="65">
+not followed by</text>
+<g class="multichoice">
+<path d=" M 43 89 h 24" />
+<path d=" M 43 89 a 12 12 0 0 1 12 12" />
+<path d=" M 55 101 v 9" />
+<path d=" M 55 110 v 33" />
+<path d=" M 55 143 v 33" />
+<path d=" M 55 176 v 33" />
+<g class="terminal">
+<rect x="67" y="78" height="22" width="28" rx="10" ry="10" />
+<text x="81" y="94">
+'</text>
+</g>
+<path d=" M 95 89 h 40" />
+<path d=" M 55 110 a 12 12 0 0 0 12 12 h 0" />
+<g class="terminal">
+<rect x="67" y="111" height="22" width="28" rx="10" ry="10" />
+<text x="81" y="127">
+\</text>
+</g>
+<path d=" M 95 122 h 16 a 12 12 0 0 0 12 -12" />
+<path d=" M 55 143 a 12 12 0 0 0 12 12 h 0" />
+<a xlink:href="whitespace.md#railroad-LF" class="link">
+<g class="nonterminal">
+<rect x="67" y="144" height="22" width="36" />
+<text x="85" y="160">
+LF</text>
+</g>
+</a>
+<path d=" M 103 155 h 8 a 12 12 0 0 0 12 -12" />
+<path d=" M 55 176 a 12 12 0 0 0 12 12 h 0" />
+<a xlink:href="whitespace.md#railroad-CR" class="link">
+<g class="nonterminal">
+<rect x="67" y="177" height="22" width="36" />
+<text x="85" y="193">
+CR</text>
+</g>
+</a>
+<path d=" M 103 188 h 8 a 12 12 0 0 0 12 -12" />
+<path d=" M 55 209 a 12 12 0 0 0 12 12 h 0" />
+<a xlink:href="whitespace.md#railroad-TAB" class="link">
+<g class="nonterminal">
+<rect x="67" y="210" height="22" width="44" />
+<text x="89" y="226">
+TAB</text>
+</g>
+</a>
+<path d=" M 111 221 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 123 209 v -33" />
+<path d=" M 123 176 v -33" />
+<path d=" M 123 143 v -33" />
+<path d=" M 123 110 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+</g>
+<a xlink:href="input-format.md#railroad-ASCII" class="link">
+<g class="nonterminal">
+<rect x="176" y="78" height="22" width="60" />
+<text x="206" y="94">
+ASCII</text>
+</g>
+</a>
+<path d=" M 166 89 h 10" />
+</g>
+<path d=" M 246 89 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 89 h 10" />
+<path d=" M 236 89 h 10" />
+</g>
+</g>
+</svg>

@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 750 188">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-FLOAT_EXPONENT" class="link">
+<text class="comment" x="64" y="25">
+FLOAT_EXPONENT</text>
+</a>
+<g class="sequence">
+<path d=" M 10 111 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="sequence">
+<g class="multichoice">
+<path d=" M 35 111 h 24" />
+<path d=" M 35 111 a 12 12 0 0 1 12 12" />
+<path d=" M 47 123 v 9" />
+<g class="terminal">
+<rect x="59" y="100" height="22" width="28" rx="10" ry="10" />
+<text x="73" y="116">
+e</text>
+</g>
+<path d=" M 87 111 h 24" />
+<path d=" M 47 132 a 12 12 0 0 0 12 12 h 0" />
+<g class="terminal">
+<rect x="59" y="133" height="22" width="28" rx="10" ry="10" />
+<text x="73" y="149">
+E</text>
+</g>
+<path d=" M 87 144 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 99 132 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+<g class="labeledbox">
+<rect x="121" y="42" height="136" width="594" />
+<path d=" M 121 111 h 8 m 578 0 h 8" />
+<text class="comment" x="186" y="65">
+no backtracking</text>
+<g class="sequence">
+<g class="optional">
+<path d=" M 129 111 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 76 m -35 0 l -5 -5 m 0 10 l 5 -5 m 35 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<g class="multichoice">
+<path d=" M 153 111 h 24" />
+<path d=" M 153 111 a 12 12 0 0 1 12 12" />
+<path d=" M 165 123 v 9" />
+<g class="terminal">
+<rect x="177" y="100" height="22" width="28" rx="10" ry="10" />
+<text x="191" y="116">
++</text>
+</g>
+<path d=" M 205 111 h 24" />
+<path d=" M 165 132 a 12 12 0 0 0 12 12 h 0" />
+<g class="terminal">
+<rect x="177" y="133" height="22" width="28" rx="10" ry="10" />
+<text x="191" y="149">
+-</text>
+</g>
+<path d=" M 205 144 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 217 132 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+</g>
+<g class="optional">
+<path d=" M 263 111 h 24 m -24 0 a 12 12 0 0 0 12 -12 v -4 a 12 12 0 0 1 12 -12 h 62 m -28 0 l -5 -5 m 0 10 l 5 -5 m 28 0 a 12 12 0 0 1 12 12 v 4 a 12 12 0 0 0 12 12 h -24" />
+<g class="repeat">
+<path d=" M 287 111 h 5 h 12 m 28 0 h 12 h 5 m -17 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 m 0 0 h -28 a 12 12 0 0 1 -12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<g>
+</g>
+<g class="terminal">
+<rect x="304" y="100" height="22" width="28" rx="10" ry="10" />
+<text x="318" y="116">
+_</text>
+</g>
+</g>
+</g>
+<a xlink:href="#railroad-summary-DEC_DIGIT" class="link">
+<g class="nonterminal">
+<rect x="383" y="100" height="22" width="92" />
+<text x="429" y="116">
+DEC_DIGIT</text>
+</g>
+</a>
+<g class="optional">
+<path d=" M 485 111 h 24 m -24 0 a 12 12 0 0 0 12 -12 v -4 a 12 12 0 0 1 12 -12 h 174 m -84 0 l -5 -5 m 0 10 l 5 -5 m 84 0 a 12 12 0 0 1 12 12 v 4 a 12 12 0 0 0 12 12 h -24" />
+<g class="repeat">
+<path d=" M 509 111 h 5 h 12 m 140 0 h 12 h 5 m -17 0 a 12 12 0 0 1 12 12 v 30 a 12 12 0 0 1 -12 12 m 0 0 h -140 m 73 0 l 5 -5 m 0 10 l -5 -5 m -73 0 a 12 12 0 0 1 -12 -12 v -30 a 12 12 0 0 1 12 -12" />
+<g>
+</g>
+<g class="multichoice">
+<path d=" M 526 111 h 24" />
+<path d=" M 526 111 a 12 12 0 0 1 12 12" />
+<path d=" M 538 123 v 9" />
+<a xlink:href="#railroad-summary-DEC_DIGIT" class="link">
+<g class="nonterminal">
+<rect x="550" y="100" height="22" width="92" />
+<text x="596" y="116">
+DEC_DIGIT</text>
+</g>
+</a>
+<path d=" M 642 111 h 24" />
+<path d=" M 538 132 a 12 12 0 0 0 12 12 h 0" />
+<g class="terminal">
+<rect x="550" y="133" height="22" width="28" rx="10" ry="10" />
+<text x="564" y="149">
+_</text>
+</g>
+<path d=" M 578 144 h 64 m -29 0 l -5 -5 m 0 10 l 5 -5 m 29 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 654 132 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+</g>
+</g>
+<path d=" M 253 111 h 10" />
+<path d=" M 373 111 h 10" />
+<path d=" M 475 111 h 10" />
+</g>
+</g>
+<path d=" M 111 111 h 10" />
+</g>
+<path d=" M 725 111 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 111 h 10" />
+<path d=" M 715 111 h 10" />
+</g>
+</g>
+</svg>

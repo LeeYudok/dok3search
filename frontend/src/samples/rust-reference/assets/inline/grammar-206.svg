@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 692 190">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-summary-MatchGuardCondition" class="link">
+<text class="comment" x="81" y="25">
+MatchGuardCondition</text>
+</a>
+<g class="sequence">
+<path d=" M 10 89 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="multichoice">
+<path d=" M 35 89 h 24" />
+<path d=" M 35 89 a 12 12 0 0 1 12 12" />
+<path d=" M 47 101 v 38" />
+<g class="sequence">
+<g class="labeledbox">
+<rect x="59" y="42" height="66" width="243" />
+<path d=" M 59 89 h 8 m 100 0 h 135 m -64 0 l -5 -5 m 0 10 l 5 -5 m 64 0" />
+<text class="comment" x="180" y="65">
+except ExcludedMatchConditions</text>
+<a xlink:href="#railroad-summary-Expression" class="link">
+<g class="nonterminal">
+<rect x="67" y="78" height="22" width="100" />
+<text x="117" y="94">
+Expression</text>
+</g>
+</a>
+</g>
+</g>
+<path d=" M 302 89 h 355 m -174 0 l -5 -5 m 0 10 l 5 -5 m 174 0" />
+<path d=" M 47 139 a 12 12 0 0 0 12 12 h 0" />
+<g class="sequence">
+<g class="optional">
+<path d=" M 59 151 h 24 m -24 0 a 12 12 0 0 0 12 -12 v -4 a 12 12 0 0 1 12 -12 h 166 m -80 0 l -5 -5 m 0 10 l 5 -5 m 80 0 a 12 12 0 0 1 12 12 v 4 a 12 12 0 0 0 12 12 h -24" />
+<g class="repeat">
+<path d=" M 83 151 h 5 h 12 m 132 0 h 12 h 5 m -17 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 m 0 0 h -132 m 69 0 l 5 -5 m 0 10 l -5 -5 m -69 0 a 12 12 0 0 1 -12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<g>
+</g>
+<a xlink:href="#railroad-summary-OuterAttribute" class="link">
+<g class="nonterminal">
+<rect x="100" y="140" height="22" width="132" />
+<text x="166" y="156">
+OuterAttribute</text>
+</g>
+</a>
+</g>
+</g>
+<g class="terminal">
+<rect x="283" y="140" height="22" width="44" rx="10" ry="10" />
+<text x="305" y="156">
+let</text>
+</g>
+<a xlink:href="#railroad-summary-Pattern" class="link">
+<g class="nonterminal">
+<rect x="337" y="140" height="22" width="76" />
+<text x="375" y="156">
+Pattern</text>
+</g>
+</a>
+<g class="terminal">
+<rect x="423" y="140" height="22" width="28" rx="10" ry="10" />
+<text x="437" y="156">
+=</text>
+</g>
+<a xlink:href="#railroad-summary-MatchGuardScrutinee" class="link">
+<g class="nonterminal">
+<rect x="461" y="140" height="22" width="172" />
+<text x="547" y="156">
+MatchGuardScrutinee</text>
+</g>
+</a>
+<path d=" M 273 151 h 10" />
+<path d=" M 327 151 h 10" />
+<path d=" M 413 151 h 10" />
+<path d=" M 451 151 h 10" />
+</g>
+<path d=" M 633 151 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 645 139 v -38 a 12 12 0 0 1 12 -12" />
+</g>
+<path d=" M 667 89 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 89 h 10" />
+<path d=" M 657 89 h 10" />
+</g>
+</g>
+</svg>

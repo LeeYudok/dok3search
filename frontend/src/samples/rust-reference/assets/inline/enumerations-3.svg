@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad" viewbox="0 0 750 209">
+<rect width="100%" height="100%" class="railroad_canvas" />
+<g class="verticalgrid">
+<a xlink:href="#grammar-EnumVariant" class="link">
+<text class="comment" x="53" y="25">
+EnumVariant</text>
+</a>
+<g class="sequence">
+<path d=" M 10 75 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5 m 10 0 h 5" />
+<g class="stack">
+<path d=" M 35 75 h 24" />
+<path d=" M 431 75 a 12 12 0 0 1 12 12 v 15 a 12 12 0 0 1 -12 12 h -372 m 189 0 l 5 -5 m 0 10 l -5 -5 m -189 0 a 12 12 0 0 0 -12 12 v 17 v 0 a 12 12 0 0 0 12 12" />
+<g class="sequence">
+<g class="optional">
+<path d=" M 59 75 h 24 m -24 0 a 12 12 0 0 0 12 -12 v -4 a 12 12 0 0 1 12 -12 h 166 m -80 0 l -5 -5 m 0 10 l 5 -5 m 80 0 a 12 12 0 0 1 12 12 v 4 a 12 12 0 0 0 12 12 h -24" />
+<g class="repeat">
+<path d=" M 83 75 h 5 h 12 m 132 0 h 12 h 5 m -17 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 1 -12 12 m 0 0 h -132 m 69 0 l 5 -5 m 0 10 l -5 -5 m -69 0 a 12 12 0 0 1 -12 -12 v 0 a 12 12 0 0 1 12 -12" />
+<g>
+</g>
+<a xlink:href="../attributes.md#railroad-OuterAttribute" class="link">
+<g class="nonterminal">
+<rect x="100" y="64" height="22" width="132" />
+<text x="166" y="80">
+OuterAttribute</text>
+</g>
+</a>
+</g>
+</g>
+<g class="optional">
+<path d=" M 283 75 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 100 m -47 0 l -5 -5 m 0 10 l 5 -5 m 47 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="../visibility-and-privacy.md#railroad-Visibility" class="link">
+<g class="nonterminal">
+<rect x="307" y="64" height="22" width="100" />
+<text x="357" y="80">
+Visibility</text>
+</g>
+</a>
+</g>
+<path d=" M 273 75 h 10" />
+</g>
+<path d=" M 691 155 h 0 a 12 12 0 0 0 12 -12 v -56 m 0 31 l -5 5 m 10 0 l -5 -5 m 0 -31 a 12 12 0 0 1 12 -12" />
+<g class="sequence">
+<a xlink:href="../identifiers.md#railroad-IDENTIFIER" class="link">
+<g class="nonterminal">
+<rect x="59" y="144" height="22" width="100" />
+<text x="109" y="160">
+IDENTIFIER</text>
+</g>
+</a>
+<g class="optional">
+<path d=" M 169 155 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 204 m -99 0 l -5 -5 m 0 10 l 5 -5 m 99 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<g class="multichoice">
+<path d=" M 193 155 h 24" />
+<path d=" M 193 155 a 12 12 0 0 1 12 12" />
+<path d=" M 205 167 v 9" />
+<a xlink:href="#railroad-EnumVariantTuple" class="link">
+<g class="nonterminal">
+<rect x="217" y="144" height="22" width="148" />
+<text x="291" y="160">
+EnumVariantTuple</text>
+</g>
+</a>
+<path d=" M 365 155 h 32" />
+<path d=" M 205 176 a 12 12 0 0 0 12 12 h 0" />
+<a xlink:href="#railroad-EnumVariantStruct" class="link">
+<g class="nonterminal">
+<rect x="217" y="177" height="22" width="156" />
+<text x="295" y="193">
+EnumVariantStruct</text>
+</g>
+</a>
+<path d=" M 373 188 h 0 a 12 12 0 0 0 12 -12" />
+<path d=" M 385 176 v -9 a 12 12 0 0 1 12 -12" />
+</g>
+</g>
+<g class="optional">
+<path d=" M 431 155 h 24 m -24 0 a 12 12 0 0 0 12 -12 v 0 a 12 12 0 0 1 12 -12 h 212 m -103 0 l -5 -5 m 0 10 l 5 -5 m 103 0 a 12 12 0 0 1 12 12 v 0 a 12 12 0 0 0 12 12 h -24" />
+<a xlink:href="#railroad-EnumVariantDiscriminant" class="link">
+<g class="nonterminal">
+<rect x="455" y="144" height="22" width="212" />
+<text x="561" y="160">
+EnumVariantDiscriminant</text>
+</g>
+</a>
+</g>
+<path d=" M 159 155 h 10" />
+<path d=" M 421 155 h 10" />
+</g>
+</g>
+<path d=" M 725 75 h 5 a 5 5 0 0 1 5 -5 a 5 5 0 0 1 5 5 a 5 5 0 0 1 -5 5 a 5 5 0 0 1 -5 -5" />
+<path d=" M 25 75 h 10" />
+<path d=" M 715 75 h 10" />
+</g>
+</g>
+</svg>
