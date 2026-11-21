@@ -106,3 +106,5 @@ docs:
 - {path: AGENTS.md, what: 'Agent instructions (human SoT)'}
 - {path: README.md, what: 'Monorepo overview and commands'}
 - {path: DESIGN.md, what: 'UI design overview'}
+- {path: CHANGELOG.md, what: 'Repository changelog'}
+- {path: LICENSE, what: 'MIT license'}
