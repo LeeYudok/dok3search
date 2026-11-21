@@ -48,6 +48,12 @@ cargo run --manifest-path backend/rust/Cargo.toml -p dok3-server
 - `DOK3_BIND` (기본 `127.0.0.1`), `DOK3_PORT` (기본 `8080`)
 - `DOK3_STATIC_DIR` (정적 `frontend/dist` 경로), `DOK3_DESIGN_DIR` (`samples/design` 경로)
 
+## 폐쇄망 개발 참고 자료
+
+`/search?category=rust`는 Google Comprehensive Rust 한국어판 337개 장과 Rust 공식 책 영문판 111개 장을 검색합니다. `/search?category=go`는 Go 언어 명세, Go Modules Reference, Effective Go의 영문 항목 51개를 검색합니다. 제목·본문·코드를 검색할 수 있고, 참고 자료 본문과 그림은 정적 빌드에 포함됩니다.
+
+개발 에이전트는 `frontend/src/samples/{comprehensive-rust,rust-book,go-reference}/chapters/`의 Markdown을 직접 읽거나 파일 색인에 넣을 수 있습니다. [Comprehensive Rust 출처와 라이선스](frontend/src/samples/comprehensive-rust/README.md) · [Rust 공식 책 출처와 라이선스](frontend/src/samples/rust-book/README.md) · [Go 문서 출처와 라이선스](frontend/src/samples/go-reference/README.md)
+
 ## Rust 백엔드 검증
 
 ```sh

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { DotsThreeVerticalIcon as More, FileTextIcon as FileText, MagnifyingGlassIcon as Search, XIcon as X } from '@phosphor-icons/react'
 import { createRoot } from 'react-dom/client'
-import { type DataSourceMode, fetchSearch, type SearchViewResult } from './api'
-import { categories, categoryLabels, searchUrl } from './documents'
+import { type DataSourceMode, fetchSearch, searchLocalDocuments, type SearchViewResult } from './api'
+import { categories, categoryLabels, documents, isReferenceCategory, searchUrl } from './documents'
+import { referenceIdPrefix, type ReferenceCorpus } from './reference-corpus'
 import './style.css'
 
 const pageSize = 15
@@ -11,6 +12,46 @@ type SearchState =
   | { status: 'loading' }
   | { status: 'ready'; data: SearchViewResult; mode: DataSourceMode }
   | { status: 'error'; message: string }
+
+const referenceSources = [
+  { prefix: referenceIdPrefix('rust', 'comprehensive-rust'), load: () => import('./comprehensive-rust').then(({ comprehensiveRust }) => comprehensiveRust) },
+  { prefix: referenceIdPrefix('rust', 'rust-book'), load: () => import('./rust-book').then(({ rustBook }) => rustBook) },
+  { prefix: referenceIdPrefix('go', 'go-reference'), load: () => import('./go-reference').then(({ goReference }) => goReference) },
+]
+
+function loadReferenceCorpora(documentId?: string): Promise<ReferenceCorpus[]> {
+  return Promise.all(referenceSources
+    .filter(({ prefix }) => !documentId || documentId.startsWith(prefix))
+    .map(({ load }) => load()))
+}
+
+async function fetchSearchPage(
+  query: string, category: string, page: number, signal: AbortSignal,
+): Promise<{ result: SearchViewResult; mode: DataSourceMode }> {
+  const references = loadReferenceCorpora()
+  if (isReferenceCategory(category)) {
+    const corpus = (await references).flatMap(({ documents }) => documents)
+    return {
+      result: searchLocalDocuments(query, category, page, pageSize, documents.concat(corpus)),
+      mode: 'local-reference',
+    }
+  }
+
+  const [search, corpora] = await Promise.all([
+    fetchSearch({ query, category, page, limit: pageSize }, signal),
+    references.catch(() => []),
+  ])
+  const local = searchLocalDocuments(query, '', 1, pageSize, corpora.flatMap(({ documents }) => documents))
+  const categoryCounts = search.result.categoryCounts.filter(({ id }) => !isReferenceCategory(id))
+  return {
+    mode: search.mode,
+    result: {
+      ...search.result,
+      totalUnfilteredHits: search.result.totalUnfilteredHits + local.totalUnfilteredHits,
+      categoryCounts: categoryCounts.concat(local.categoryCounts.filter(({ id }) => isReferenceCategory(id))),
+    },
+  }
+}
 
 function SearchForm({ query = '', category = '' }: { query?: string; category?: string }) {
   return (
@@ -51,10 +92,7 @@ function SearchPage() {
     const controller = new AbortController()
     setSearchState({ status: 'loading' })
 
-    void fetchSearch(
-      { query, category, page: requestedPage, limit: pageSize },
-      controller.signal,
-    ).then(
+    void fetchSearchPage(query, category, requestedPage, controller.signal).then(
       ({ result, mode }) => {
         if (!controller.signal.aborted) {
           setSearchState({ status: 'ready', data: result, mode })
@@ -95,6 +133,7 @@ function SearchPage() {
   const countByCategory = new Map(
     readyData?.categoryCounts.map((item) => [item.id, item.count]) ?? [],
   )
+  const hasReferenceMatches = readyData?.categoryCounts.some(({ id, count }) => isReferenceCategory(id) && count > 0)
 
   return (
     <>
@@ -144,7 +183,7 @@ function SearchPage() {
                     <a className="document" href={documentUrl(hit.documentId, page)}>
                       <span className="file-icon"><FileText size={18} aria-hidden="true" /></span>
                       <span className="doc-copy">
-                        <small>{categoryLabels.get(hit.category as typeof categories[number]['id']) ?? hit.source} · {hit.hasPairedFormats ? 'Markdown · YAML' : hit.tag}</small>
+                        <small>{isReferenceCategory(hit.category) ? hit.source : categoryLabels.get(hit.category as typeof categories[number]['id']) ?? hit.source} · {hit.hasPairedFormats ? 'Markdown · YAML' : hit.tag}</small>
                         <strong>{hit.title}</strong>
                         <span className="snippet">{hit.snippet}</span>
                       </span>
@@ -178,7 +217,9 @@ function SearchPage() {
                       )}
                     </div>
                   </li>
-                ))}</ul> : <p className="empty">검색 조건에 맞는 문서가 없습니다.</p>}
+                ))}</ul> : <p className="empty">{!category && hasReferenceMatches
+                  ? '일치하는 개발 참고 자료는 위 카테고리에서 열 수 있습니다.'
+                  : '검색 조건에 맞는 문서가 없습니다.'}</p>}
                 {readyData.relatedSearches.length > 0 && (
                   <section className="related" aria-labelledby="related-heading">
                     <h3 id="related-heading">관련 검색어</h3>
@@ -211,9 +252,9 @@ function SearchPage() {
       </main>
       <footer className="shell footer">
         <span>
-          {searchState.status === 'ready' && searchState.mode === 'api'
+          {searchState.status === 'ready' && (searchState.mode === 'api'
             ? `Rust API 연결됨 · ${searchState.data.snapshot.generationId}`
-            : '샘플 데이터로 구동되는 로컬 미리보기'}
+            : searchState.mode === 'local-reference' ? '로컬 개발 참고 자료' : '샘플 데이터로 구동되는 로컬 미리보기')}
         </span>
       </footer>
       <div className="visually-hidden" role="status">{copyStatus}</div>
@@ -233,7 +274,10 @@ const rootElement = document.getElementById('root')
 if (rootElement) {
   const root = createRoot(rootElement)
   if (detailId) {
-    void import('./document-reader').then(({ DocumentPage }) => root.render(<DocumentPage id={detailId} />))
+    void Promise.all([import('./document-reader'), loadReferenceCorpora(detailId)]).then(
+      ([{ DocumentPage }, [corpus]]) => root.render(<DocumentPage id={detailId} corpus={corpus} />),
+      () => root.render(<main className="shell reader"><p role="alert">문서를 불러올 수 없습니다.</p></main>),
+    )
   } else {
     root.render(path === '/search' ? <SearchPage /> : <HomePage />)
   }

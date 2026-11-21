@@ -26,6 +26,10 @@ environments:
 
 nodes:
 - {id: frontend, type: vite-react-app, label: 'React + TypeScript + Vite web UI', path: frontend/src/main.tsx, module: frontend/package.json}
+- {id: comprehensive_rust, type: markdown-corpus, label: 'Comprehensive Rust Korean offline Markdown', path: frontend/src/samples/comprehensive-rust/chapters}
+- {id: rust_book, type: markdown-corpus, label: 'Official Rust Book English offline Markdown', path: frontend/src/samples/rust-book/chapters}
+- {id: go_reference, type: markdown-corpus, label: 'Go official English offline Markdown', path: frontend/src/samples/go-reference/chapters}
+- {id: comprehensive_rust_importer, type: script, label: 'Convert local mdBook snapshots to Markdown', path: scripts/import-comprehensive-rust.py}
 - {id: rust_workspace, type: cargo-workspace, label: 'Rust backend Cargo workspace', path: backend/rust/Cargo.toml}
 - {id: dok3_server, type: rust-binary, label: 'Single server binary entrypoint (dok3search)', path: backend/rust/crates/dok3-server/src/main.rs}
 - {id: dok3_api, type: rust-crate, label: 'Axum HTTP router, security headers, static SPA fallback', path: backend/rust/crates/dok3-api/src/lib.rs}
@@ -43,6 +47,10 @@ nodes:
 
 edges:
 - {from: frontend, to: dok3_api, rel: calls_rest_api}
+- {from: frontend, to: comprehensive_rust, rel: searches_and_renders_local_corpus}
+- {from: frontend, to: rust_book, rel: searches_and_renders_local_corpus}
+- {from: frontend, to: go_reference, rel: searches_and_renders_local_corpus}
+- {from: comprehensive_rust_importer, to: comprehensive_rust, rel: generates_from_local_snapshot}
 - {from: rust_workspace, to: dok3_server, rel: contains_binary_crate}
 - {from: dok3_server, to: dok3_api, rel: hosts_router}
 - {from: dok3_server, to: dok3_agent, rel: hosts_agent_protocols}
@@ -104,6 +112,8 @@ commands:
     clippy: 'cargo clippy --manifest-path backend/rust/Cargo.toml --workspace --all-targets -- -D warnings'
     test: 'cargo test --manifest-path backend/rust/Cargo.toml --workspace'
     build: 'cargo build --manifest-path backend/rust/Cargo.toml --workspace'
+  reference_corpora:
+    import_comprehensive_rust: 'python3 scripts/import-comprehensive-rust.py <snapshot-dir> <output-dir>'
   checks:
     agents_yaml: scripts/check-agents-yaml.sh
 
@@ -119,3 +129,6 @@ docs:
 - {path: DESIGN.md, what: 'UI design overview'}
 - {path: CHANGELOG.md, what: 'Repository changelog'}
 - {path: LICENSE, what: 'MIT license'}
+- {path: frontend/src/samples/comprehensive-rust/README.md, what: 'Comprehensive Rust provenance, license and import inputs'}
+- {path: frontend/src/samples/rust-book/README.md, what: 'Official Rust Book provenance and license'}
+- {path: frontend/src/samples/go-reference/README.md, what: 'Go documentation provenance and license'}

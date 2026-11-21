@@ -1,6 +1,6 @@
-import { categories, documentFormats, documents, searchDocuments } from './documents'
+import { categories, documentFormats, documents, isReferenceCategory, searchDocuments, titleMatches, type Document } from './documents'
 
-export type DataSourceMode = 'api' | 'local-fallback'
+export type DataSourceMode = 'api' | 'local-fallback' | 'local-reference'
 
 export type SearchHitItem = {
   documentId: string
@@ -189,9 +189,18 @@ function isProxyOrNetworkUnavailableStatus(status: number): boolean {
   return status === 502 || status === 503 || status === 504
 }
 
-function localFallbackSearch(query: string, category: string, requestedPage: number, limit: number): SearchViewResult {
-  const matches = searchDocuments(query)
+export function searchLocalDocuments(
+  query: string,
+  category: string,
+  requestedPage: number,
+  limit: number,
+  corpus: readonly Document[] = documents,
+): SearchViewResult {
+  const matches = searchDocuments(query, corpus)
   const visible = category ? matches.filter((doc) => doc.category === category) : matches
+  if (query && isReferenceCategory(category)) {
+    visible.sort((a, b) => Number(titleMatches(query, b)) - Number(titleMatches(query, a)))
+  }
   const pageCount = Math.ceil(visible.length / limit)
   const page = pageCount > 0 && Number.isSafeInteger(requestedPage)
     ? Math.max(1, Math.min(requestedPage, pageCount))
@@ -200,7 +209,7 @@ function localFallbackSearch(query: string, category: string, requestedPage: num
 
   const matchedCategories = new Set(visible.map((doc) => doc.category))
   const relatedSearches = query && visible.length
-    ? [...new Set(documents.filter((doc) => matchedCategories.has(doc.category)).map((doc) => doc.tag))]
+    ? [...new Set(corpus.filter((doc) => matchedCategories.has(doc.category)).map((doc) => doc.tag))]
         .filter((tag) => !query.toLowerCase().includes(tag.toLowerCase()))
         .slice(0, 6)
     : []
@@ -278,7 +287,7 @@ export async function fetchSearch(
 
     if (isProxyOrNetworkUnavailableStatus(response.status)) {
       return {
-        result: localFallbackSearch(params.query, params.category, params.page, params.limit),
+        result: searchLocalDocuments(params.query, params.category, params.page, params.limit),
         mode: 'local-fallback',
       }
     }
@@ -286,7 +295,7 @@ export async function fetchSearch(
     const contentType = response.headers.get('content-type') ?? ''
     if (!contentType.includes('application/json')) {
       return {
-        result: localFallbackSearch(params.query, params.category, params.page, params.limit),
+        result: searchLocalDocuments(params.query, params.category, params.page, params.limit),
         mode: 'local-fallback',
       }
     }
@@ -306,7 +315,7 @@ export async function fetchSearch(
     }
     if (err instanceof TypeError) {
       return {
-        result: localFallbackSearch(params.query, params.category, params.page, params.limit),
+        result: searchLocalDocuments(params.query, params.category, params.page, params.limit),
         mode: 'local-fallback',
       }
     }
