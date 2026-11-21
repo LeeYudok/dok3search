@@ -223,9 +223,8 @@ export function searchLocalDocuments(
     : 1
   const pageDocuments = visible.slice((page - 1) * limit, page * limit)
 
-  const matchedCategories = new Set(visible.map((doc) => doc.category))
   const relatedSearches = query && visible.length
-    ? [...new Set(corpus.filter((doc) => matchedCategories.has(doc.category)).map((doc) => doc.tag))]
+    ? [...new Set(visible.map((doc) => doc.tag))]
         .filter((tag) => !query.toLowerCase().includes(tag.toLowerCase()))
         .slice(0, 6)
     : []

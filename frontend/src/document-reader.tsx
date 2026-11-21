@@ -311,7 +311,7 @@ export function DocumentPage({ id, corpora }: { id: string; corpora?: readonly R
   const rawCategory = params.get('category') ?? ''
   const legacyTopic = isReferenceTopic(rawCategory) ? rawCategory : ''
   const category = categories.find((item) => item.id === rawCategory)?.id ?? (legacyTopic ? 'guide' : undefined)
-  const requestedTopic = params.get('topic') ?? legacyTopic
+  const requestedTopic = params.get('topic')?.trim() || legacyTopic
   const topic = topics.find((item) => item.id === requestedTopic)?.id ?? ''
   const page = Number(params.get('page'))
   const backToResults = searchUrl(params.get('q') ?? '', category, Number.isSafeInteger(page) ? page : 1, topic)
