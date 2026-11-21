@@ -1,0 +1,54 @@
+title: Handbook
+warnings: 1
+  ! empty heading at line 45 ignored
+sections: 10
+
+[1] id=handbook anchor=handbook lines=1-4
+heading: Handbook
+| Intro paragraph under the H1.
+
+[2] id=setup anchor=setup lines=5-6
+heading: Setup
+
+[3] id=install anchor=install lines=7-10
+heading: Install
+| Run the installer.
+
+[4] id=configure anchor=configure lines=11-18
+heading: Configure
+| Edit the config.
+|
+| #### Advanced options
+|
+| Level four stays inside Configure.
+
+[5] id=usage anchor=usage lines=19-20
+heading: Usage
+
+[6] id=install-1 anchor=install-1 lines=21-24
+heading: Install
+| Duplicate heading names get numbered anchors.
+
+[7] id=appendix anchor=appendix lines=25-28
+heading: Appendix
+| Second H1 starts a new top-level section.
+
+[8] id=skipped-level anchor=skipped-level lines=29-32
+heading: Skipped level
+| H3 directly under H1.
+
+[9] id=setup-1 anchor=setup-1 lines=33-42
+heading: Setup
+| Closing hashes are removed and the anchor is deduplicated.
+|
+| #hashtag is not a heading.
+|
+| ####### seven hashes are plain text.
+|
+|     # four spaces is indented code
+
+[10] id=two-space-indent-is-still-a-heading anchor=two-space-indent-is-still-a-heading lines=43-47
+heading: Two-space indent is still a heading
+| ##
+|
+| The line above is an empty heading and only produces a warning.

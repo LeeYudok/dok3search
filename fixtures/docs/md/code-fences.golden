@@ -1,0 +1,58 @@
+title: Code fences
+warnings: 0
+sections: 7
+
+[1] id=code-fences anchor=code-fences lines=1-10
+heading: Code fences
+| Text before the fences.
+|
+| ```sh
+| # not a heading
+| ## still not a heading
+| echo done
+| ```
+
+[2] id=after-backticks anchor=after-backticks lines=11-17
+heading: After backticks
+| ~~~python
+| # comment, not a heading
+| def f(): pass
+| ~~~
+
+[3] id=longer-fence anchor=longer-fence lines=18-27
+heading: Longer fence
+| ````markdown
+| # Fake title inside a four-backtick fence
+| ```
+| nested three-backtick fence does not close it
+| ```
+| ## Fake section
+| ````
+
+[4] id=mixed-markers anchor=mixed-markers lines=28-35
+heading: Mixed markers
+| ```
+| # the tilde line below does not close a backtick fence
+| ~~~
+| # still inside the code
+| ```
+
+[5] id=indented-fence anchor=indented-fence lines=36-45
+heading: Indented fence
+|   ```text
+|   # two spaces of indentation are allowed
+|   ```
+|
+|     ```
+|     # indented code block, so this is not a fence
+|     ```
+
+[6] id=inline-triple-backticks anchor=inline-triple-backticks lines=46-51
+heading: Inline triple backticks
+| ```inline``` at the start of a line is not a fence.
+|
+| Use ```inline``` triple backticks inside a paragraph.
+
+[7] id=end anchor=end lines=52-54
+heading: End
+| Last section.
