@@ -1,7 +1,8 @@
 //! Deterministic local filesystem Markdown connector.
 
-use std::fs;
-use std::path::{Path, PathBuf};
+use std::fs::{self, File};
+use std::io::Read;
+use std::path::{Component, Path, PathBuf};
 
 use dok3_core::Dok3Error;
 use dok3_domain::{AclScope, Document, DocumentId, ParsedDocument, RevisionId, SourceId};
@@ -106,16 +107,31 @@ impl LocalFileConnector {
     }
 
     /// Walks `root_dir` in sorted order, collecting eligible files and recording size skips.
-    /// Hidden entries (`.`-prefixed) and symbolic links are excluded.
+    /// Hidden entries (`.`-prefixed) and symbolic links (including `root_dir` itself) are rejected or excluded.
     pub fn scan(&self) -> Result<ScanReport, Dok3Error> {
         let root = &self.config.root_dir;
-        if !root.exists() {
-            return Err(Dok3Error::NotFound(format!(
-                "source root directory '{}' does not exist",
+        let root_meta = match fs::symlink_metadata(root) {
+            Ok(m) => m,
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                return Err(Dok3Error::NotFound(format!(
+                    "source root directory '{}' does not exist",
+                    root.display()
+                )));
+            }
+            Err(e) => {
+                return Err(Dok3Error::Storage(format!(
+                    "failed to stat source root '{}': {e}",
+                    root.display()
+                )));
+            }
+        };
+        if root_meta.file_type().is_symlink() {
+            return Err(Dok3Error::InvalidInput(format!(
+                "source root '{}' must not be a symbolic link",
                 root.display()
             )));
         }
-        if !root.is_dir() {
+        if !root_meta.is_dir() {
             return Err(Dok3Error::InvalidInput(format!(
                 "source root '{}' is not a directory",
                 root.display()
@@ -179,24 +195,33 @@ impl LocalFileConnector {
             return Ok(());
         }
 
+        let lmeta = fs::symlink_metadata(path).map_err(|e| {
+            Dok3Error::Storage(format!("failed to stat file '{}': {e}", path.display()))
+        })?;
+        if lmeta.file_type().is_symlink() || !lmeta.is_file() {
+            return Ok(());
+        }
+
         let relative_path = normalize_relative(&self.config.root_dir, path)?;
-        let size_bytes = fs::metadata(path)
-            .map_err(|e| {
-                Dok3Error::Storage(format!("failed to stat file '{}': {e}", path.display()))
-            })?
-            .len();
-        if size_bytes > self.config.max_file_bytes {
+        let file = File::open(path).map_err(|e| {
+            Dok3Error::Storage(format!("failed to open file '{}': {e}", path.display()))
+        })?;
+        let cap = self.config.max_file_bytes.saturating_add(1);
+        let mut bytes = Vec::new();
+        file.take(cap).read_to_end(&mut bytes).map_err(|e| {
+            Dok3Error::Storage(format!("failed to read file '{}': {e}", path.display()))
+        })?;
+
+        let actual_len = bytes.len() as u64;
+        if actual_len > self.config.max_file_bytes {
             report.skipped.push(SkippedFile {
                 relative_path,
-                size_bytes,
+                size_bytes: lmeta.len().max(actual_len),
                 reason: format!("exceeds max_file_bytes ({})", self.config.max_file_bytes),
             });
             return Ok(());
         }
 
-        let bytes = fs::read(path).map_err(|e| {
-            Dok3Error::Storage(format!("failed to read file '{}': {e}", path.display()))
-        })?;
         let filename = path
             .file_name()
             .and_then(|s| s.to_str())
@@ -211,7 +236,7 @@ impl LocalFileConnector {
             filename,
             media_type: media_type_for_ext(&ext).to_string(),
             bytes,
-            size_bytes,
+            size_bytes: actual_len,
         });
         Ok(())
     }
@@ -266,7 +291,33 @@ fn normalize_relative(root: &Path, path: &Path) -> Result<String, Dok3Error> {
             root.display()
         ))
     })?;
-    Ok(rel.to_string_lossy().replace('\\', "/"))
+    let mut parts = Vec::new();
+    for component in rel.components() {
+        match component {
+            Component::Normal(segment) => {
+                let s = segment.to_str().ok_or_else(|| {
+                    Dok3Error::InvalidInput(format!(
+                        "non-UTF-8 path component in '{}'",
+                        rel.display()
+                    ))
+                })?;
+                if s.contains('/') || s.contains('\\') {
+                    return Err(Dok3Error::InvalidInput(format!(
+                        "path component '{s}' contains a path separator"
+                    )));
+                }
+                parts.push(s);
+            }
+            other => {
+                return Err(Dok3Error::InvalidInput(format!(
+                    "unexpected relative path component {:?} in '{}'",
+                    other,
+                    rel.display()
+                )));
+            }
+        }
+    }
+    Ok(parts.join("/"))
 }
 
 fn media_type_for_ext(ext: &str) -> &'static str {

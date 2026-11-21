@@ -88,6 +88,26 @@ fn scan_walks_deterministically_skips_hidden_unsupported_oversized_and_symlinks(
         .scan()
         .unwrap_err();
     assert!(matches!(missing_err, Dok3Error::NotFound(_)));
+
+    // Symlink root_dir is rejected.
+    #[cfg(unix)]
+    {
+        let link_root = dir.0.join("root-link");
+        std::os::unix::fs::symlink(&sub_a, &link_root).unwrap();
+        let sym_cfg = SourceConfig::markdown_defaults(SourceId::new("sym"), "Sym", &link_root);
+        let sym_err = LocalFileConnector::new(sym_cfg)
+            .unwrap()
+            .scan()
+            .unwrap_err();
+        assert!(matches!(sym_err, Dok3Error::InvalidInput(_)));
+
+        // Unix filename containing a backslash is rejected to avoid path collisions.
+        let slash_dir = TempDir::new("backslash");
+        fs::write(slash_dir.0.join("bad\\name.md"), "# Bad").unwrap();
+        let bs_cfg = SourceConfig::markdown_defaults(SourceId::new("bs"), "BS", &slash_dir.0);
+        let bs_err = LocalFileConnector::new(bs_cfg).unwrap().scan().unwrap_err();
+        assert!(matches!(bs_err, Dok3Error::InvalidInput(_)));
+    }
 }
 
 #[test]
@@ -105,11 +125,7 @@ fn scan_and_parse_over_100_real_offline_markdown_samples() {
     );
     let connector = LocalFileConnector::new(cfg.clone()).unwrap();
     let report = connector.scan().unwrap();
-    assert!(
-        report.files.len() >= 100,
-        "expected >= 100 markdown files, got {}",
-        report.files.len()
-    );
+    assert_eq!(report.files.len(), 337);
     assert!(report.skipped.is_empty());
 
     // Determinism check across repeat scan.
