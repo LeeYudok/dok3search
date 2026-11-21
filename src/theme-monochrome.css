@@ -1,0 +1,21 @@
+/* Neutral palette based on the doksam-ui Slate lightness scale. */
+:root {
+  --radius: 12px;
+  --background: var(--card);
+  --foreground: oklch(0.21 0 0); /* doksam-ui:allow-color neutral theme token */
+  --card: oklch(1 0 0); /* doksam-ui:allow-color neutral theme token */
+  --card-foreground: oklch(0.21 0 0); /* doksam-ui:allow-color neutral theme token */
+  --popover: oklch(1 0 0); /* doksam-ui:allow-color neutral theme token */
+  --popover-foreground: oklch(0.21 0 0); /* doksam-ui:allow-color neutral theme token */
+  --primary: oklch(0.32 0 0); /* doksam-ui:allow-color neutral theme token */
+  --primary-foreground: oklch(0.98 0 0); /* doksam-ui:allow-color neutral theme token */
+  --secondary: oklch(0.94 0 0); /* doksam-ui:allow-color neutral theme token */
+  --secondary-foreground: oklch(0.28 0 0); /* doksam-ui:allow-color neutral theme token */
+  --muted: oklch(0.955 0 0); /* doksam-ui:allow-color neutral theme token */
+  --muted-foreground: oklch(0.5 0 0); /* doksam-ui:allow-color neutral theme token */
+  --accent: oklch(0.92 0 0); /* doksam-ui:allow-color neutral theme token */
+  --accent-foreground: oklch(0.28 0 0); /* doksam-ui:allow-color neutral theme token */
+  --border: oklch(0.9 0 0); /* doksam-ui:allow-color neutral theme token */
+  --input: oklch(0.9 0 0); /* doksam-ui:allow-color neutral theme token */
+  --ring: oklch(0.32 0 0); /* doksam-ui:allow-color neutral theme token */
+}
