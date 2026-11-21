@@ -1,0 +1,4 @@
+# Pin an exact Rust version before air-gapped release packaging.
+[toolchain]
+channel = "stable"
+components = ["rustfmt", "clippy"]
