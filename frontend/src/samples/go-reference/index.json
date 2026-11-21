@@ -341,6 +341,27 @@
       "summary": "벤치마크, pprof, CPU와 메모리 프로필, 변경 전후 측정.",
       "source": "dok3search Go 실무 가이드",
       "language": "한국어"
+    },
+    {
+      "path": "chapters/learn-go-with-tests/context.md",
+      "title": "Go Context 실습: HTTP 요청 취소",
+      "summary": "테스트로 HTTP 요청 취소가 하위 작업에 전달되는지 확인한다.",
+      "source": "Learn Go with Tests",
+      "language": "영어"
+    },
+    {
+      "path": "chapters/learn-go-with-tests/http-handlers-revisited.md",
+      "title": "Go HTTP 핸들러 실습: 책임 분리",
+      "summary": "입력 처리와 업무 로직을 나누고 각각 테스트한다.",
+      "source": "Learn Go with Tests",
+      "language": "영어"
+    },
+    {
+      "path": "chapters/learn-go-with-tests/revisiting-time-with-synctest.md",
+      "title": "Go 시간 테스트 실습: testing/synctest",
+      "summary": "Go 1.25 이상에서 타이머와 비동기 동작을 실제 대기 없이 테스트한다.",
+      "source": "Learn Go with Tests",
+      "language": "영어"
     }
   ]
 }

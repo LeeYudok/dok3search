@@ -30,7 +30,7 @@ nodes:
 - {id: rust_book, type: markdown-corpus, label: 'Official Rust Book English offline Markdown (guide/rust)', path: frontend/src/samples/rust-book/chapters}
 - {id: rust_reference, type: markdown-corpus, label: 'Rust Reference English offline Markdown (guide/rust)', path: frontend/src/samples/rust-reference/chapters}
 - {id: cargo_book, type: markdown-corpus, label: 'Cargo Book English offline Markdown (guide/rust)', path: frontend/src/samples/cargo-book/chapters}
-- {id: go_reference, type: markdown-corpus, label: 'Go official reference and Korean practice guides (guide/go)', path: frontend/src/samples/go-reference/chapters}
+- {id: go_reference, type: markdown-corpus, label: 'Go official reference and Korean and English practice guides (guide/go)', path: frontend/src/samples/go-reference/chapters}
 - {id: comprehensive_rust_importer, type: script, label: 'Convert local mdBook snapshots to Markdown', path: scripts/import-comprehensive-rust.py}
 - {id: rust_official_importer, type: script, label: 'Convert installed Rust Reference and Cargo Book docs to offline Markdown', path: scripts/import-rust-official-components.py}
 - {id: rust_workspace, type: cargo-workspace, label: 'Rust backend Cargo workspace', path: backend/rust/Cargo.toml}

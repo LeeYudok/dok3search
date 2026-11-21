@@ -50,7 +50,7 @@ cargo run --manifest-path backend/rust/Cargo.toml -p dok3-server
 
 ## 폐쇄망 개발 참고 자료
 
-Rust와 Go는 메인 분류에서 각각 나누지 않고 `개발 가이드` 아래 세부 분류로 제공합니다. `/search?category=guide&topic=rust`는 Comprehensive Rust 한국어판 337개 장, Rust 공식 책 111개 장, Rust Reference 120개 장, Cargo Book 98개 장을 검색합니다. `/search?category=guide&topic=go`는 Go 언어 명세, Go Modules Reference, Effective Go의 영문 항목 51개와 프로젝트 구조·테스트·에러 처리·동시성·성능 진단을 다룬 한국어 실무 가이드 5편을 검색합니다. 제목·본문·코드를 검색할 수 있고, 참고 자료 본문과 그림은 정적 빌드에 포함됩니다. 문서 안의 외부 URL은 클릭 가능한 링크로 만들지 않고 외부 출처 표기로 보여 주므로 인터넷이 없는 환경에서도 문서 열람이 멈추지 않습니다. 기존 `category=rust`와 `category=go` 주소도 호환됩니다.
+Rust와 Go는 메인 분류에서 각각 나누지 않고 `개발 가이드` 아래 세부 분류로 제공합니다. `/search?category=guide&topic=rust`는 Comprehensive Rust 한국어판 337개 장, Rust 공식 책 111개 장, Rust Reference 120개 장, Cargo Book 98개 장을 검색합니다. `/search?category=guide&topic=go`는 Go 언어 명세, Go Modules Reference, Effective Go의 영문 항목 51개와 프로젝트 구조·테스트·에러 처리·동시성·성능 진단을 다룬 한국어 실무 가이드 5편, Learn Go with Tests 영문 실습 3편을 검색합니다. 제목·본문·코드를 검색할 수 있고, 참고 자료 본문과 그림은 정적 빌드에 포함됩니다. 문서 안의 외부 URL은 클릭 가능한 링크로 만들지 않고 외부 출처 표기로 보여 주므로 인터넷이 없는 환경에서도 문서 열람이 멈추지 않습니다. 기존 `category=rust`와 `category=go` 주소도 호환됩니다.
 
 개발 에이전트는 `frontend/src/samples/{comprehensive-rust,rust-book,rust-reference,cargo-book,go-reference}/chapters/`의 Markdown을 직접 읽거나 파일 색인에 넣을 수 있습니다. 각 자료의 버전·출처·라이선스와 변환 방법은 [Comprehensive Rust](frontend/src/samples/comprehensive-rust/README.md) · [Rust 공식 책](frontend/src/samples/rust-book/README.md) · [Rust Reference](frontend/src/samples/rust-reference/README.md) · [Cargo Book](frontend/src/samples/cargo-book/README.md) · [Go 문서](frontend/src/samples/go-reference/README.md)에 기록합니다.
 

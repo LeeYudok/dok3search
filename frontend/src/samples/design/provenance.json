@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/LeeYudok/dok3search-design",
-  "commit": "ce988cceaf8db654a130ef2f8d3ef8cd571c2d27",
+  "commit": "29ac8255cb3d8b8ea48796c9e5c8a1667f870a7f",
   "sha256": {
     "BLUE_GREEN_DESIGN_REVIEW.md": "b4b94a613843d696ccd2fb8605ef2b83c5ce420f08daf3f4d19f319530643bc6",
     "BLUE_GREEN_OPERATIONAL_PROTOCOL.md": "f52ca8f370fc01ddb741ddeda32190c3d63bc3fc9fbfeb01796c220fa010be8d",
@@ -34,9 +34,9 @@
     "dok3search-offline-supplychain.md": "fce2f5394377902f8328d51870e7a5b4a8697f700ffc9936652f7d9bb0871aa6",
     "dok3search-product-manual-draft.md": "d85c9ec4ae32cca8dbd63576ecccf3cf2338fc95429672cc5b45b65140121b59",
     "dok3search-subagents.md": "dc5c0b81746ae20133fd0d40744a148627ddef5b7b5565cc5ed5d88b3725384e",
-    "index.md": "4357c546498128fb885ce12f5c26941a71b162399984b2bfe5362d7fda77ce31",
-    "index.yaml": "c5c5a494bb88e7ae909b03bf3aff68e8dfd32fccefb6e35f5ec5f83e2ba6a8b4",
-    "map.md": "265f2b7fe79bcbeffb7fdfd5d139aed7dc0ca20e9ce0305d1d07ca2e3eec726c",
-    "map.yaml": "40737aee9969ce84d3f6161c915234befc0272146d30e8148e7b8e0a2f964f01"
+    "index.md": "aabde0ae0881074e16f008175c233ed75f9e9b98be79253c942c66744f369345",
+    "index.yaml": "1aebb18584ac028747785540d44f87246d020a8daa7dc93f5294c89700b64996",
+    "map.md": "5193e00a5d4e2520bd23599b4ae0ad2a2731033d799c47054a4b86f4faa8fbb0",
+    "map.yaml": "a0bf34e09d9f4fa9dae345398cd9e7054bccf073e1d9fab963290c947baa1dcb"
   }
 }
