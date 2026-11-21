@@ -199,6 +199,12 @@ fn delete_removes_document_after_commit_and_reload() {
     assert_eq!(s_none.applied_change_sequence, Sequence::new(10));
     let s_lower = index.commit_and_reload(Some(Sequence::new(3))).unwrap();
     assert_eq!(s_lower.applied_change_sequence, Sequence::new(10));
+
+    // Public reload() uses the same publication barrier: epoch advances monotonically and sequence holds.
+    let s_reloaded = index.reload().unwrap();
+    assert!(s_reloaded.epoch > s_lower.epoch);
+    assert_eq!(s_reloaded.applied_change_sequence, Sequence::new(10));
+    assert_eq!(index.snapshot(), s_reloaded);
 }
 
 #[test]

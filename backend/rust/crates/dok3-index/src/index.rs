@@ -161,7 +161,23 @@ impl TantivyIndex {
         writer
             .commit()
             .map_err(|e| Dok3Error::Index(format!("failed to commit index: {e}")))?;
+        self.publish_reload_locked(&writer, applied_sequence)
+    }
 
+    /// Reloads the reader under the writer/snapshot barrier so reader and snapshot epoch always match.
+    pub fn reload(&self) -> Result<SearchSnapshotMeta, Dok3Error> {
+        let writer = self
+            .writer
+            .lock()
+            .map_err(|_| Dok3Error::Internal("index writer mutex poisoned".to_string()))?;
+        self.publish_reload_locked(&writer, None)
+    }
+
+    fn publish_reload_locked(
+        &self,
+        _writer: &std::sync::MutexGuard<'_, IndexWriter<TantivyDocument>>,
+        applied_sequence: Option<Sequence>,
+    ) -> Result<SearchSnapshotMeta, Dok3Error> {
         let mut snap = self
             .snapshot
             .write()
@@ -178,13 +194,6 @@ impl TantivyIndex {
         }
         snap.reader_state = ReaderState::Ready;
         Ok(snap.clone())
-    }
-
-    /// Reloads the reader to reflect commits made on disk.
-    pub fn reload(&self) -> Result<(), Dok3Error> {
-        self.reader
-            .reload()
-            .map_err(|e| Dok3Error::Index(format!("failed to reload index reader: {e}")))
     }
 
     /// Returns the number of committed live documents visible to the current reader.
