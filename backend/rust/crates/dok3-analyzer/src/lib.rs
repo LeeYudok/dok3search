@@ -74,3 +74,11 @@ fn analyze_terms(text: &str, split_identifiers: bool) -> Vec<String> {
     }
     terms
 }
+
+/// Yields analyzer words and their original UTF-8 byte ranges.
+pub fn word_spans(text: &str) -> impl Iterator<Item = (usize, usize, &str)> {
+    identifier::words(text).map(move |word| {
+        let start = word.as_ptr() as usize - text.as_ptr() as usize;
+        (start, start + word.len(), word)
+    })
+}

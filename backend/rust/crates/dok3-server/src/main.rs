@@ -4,6 +4,7 @@ mod local_index;
 // --- slice-B: mcp ---
 mod mcp;
 // --- /slice-B: mcp ---
+mod persistence;
 
 use std::net::Ipv4Addr;
 use std::path::PathBuf;
@@ -41,23 +42,29 @@ async fn run() -> Result<(), String> {
         .static_dir
         .or_else(|| resolve_static_dir(&["frontend/dist", "../../frontend/dist"]));
 
-    let (service, mode) = if let Some(root) = config.source_dir.as_deref() {
-        validate_source_bind(&config.bind)?;
-        let (service, report) = local_index::build(root)?;
-        // slice-B: stderr keeps stdout a clean JSON-RPC channel under --mcp-stdio.
-        eprintln!(
-            "local Markdown snapshot: indexed={} skipped={}",
-            report.indexed,
-            report.skipped.len()
-        );
-        for skipped in &report.skipped {
-            eprintln!("local Markdown skipped: {skipped}");
+    // --- slice-C: persistent-store ---
+    let (service, mode) = match (config.source_dir.as_deref(), config.data_dir.as_deref()) {
+        (Some(root), Some(data_dir)) => {
+            validate_source_bind(&config.bind)?;
+            let (service, report) = persistence::build_persistent(root, data_dir)?;
+            print_build_report("persistent Markdown snapshot", &report);
+            (service, "tantivy-persistent")
         }
-        (service, "tantivy-local")
-    } else {
-        let repo = Arc::new(InMemorySearchRepository::from_seed(design_dir.as_deref()));
-        (SearchService::new(repo.clone(), repo), "in-memory-fake")
+        (Some(root), None) => {
+            validate_source_bind(&config.bind)?;
+            let (service, report) = local_index::build(root)?;
+            print_build_report("local Markdown snapshot", &report);
+            (service, "tantivy-local")
+        }
+        (None, Some(_)) => {
+            return Err("DOK3_DATA_DIR requires DOK3_SOURCE_DIR".into());
+        }
+        (None, None) => {
+            let repo = Arc::new(InMemorySearchRepository::from_seed(design_dir.as_deref()));
+            (SearchService::new(repo.clone(), repo), "in-memory-fake")
+        }
     };
+    // --- end slice-C: persistent-store ---
     let doc_count = service.health_ready(mode).document_count;
     // --- slice-B: mcp ---
     let search_arc = Arc::new(service);
@@ -83,6 +90,18 @@ async fn run() -> Result<(), String> {
     dok3_api::serve_with_shutdown(listener, app, shutdown_signal())
         .await
         .map_err(|err| format!("server runtime error: {err}"))
+}
+
+fn print_build_report(label: &str, report: &local_index::BuildReport) {
+    // Emit diagnostics to stderr so `--mcp-stdio` keeps stdout a clean JSON-RPC stream.
+    eprintln!(
+        "{label}: indexed={} skipped={}",
+        report.indexed,
+        report.skipped.len()
+    );
+    for skipped in &report.skipped {
+        eprintln!("local Markdown skipped: {skipped}");
+    }
 }
 
 fn validate_source_bind(bind: &str) -> Result<(), String> {

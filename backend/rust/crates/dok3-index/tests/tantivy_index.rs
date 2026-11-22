@@ -434,3 +434,67 @@ fn empty_query_and_include_snippets_false() {
     assert_eq!(res.total_hits, 1);
     assert_eq!(res.hits[0].snippet, "");
 }
+
+#[test]
+fn analyzer_matches_compound_terms_without_exposing_internal_documents() {
+    let index = TantivyIndex::create_in_ram(GenerationId::new("gen-analysis")).unwrap();
+    let ops = AclScope::internal("ops");
+    for (id, category, scope) in [
+        ("visible", "code", AclScope::Public),
+        ("restricted", "policy", ops.clone()),
+    ] {
+        index
+            .upsert_document(&sample_doc(
+                id,
+                "rotateAccessToken writeX",
+                "SessionStateMachine LoadX",
+                "storage_layer::PersistSnapshot ORA-00904 세대전환절차",
+                category,
+                "ko",
+                "src",
+                id,
+                scope,
+            ))
+            .unwrap();
+    }
+    index.commit_and_reload(None).unwrap();
+    let public = Principal::anonymous_public();
+    for query in [
+        "write x",
+        "rotate access token",
+        "session state machine",
+        "load x",
+        "storage layer",
+        "storage::snapshot",
+        "ORA-00904",
+        "ORA 00904",
+        "전환절차",
+    ] {
+        let result = search(&index, &public, query);
+        assert_eq!(result.total_hits, 1, "{query}");
+        assert_eq!(result.total_unfiltered_hits, 1, "{query}");
+        assert_eq!(result.hits[0].document_id.as_str(), "visible", "{query}");
+        assert!(
+            result
+                .category_counts
+                .iter()
+                .any(|c| c.id == "policy" && c.count == 0)
+        );
+        assert!(
+            !result
+                .related_searches
+                .iter()
+                .any(|tag| tag == "restricted")
+        );
+    }
+    let operator = Principal {
+        subject: "operator".into(),
+        allowed_scopes: vec![ops],
+        is_admin: false,
+    };
+    let result = search(&index, &operator, "storage::snapshot");
+    assert_eq!(result.total_hits, 1);
+    assert_eq!(result.hits[0].document_id.as_str(), "restricted");
+    assert_eq!(search(&index, &public, "storage unrelated").total_hits, 0);
+    assert_eq!(search(&index, &public, "::").total_hits, 0);
+}

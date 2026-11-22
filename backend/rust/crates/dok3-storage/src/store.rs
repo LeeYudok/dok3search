@@ -151,6 +151,24 @@ impl FileDocumentStore {
         Ok(bytes)
     }
 
+    /// Returns sorted document IDs currently tracked in metadata.
+    pub fn document_ids(&self) -> Result<Vec<DocumentId>, Dok3Error> {
+        let docs = self
+            .docs
+            .read()
+            .map_err(|_| Dok3Error::Internal("store lock poisoned".into()))?;
+        Ok(docs.keys().map(|id| DocumentId::new(id.clone())).collect())
+    }
+
+    /// Returns clones of all documents currently stored in metadata.
+    pub fn list_documents(&self) -> Result<Vec<Document>, Dok3Error> {
+        let docs = self
+            .docs
+            .read()
+            .map_err(|_| Dok3Error::Internal("store lock poisoned".into()))?;
+        Ok(docs.values().cloned().collect())
+    }
+
     fn object_path(&self, hash: &str) -> PathBuf {
         self.root.join("objects").join(hash)
     }
@@ -286,5 +304,86 @@ impl DocumentStorePort for FileDocumentStore {
 
     fn document_count(&self) -> usize {
         self.docs.read().map_or(0, |d| d.len())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::path::PathBuf;
+    use std::sync::atomic::{AtomicU64, Ordering};
+
+    use dok3_domain::{AclScope, Document, DocumentId, RevisionId, SourceId};
+
+    use super::FileDocumentStore;
+
+    static TEMP_SEQ: AtomicU64 = AtomicU64::new(1);
+
+    struct TempDir(PathBuf);
+
+    impl TempDir {
+        fn new(label: &str) -> Self {
+            let dir = std::env::temp_dir().join(format!(
+                "dok3_store_test_{label}_{}_{}",
+                std::process::id(),
+                TEMP_SEQ.fetch_add(1, Ordering::Relaxed)
+            ));
+            let _ = std::fs::remove_dir_all(&dir);
+            std::fs::create_dir_all(&dir).unwrap();
+            Self(dir)
+        }
+    }
+
+    impl Drop for TempDir {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+
+    fn sample_doc(id: &str, body: &str) -> Document {
+        Document {
+            id: DocumentId::new(id),
+            revision_id: RevisionId::new("placeholder"),
+            source_id: SourceId::new("src"),
+            source: "test".into(),
+            title: id.into(),
+            summary: String::new(),
+            category: "guide".into(),
+            topic: None,
+            tag: "test".into(),
+            tags: vec![],
+            keywords: vec![],
+            language: "en".into(),
+            version: "1.0".into(),
+            date: None,
+            source_uri: format!("file:///{id}.md"),
+            sample_path: None,
+            acl_scope: AclScope::Public,
+            content_hash: String::new(),
+            body: body.into(),
+            markdown: Some(body.into()),
+            sections: vec![],
+        }
+    }
+
+    #[test]
+    fn document_ids_and_list_documents_reflect_puts_and_deletes() {
+        let dir = TempDir::new("list");
+        let store = FileDocumentStore::open(&dir.0).unwrap();
+        assert!(store.document_ids().unwrap().is_empty());
+        assert!(store.list_documents().unwrap().is_empty());
+
+        store.put(sample_doc("b-doc", "second"), b"second").unwrap();
+        store.put(sample_doc("a-doc", "first"), b"first").unwrap();
+        assert_eq!(
+            store.document_ids().unwrap(),
+            vec![DocumentId::new("a-doc"), DocumentId::new("b-doc")]
+        );
+        assert_eq!(store.list_documents().unwrap().len(), 2);
+
+        assert!(store.delete(&DocumentId::new("a-doc")).unwrap());
+        assert_eq!(
+            store.document_ids().unwrap(),
+            vec![DocumentId::new("b-doc")]
+        );
     }
 }
