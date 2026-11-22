@@ -13,11 +13,22 @@ use dok3_core::Dok3Error;
 use dok3_domain::{DocumentParserPort, DocumentSection, ParsedDocument};
 use dok3_parser::{HTML_EXTENSIONS, HtmlParser};
 
-/// Fixtures that parse successfully and have a `.golden` file.
-const GOLDEN_FIXTURES: [&str; 2] = ["code-and-links", "nested-headings"];
-
 fn fixtures_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../../fixtures/docs/html")
+}
+
+fn successful_fixture_names() -> Vec<String> {
+    let mut names = fs::read_dir(fixtures_dir())
+        .expect("HTML fixture directory should be readable")
+        .filter_map(Result::ok)
+        .filter_map(|entry| {
+            let name = entry.file_name().into_string().ok()?;
+            name.strip_suffix(".html").map(ToOwned::to_owned)
+        })
+        .collect::<Vec<_>>();
+    names.sort();
+    assert!(!names.is_empty(), "HTML fixtures should not be empty");
+    names
 }
 
 fn read_fixture(name: &str) -> Vec<u8> {
@@ -117,16 +128,19 @@ fn golden_nested_headings() {
 }
 
 #[test]
-fn every_fixture_has_a_golden_entry() {
-    for name in GOLDEN_FIXTURES {
-        assert!(fixtures_dir().join(format!("{name}.golden")).exists());
+fn every_html_fixture_has_a_golden_entry() {
+    for name in successful_fixture_names() {
+        assert!(
+            fixtures_dir().join(format!("{name}.golden")).exists(),
+            "missing golden for {name}"
+        );
     }
 }
 
 #[test]
 fn sections_tile_the_document() {
-    for name in GOLDEN_FIXTURES {
-        let doc = parse_fixture(name);
+    for name in successful_fixture_names() {
+        let doc = parse_fixture(&name);
         assert_eq!(doc.sections.iter().map(|s| s.order).sum::<usize>(), {
             let n = doc.sections.len();
             n * (n + 1) / 2
@@ -197,6 +211,46 @@ fn links_code_and_headings_survive() {
         doc.normalized_text
             .contains("println!(\"offline search\");")
     );
+}
+
+#[test]
+fn paragraph_source_newlines_are_collapsed_to_spaces() {
+    let doc = parse_text("wrapped.html", "<h1>Wrapped</h1><p>Hello\nworld</p>");
+    assert_eq!(section(&doc, "wrapped").body, "Hello world");
+}
+
+#[test]
+fn heading_links_are_collapsed_for_titles_and_anchors() {
+    let doc = parse_text(
+        "guide.html",
+        "<h2><a href=\"#install\">Install</a></h2><p>Instructions</p>",
+    );
+    assert_eq!(doc.sections.len(), 1);
+    assert_eq!(doc.sections[0].heading, "Install");
+    assert_eq!(doc.sections[0].anchor, "install");
+    assert_eq!(doc.sections[0].body, "Instructions");
+    assert!(doc.normalized_text.contains("## [Install](#install)"));
+}
+
+#[test]
+fn inline_scripts_styles_and_comments_are_counted() {
+    let doc = parse_text(
+        "inline-losses.html",
+        "<h1>Losses</h1><p>before<script>bad()</script><style>x{}</style><!-- note -->after</p>",
+    );
+    for expected in [
+        "discarded 1 HTML comment(s)",
+        "discarded 1 script element(s)",
+        "discarded 1 style element(s)",
+    ] {
+        assert!(
+            doc.parse_warnings.iter().any(|warning| warning == expected),
+            "missing warning {expected}; got {:?}",
+            doc.parse_warnings
+        );
+    }
+    assert!(!doc.normalized_text.contains("bad()"));
+    assert!(!doc.normalized_text.contains("x{}"));
 }
 
 #[test]

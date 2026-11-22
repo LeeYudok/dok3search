@@ -78,10 +78,11 @@ impl DocumentParserPort for HtmlParser {
         let document = Html::parse_document(text);
         let mut renderer = HtmlRenderer::new();
         renderer.render_document(&document);
-        for error in &document.errors {
-            renderer
-                .warnings
-                .push(format!("HTML5 parser corrected markup: {error}"));
+        if !document.errors.is_empty() {
+            renderer.warnings.push(format!(
+                "HTML5 parser corrected {} markup issue(s)",
+                document.errors.len()
+            ));
         }
         renderer.push_loss_summary();
 
@@ -253,17 +254,17 @@ impl HtmlRenderer {
     }
 
     fn render_heading(&mut self, element: ElementRef<'_>, level: usize) {
-        let text = inline_text(element);
+        let markup = normalize_inline(&inline_text(element, &mut self.losses));
         self.separate_blocks();
-        if text.trim().is_empty() {
+        let text = normalize_inline(&plain_text(element));
+        if text.is_empty() && markup.trim().is_empty() {
             let line = self.lines.len() + 1;
             self.warnings
                 .push(format!("empty heading at line {line} ignored"));
             return;
         }
         let marker = "#".repeat(level.min(MAX_HEADING_LEVEL));
-        let text = normalize_inline(&text);
-        self.lines.push(format!("{marker} {text}"));
+        self.lines.push(format!("{marker} {markup}"));
         if level <= MAX_SECTION_LEVEL {
             self.headings.push(RawHeading {
                 line_idx: self.lines.len() - 1,
@@ -276,8 +277,13 @@ impl HtmlRenderer {
 
     fn render_paragraph(&mut self, element: ElementRef<'_>) {
         let mut text = String::new();
-        render_inline_nodes(element.children(), &mut text, &mut self.warnings);
-        self.push_inline_text(&text);
+        render_inline_nodes(
+            element.children(),
+            &mut text,
+            &mut self.warnings,
+            &mut self.losses,
+        );
+        self.append_inline_text(&text);
         self.separate_blocks();
     }
 
@@ -322,9 +328,9 @@ impl HtmlRenderer {
                         if nested_name == "ul" || nested_name == "ol" {
                             continue;
                         }
-                        render_inline_node(node, &mut item_text, &mut warnings);
+                        render_inline_node(node, &mut item_text, &mut warnings, &mut self.losses);
                     }
-                    _ => render_inline_node(node, &mut item_text, &mut warnings),
+                    _ => render_inline_node(node, &mut item_text, &mut warnings, &mut self.losses),
                 }
             }
             self.warnings.extend(warnings);
@@ -342,7 +348,7 @@ impl HtmlRenderer {
     fn append_inline(&mut self, element: ElementRef<'_>) {
         let mut text = String::new();
         let mut warnings = Vec::new();
-        render_inline_node(*element, &mut text, &mut warnings);
+        render_inline_node(*element, &mut text, &mut warnings, &mut self.losses);
         self.warnings.extend(warnings);
         self.append_inline_text(&text);
     }
@@ -365,15 +371,6 @@ impl HtmlRenderer {
             }
             Some(_) => self.lines.push(value),
             None => self.lines.push(value),
-        }
-    }
-
-    fn push_inline_text(&mut self, value: &str) {
-        for piece in value.split('\n') {
-            self.append_inline_text(piece);
-            if piece != value.split('\n').next_back().unwrap_or_default() {
-                self.lines.push(String::new());
-            }
         }
     }
 
@@ -514,29 +511,43 @@ fn render_inline_nodes<'a>(
     nodes: impl Iterator<Item = NodeRef<'a, Node>>,
     out: &mut String,
     warnings: &mut Vec<String>,
+    losses: &mut LossCounts,
 ) {
     for node in nodes {
-        render_inline_node(node, out, warnings);
+        render_inline_node(node, out, warnings, losses);
     }
 }
 
-fn render_inline_node(node: NodeRef<'_, Node>, out: &mut String, warnings: &mut Vec<String>) {
+fn render_inline_node(
+    node: NodeRef<'_, Node>,
+    out: &mut String,
+    warnings: &mut Vec<String>,
+    losses: &mut LossCounts,
+) {
     match node.value() {
         Node::Text(text) => out.push_str(text),
+        Node::Comment(_) => losses.comments += 1,
         Node::Element(_) => {
             let element = ElementRef::wrap(node).expect("element node wraps as ElementRef");
-            render_inline_element(element, out, warnings);
+            render_inline_element(element, out, warnings, losses);
         }
         _ => {}
     }
 }
 
-fn render_inline_element(element: ElementRef<'_>, out: &mut String, warnings: &mut Vec<String>) {
+fn render_inline_element(
+    element: ElementRef<'_>,
+    out: &mut String,
+    warnings: &mut Vec<String>,
+    losses: &mut LossCounts,
+) {
     match element.value().name() {
-        "script" | "style" | "title" | "head" | "meta" | "link" | "base" => {}
+        "script" => losses.scripts += 1,
+        "style" => losses.styles += 1,
+        "title" | "head" | "meta" | "link" | "base" => {}
         "a" => {
             let mut inner = String::new();
-            render_inline_nodes(element.children(), &mut inner, warnings);
+            render_inline_nodes(element.children(), &mut inner, warnings, losses);
             let inner = normalize_inline(&inner);
             match element.attr("href") {
                 Some(href) if !href.trim().is_empty() => {
@@ -580,24 +591,49 @@ fn render_inline_element(element: ElementRef<'_>, out: &mut String, warnings: &m
         }
         "strong" | "b" => {
             out.push_str("**");
-            render_inline_nodes(element.children(), out, warnings);
+            render_inline_nodes(element.children(), out, warnings, losses);
             out.push_str("**");
         }
         "em" | "i" => {
             out.push('*');
-            render_inline_nodes(element.children(), out, warnings);
+            render_inline_nodes(element.children(), out, warnings, losses);
             out.push('*');
         }
         "br" => out.push(' '),
-        _ => render_inline_nodes(element.children(), out, warnings),
+        _ => render_inline_nodes(element.children(), out, warnings, losses),
     }
 }
 
-fn inline_text(element: ElementRef<'_>) -> String {
+fn inline_text(element: ElementRef<'_>, losses: &mut LossCounts) -> String {
     let mut text = String::new();
     let mut warnings = Vec::new();
-    render_inline_nodes(element.children(), &mut text, &mut warnings);
+    render_inline_nodes(element.children(), &mut text, &mut warnings, losses);
     text
+}
+
+fn plain_text(element: ElementRef<'_>) -> String {
+    let mut text = String::new();
+    plain_nodes(element.children(), &mut text);
+    text
+}
+
+fn plain_nodes<'a>(nodes: impl Iterator<Item = NodeRef<'a, Node>>, out: &mut String) {
+    for node in nodes {
+        match node.value() {
+            Node::Text(text) => out.push_str(text),
+            Node::Element(_) => {
+                let element = ElementRef::wrap(node).expect("element node wraps as ElementRef");
+                match element.value().name() {
+                    "img" => {
+                        out.push_str(&normalize_inline(element.attr("alt").unwrap_or_default()))
+                    }
+                    "script" | "style" | "title" | "head" | "meta" | "link" | "base" => {}
+                    _ => plain_nodes(element.children(), out),
+                }
+            }
+            _ => {}
+        }
+    }
 }
 
 fn pre_language(element: ElementRef<'_>) -> String {
