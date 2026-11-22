@@ -45,8 +45,22 @@
 - `DOK3_SOURCE_DIR`: 시작할 때 색인할 기본 Markdown 폴더(`local-markdown`, `managed_by_env: true`). 설정하면 IPv4 루프백에서만 열리며, `DOK3_DATA_DIR` 없이 기동할 때는 메모리 검색 스냅샷을 구성한다. `DOK3_DATA_DIR` 와 함께 설정하면 `sources.json` 다중 Source 레지스트리와 영속 저장소(`dok3-storage`)·Blue-Green 세대(`dok3-index-manager`)를 사용한다. 읽을 수 없거나 비어 있거나 UTF-8이 아닌 파일은 경로와 사유를 기록하고 나머지 문서 색인은 계속한다.
 - `DOK3_REFRESH_INTERVAL_SECS`: 영속 모드(`DOK3_SOURCE_DIR` + `DOK3_DATA_DIR`)에서 주기적 증분 색인 워커 실행 간격(초, 선택). 미설정 시 백그라운드 워커는 비활성.
 - `DOK3_ENABLE_ADMIN`: `true` 설정 시 IPv4 루프백 바인드에서 관리자 API(`/api/v1/index/jobs*`, `/api/v1/sources*`, `PATCH /api/v1/documents/{id}/classification`) 및 `/admin` 관리 UI를 활성화한다(기본 `false`, 루프백 `Origin`·`Sec-Fetch-Site`·`Content-Type: application/json` 가드 강제).
+- `DOK3_ALLOW_NON_LOOPBACK_BIND`: `true`/`1` 설정 시 `DOK3_SOURCE_DIR` 모드에서 비-loopback `DOK3_BIND`(예: 컨테이너의 `0.0.0.0`)를 명시적으로 허용한다(기본 `false`, true/false/1/0만 허용). 관리자 API 바인드는 이 플래그와 무관하게 항상 loopback만 허용한다. 인증 프록시 뒤 컨테이너 배포에서만 켠다.
 
 - `--mcp-stdio`: MCP 서버를 표준입출력 모드로 시작한다. `POST /mcp`는 HTTP 모드의 MCP 엔드포인트다. 두 경로 모두 `Principal::anonymous_public()` 고정을 사용한다.
+
+## doksam 배포 (`deploy/doksam/`)
+
+dok3search를 단일 노드 doksam Kubernetes에 재현 가능하게 배포하고 `https://www.doksam.com` Host로 서비스한다. 자세한 절차·경로·롤백 리허설은 [deploy/doksam/README.md](deploy/doksam/README.md)에 둔다.
+
+- 공개 진입점은 Ingress 전체를 Traefik basicAuth `Middleware`로 보호한다. 인증 없는 direct doksam 443/Host 요청은 401이어야 한다.
+- 컨테이너는 `0.0.0.0:8080`에 바인드하고 ClusterIP Service로만 노출한다. jex3 등이 쓰는 host port(`192.168.113.220:8081` 계열)는 재사용하지 않는다.
+- TLS Host는 `www.doksam.com`, 기존 cert-manager ClusterIssuer `letsencrypt-dns01`(DNS-01)을 사용한다.
+- 이미지는 커밋 SHA 기반 태그(`dok3search:sha-<git-sha>`)로 빌드하고 레지스트리 push 없이 노드에 import한다(`imagePullPolicy: IfNotPresent`).
+- basicAuth 자격증명은 git에 넣지 않는다. doksam 런타임에서만 Secret(`dok3search-basic-auth`, 키 `users`)과 0600 파일(`/etc/dok3search/basic-auth.pass`, `/etc/dok3search/basic-auth.users`)로 생성하고, 문서에는 경로와 키 이름만 기록한다.
+- basicAuth 생성은 `htpasswd` 없이 doksam의 `openssl passwd -apr1 -stdin`으로만 수행한다. `SUDO_PASS`는 doksam 런타임 환경 변수나 stdin에서 읽어 `sudo -S`에만 파이프하고, `sudo`/`curl` argv에는 비밀번호를 넣지 않는다.
+- 롤백은 Deployment 이미지만 직전 값으로 되돌리며 Namespace/PVC 등 운영 데이터를 파괴하지 않는다. 배포·롤백은 모두 idempotent해야 한다.
+- `DOK3_SOURCE_DIR` 모드의 loopback 제한은 컨테이너에서 `DOK3_ALLOW_NON_LOOPBACK_BIND=true`로 명시 해제한다.
 
 ## 관리자 및 분류 API 엔드포인트
 
@@ -72,3 +86,10 @@
   - `cargo clippy --manifest-path backend/rust/Cargo.toml --workspace --all-targets -- -D warnings`
   - `cargo test --manifest-path backend/rust/Cargo.toml --workspace`
 - `AGENTS.yaml` 검증: `scripts/check-agents-yaml.sh`
+- doksam 배포·검증:
+  - 이미지 빌드: `deploy/doksam/scripts/build-image.sh`
+  - basicAuth Secret 생성: `deploy/doksam/scripts/create-basic-auth-secret.sh`
+  - 컨테이너 smoke: `deploy/doksam/scripts/smoke-container.sh`
+  - 배포: `deploy/doksam/scripts/deploy.sh`
+  - 롤백: `deploy/doksam/scripts/rollback.sh`
+  - 검증(401/200 status code): `deploy/doksam/scripts/verify.sh`
