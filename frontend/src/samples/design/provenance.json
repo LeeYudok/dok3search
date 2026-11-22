@@ -1,26 +1,26 @@
 {
   "repository": "https://github.com/LeeYudok/dok3search-design",
-  "commit": "132dc1b199f6d4f16d4303d1e9ae58b91b99c46d",
+  "commit": "a72a2c15efbcbc2be2e64c0148c0684fadaed284",
   "sha256": {
     "REFERENCE_ARCHITECTURES.md": "1cc6c8eeaaaf43ace732f26ad1ffd9deb9fe038fc859b80f34eb7d90ad688001",
     "dok3search-subagents.md": "dc5c0b81746ae20133fd0d40744a148627ddef5b7b5565cc5ed5d88b3725384e",
-    "map.md": "5193e00a5d4e2520bd23599b4ae0ad2a2731033d799c47054a4b86f4faa8fbb0",
+    "map.md": "4b0aa45a6f33875f3e137bfc284d7af574c9e7a6077ef06130684eb0fc9fe13c",
     "LICENSE": "383836eab31e8828ffb25056a3a81ab898041d1a2f520ea3667a4b50a3d4a2f6",
     "dok3search-product-manual-draft.md": "d85c9ec4ae32cca8dbd63576ecccf3cf2338fc95429672cc5b45b65140121b59",
-    "CHANGELOG.md": "5ed7b00433444c2e20c1ccf6af37ab0df85c6d08ff11799e12cff3635ee454da",
-    "dok3search-implementation-roadmap.md": "1a509ace72779b97646ba5b7471e8ecad4795ef4d600a944b2f52980f9bb0889",
+    "CHANGELOG.md": "ca8cb793de87768b2ea35582625d24a82bc76416750778eeeb2002833c84fa65",
+    "dok3search-implementation-roadmap.md": "ea67eefdbdbcfb2b5779d35773399a14d96e96097114bdaaaa3139f14babf1ab",
     "dok3search-network-deployment.md": "0436e147e5728e4d46da4c69d2b0f7c35f05ed7d3979e3b2c2178014497b8c8e",
-    "README.md": "deadc06feacfe05e849a80d66d1c21e1242dafd76ee74db3a9caecaa74f3f0fc",
+    "README.md": "ec1e8f883865030aff9391f99eac8bbfa4205c07c6457dcd608264c7e6ec6737",
     "DESIGN_REVIEW_AND_FIXES.md": "a94878791e51d8f2e2244e0bc36c9758747e4e9a27ee05786cb13333da26166d",
-    "RUST_WORKSPACE_AND_CONTRACTS.md": "5f4483f08dc1d6c5d24585c471a54c6370958c4f81783947037496150381a49a",
+    "RUST_WORKSPACE_AND_CONTRACTS.md": "4b45918bd475fd49a614794f9d43175c88cd01217bbfc4a0fd3fb02d8ceeeb89",
     "dok3search-final-architecture.md": "ea17faa8c212b8784b435fa671b1b2560791afe85ca75313395640fb360d6f63",
-    "index.md": "8f755d1fb918d8f1652befe98c887969b044a55909c69709ce38624989fe1624",
+    "index.md": "424de19987690386780ca02215422b4c98a33b35ef5c81c388dfd0a31da60361",
     "dok3search-final-architecture-download.md": "936283b6ab5dde5cdb76bdd1f9abc6e86910feb6b6224cd791d91efa7e1c08e4",
     "BLUE_GREEN_OPERATIONAL_PROTOCOL.md": "f52ca8f370fc01ddb741ddeda32190c3d63bc3fc9fbfeb01796c220fa010be8d",
-    "map.yaml": "a0bf34e09d9f4fa9dae345398cd9e7054bccf073e1d9fab963290c947baa1dcb",
+    "map.yaml": "0d2dba55d5266458ce24b98eb2d88d4b80e8ed5b7a89b144d93602a79ea5660f",
     "AGENTS.md": "d9c86c57cc164bac6e244573bfd73937371ec365f5145a241ad5208990d13f95",
     "BLUE_GREEN_DESIGN_REVIEW.md": "b4b94a613843d696ccd2fb8605ef2b83c5ce420f08daf3f4d19f319530643bc6",
-    "index.yaml": "15b78f336c04858b2ded531ab3c9dfd04be066c794f0d134ccfef385536b031b",
+    "index.yaml": "82ceaf1c8d42d5e1fc215cd083c9ec3eb6c6fdffdbb5d0d2d2e71b9ae05229ee",
     "dok3search-offline-supplychain.md": "fce2f5394377902f8328d51870e7a5b4a8697f700ffc9936652f7d9bb0871aa6",
     "config/indexing.example.yaml": "b34882f7065b7e190b51d5b1232ade1fe22f9bc39467bbc68b6e453288320dc1",
     "config/offline-bundle.example.yaml": "de3cf1ea0cf0a1917fcd119382a8f3097fcf2dd61eaea5c6c0b61ed2fa63b12b",
@@ -38,6 +38,6 @@
     "contracts/subagent-task.example.yaml": "11ef57e0ae28d2e4d93b656713970bd602f3f1c6b39b0c8c970fff5c1d7ad9db",
     "contracts/search-request.example.yaml": "b3bdf357a27fb3a1cd503c61fe5c6c839591b97b1b959383172b0319df281750",
     "contracts/document.example.yaml": "8d17bbf3e5cb1d2fcae9940428e49db0c9af0bf5ee19acf6f623afbfb6d22dcc",
-    "contracts/index-job.example.yaml": "8ca50d14d16abc0903f588b2de7296454512429466392bd61069ffa6205fec05"
+    "contracts/index-job.example.yaml": "7a756c0b1afc5bd4e1eddbc741209b4feda0e518c9d1dc74fbcbe0146852f03b"
   }
 }
