@@ -1,5 +1,6 @@
 import { parse } from 'yaml'
 import designIndex from './samples/design/index.yaml?raw'
+import manualSource from '../../docs/manual/dok3search-manual.md?raw'
 
 export const categories = [
   { id: 'guide', label: '개발 가이드' },
@@ -162,6 +163,21 @@ export function documentFormats(id: string) {
   return designFormatsById.get(id)
 }
 
+const manualHeading = /^# ([^\r\n]+)\r?\n/.exec(manualSource)
+
+// Mirrors the backend seed (`dok3-search/src/seed.rs`): same ID, title, and H1-stripped Markdown.
+const manualDocument: Document = {
+  id: 'dok3search-manual',
+  title: manualHeading?.[1].trim() ?? 'dok3search 제품·운영 매뉴얼',
+  summary: '기동 모드, 환경 변수, HTTP API, MCP 도구, 재색인, 백업과 복구 절차를 정리한 제품·운영 매뉴얼입니다.',
+  source: 'dok3search 운영 매뉴얼',
+  tag: 'dok3search',
+  date: '2026-11-22',
+  category: 'manual',
+  body: '',
+  markdown: manualSource.replace(/^# [^\r\n]+\r?\n+/, ''),
+}
+
 export const documents: Document[] = [
   ...designDocuments,
   {
@@ -307,6 +323,7 @@ export const documents: Document[] = [
     source: '자료 관리 기준', tag: '출처', date: '2026-11-01', category: 'policy',
     body: '소유 부서와 원본 위치를 기록해 정정이 필요할 때 원문을 찾을 수 있게 합니다.',
   },
+  manualDocument,
 ]
 
 export function searchDocuments(query: string, corpus: readonly Document[] = documents) {

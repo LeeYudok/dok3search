@@ -351,6 +351,101 @@ mod tests {
         assert_eq!(&html[..], b"<html>spa</html>");
     }
 
+    #[tokio::test]
+    async fn mcp_self_searches_and_reads_builtin_operations_manual() {
+        let repo = Arc::new(InMemorySearchRepository::from_seed(None));
+        let search = Arc::new(SearchService::new(repo.clone(), repo));
+        let app = build_app(ApiState::new(search), None);
+
+        let found = app
+            .clone()
+            .oneshot(mcp_post(json!({
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "tools/call",
+                "params": {
+                    "name": "kb_search",
+                    "arguments": { "query": "DOK3_DATA_DIR 백업", "category": "manual" }
+                }
+            })))
+            .await
+            .unwrap();
+        assert_eq!(found.status(), StatusCode::OK);
+        let found_json = read_json(found).await;
+        assert_eq!(found_json["result"]["isError"], false);
+        let ids = hit_ids(&found_json);
+        assert!(ids.contains(&"dok3search-manual".to_string()), "{ids:?}");
+        let hits = found_json["result"]["structuredContent"]["hits"]
+            .as_array()
+            .unwrap();
+        assert!(hits.iter().all(|hit| hit["category"] == "manual"));
+
+        let doc = app
+            .clone()
+            .oneshot(mcp_post(json!({
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "tools/call",
+                "params": {
+                    "name": "kb_get_document",
+                    "arguments": { "document_id": "dok3search-manual" }
+                }
+            })))
+            .await
+            .unwrap();
+        let doc_json = read_json(doc).await;
+        let detail = &doc_json["result"]["structuredContent"];
+        assert_eq!(detail["category"], "manual");
+        let section_ids: Vec<&str> = detail["sections"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|s| s["section_id"].as_str().unwrap())
+            .collect();
+        assert!(section_ids.contains(&"section-mcp-도구"));
+
+        let section = app
+            .oneshot(mcp_post(json!({
+                "jsonrpc": "2.0",
+                "id": 3,
+                "method": "tools/call",
+                "params": {
+                    "name": "kb_get_section",
+                    "arguments": {
+                        "document_id": "dok3search-manual",
+                        "section_id": "section-mcp-도구"
+                    }
+                }
+            })))
+            .await
+            .unwrap();
+        assert_eq!(section.status(), StatusCode::OK);
+        let section_json = read_json(section).await;
+        assert_eq!(section_json["result"]["isError"], false);
+        let read = &section_json["result"]["structuredContent"];
+        assert_eq!(
+            read["heading_path"],
+            json!(["dok3search 제품·운영 매뉴얼", "MCP 도구"])
+        );
+        assert_eq!(read["citation"]["section"], "section-mcp-도구");
+        assert_eq!(
+            read["citation"]["source_uri"],
+            "repo://docs/manual/dok3search-manual.md"
+        );
+        let text = read["text"].as_str().unwrap();
+        for tool in [
+            "kb_search",
+            "kb_get_document",
+            "kb_get_section",
+            "kb_search_api",
+            "kb_search_error",
+            "kb_search_code",
+            "kb_list_categories",
+        ] {
+            assert!(text.contains(tool), "missing {tool}");
+        }
+    }
+
     #[test]
     fn stdio_server_is_anonymous_public() {
         let server = anonymous_server(&fixture_search());
