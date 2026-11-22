@@ -161,10 +161,15 @@ async fn spa_fallback(dir: PathBuf, index: PathBuf, req: Request<axum::body::Bod
     {
         return resp.into_response();
     }
-    if uri_path
-        .rsplit('/')
-        .next()
-        .is_some_and(|seg| seg.contains('.'))
+    // `/docs/<encoded-doc-id>` is a client-side route: ids such as
+    // `local-markdown:samples/.../rust-version.md` end in `.md` even after
+    // percent-encoding those characters, so the dotted-segment 404 rule must
+    // not fire for them — the SPA serves those paths from index.html.
+    if !uri_path.starts_with("/docs/")
+        && uri_path
+            .rsplit('/')
+            .next()
+            .is_some_and(|seg| seg.contains('.'))
     {
         return StatusCode::NOT_FOUND.into_response();
     }

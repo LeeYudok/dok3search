@@ -50,8 +50,10 @@ WORKDIR /app
 # Server binary.
 COPY --from=backend /build/backend/rust/target/release/dok3search /usr/local/bin/dok3search
 
-# Static SPA served by the server (DOK3_STATIC_DIR).
-COPY --from=frontend /build/frontend/dist /app/frontend/dist
+# Static SPA served by the server (DOK3_STATIC_DIR). The server runs as dok3,
+# so the dist tree must be readable by it; without --chown the files stay
+# root-owned and ServeDir answers 404 for files it cannot open (favicon.svg).
+COPY --chown=dok3:dok3 --from=frontend /build/frontend/dist /app/frontend/dist
 
 # Searchable knowledge corpus (DOK3_SOURCE_DIR). The connector walks this tree
 # recursively and indexes Markdown; the design docs also back DOK3_DESIGN_DIR.
@@ -59,7 +61,7 @@ COPY --chown=dok3:dok3 frontend/src/samples /app/knowledge/samples
 COPY --chown=dok3:dok3 docs/manual /app/knowledge/manual
 
 # Persistent store mount point (DOK3_DATA_DIR); the deployment mounts a PVC here.
-RUN chmod -R a+rX /app/knowledge \
+RUN chmod -R a+rX /app/knowledge /app/frontend/dist \
     && install -d -o dok3 -g dok3 /data
 
 # Container-friendly defaults. The deployment overrides DOK3_DATA_DIR and may
