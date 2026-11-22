@@ -6,17 +6,17 @@ use serde::{Deserialize, Serialize};
 use tantivy::schema::{
     Field, IndexRecordOption, STORED, STRING, Schema, TextFieldIndexing, TextOptions, Value,
 };
-use tantivy::tokenizer::{
-    LowerCaser, NgramTokenizer, RemoveLongFilter, SimpleTokenizer, TextAnalyzer,
-};
+use tantivy::tokenizer::RemoveLongFilter;
 use tantivy::{Index, TantivyDocument};
 
+use crate::tokenizer::{GramTokenizer, TextTokenizer};
+
 /// Increment when index field definitions or tokenizers change incompatibly.
-pub const SCHEMA_VERSION: u32 = 1;
+pub const SCHEMA_VERSION: u32 = 2;
 /// Tokenizer name for general words and code identifier segments.
-pub const TOKENIZER_TEXT: &str = "dok3_text";
+pub const TOKENIZER_TEXT: &str = "dok3_text_v2";
 /// Tokenizer name for 2-3 character n-gram partial matching.
-pub const TOKENIZER_NGRAM: &str = "dok3_ngram";
+pub const TOKENIZER_NGRAM: &str = "dok3_ngram_v2";
 
 /// Tantivy field handles bound to a schema.
 #[derive(Debug, Clone, Copy)]
@@ -82,19 +82,13 @@ pub fn build_schema() -> (Schema, IndexFields) {
     (builder.build(), fields)
 }
 
-/// Registers the custom `dok3_text` and `dok3_ngram` tokenizers on `index`.
-pub(crate) fn register_tokenizers(index: &Index) -> Result<(), Dok3Error> {
-    let text_analyzer = TextAnalyzer::builder(SimpleTokenizer::default())
+/// Registers the schema's versioned text and n-gram tokenizers.
+pub(crate) fn register_tokenizers(index: &Index) {
+    let text = tantivy::tokenizer::TextAnalyzer::builder(TextTokenizer)
         .filter(RemoveLongFilter::limit(128))
-        .filter(LowerCaser)
         .build();
-    let ngram_base = NgramTokenizer::new(2, 3, false)
-        .map_err(|e| Dok3Error::Index(format!("failed to create ngram tokenizer: {e}")))?;
-    let ngram_analyzer = TextAnalyzer::builder(ngram_base).filter(LowerCaser).build();
-
-    index.tokenizers().register(TOKENIZER_TEXT, text_analyzer);
-    index.tokenizers().register(TOKENIZER_NGRAM, ngram_analyzer);
-    Ok(())
+    index.tokenizers().register(TOKENIZER_TEXT, text);
+    index.tokenizers().register(TOKENIZER_NGRAM, GramTokenizer);
 }
 
 pub(crate) fn to_tantivy_document(

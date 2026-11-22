@@ -2,6 +2,7 @@
 
 mod index;
 mod schema;
+mod tokenizer;
 
 pub use index::TantivyIndex;
 pub use schema::{IndexFields, SCHEMA_VERSION, TOKENIZER_NGRAM, TOKENIZER_TEXT};
