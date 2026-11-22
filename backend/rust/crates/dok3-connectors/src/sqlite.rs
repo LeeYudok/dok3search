@@ -27,8 +27,8 @@ pub enum SqliteCursorMode {
     IntegerPk { column: String },
     /// Sortable timestamp watermark, normally an ISO-8601 TEXT column.
     ///
-    /// Rows with the same watermark are ordered and resumed by the mapped
-    /// document ID, so a later commit at an identical timestamp is not missed.
+    /// The last watermark group is re-read inclusively on the next pass so
+    /// rows committed at the same timestamp after collection are not missed.
     UpdatedAt { column: String },
 }
 
@@ -42,14 +42,12 @@ impl SqliteCursorMode {
 
 /// Last successfully observed source position.
 ///
-/// The `updated_at` variant is a compound `(updated_at, document_id)` cursor.
+/// The `updated_at` variant is an inclusive watermark. Its last timestamp
+/// group may be emitted more than once; consumers should upsert by document ID.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SqliteCursor {
     Integer(i64),
-    UpdatedAt {
-        updated_at: String,
-        document_id: String,
-    },
+    UpdatedAt { updated_at: String },
 }
 
 /// Configuration for [`SqliteSourceAdapter`].
@@ -144,9 +142,6 @@ impl SqliteSourceAdapter {
             [value] => statement
                 .query(params![value])
                 .map_err(|error| sqlite_error("execute SELECT", &error))?,
-            [updated_at, document_id] => statement
-                .query(params![updated_at, document_id])
-                .map_err(|error| sqlite_error("execute SELECT", &error))?,
             _ => {
                 return Err(Dok3Error::InvalidInput(
                     "SQLite cursor produced too many query parameters".to_string(),
@@ -188,7 +183,7 @@ impl SqliteSourceAdapter {
                 let column = quote_identifier(column);
                 let document_id = quote_identifier(&self.config.columns.document_id);
                 let filter = if has_cursor {
-                    format!(" WHERE {column} > ?1 OR ({column} = ?1 AND {document_id} > ?2)")
+                    format!(" WHERE {column} >= ?1")
                 } else {
                     String::new()
                 };
@@ -207,16 +202,9 @@ impl SqliteSourceAdapter {
             (Some(SqliteCursor::Integer(value)), SqliteCursorMode::IntegerPk { .. }) => {
                 Ok(vec![Value::Integer(*value)])
             }
-            (
-                Some(SqliteCursor::UpdatedAt {
-                    updated_at,
-                    document_id,
-                }),
-                SqliteCursorMode::UpdatedAt { .. },
-            ) => Ok(vec![
-                Value::Text(updated_at.clone()),
-                Value::Text(document_id.clone()),
-            ]),
+            (Some(SqliteCursor::UpdatedAt { updated_at }), SqliteCursorMode::UpdatedAt { .. }) => {
+                Ok(vec![Value::Text(updated_at.clone())])
+            }
             (Some(_), _) => Err(Dok3Error::InvalidInput(
                 "cursor variant does not match configured SQLite cursor mode".to_string(),
             )),
@@ -258,20 +246,7 @@ impl SqliteSourceAdapter {
                         "updated_at watermark column '{column}' must not be empty"
                     )));
                 }
-                let document_id = read_required_text(
-                    row,
-                    &self.config.columns.document_id,
-                    "updated_at tie-breaker document ID",
-                )?;
-                if document_id.trim().is_empty() {
-                    return Err(Dok3Error::Storage(
-                        "updated_at tie-breaker document ID must not be empty".to_string(),
-                    ));
-                }
-                Ok(SqliteCursor::UpdatedAt {
-                    updated_at,
-                    document_id,
-                })
+                Ok(SqliteCursor::UpdatedAt { updated_at })
             }
         }
     }

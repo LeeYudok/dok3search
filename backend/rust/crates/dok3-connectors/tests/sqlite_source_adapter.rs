@@ -184,8 +184,7 @@ fn updated_at_cursor_recollects_added_and_changed_rows_from_ddl_fixture() {
     assert_eq!(
         first.next_cursor,
         Some(SqliteCursor::UpdatedAt {
-            updated_at: "2026-11-22T00:00:02Z".to_string(),
-            document_id: "2".to_string(),
+            updated_at: "2026-11-22T00:00:02Z".to_string()
         })
     );
 
@@ -195,7 +194,7 @@ fn updated_at_cursor_recollects_added_and_changed_rows_from_ddl_fixture() {
             UPDATE docs
                SET title = 'First changed',
                    body = 'Changed body',
-                   updated_at = '2026-11-22T00:00:05Z'
+                   updated_at = '2026-11-22T00:00:02Z'
              WHERE id = 1;
             INSERT INTO docs (id, updated_at, title, body)
             VALUES (3, '2026-11-22T00:00:02Z', 'Third', 'Third body');
@@ -206,7 +205,6 @@ fn updated_at_cursor_recollects_added_and_changed_rows_from_ddl_fixture() {
     let second = adapter
         .collect(Some(&SqliteCursor::UpdatedAt {
             updated_at: "2026-11-22T00:00:02Z".to_string(),
-            document_id: "2".to_string(),
         }))
         .unwrap();
     let ids: Vec<&str> = second
@@ -214,7 +212,10 @@ fn updated_at_cursor_recollects_added_and_changed_rows_from_ddl_fixture() {
         .iter()
         .map(|document| document.id.as_str())
         .collect();
-    assert_eq!(ids, vec!["sqlite-source:3", "sqlite-source:1"]);
+    assert_eq!(
+        ids,
+        vec!["sqlite-source:1", "sqlite-source:2", "sqlite-source:3"]
+    );
     let changed = second
         .documents
         .iter()
@@ -225,8 +226,7 @@ fn updated_at_cursor_recollects_added_and_changed_rows_from_ddl_fixture() {
     assert_eq!(
         second.next_cursor,
         Some(SqliteCursor::UpdatedAt {
-            updated_at: "2026-11-22T00:00:05Z".to_string(),
-            document_id: "1".to_string(),
+            updated_at: "2026-11-22T00:00:02Z".to_string()
         })
     );
 }
