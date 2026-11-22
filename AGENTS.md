@@ -49,6 +49,7 @@
 - Comprehensive Rust 변환: `python3 scripts/import-comprehensive-rust.py <snapshot-dir> <output-dir>` ([준비할 입력과 라이선스](frontend/src/samples/comprehensive-rust/README.md))
 - Rust Reference·Cargo Book 변환: `python3 scripts/import-rust-official-components.py --rust-docs-root <toolchain>/share/doc/rust/html --license-root <toolchain>/share/doc/rust/licenses --output-root frontend/src/samples --version '<rustc version>'` ([출처와 라이선스](frontend/src/samples/rust-reference/README.md))
 - Rust 서버 실행: `cargo run --manifest-path backend/rust/Cargo.toml -p dok3-server`
+- CI: `.github/workflows/ci.yml` 가 PR 의 `rust-fmt`, `rust-clippy`, `rust-test`, `frontend-build` 를 필수 검사로 실행한다.
 - Rust 정적/테스트 검증:
   - `cargo fmt --manifest-path backend/rust/Cargo.toml --all -- --check`
   - `cargo clippy --manifest-path backend/rust/Cargo.toml --workspace --all-targets -- -D warnings`

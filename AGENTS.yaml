@@ -22,7 +22,7 @@ environments:
     toolchain:
       rust: 'stable (backend/rust/rust-toolchain.toml)'
       node: 'npm (frontend/package-lock.json)'
-  ci: none
+  ci: 'github-actions (required-checks)'
 
 nodes:
 - {id: frontend, type: vite-react-app, label: 'React + TypeScript + Vite web UI', path: frontend/src/main.tsx, module: frontend/package.json}
@@ -138,6 +138,7 @@ docs:
 - {path: README.md, what: 'Monorepo overview and commands'}
 - {path: DESIGN.md, what: 'UI design overview'}
 - {path: CHANGELOG.md, what: 'Repository changelog'}
+- {path: .github/workflows/ci.yml, what: 'GitHub Actions required PR checks'}
 - {path: LICENSE, what: 'MIT license'}
 - {path: frontend/src/samples/comprehensive-rust/README.md, what: 'Comprehensive Rust provenance, license and import inputs'}
 - {path: frontend/src/samples/rust-book/README.md, what: 'Official Rust Book provenance and license'}
