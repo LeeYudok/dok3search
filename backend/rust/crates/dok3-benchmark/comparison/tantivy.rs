@@ -32,6 +32,35 @@ const CASES: &[(&str, QueryGroup, &str, &str)] = &[
     ("acl", QueryGroup::Acl, "rotate token", "rotateToken"),
 ];
 
+const KOREAN_CASES: &[(&str, &str, &str)] = &[
+    ("bank-particle", "은행은", "은행에서 안내합니다."),
+    ("loan-particle", "대출을", "대출부터 안내합니다."),
+    ("interest-particle", "금리의", "금리도 안내합니다."),
+    (
+        "account-compound",
+        "계좌잔액조회",
+        "계좌 잔액 조회 방법입니다.",
+    ),
+    (
+        "credit-compound",
+        "여신 심사 기준을",
+        "여신심사기준은 참고 항목입니다.",
+    ),
+    (
+        "warning-compound",
+        "조기경보모형",
+        "조기 경보 모형을 설명합니다.",
+    ),
+    ("deploy-compound", "폐쇄망배포", "폐쇄망 배포 절차입니다."),
+    (
+        "storage-compound",
+        "원문저장소",
+        "원문 저장소의 구조입니다.",
+    ),
+    ("recovery-bare", "장애복구", "장애복구를 설명합니다."),
+    ("results-bare", "검색 결과", "검색결과에서 확인합니다."),
+];
+
 fn document(id: &str, body: &str, scope: AclScope, category: &str) -> Document {
     Document {
         id: id.into(),
@@ -60,6 +89,15 @@ fn document(id: &str, body: &str, scope: AclScope, category: &str) -> Document {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let candidate = std::env::args().nth(1).as_deref() == Some("candidate");
+    let korean = std::env::args().nth(2).as_deref() == Some("korean");
+    let fixtures: Vec<_> = if korean {
+        KOREAN_CASES
+            .iter()
+            .map(|&(id, query, body)| (id, QueryGroup::Korean, query, body))
+            .collect()
+    } else {
+        CASES.to_vec()
+    };
     let ops = AclScope::internal("ops");
     let index = Arc::new(TantivyIndex::create_in_ram(GenerationId::new(
         "comparison",
@@ -73,7 +111,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         ))?;
     }
     let mut cases = Vec::new();
-    for &(id, group, query, body) in CASES {
+    for &(id, group, query, body) in &fixtures {
         let private = format!("private-{id}");
         index.upsert_document(&document(id, body, AclScope::Public, "code"))?;
         index.upsert_document(&document(&private, body, ops.clone(), "policy"))?;
@@ -162,6 +200,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     );
     assert_eq!(eval.acl_violations, 0);
     assert_eq!(acl_metadata_violations, 0);
+    if korean {
+        let quality = &eval.by_group[&QueryGroup::Korean];
+        let expected = if candidate { 1.0 } else { 0.2 };
+        assert_eq!(quality.recall_at_k, expected);
+        assert_eq!(quality.mrr_at_k, expected);
+    }
     if candidate {
         assert_eq!(authorized_cases, cases.len());
         assert!(
