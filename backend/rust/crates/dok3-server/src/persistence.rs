@@ -461,21 +461,25 @@ impl JobHistoryStore {
         })
     }
 
-    fn persist(&self) -> Result<(), String> {
+    fn persist_snapshot(path: &Path, next_seq: u64, jobs: &[IndexJobRecord]) -> Result<(), String> {
         let disk = JobHistoryDisk {
-            next_seq: self.next_seq,
-            jobs: self.jobs.clone(),
+            next_seq,
+            jobs: jobs.to_vec(),
         };
         let bytes = serde_json::to_vec_pretty(&disk)
             .map_err(|err| format!("failed to serialize index jobs: {err}"))?;
-        atomic_write_bytes(&self.path, &bytes)
+        atomic_write_bytes(path, &bytes)
     }
 
-    fn push_and_trim(&mut self, record: IndexJobRecord) {
-        self.jobs.push(record);
-        if self.jobs.len() > MAX_JOB_HISTORY {
-            let excess = self.jobs.len() - MAX_JOB_HISTORY;
-            self.jobs.drain(0..excess);
+    fn trim_completed_history(jobs: &mut Vec<IndexJobRecord>) {
+        while jobs.len() > MAX_JOB_HISTORY {
+            if let Some(idx) = jobs.iter().position(|job| {
+                !matches!(job.state, IndexJobState::Pending | IndexJobState::Running)
+            }) {
+                jobs.remove(idx);
+            } else {
+                break;
+            }
         }
     }
 
@@ -484,10 +488,10 @@ impl JobHistoryStore {
         source_id: Option<String>,
         trigger: &str,
         mode: IndexJobMode,
-    ) -> Result<IndexJobRecord, String> {
-        self.next_seq += 1;
+    ) -> Result<IndexJobRecord, Dok3Error> {
+        let next_seq = self.next_seq + 1;
         let record = IndexJobRecord {
-            job_id: format!("job-{:04}", self.next_seq),
+            job_id: format!("job-{next_seq:04}"),
             source_id,
             trigger: trigger.to_string(),
             mode,
@@ -501,8 +505,12 @@ impl JobHistoryStore {
             skipped_files: Vec::new(),
             error: None,
         };
-        self.push_and_trim(record.clone());
-        self.persist()?;
+        let mut next_jobs = self.jobs.clone();
+        next_jobs.push(record.clone());
+        Self::trim_completed_history(&mut next_jobs);
+        Self::persist_snapshot(&self.path, next_seq, &next_jobs).map_err(Dok3Error::Storage)?;
+        self.next_seq = next_seq;
+        self.jobs = next_jobs;
         Ok(record)
     }
 
@@ -517,25 +525,30 @@ impl JobHistoryStore {
         active_epoch: u64,
         skipped_files: Vec<String>,
         error: Option<String>,
-    ) -> Result<IndexJobRecord, String> {
-        self.active_generation = active_generation.clone();
-        self.active_epoch = active_epoch;
+    ) -> Result<IndexJobRecord, Dok3Error> {
         let finished_at = now_ms();
-        let record = self
-            .jobs
-            .iter_mut()
-            .find(|job| job.job_id == job_id)
-            .ok_or_else(|| format!("missing in-flight job '{job_id}'"))?;
-        record.state = state;
-        record.finished_at_ms = Some(finished_at);
-        record.indexed_documents = indexed_documents;
-        record.rebuilt = rebuilt;
-        record.active_generation = active_generation;
-        record.active_epoch = active_epoch;
-        record.skipped_files = skipped_files;
-        record.error = error;
-        let snapshot = record.clone();
-        self.persist()?;
+        let mut next_jobs = self.jobs.clone();
+        let snapshot = {
+            let record = next_jobs
+                .iter_mut()
+                .find(|job| job.job_id == job_id)
+                .ok_or_else(|| Dok3Error::Internal(format!("missing in-flight job '{job_id}'")))?;
+            record.state = state;
+            record.finished_at_ms = Some(finished_at);
+            record.indexed_documents = indexed_documents;
+            record.rebuilt = rebuilt;
+            record.active_generation = active_generation.clone();
+            record.active_epoch = active_epoch;
+            record.skipped_files = skipped_files;
+            record.error = error;
+            record.clone()
+        };
+        Self::trim_completed_history(&mut next_jobs);
+        Self::persist_snapshot(&self.path, self.next_seq, &next_jobs)
+            .map_err(Dok3Error::Storage)?;
+        self.jobs = next_jobs;
+        self.active_generation = active_generation;
+        self.active_epoch = active_epoch;
         Ok(snapshot)
     }
 
@@ -546,12 +559,10 @@ impl JobHistoryStore {
         active_generation: Option<String>,
         active_epoch: u64,
     ) -> Result<IndexJobRecord, String> {
-        self.next_seq += 1;
+        let next_seq = self.next_seq + 1;
         let now = now_ms();
-        self.active_generation = active_generation.clone();
-        self.active_epoch = active_epoch;
         let record = IndexJobRecord {
-            job_id: format!("job-{:04}", self.next_seq),
+            job_id: format!("job-{next_seq:04}"),
             source_id: None,
             trigger: "startup".to_string(),
             mode: IndexJobMode::Incremental,
@@ -560,13 +571,19 @@ impl JobHistoryStore {
             finished_at_ms: Some(now),
             indexed_documents: report.indexed,
             rebuilt,
-            active_generation,
+            active_generation: active_generation.clone(),
             active_epoch,
             skipped_files: report.skipped.clone(),
             error: None,
         };
-        self.push_and_trim(record.clone());
-        self.persist()?;
+        let mut next_jobs = self.jobs.clone();
+        next_jobs.push(record.clone());
+        Self::trim_completed_history(&mut next_jobs);
+        Self::persist_snapshot(&self.path, next_seq, &next_jobs)?;
+        self.next_seq = next_seq;
+        self.jobs = next_jobs;
+        self.active_generation = active_generation;
+        self.active_epoch = active_epoch;
         Ok(record)
     }
 
@@ -599,6 +616,7 @@ pub struct PersistentRuntime {
     #[cfg_attr(not(test), allow(dead_code))]
     access: ReaderAccess<Arc<TantivyIndex>>,
     service: SearchService,
+    job_exec_lock: Mutex<()>,
     jobs: Arc<Mutex<JobHistoryStore>>,
 }
 
@@ -665,6 +683,7 @@ impl PersistentRuntime {
             manager,
             access,
             service,
+            job_exec_lock: Mutex::new(()),
             jobs: Arc::new(Mutex::new(job_store)),
         };
         Ok((runtime, report))
@@ -686,6 +705,10 @@ impl PersistentRuntime {
     /// Re-scans `source_dir`, persists deltas, activates a new generation when changed, and GCs retired generations.
     #[cfg_attr(not(test), allow(dead_code))]
     pub fn refresh(&self) -> Result<RefreshReport, String> {
+        let _exec_guard = self
+            .job_exec_lock
+            .lock()
+            .map_err(|_| "index job execution lock poisoned".to_string())?;
         let mut manager = self
             .manager
             .lock()
@@ -703,65 +726,34 @@ impl PersistentRuntime {
         Ok(result)
     }
 
-    /// Runs a serialized indexing job (`Incremental` or `Full`), persisting its outcome to `index_jobs.json`
-    /// without panicking or terminating the server if the scan or generation activation fails.
-    pub fn run_job(&self, trigger: &str, req: &TriggerIndexJobRequest) -> IndexJobRecord {
-        let started = match self.jobs.lock() {
-            Ok(mut jobs) => match jobs.start_job(req.source_id.clone(), trigger, req.mode) {
-                Ok(rec) => rec,
-                Err(err) => {
-                    return IndexJobRecord {
-                        job_id: "job-unpersisted".to_string(),
-                        source_id: req.source_id.clone(),
-                        trigger: trigger.to_string(),
-                        mode: req.mode,
-                        state: IndexJobState::Failed,
-                        started_at_ms: now_ms(),
-                        finished_at_ms: Some(now_ms()),
-                        indexed_documents: 0,
-                        rebuilt: false,
-                        active_generation: jobs.active_generation.clone(),
-                        active_epoch: jobs.active_epoch,
-                        skipped_files: Vec::new(),
-                        error: Some(err),
-                    };
-                }
-            },
-            Err(_) => {
-                let now = now_ms();
-                return IndexJobRecord {
-                    job_id: "job-poisoned".to_string(),
-                    source_id: req.source_id.clone(),
-                    trigger: trigger.to_string(),
-                    mode: req.mode,
-                    state: IndexJobState::Failed,
-                    started_at_ms: now,
-                    finished_at_ms: Some(now),
-                    indexed_documents: 0,
-                    rebuilt: false,
-                    active_generation: None,
-                    active_epoch: 0,
-                    skipped_files: Vec::new(),
-                    error: Some("index job store mutex poisoned".to_string()),
-                };
-            }
+    /// Runs a serialized indexing job (`Incremental` or `Full`), persisting its outcome to `index_jobs.json`.
+    /// Scan/indexing errors are recorded as `IndexJobState::Failed`; persistence failures return `Dok3Error::Storage`.
+    pub fn run_job(
+        &self,
+        trigger: &str,
+        req: &TriggerIndexJobRequest,
+    ) -> Result<IndexJobRecord, Dok3Error> {
+        let _exec_guard = self
+            .job_exec_lock
+            .lock()
+            .map_err(|_| Dok3Error::Internal("index job execution lock poisoned".to_string()))?;
+
+        let started = {
+            let mut jobs = self
+                .jobs
+                .lock()
+                .map_err(|_| Dok3Error::Internal("index job store mutex poisoned".to_string()))?;
+            jobs.start_job(req.source_id.clone(), trigger, req.mode)?
         };
 
         let outcome = self.execute_job(req);
-        let mut jobs = match self.jobs.lock() {
-            Ok(guard) => guard,
-            Err(_) => {
-                return IndexJobRecord {
-                    state: IndexJobState::Failed,
-                    finished_at_ms: Some(now_ms()),
-                    error: Some("index job store mutex poisoned".to_string()),
-                    ..started
-                };
-            }
-        };
+        let mut jobs = self
+            .jobs
+            .lock()
+            .map_err(|_| Dok3Error::Internal("index job store mutex poisoned".to_string()))?;
         let fallback_gen = jobs.active_generation.clone();
         let fallback_epoch = jobs.active_epoch;
-        let finish_res = match outcome {
+        match outcome {
             Ok(result) => jobs.finish_job(
                 &started.job_id,
                 IndexJobState::Succeeded,
@@ -782,13 +774,7 @@ impl PersistentRuntime {
                 Vec::new(),
                 Some(err),
             ),
-        };
-        finish_res.unwrap_or_else(|err| IndexJobRecord {
-            state: IndexJobState::Failed,
-            finished_at_ms: Some(now_ms()),
-            error: Some(err),
-            ..started
-        })
+        }
     }
 
     fn execute_job(&self, req: &TriggerIndexJobRequest) -> Result<RefreshReport, String> {
@@ -820,15 +806,24 @@ impl PersistentRuntime {
                     match stop_rx.recv_timeout(interval) {
                         Ok(()) | Err(mpsc::RecvTimeoutError::Disconnected) => break,
                         Err(mpsc::RecvTimeoutError::Timeout) => {
-                            let record = runtime.run_job(
+                            match runtime.run_job(
                                 "periodic",
                                 &TriggerIndexJobRequest {
                                     source_id: None,
                                     mode: IndexJobMode::Incremental,
                                 },
-                            );
-                            if let Some(err) = record.error {
-                                eprintln!("periodic refresh job {} failed: {err}", record.job_id);
+                            ) {
+                                Ok(record) => {
+                                    if let Some(err) = record.error {
+                                        eprintln!(
+                                            "periodic refresh job {} failed: {err}",
+                                            record.job_id
+                                        );
+                                    }
+                                }
+                                Err(err) => {
+                                    eprintln!("periodic refresh job persistence failed: {err}");
+                                }
                             }
                         }
                     }
@@ -876,7 +871,7 @@ impl IndexJobPort for PersistentRuntime {
 
     fn trigger_job(&self, req: &TriggerIndexJobRequest) -> Result<IndexJobRecord, Dok3Error> {
         validate_job_source_id(req.source_id.as_deref())?;
-        Ok(self.run_job("manual", req))
+        self.run_job("manual", req)
     }
 }
 
@@ -1958,7 +1953,9 @@ mod tests {
         let (runtime, _) = PersistentRuntime::open(&source_path, data_root.path()).unwrap();
         fs::remove_dir_all(&source_path).unwrap();
 
-        let failed = runtime.run_job("manual", &TriggerIndexJobRequest::default());
+        let failed = runtime
+            .run_job("manual", &TriggerIndexJobRequest::default())
+            .unwrap();
         assert_eq!(failed.state, IndexJobState::Failed);
         assert!(failed.error.is_some());
         assert_eq!(failed.active_epoch, 1);
@@ -1974,5 +1971,88 @@ mod tests {
             )
             .unwrap();
         assert_eq!(search.total_hits, 1);
+    }
+
+    #[test]
+    fn concurrent_jobs_serialize_epochs_and_preserve_disk_consistency_on_write_failure() {
+        let source_root = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+        fs::write(
+            source_root.path().join("guide-a.md"),
+            "# Concurrency\n\nconcurrencytoken body\n",
+        )
+        .unwrap();
+
+        let (runtime, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        let runtime = Arc::new(runtime);
+
+        let mut handles = Vec::new();
+        for idx in 0..4 {
+            let rt = Arc::clone(&runtime);
+            handles.push(thread::spawn(move || {
+                let trigger = if idx % 2 == 0 { "manual" } else { "periodic" };
+                rt.run_job(
+                    trigger,
+                    &TriggerIndexJobRequest {
+                        source_id: None,
+                        mode: IndexJobMode::Full,
+                    },
+                )
+            }));
+        }
+        let mut results = Vec::new();
+        for h in handles {
+            results.push(h.join().unwrap().unwrap());
+        }
+        let list = runtime.list_jobs().unwrap();
+        assert_eq!(list.jobs.len(), 5);
+        assert_eq!(list.active_epoch, 5);
+        assert_eq!(list.jobs[0].active_epoch, 5);
+        let epochs: Vec<u64> = list.jobs.iter().rev().map(|j| j.active_epoch).collect();
+        assert_eq!(epochs, vec![1, 2, 3, 4, 5]);
+
+        // Force persistence failure on index_jobs.json by replacing it with a directory.
+        let jobs_path = data_root.path().join("storage/index_jobs.json");
+        fs::remove_file(&jobs_path).unwrap();
+        fs::create_dir(&jobs_path).unwrap();
+
+        let err = runtime
+            .trigger_job(&TriggerIndexJobRequest::default())
+            .unwrap_err();
+        assert!(matches!(err, Dok3Error::Storage(_)));
+        let list_after_err = runtime.list_jobs().unwrap();
+        assert_eq!(list_after_err.jobs.len(), 5);
+        assert_eq!(list_after_err.active_epoch, 5);
+
+        // Restore a valid JSON file containing a simulated interrupted Running job, then reopen.
+        fs::remove_dir(&jobs_path).unwrap();
+        let interrupted_disk = JobHistoryDisk {
+            next_seq: 6,
+            jobs: vec![IndexJobRecord {
+                job_id: "job-0006".to_string(),
+                source_id: None,
+                trigger: "manual".to_string(),
+                mode: IndexJobMode::Incremental,
+                state: IndexJobState::Running,
+                started_at_ms: 1,
+                finished_at_ms: None,
+                indexed_documents: 0,
+                rebuilt: false,
+                active_generation: list_after_err.active_generation.clone(),
+                active_epoch: 5,
+                skipped_files: Vec::new(),
+                error: None,
+            }],
+        };
+        fs::write(&jobs_path, serde_json::to_vec(&interrupted_disk).unwrap()).unwrap();
+        drop(runtime);
+
+        let (restarted, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        let recovered = restarted.get_job("job-0006").unwrap();
+        assert_eq!(recovered.state, IndexJobState::Failed);
+        assert_eq!(
+            recovered.error.as_deref(),
+            Some("interrupted by server restart")
+        );
     }
 }

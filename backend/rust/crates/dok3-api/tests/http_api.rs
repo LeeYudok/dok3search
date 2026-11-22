@@ -369,11 +369,12 @@ async fn index_job_routes_enforce_admin_mode_and_payload_validation() {
     let repo = Arc::new(InMemorySearchRepository::from_seed(None));
     let service = Arc::new(SearchService::new(repo.clone(), repo));
 
-    // 1. Non-admin caller always receives 403 FORBIDDEN even when index_jobs is None or Some.
+    // 1. Non-admin caller always receives 403 FORBIDDEN before body-limit or UTF-8 path extraction.
     let public_app = build_router(
         ApiState::new(Arc::clone(&service)).with_index_jobs(Arc::new(StubIndexJobs)),
         None,
     );
+    let oversized_body = vec![b'a'; 3 * 1024 * 1024];
     for req in [
         Request::get("/api/v1/index/jobs")
             .body(Body::empty())
@@ -381,7 +382,14 @@ async fn index_job_routes_enforce_admin_mode_and_payload_validation() {
         Request::post("/api/v1/index/jobs")
             .body(Body::empty())
             .unwrap(),
+        Request::post("/api/v1/index/jobs")
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from(oversized_body))
+            .unwrap(),
         Request::get("/api/v1/index/jobs/job-0001")
+            .body(Body::empty())
+            .unwrap(),
+        Request::get("/api/v1/index/jobs/%FF")
             .body(Body::empty())
             .unwrap(),
     ] {
@@ -404,13 +412,62 @@ async fn index_job_routes_enforce_admin_mode_and_payload_validation() {
         .unwrap();
     assert_eq!(unwired_resp.status(), StatusCode::BAD_REQUEST);
 
-    // 3. Admin caller with IndexJobPort succeeds for list, get, empty POST, JSON POST, and rejects bad JSON.
+    // 3. Admin caller enforces Origin / Sec-Fetch-Site / Content-Type guards and succeeds on valid requests.
     let admin_app = build_router(
         ApiState::new(service)
             .with_principal(Principal::local_admin())
             .with_index_jobs(Arc::new(StubIndexJobs)),
         None,
     );
+
+    let bad_origin = admin_app
+        .clone()
+        .oneshot(
+            Request::post("/api/v1/index/jobs")
+                .header(header::ORIGIN, "https://evil.example")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from("{}"))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(bad_origin.status(), StatusCode::FORBIDDEN);
+
+    let cross_site = admin_app
+        .clone()
+        .oneshot(
+            Request::post("/api/v1/index/jobs")
+                .header("sec-fetch-site", "cross-site")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from("{}"))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(cross_site.status(), StatusCode::FORBIDDEN);
+
+    let missing_ct = admin_app
+        .clone()
+        .oneshot(
+            Request::post("/api/v1/index/jobs")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(missing_ct.status(), StatusCode::BAD_REQUEST);
+
+    let form_ct = admin_app
+        .clone()
+        .oneshot(
+            Request::post("/api/v1/index/jobs")
+                .header(header::CONTENT_TYPE, "text/plain")
+                .body(Body::from("{}"))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(form_ct.status(), StatusCode::BAD_REQUEST);
 
     let (status, _, list): (_, _, IndexJobListResponse) = response_json(
         admin_app
@@ -433,6 +490,8 @@ async fn index_job_routes_enforce_admin_mode_and_payload_validation() {
             .clone()
             .oneshot(
                 Request::post("/api/v1/index/jobs")
+                    .header(header::ORIGIN, "http://127.0.0.1:5173")
+                    .header(header::CONTENT_TYPE, "application/json")
                     .body(Body::empty())
                     .unwrap(),
             )
@@ -449,7 +508,7 @@ async fn index_job_routes_enforce_admin_mode_and_payload_validation() {
             .clone()
             .oneshot(
                 Request::post("/api/v1/index/jobs")
-                    .header(header::CONTENT_TYPE, "application/json")
+                    .header(header::CONTENT_TYPE, "application/json; charset=utf-8")
                     .body(Body::from(r#"{"mode":"full"}"#))
                     .unwrap(),
             )
