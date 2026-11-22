@@ -313,7 +313,7 @@ impl GenerationBackend for LocalGenerationBackend {
 
 struct ManagedSearchPort {
     access: ReaderAccess<Arc<TantivyIndex>>,
-    _manager: Mutex<IndexManager<LocalGenerationBackend>>,
+    _manager: Arc<Mutex<IndexManager<LocalGenerationBackend>>>,
 }
 
 impl SearchPort for ManagedSearchPort {
@@ -357,31 +357,116 @@ fn snapshot_meta_from_lease(lease: &SearchSnapshot<Arc<TantivyIndex>>) -> Search
     }
 }
 
-/// Scans `source_dir`, persists originals/metadata/journal under `data_dir/storage`, and
-/// serves the active Blue-Green generation managed under `data_dir/generations`.
-pub fn build_persistent(
-    source_dir: &Path,
-    data_dir: &Path,
-) -> Result<(SearchService, BuildReport), String> {
-    let storage_dir = data_dir.join("storage");
-    let generations_dir = data_dir.join("generations");
+/// Summary returned by [`PersistentRuntime::refresh`].
+#[cfg_attr(not(test), allow(dead_code))]
+#[derive(Debug, PartialEq, Eq)]
+pub struct RefreshReport {
+    pub report: BuildReport,
+    pub rebuilt: bool,
+    pub active_generation: Option<String>,
+    pub active_epoch: u64,
+}
 
-    let store = Arc::new(FileDocumentStore::open(&storage_dir).map_err(|err| err.to_string())?);
-    let journal = Arc::new(FileChangeJournal::open(&storage_dir).map_err(|err| err.to_string())?);
+/// Long-lived handle to durable storage, journal, and Blue-Green generation state.
+#[cfg_attr(not(test), allow(dead_code))]
+pub struct PersistentRuntime {
+    source_dir: PathBuf,
+    store: Arc<FileDocumentStore>,
+    journal: Arc<FileChangeJournal>,
+    manager: Arc<Mutex<IndexManager<LocalGenerationBackend>>>,
+    access: ReaderAccess<Arc<TantivyIndex>>,
+    service: SearchService,
+}
 
-    let report = sync_source_to_storage(source_dir, &store, &journal)?;
+#[cfg_attr(not(test), allow(dead_code))]
+impl PersistentRuntime {
+    /// Opens (or reconciles) persistent storage/generations under `data_dir` and syncs `source_dir`.
+    pub fn open(source_dir: &Path, data_dir: &Path) -> Result<(Self, BuildReport), String> {
+        let storage_dir = data_dir.join("storage");
+        let generations_dir = data_dir.join("generations");
 
-    let backend = LocalGenerationBackend::new(
-        generations_dir.clone(),
-        Arc::clone(&store),
-        Arc::clone(&journal),
-    );
-    let mut manager =
-        IndexManager::open(&generations_dir, backend, 0).map_err(|err| err.to_string())?;
-    manager
-        .reconcile_on_startup()
-        .map_err(|err| err.to_string())?;
+        let store = Arc::new(FileDocumentStore::open(&storage_dir).map_err(|err| err.to_string())?);
+        let journal =
+            Arc::new(FileChangeJournal::open(&storage_dir).map_err(|err| err.to_string())?);
 
+        let report = sync_source_to_storage(source_dir, &store, &journal)?;
+
+        let backend = LocalGenerationBackend::new(
+            generations_dir.clone(),
+            Arc::clone(&store),
+            Arc::clone(&journal),
+        );
+        let mut manager =
+            IndexManager::open(&generations_dir, backend, 0).map_err(|err| err.to_string())?;
+        manager
+            .reconcile_on_startup()
+            .map_err(|err| err.to_string())?;
+        let _ = ensure_active_generation(&mut manager, &store, &journal)?;
+        manager.gc_retired().map_err(|err| err.to_string())?;
+
+        let access = manager.reader_access();
+        let manager = Arc::new(Mutex::new(manager));
+        let search_port = Arc::new(ManagedSearchPort {
+            access: access.clone(),
+            _manager: Arc::clone(&manager),
+        });
+        let service = SearchService::new(search_port, Arc::clone(&store) as _);
+
+        let runtime = Self {
+            source_dir: source_dir.to_path_buf(),
+            store,
+            journal,
+            manager,
+            access,
+            service,
+        };
+        Ok((runtime, report))
+    }
+
+    /// Returns the shared [`SearchService`] bound to this persistent runtime.
+    #[must_use]
+    pub fn service(&self) -> &SearchService {
+        &self.service
+    }
+
+    /// Returns a cloneable handle for acquiring protected `ReaderLease` snapshots.
+    #[must_use]
+    pub fn reader_access(&self) -> ReaderAccess<Arc<TantivyIndex>> {
+        self.access.clone()
+    }
+
+    /// Re-scans `source_dir`, persists deltas, activates a new generation when changed, and GCs retired generations.
+    pub fn refresh(&self) -> Result<RefreshReport, String> {
+        let mut manager = self
+            .manager
+            .lock()
+            .map_err(|_| "persistent index manager mutex poisoned".to_string())?;
+        let report = sync_source_to_storage(&self.source_dir, &self.store, &self.journal)?;
+        let rebuilt = ensure_active_generation(&mut manager, &self.store, &self.journal)?;
+        manager.gc_retired().map_err(|err| err.to_string())?;
+        Ok(RefreshReport {
+            report,
+            rebuilt,
+            active_generation: manager.state().active_generation.clone(),
+            active_epoch: manager.state().active_epoch,
+        })
+    }
+
+    /// Attempts to delete files of retired generations with zero active reader leases.
+    pub fn gc_retired(&self) -> Result<Vec<String>, String> {
+        let mut manager = self
+            .manager
+            .lock()
+            .map_err(|_| "persistent index manager mutex poisoned".to_string())?;
+        manager.gc_retired().map_err(|err| err.to_string())
+    }
+}
+
+fn ensure_active_generation(
+    manager: &mut IndexManager<LocalGenerationBackend>,
+    store: &FileDocumentStore,
+    journal: &FileChangeJournal,
+) -> Result<bool, String> {
     let seq = journal
         .last_sequence()
         .map_err(|err| err.to_string())?
@@ -394,30 +479,36 @@ pub fn build_persistent(
         .and_then(|active_id| manager.state().generations.get(active_id))
         .is_some_and(|record| {
             record.target_sequence == seq
-                && record
-                    .manifest
-                    .as_ref()
-                    .is_some_and(|manifest| manifest.doc_count == expected_docs)
+                && record.manifest.as_ref().is_some_and(|manifest| {
+                    manifest.doc_count == expected_docs
+                        && manifest.schema_version == u64::from(SCHEMA_VERSION)
+                        && manifest.analyzer_version == ANALYZER_VERSION
+                })
         });
 
-    if !active_matches {
-        let gen_id = allocate_generation_id(&manager, seq);
-        manager
-            .build_generation(&gen_id, seq)
-            .map_err(|err| err.to_string())?;
-        manager
-            .prepare_generation(&gen_id, seq)
-            .map_err(|err| err.to_string())?;
-        manager.activate(&gen_id).map_err(|err| err.to_string())?;
+    if active_matches {
+        return Ok(false);
     }
-    manager.gc_retired().map_err(|err| err.to_string())?;
 
-    let access = manager.reader_access();
-    let search_port = Arc::new(ManagedSearchPort {
-        access,
-        _manager: Mutex::new(manager),
-    });
-    Ok((SearchService::new(search_port, store), report))
+    let gen_id = allocate_generation_id(manager, seq);
+    manager
+        .build_generation(&gen_id, seq)
+        .map_err(|err| err.to_string())?;
+    manager
+        .prepare_generation(&gen_id, seq)
+        .map_err(|err| err.to_string())?;
+    manager.activate(&gen_id).map_err(|err| err.to_string())?;
+    Ok(true)
+}
+
+/// Scans `source_dir`, persists originals/metadata/journal under `data_dir/storage`, and
+/// serves the active Blue-Green generation managed under `data_dir/generations`.
+pub fn build_persistent(
+    source_dir: &Path,
+    data_dir: &Path,
+) -> Result<(SearchService, BuildReport), String> {
+    let (runtime, report) = PersistentRuntime::open(source_dir, data_dir)?;
+    Ok((runtime.service, report))
 }
 
 fn sync_source_to_storage(
@@ -735,5 +826,245 @@ mod tests {
         )
         .await;
         assert_eq!(added_search.total_hits, 1);
+    }
+
+    #[test]
+    fn live_refresh_is_idempotent_and_applies_incremental_add_modify_delete() {
+        let source_root = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+
+        fs::write(
+            source_root.path().join("guide-a.md"),
+            "# Alpha\n\nrefreshalphaorig token\n",
+        )
+        .unwrap();
+        fs::write(
+            source_root.path().join("guide-b.md"),
+            "# Beta\n\nrefreshbetaorig token\n",
+        )
+        .unwrap();
+
+        let (runtime, init_report) =
+            PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        assert_eq!(init_report.indexed, 2);
+
+        let idle = runtime.refresh().unwrap();
+        assert!(!idle.rebuilt);
+        assert_eq!(idle.active_epoch, 1);
+        assert_eq!(idle.report.indexed, 2);
+
+        fs::remove_file(source_root.path().join("guide-a.md")).unwrap();
+        fs::write(
+            source_root.path().join("guide-b.md"),
+            "# Beta Updated\n\nrefreshbetaedited token\n",
+        )
+        .unwrap();
+        fs::write(
+            source_root.path().join("guide-c.md"),
+            "# Gamma Added\n\nrefreshgammaadded token\n",
+        )
+        .unwrap();
+
+        let changed = runtime.refresh().unwrap();
+        assert!(changed.rebuilt);
+        assert_eq!(changed.active_epoch, 2);
+        assert_eq!(changed.report.indexed, 2);
+
+        let public = Principal::anonymous_public();
+        let deleted = runtime
+            .service()
+            .search(
+                &public,
+                &SearchRequest {
+                    query: "refreshalphaorig".to_string(),
+                    ..SearchRequest::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(deleted.total_hits, 0);
+        assert!(matches!(
+            runtime.service().get_document(
+                &public,
+                &dok3_domain::DocumentId::new("local-markdown:guide-a.md")
+            ),
+            Err(Dok3Error::NotFound(_))
+        ));
+
+        let edited = runtime
+            .service()
+            .search(
+                &public,
+                &SearchRequest {
+                    query: "refreshbetaedited".to_string(),
+                    ..SearchRequest::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(edited.total_hits, 1);
+
+        let added = runtime
+            .service()
+            .search(
+                &public,
+                &SearchRequest {
+                    query: "refreshgammaadded".to_string(),
+                    ..SearchRequest::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(added.total_hits, 1);
+    }
+
+    #[test]
+    fn live_refresh_protects_inflight_reader_lease_until_drop() {
+        let source_root = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+
+        fs::write(
+            source_root.path().join("guide-a.md"),
+            "# Lease Test\n\nleasealpha original text\n",
+        )
+        .unwrap();
+
+        let (runtime, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        let lease = runtime.reader_access().acquire().unwrap();
+        let first_gen = lease.manifest.generation_id.clone();
+
+        fs::write(
+            source_root.path().join("guide-a.md"),
+            "# Lease Test Updated\n\nleasebeta updated text\n",
+        )
+        .unwrap();
+
+        let refreshed = runtime.refresh().unwrap();
+        assert!(refreshed.rebuilt);
+        assert_ne!(
+            refreshed.active_generation.as_deref(),
+            Some(first_gen.as_str())
+        );
+
+        let public = Principal::anonymous_public();
+        let old_view = lease
+            .reader
+            .search(
+                &public,
+                &SearchRequest {
+                    query: "leasealpha".to_string(),
+                    ..SearchRequest::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(old_view.total_hits, 1);
+
+        let new_view = runtime
+            .service()
+            .search(
+                &public,
+                &SearchRequest {
+                    query: "leasebeta".to_string(),
+                    ..SearchRequest::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(new_view.total_hits, 1);
+
+        // First generation files must remain intact while an in-flight lease exists.
+        assert!(
+            data_root
+                .path()
+                .join("generations")
+                .join(&first_gen)
+                .is_dir()
+        );
+        assert!(runtime.gc_retired().unwrap().is_empty());
+
+        drop(lease);
+        let collected = runtime.gc_retired().unwrap();
+        assert_eq!(collected, vec![first_gen.clone()]);
+        assert!(
+            !data_root
+                .path()
+                .join("generations")
+                .join(&first_gen)
+                .exists()
+        );
+    }
+
+    #[test]
+    fn crash_recovery_reconciles_interrupted_building_generation_on_restart() {
+        let source_root = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+
+        fs::write(
+            source_root.path().join("guide-a.md"),
+            "# Crash Recovery\n\nrecoveryalpha body\n",
+        )
+        .unwrap();
+
+        let (runtime, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        drop(runtime);
+
+        let crashed_id = "gen-999999-crashed";
+        let mut durable = read_durable_state(data_root.path());
+        let healthy_gen = durable.active_generation.clone().unwrap();
+        durable.generations.insert(
+            crashed_id.to_string(),
+            dok3_index_manager::GenerationRecord {
+                state: GenerationState::Building,
+                created_at_unix_secs: 1,
+                retired_at_unix_secs: None,
+                manifest_checksum: None,
+                manifest: None,
+                target_sequence: 99,
+                validated_sequence: None,
+                files: GenerationFiles::Present,
+            },
+        );
+        fs::create_dir_all(data_root.path().join("generations").join(crashed_id)).unwrap();
+        #[derive(serde::Serialize)]
+        struct TestStateEnvelope {
+            format_version: u32,
+            state_checksum: String,
+            #[serde(flatten)]
+            state: DurableState,
+        }
+        let state_checksum = dok3_storage::content_revision(&serde_json::to_vec(&durable).unwrap())
+            .as_str()
+            .to_owned();
+        let encoded = serde_json::to_vec_pretty(&TestStateEnvelope {
+            format_version: 1,
+            state_checksum,
+            state: durable,
+        })
+        .unwrap();
+        fs::write(
+            data_root.path().join("generations/generation_state.json"),
+            encoded,
+        )
+        .unwrap();
+
+        let (restarted, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        let after = read_durable_state(data_root.path());
+        assert_eq!(
+            after.active_generation.as_deref(),
+            Some(healthy_gen.as_str())
+        );
+        assert_eq!(after.active_epoch, 1);
+        assert_eq!(
+            after.generations.get(crashed_id).unwrap().state,
+            GenerationState::Failed
+        );
+
+        let search = restarted
+            .service()
+            .search(
+                &Principal::anonymous_public(),
+                &SearchRequest {
+                    query: "recoveryalpha".to_string(),
+                    ..SearchRequest::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(search.total_hits, 1);
     }
 }
