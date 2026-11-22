@@ -230,3 +230,38 @@ fn updated_at_cursor_recollects_added_and_changed_rows_from_ddl_fixture() {
         })
     );
 }
+
+#[test]
+fn updated_at_cursor_rejects_non_text_watermarks() {
+    let dir = TempDir::new("updated-at-text-only");
+    let db_path = dir.db_path();
+    let connection = Connection::open(&db_path).unwrap();
+    connection
+        .execute_batch(
+            "
+            CREATE TABLE docs (
+                id INTEGER PRIMARY KEY,
+                updated_at INTEGER NOT NULL,
+                title TEXT NOT NULL,
+                body TEXT NOT NULL
+            );
+            INSERT INTO docs (id, updated_at, title, body)
+            VALUES (1, 1763769600, 'First', 'First body');
+            ",
+        )
+        .unwrap();
+
+    let adapter = adapter(
+        &db_path,
+        "SELECT id, updated_at, title, body FROM docs",
+        SqliteCursorMode::UpdatedAt {
+            column: "updated_at".to_string(),
+        },
+    )
+    .unwrap();
+    let error = adapter.collect(None).unwrap_err();
+    assert!(
+        matches!(error, Dok3Error::Storage(message) if message.contains("must be TEXT")),
+        "integer updated_at should be rejected instead of producing a mistyped cursor"
+    );
+}

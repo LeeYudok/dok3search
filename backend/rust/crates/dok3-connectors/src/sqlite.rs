@@ -25,7 +25,7 @@ pub struct SqliteColumnMapping {
 pub enum SqliteCursorMode {
     /// Monotonic integer primary key. Updates to existing keys are not detected.
     IntegerPk { column: String },
-    /// Sortable timestamp watermark, normally an ISO-8601 TEXT column.
+    /// Sortable ISO-8601-style TEXT timestamp watermark.
     ///
     /// The last watermark group is re-read inclusively on the next pass so
     /// rows committed at the same timestamp after collection are not missed.
@@ -240,7 +240,23 @@ impl SqliteSourceAdapter {
                 Ok(SqliteCursor::Integer(value))
             }
             SqliteCursorMode::UpdatedAt { column } => {
-                let updated_at = read_required_text(row, column, "updated_at watermark")?;
+                let updated_at = match row
+                    .get_ref(column.as_str())
+                    .map_err(|error| sqlite_error("read updated_at watermark", &error))?
+                {
+                    ValueRef::Text(bytes) => std::str::from_utf8(bytes)
+                        .map(str::to_string)
+                        .map_err(|error| {
+                            Dok3Error::Storage(format!(
+                                "updated_at watermark column '{column}' is not UTF-8: {error}"
+                            ))
+                        })?,
+                    other => {
+                        return Err(Dok3Error::Storage(format!(
+                            "updated_at watermark column '{column}' must be TEXT, got {other:?}"
+                        )));
+                    }
+                };
                 if updated_at.trim().is_empty() {
                     return Err(Dok3Error::Storage(format!(
                         "updated_at watermark column '{column}' must not be empty"
