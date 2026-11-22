@@ -449,7 +449,10 @@ function SearchPage() {
 
 const path = window.location.pathname
 const adminMatch = /^\/admin(?:\/(sources|jobs))?\/?$/.exec(path)
-const detail = /^\/docs\/([^/]+)\/?$/.exec(path)
+// Document ids contain `:` and `/` (`local-markdown:samples/…/*.md`). Encoded
+// links keep %2F in the path, and freshly pasted raw links arrive with real
+// slashes, so the detail route must not be limited to a single segment.
+const detail = /^\/docs\/(.+)\/?$/.exec(path)
 const legacyIds: Record<string, string> = {
   'design-design-md': 'design-index-md',
   'design-design-yaml': 'design-map-yaml',
