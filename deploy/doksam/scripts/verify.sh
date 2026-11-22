@@ -4,12 +4,9 @@
 #   deploy/doksam/scripts/verify.sh
 #
 # Checks (status codes only, never credential values):
-#   1. unauthenticated  /health/ready     -> 401
-#   2. unauthenticated  /                 -> 401
-#   3. authenticated    /health/ready     -> 200 (readiness/liveness endpoint)
-#   4. authenticated    /health           -> 200 (liveness endpoint)
-#   5. authenticated    /                 -> 200 (static React SPA)
-#   6. authenticated    POST /api/v1/search -> 200 (search API)
+#   1. unauthenticated protected paths -> 401
+#   2. authenticated health/SPA/API paths -> expected success
+#   3. TLS certificate validates against the system trust store
 #
 # The password is read from the documented 0600 file on the doksam runtime (or
 # from DOK3_BASIC_AUTH_PASS) and passed to curl through a temporary mode-0600
@@ -51,6 +48,11 @@ curl_config_escape() {
   printf '%s' "$value"
 }
 
+TLS_ARGS=()
+if [ "${TLS_INSECURE:-0}" = 1 ]; then
+  TLS_ARGS=(-k)
+fi
+
 write_curl_config() {
   CURL_CONFIG="$(mktemp -t dok3search-curl.XXXXXX)"
   chmod 600 "$CURL_CONFIG"
@@ -75,7 +77,7 @@ write_curl_config() {
 
 status() {
   # status <curl args...>  -> prints only the HTTP status code
-  curl -sk -o /dev/null -m 15 -w '%{http_code}\n' "$@"
+  curl -sS "${TLS_ARGS[@]}" -o /dev/null -m 15 -w '%{http_code}\n' "$@"
 }
 
 auth_status() {
@@ -84,11 +86,29 @@ auth_status() {
 
 echo "== verify via $URL (resolved to $NODE_IP:$HTTPS_PORT) =="
 
-unauth_health="$(status "${RESOLVE[@]}" "$URL/health/ready")"
-echo "unauth  /health/ready       -> $unauth_health (expect 401)"
+unauth_health="$(status "${RESOLVE[@]}" "$URL/health")"
+echo "unauth  /health             -> $unauth_health (expect 401)"
+
+unauth_ready="$(status "${RESOLVE[@]}" "$URL/health/ready")"
+echo "unauth  /health/ready       -> $unauth_ready (expect 401)"
 
 unauth_root="$(status "${RESOLVE[@]}" "$URL/")"
 echo "unauth  /                   -> $unauth_root (expect 401)"
+
+unauth_search="$(status "${RESOLVE[@]}" \
+  -H 'content-type: application/json' \
+  -d '{"query":"rust","filters":{},"page":1,"limit":5,"include_snippets":true}' \
+  "$URL/api/v1/search")"
+echo "unauth  POST /api/v1/search -> $unauth_search (expect 401)"
+
+unauth_mcp="$(status "${RESOLVE[@]}" "$URL/mcp")"
+echo "unauth  /mcp                -> $unauth_mcp (expect 401)"
+
+unauth_admin="$(status "${RESOLVE[@]}" "$URL/admin")"
+echo "unauth  /admin              -> $unauth_admin (expect 401)"
+
+unauth_spa="$(status "${RESOLVE[@]}" "$URL/documents/deep-link")"
+echo "unauth  /documents/deep-link -> $unauth_spa (expect 401)"
 
 write_curl_config
 
@@ -101,6 +121,9 @@ echo "auth    /health             -> $auth_health_alias (expect 200)"
 auth_static="$(auth_status "${RESOLVE[@]}" "$URL/")"
 echo "auth    /  (static React)   -> $auth_static (expect 200)"
 
+auth_spa="$(auth_status "${RESOLVE[@]}" "$URL/documents/deep-link")"
+echo "auth    /documents/deep-link -> $auth_spa (expect 200)"
+
 auth_search="$(auth_status "${RESOLVE[@]}" \
   -H 'content-type: application/json' \
   -d '{"query":"rust","filters":{},"page":1,"limit":5,"include_snippets":true}' \
@@ -109,10 +132,16 @@ echo "auth    POST /api/v1/search -> $auth_search (expect 200)"
 
 fail=0
 [ "$unauth_health" = "401" ] || fail=1
+[ "$unauth_ready" = "401" ] || fail=1
 [ "$unauth_root" = "401" ] || fail=1
+[ "$unauth_search" = "401" ] || fail=1
+[ "$unauth_mcp" = "401" ] || fail=1
+[ "$unauth_admin" = "401" ] || fail=1
+[ "$unauth_spa" = "401" ] || fail=1
 [ "$auth_health" = "200" ] || fail=1
 [ "$auth_health_alias" = "200" ] || fail=1
 [ "$auth_static" = "200" ] || fail=1
+[ "$auth_spa" = "200" ] || fail=1
 [ "$auth_search" = "200" ] || fail=1
 if [ "$fail" -ne 0 ]; then
   echo "verify FAILED" >&2

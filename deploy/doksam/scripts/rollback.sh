@@ -25,8 +25,8 @@ echo "   current  image: ${CURRENT:-<none>}"
 echo "   rollback image: ${PREVIOUS:-<none>}"
 
 if [ -z "$PREVIOUS" ]; then
-  echo "no previous-image annotation recorded; nothing to roll back."
-  exit 0
+  echo "error: no previous-image annotation recorded; refusing to report a successful rollback" >&2
+  exit 1
 fi
 
 if [ "$CURRENT" = "$PREVIOUS" ]; then

@@ -167,8 +167,8 @@ deploy/doksam/scripts/verify.sh
 - 검증에는 자격증명이 있어야 한다. 없으면 실패하며, 인증 요청은 mode-0600
   임시 `curl --config` 파일을 써서 비밀번호를 curl argv에 넣지 않는다.
 - status code만 기록하고 자격증명 값은 출력하지 않는다.
-- 초기 인증서 발급 전에는 self-signed를 허용하도록 `curl -k`를 쓴다. 발급 후
-  `www.doksam.com` 인증서가 유효한지 별도로 확인한다.
+- 기본 검증은 시스템 trust store로 `www.doksam.com` TLS 인증서를 검증한다.
+  인증서 발급 전 부트스트랩 디버깅에만 `TLS_INSECURE=1`로 일시 우회한다.
 
 ## 리소스 확인
 

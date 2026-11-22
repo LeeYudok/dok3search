@@ -52,7 +52,14 @@ run_sudo_on_doksam ctr -n k8s.io images import "$REMOTE_TAR" >/dev/null
 on_doksam_args rm -f "$REMOTE_TAR"
 
 echo "== record previous image (rollback anchor) =="
-CURRENT="$(on_doksam "kubectl -n $NAMESPACE get deploy $DEPLOYMENT -o jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null || true")"
+if on_doksam_args kubectl -n "$NAMESPACE" get deploy "$DEPLOYMENT" >/dev/null 2>&1; then
+  CURRENT="$(on_doksam_args kubectl -n "$NAMESPACE" get deploy "$DEPLOYMENT" -o 'jsonpath={.spec.template.spec.containers[0].image}')" || {
+    echo "error: cannot read the current Deployment image; refusing to replace the rollback anchor" >&2
+    exit 1
+  }
+else
+  CURRENT=""
+fi
 echo "   running image: ${CURRENT:-<none>}"
 echo "   target  image: $IMAGE"
 
@@ -63,6 +70,9 @@ on_doksam "kubectl -n $NAMESPACE annotate deploy $DEPLOYMENT dok3search.doksam/d
 if [ -n "$CURRENT" ] && [ "$CURRENT" != "$IMAGE" ] && [ "$CURRENT" != "dok3search:doksam" ]; then
   on_doksam "kubectl -n $NAMESPACE annotate deploy $DEPLOYMENT dok3search.doksam/previous-image='$CURRENT' --overwrite >/dev/null"
   echo "   previous-image annotation set to $CURRENT (rollback target)"
+elif [ -z "$CURRENT" ] || [ "$CURRENT" = "dok3search:doksam" ]; then
+  on_doksam "kubectl -n $NAMESPACE annotate deploy $DEPLOYMENT dok3search.doksam/previous-image='$IMAGE' --overwrite >/dev/null"
+  echo "   initial deployment: previous-image annotation seeded with $IMAGE"
 fi
 
 echo "== wait for rollout =="
