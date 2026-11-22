@@ -183,7 +183,10 @@ fn updated_at_cursor_recollects_added_and_changed_rows_from_ddl_fixture() {
     assert_eq!(first.documents.len(), 2);
     assert_eq!(
         first.next_cursor,
-        Some(SqliteCursor::UpdatedAt("2026-11-22T00:00:02Z".to_string()))
+        Some(SqliteCursor::UpdatedAt {
+            updated_at: "2026-11-22T00:00:02Z".to_string(),
+            document_id: "2".to_string(),
+        })
     );
 
     connection
@@ -195,15 +198,16 @@ fn updated_at_cursor_recollects_added_and_changed_rows_from_ddl_fixture() {
                    updated_at = '2026-11-22T00:00:05Z'
              WHERE id = 1;
             INSERT INTO docs (id, updated_at, title, body)
-            VALUES (3, '2026-11-22T00:00:04Z', 'Third', 'Third body');
+            VALUES (3, '2026-11-22T00:00:02Z', 'Third', 'Third body');
             ",
         )
         .unwrap();
 
     let second = adapter
-        .collect(Some(&SqliteCursor::UpdatedAt(
-            "2026-11-22T00:00:02Z".to_string(),
-        )))
+        .collect(Some(&SqliteCursor::UpdatedAt {
+            updated_at: "2026-11-22T00:00:02Z".to_string(),
+            document_id: "2".to_string(),
+        }))
         .unwrap();
     let ids: Vec<&str> = second
         .documents
@@ -220,6 +224,9 @@ fn updated_at_cursor_recollects_added_and_changed_rows_from_ddl_fixture() {
     assert_eq!(changed.body, "Changed body");
     assert_eq!(
         second.next_cursor,
-        Some(SqliteCursor::UpdatedAt("2026-11-22T00:00:05Z".to_string()))
+        Some(SqliteCursor::UpdatedAt {
+            updated_at: "2026-11-22T00:00:05Z".to_string(),
+            document_id: "1".to_string(),
+        })
     );
 }

@@ -26,6 +26,9 @@ pub enum SqliteCursorMode {
     /// Monotonic integer primary key. Updates to existing keys are not detected.
     IntegerPk { column: String },
     /// Sortable timestamp watermark, normally an ISO-8601 TEXT column.
+    ///
+    /// Rows with the same watermark are ordered and resumed by the mapped
+    /// document ID, so a later commit at an identical timestamp is not missed.
     UpdatedAt { column: String },
 }
 
@@ -38,10 +41,15 @@ impl SqliteCursorMode {
 }
 
 /// Last successfully observed source position.
+///
+/// The `updated_at` variant is a compound `(updated_at, document_id)` cursor.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SqliteCursor {
     Integer(i64),
-    UpdatedAt(String),
+    UpdatedAt {
+        updated_at: String,
+        document_id: String,
+    },
 }
 
 /// Configuration for [`SqliteSourceAdapter`].
@@ -124,18 +132,26 @@ impl SqliteSourceAdapter {
     /// source deletes are reconciled by later P4 work and are not emitted here.
     pub fn collect(&self, cursor: Option<&SqliteCursor>) -> Result<SqliteSourceBatch, Dok3Error> {
         let connection = open_read_only(&self.config.database_path)?;
-        let cursor_value = self.cursor_value(cursor)?;
-        let sql = self.collection_sql(cursor_value.is_some());
+        let cursor_values = self.cursor_values(cursor)?;
+        let sql = self.collection_sql(!cursor_values.is_empty());
         let mut statement = connection
             .prepare(&sql)
             .map_err(|error| sqlite_error("prepare SELECT", &error))?;
-        let mut rows = match cursor_value.as_ref() {
-            Some(value) => statement
-                .query(params![value])
-                .map_err(|error| sqlite_error("execute SELECT", &error))?,
-            None => statement
+        let mut rows = match cursor_values.as_slice() {
+            [] => statement
                 .query([])
                 .map_err(|error| sqlite_error("execute SELECT", &error))?,
+            [value] => statement
+                .query(params![value])
+                .map_err(|error| sqlite_error("execute SELECT", &error))?,
+            [updated_at, document_id] => statement
+                .query(params![updated_at, document_id])
+                .map_err(|error| sqlite_error("execute SELECT", &error))?,
+            _ => {
+                return Err(Dok3Error::InvalidInput(
+                    "SQLite cursor produced too many query parameters".to_string(),
+                ));
+            }
         };
 
         let mut documents = Vec::new();
@@ -158,29 +174,49 @@ impl SqliteSourceAdapter {
     }
 
     fn collection_sql(&self, has_cursor: bool) -> String {
-        let column = quote_identifier(self.config.cursor.cursor_column());
-        if has_cursor {
-            format!(
-                "SELECT * FROM ({}) AS dok3_source WHERE {column} > ?1 ORDER BY {column} ASC",
-                self.normalized_query
-            )
-        } else {
-            format!(
-                "SELECT * FROM ({}) AS dok3_source ORDER BY {column} ASC",
-                self.normalized_query
-            )
-        }
+        let (filter, order_by) = match &self.config.cursor {
+            SqliteCursorMode::IntegerPk { column } => {
+                let column = quote_identifier(column);
+                let filter = if has_cursor {
+                    format!(" WHERE {column} > ?1")
+                } else {
+                    String::new()
+                };
+                (filter, format!("{column} ASC"))
+            }
+            SqliteCursorMode::UpdatedAt { column } => {
+                let column = quote_identifier(column);
+                let document_id = quote_identifier(&self.config.columns.document_id);
+                let filter = if has_cursor {
+                    format!(" WHERE {column} > ?1 OR ({column} = ?1 AND {document_id} > ?2)")
+                } else {
+                    String::new()
+                };
+                (filter, format!("{column} ASC, {document_id} ASC"))
+            }
+        };
+        format!(
+            "SELECT * FROM ({}) AS dok3_source{filter} ORDER BY {order_by}",
+            self.normalized_query
+        )
     }
 
-    fn cursor_value(&self, cursor: Option<&SqliteCursor>) -> Result<Option<Value>, Dok3Error> {
+    fn cursor_values(&self, cursor: Option<&SqliteCursor>) -> Result<Vec<Value>, Dok3Error> {
         match (cursor, &self.config.cursor) {
-            (None, _) => Ok(None),
+            (None, _) => Ok(Vec::new()),
             (Some(SqliteCursor::Integer(value)), SqliteCursorMode::IntegerPk { .. }) => {
-                Ok(Some(Value::Integer(*value)))
+                Ok(vec![Value::Integer(*value)])
             }
-            (Some(SqliteCursor::UpdatedAt(value)), SqliteCursorMode::UpdatedAt { .. }) => {
-                Ok(Some(Value::Text(value.clone())))
-            }
+            (
+                Some(SqliteCursor::UpdatedAt {
+                    updated_at,
+                    document_id,
+                }),
+                SqliteCursorMode::UpdatedAt { .. },
+            ) => Ok(vec![
+                Value::Text(updated_at.clone()),
+                Value::Text(document_id.clone()),
+            ]),
             (Some(_), _) => Err(Dok3Error::InvalidInput(
                 "cursor variant does not match configured SQLite cursor mode".to_string(),
             )),
@@ -216,13 +252,26 @@ impl SqliteSourceAdapter {
                 Ok(SqliteCursor::Integer(value))
             }
             SqliteCursorMode::UpdatedAt { column } => {
-                let value = read_required_text(row, column, "updated_at watermark")?;
-                if value.trim().is_empty() {
+                let updated_at = read_required_text(row, column, "updated_at watermark")?;
+                if updated_at.trim().is_empty() {
                     return Err(Dok3Error::Storage(format!(
                         "updated_at watermark column '{column}' must not be empty"
                     )));
                 }
-                Ok(SqliteCursor::UpdatedAt(value))
+                let document_id = read_required_text(
+                    row,
+                    &self.config.columns.document_id,
+                    "updated_at tie-breaker document ID",
+                )?;
+                if document_id.trim().is_empty() {
+                    return Err(Dok3Error::Storage(
+                        "updated_at tie-breaker document ID must not be empty".to_string(),
+                    ));
+                }
+                Ok(SqliteCursor::UpdatedAt {
+                    updated_at,
+                    document_id,
+                })
             }
         }
     }
