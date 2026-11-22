@@ -130,7 +130,9 @@ fi
 printf '%s\n' "$sudo_pass" | sudo -S -p ''
 EOF
 )"
-  script+="$sudo_command"
+  # sudo needs a separating space before the command; without one the command
+  # text is appended straight after `-p ''` and parsed as sudo flags.
+  script+=" ${sudo_command}"
 
   if [ -z "$sudo_pass" ] && [ -t 0 ]; then
     read -rsp "doksam sudo password: " sudo_pass
