@@ -498,3 +498,63 @@ fn analyzer_matches_compound_terms_without_exposing_internal_documents() {
     assert_eq!(search(&index, &public, "storage unrelated").total_hits, 0);
     assert_eq!(search(&index, &public, "::").total_hits, 0);
 }
+
+#[test]
+fn korean_stems_and_compound_components_respect_acl() {
+    let index = TantivyIndex::create_in_ram(GenerationId::new("ko")).unwrap();
+    let ops = AclScope::internal("ops");
+    for (id, scope) in [("visible", AclScope::Public), ("restricted", ops.clone())] {
+        let doc = sample_doc(
+            id,
+            "Reference",
+            "",
+            "은행에서 여신심사기준은 확인합니다. 폐쇄망 배포 절차를 따릅니다.",
+            "manual",
+            "ko",
+            "ops-manual",
+            "fixture",
+            scope,
+        );
+        index.upsert_document(&doc).unwrap();
+    }
+    index.commit_and_reload(None).unwrap();
+
+    let public = Principal::anonymous_public();
+    let operator = Principal {
+        subject: "operator".into(),
+        allowed_scopes: vec![ops.clone()],
+        is_admin: false,
+    };
+    // The differing particles and joined query require text postings, even
+    // though some individual words could also match through the n-gram field.
+    for query in [
+        "은행",
+        "은행은",
+        "여신 심사 기준",
+        "여신 심사 기준을",
+        "폐쇄망배포",
+    ] {
+        for (principal, expected) in [(&public, "visible"), (&operator, "restricted")] {
+            let response = search(&index, principal, query);
+            assert_eq!(response.total_hits, 1, "{query}");
+            assert_eq!(response.total_unfiltered_hits, 1, "{query}");
+            assert_eq!(
+                response.hits[0].document_id,
+                DocumentId::new(expected),
+                "{query}"
+            );
+        }
+        let denied = index
+            .search(
+                &public,
+                &SearchRequest {
+                    query: query.into(),
+                    requested_scope: Some(ops.clone()),
+                    ..SearchRequest::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(denied.total_unfiltered_hits, 0, "{query}");
+        assert!(denied.hits.is_empty(), "{query}");
+    }
+}
