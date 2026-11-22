@@ -12,7 +12,9 @@ use dok3_domain::{
 };
 use sha2::{Digest, Sha256};
 
-use crate::fsutil::{acquire_exclusive_lock, atomic_write, cleanup_stale_temps, storage_err};
+use crate::fsutil::{
+    acquire_exclusive_lock, atomic_write, atomic_write_if_absent, cleanup_stale_temps, storage_err,
+};
 
 /// Returns the canonical revision id (`sha256:<hex>`) for original bytes.
 #[must_use]
@@ -151,6 +153,15 @@ impl FileDocumentStore {
         Ok(bytes)
     }
 
+    /// Returns an authorized copy of the stored domain [`Document`].
+    pub fn get_stored_document(
+        &self,
+        principal: &Principal,
+        id: &DocumentId,
+    ) -> Result<Document, Dok3Error> {
+        self.authorized(principal, id)
+    }
+
     /// Returns sorted document IDs currently tracked in metadata.
     pub fn document_ids(&self) -> Result<Vec<DocumentId>, Dok3Error> {
         let docs = self
@@ -158,6 +169,94 @@ impl FileDocumentStore {
             .read()
             .map_err(|_| Dok3Error::Internal("store lock poisoned".into()))?;
         Ok(docs.keys().map(|id| DocumentId::new(id.clone())).collect())
+    }
+
+    /// Returns the stored SHA-256 hex content hash if `id` is currently tracked in metadata.
+    pub fn existing_content_hash(&self, id: &DocumentId) -> Result<Option<String>, Dok3Error> {
+        let docs = self
+            .docs
+            .read()
+            .map_err(|_| Dok3Error::Internal("store lock poisoned".into()))?;
+        Ok(docs.get(id.as_str()).map(|doc| doc.content_hash.clone()))
+    }
+
+    /// Stores original bytes via atomic create-if-absent so an existing `objects/<sha256>`
+    /// file is never overwritten. If an object already exists at the target hash, it is verified
+    /// and any hash mismatch returns [`Dok3Error::Storage`].
+    pub fn put_immutable(
+        &self,
+        mut doc: Document,
+        content: &[u8],
+    ) -> Result<PutOutcome, Dok3Error> {
+        if doc.id.as_str().trim().is_empty() {
+            return Err(Dok3Error::InvalidInput(
+                "document id must not be empty".into(),
+            ));
+        }
+        let hash = sha256_hex(content);
+        let revision = RevisionId::new(format!("sha256:{hash}"));
+        doc.revision_id = revision.clone();
+        doc.content_hash = hash.clone();
+
+        let mut docs = self.write()?;
+        let object = self.object_path(&hash);
+        if !atomic_write_if_absent(&object, content)? && !object_intact(&object, &hash) {
+            return Err(Dok3Error::Storage(format!(
+                "existing object '{}' failed integrity check",
+                object.display()
+            )));
+        }
+        if docs.get(doc.id.as_str()) == Some(&doc) {
+            return Ok(PutOutcome::Unchanged(revision));
+        }
+        let mut next = docs.clone();
+        next.insert(doc.id.as_str().to_string(), doc);
+        if let Err(err) = self.persist(&next) {
+            self.resync_from_disk(&mut docs);
+            return Err(err);
+        }
+        *docs = next;
+        Ok(PutOutcome::Stored(revision))
+    }
+
+    /// Updates metadata for an existing document without creating or rewriting `objects/<sha256>`,
+    /// preserving stored original fields (`body`, `markdown`, `source_uri`, `content_hash`,
+    /// `revision_id`). Fails with [`Dok3Error::Storage`] if the existing object is missing or corrupted.
+    pub fn update_metadata(&self, mut doc: Document) -> Result<PutOutcome, Dok3Error> {
+        if doc.id.as_str().trim().is_empty() {
+            return Err(Dok3Error::InvalidInput(
+                "document id must not be empty".into(),
+            ));
+        }
+        let mut docs = self.write()?;
+        let existing = docs
+            .get(doc.id.as_str())
+            .ok_or_else(|| Dok3Error::NotFound(format!("document '{}' not found", doc.id)))?;
+        let hash = existing.content_hash.clone();
+        let revision = existing.revision_id.clone();
+        doc.content_hash = hash.clone();
+        doc.revision_id = revision.clone();
+        doc.body = existing.body.clone();
+        doc.markdown = existing.markdown.clone();
+        doc.source_uri = existing.source_uri.clone();
+
+        if !object_intact(&self.object_path(&hash), &hash) {
+            return Err(Dok3Error::Storage(format!(
+                "original for '{}' failed integrity check",
+                doc.id
+            )));
+        }
+        if docs.get(doc.id.as_str()) == Some(&doc) {
+            return Ok(PutOutcome::Unchanged(revision));
+        }
+        let mut next = docs.clone();
+        next.insert(doc.id.as_str().to_string(), doc);
+        if let Err(err) = self.persist(&next) {
+            self.resync_from_disk(&mut docs);
+            return Err(err);
+        }
+        *docs = next;
+        Ok(PutOutcome::Stored(revision))
     }
 
     /// Returns clones of all documents currently stored in metadata.

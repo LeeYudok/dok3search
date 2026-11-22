@@ -1,13 +1,16 @@
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};
 use dok3_api::{ApiState, build_router};
 use dok3_domain::{
-    AclScope, Document, DocumentDetail, DocumentId, DocumentSection, HealthReadyResponse,
-    IndexJobListResponse, IndexJobMode, IndexJobPort, IndexJobRecord, IndexJobState, Principal,
-    RevisionId, SearchResponse, SectionId, SectionReadResponse, SourceId, TriggerIndexJobRequest,
+    AclScope, ClassificationPort, ClassificationSource, Document, DocumentClassification,
+    DocumentDetail, DocumentId, DocumentSection, HealthReadyResponse, IndexJobListResponse,
+    IndexJobMode, IndexJobPort, IndexJobRecord, IndexJobState, Principal, RevisionId,
+    SearchResponse, SectionId, SectionReadResponse, SourceId, TriggerIndexJobRequest,
+    UpdateClassificationRequest, normalize_classification_terms, validate_classification_category,
+    validate_classification_summary,
 };
 use dok3_search::{InMemorySearchRepository, SearchService};
 use http_body_util::BodyExt;
@@ -541,4 +544,267 @@ async fn index_job_routes_enforce_admin_mode_and_payload_validation() {
         .await
         .unwrap();
     assert_eq!(missing_job.status(), StatusCode::NOT_FOUND);
+}
+
+struct StubClassification {
+    state: Mutex<DocumentClassification>,
+}
+
+impl StubClassification {
+    fn new() -> Self {
+        Self {
+            state: Mutex::new(Self::rule_default()),
+        }
+    }
+
+    fn rule_default() -> DocumentClassification {
+        DocumentClassification {
+            document_id: DocumentId::new("index-rollbacks"),
+            summary: "Initial design summary".to_string(),
+            category: "design".to_string(),
+            tags: vec!["architecture".to_string()],
+            keywords: vec!["rollback".to_string()],
+            source: ClassificationSource::Rule,
+            manual_locked: false,
+            updated_at_ms: 100,
+            content_hash: "abc".to_string(),
+        }
+    }
+}
+
+impl ClassificationPort for StubClassification {
+    fn get_classification(
+        &self,
+        principal: &Principal,
+        id: &DocumentId,
+    ) -> Result<DocumentClassification, dok3_core::Dok3Error> {
+        if id.as_str() == "private-secret" && !principal.is_admin {
+            return Err(dok3_core::Dok3Error::Forbidden(
+                "document access forbidden".to_string(),
+            ));
+        }
+        if id.as_str() != "index-rollbacks" {
+            return Err(dok3_core::Dok3Error::NotFound(format!(
+                "document '{}' not found",
+                id.as_str()
+            )));
+        }
+        Ok(self.state.lock().unwrap().clone())
+    }
+
+    fn update_classification(
+        &self,
+        principal: &Principal,
+        id: &DocumentId,
+        req: &UpdateClassificationRequest,
+    ) -> Result<DocumentClassification, dok3_core::Dok3Error> {
+        if !principal.is_admin {
+            return Err(dok3_core::Dok3Error::Forbidden(
+                "admin required".to_string(),
+            ));
+        }
+        if id.as_str() != "index-rollbacks" {
+            return Err(dok3_core::Dok3Error::NotFound(format!(
+                "document '{}' not found",
+                id.as_str()
+            )));
+        }
+        let mut guard = self.state.lock().unwrap();
+        if req.reset_to_rule {
+            *guard = Self::rule_default();
+            return Ok(guard.clone());
+        }
+        if let Some(category) = req.category.as_deref() {
+            guard.category = validate_classification_category(category)?;
+        }
+        if let Some(summary) = req.summary.as_deref() {
+            guard.summary = validate_classification_summary(summary)?;
+        }
+        if let Some(tags) = req.tags.as_deref() {
+            guard.tags = normalize_classification_terms("tags", tags)?;
+        }
+        if let Some(keywords) = req.keywords.as_deref() {
+            guard.keywords = normalize_classification_terms("keywords", keywords)?;
+        }
+        guard.source = ClassificationSource::Manual;
+        guard.manual_locked = true;
+        guard.updated_at_ms += 1;
+        Ok(guard.clone())
+    }
+}
+
+#[tokio::test]
+async fn classification_routes_enforce_acl_admin_guards_and_validation() {
+    let repo = Arc::new(InMemorySearchRepository::from_seed(None));
+    let service = Arc::new(SearchService::new(repo.clone(), repo));
+
+    let unwired_admin = build_router(
+        ApiState::new(Arc::clone(&service)).with_principal(Principal::local_admin()),
+        None,
+    );
+    let unwired_get = unwired_admin
+        .clone()
+        .oneshot(
+            Request::get("/api/v1/documents/index-rollbacks/classification")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(unwired_get.status(), StatusCode::BAD_REQUEST);
+
+    let public_app = build_router(
+        ApiState::new(Arc::clone(&service))
+            .with_classification(Arc::new(StubClassification::new())),
+        None,
+    );
+    let (status, _, initial): (_, _, DocumentClassification) = response_json(
+        public_app
+            .clone()
+            .oneshot(
+                Request::get("/api/v1/documents/index-rollbacks/classification")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(initial.source, ClassificationSource::Rule);
+    assert!(!initial.manual_locked);
+
+    let forbidden_doc = public_app
+        .clone()
+        .oneshot(
+            Request::get("/api/v1/documents/private-secret/classification")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(forbidden_doc.status(), StatusCode::FORBIDDEN);
+
+    let missing_doc = public_app
+        .clone()
+        .oneshot(
+            Request::get("/api/v1/documents/missing-doc/classification")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(missing_doc.status(), StatusCode::NOT_FOUND);
+
+    let oversized_body = vec![b'a'; 3 * 1024 * 1024];
+    for req in [
+        Request::patch("/api/v1/documents/index-rollbacks/classification")
+            .body(Body::empty())
+            .unwrap(),
+        Request::patch("/api/v1/documents/%FF/classification")
+            .body(Body::empty())
+            .unwrap(),
+        Request::patch("/api/v1/documents/index-rollbacks/classification")
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from(oversized_body))
+            .unwrap(),
+    ] {
+        let resp = public_app.clone().oneshot(req).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::FORBIDDEN);
+    }
+
+    let admin_app = build_router(
+        ApiState::new(service)
+            .with_principal(Principal::local_admin())
+            .with_classification(Arc::new(StubClassification::new())),
+        None,
+    );
+
+    let bad_origin = admin_app
+        .clone()
+        .oneshot(
+            Request::patch("/api/v1/documents/index-rollbacks/classification")
+                .header(header::ORIGIN, "https://evil.example")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from("{}"))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(bad_origin.status(), StatusCode::FORBIDDEN);
+
+    let cross_site = admin_app
+        .clone()
+        .oneshot(
+            Request::patch("/api/v1/documents/index-rollbacks/classification")
+                .header("sec-fetch-site", "cross-site")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from("{}"))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(cross_site.status(), StatusCode::FORBIDDEN);
+
+    for req in [
+        Request::patch("/api/v1/documents/index-rollbacks/classification")
+            .body(Body::from("{}"))
+            .unwrap(),
+        Request::patch("/api/v1/documents/index-rollbacks/classification")
+            .header(header::CONTENT_TYPE, "text/plain")
+            .body(Body::from("{}"))
+            .unwrap(),
+        Request::patch("/api/v1/documents/index-rollbacks/classification")
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from("{invalid"))
+            .unwrap(),
+        Request::patch("/api/v1/documents/index-rollbacks/classification")
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from(r#"{"category":"unknown"}"#))
+            .unwrap(),
+    ] {
+        let resp = admin_app.clone().oneshot(req).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::BAD_REQUEST);
+    }
+
+    let (status, _, updated): (_, _, DocumentClassification) = response_json(
+        admin_app
+            .clone()
+            .oneshot(
+                Request::patch("/api/v1/documents/index-rollbacks/classification")
+                    .header(header::ORIGIN, "http://127.0.0.1:5173")
+                    .header(header::CONTENT_TYPE, "application/json; charset=utf-8")
+                    .body(Body::from(
+                        r#"{"category":"manual","summary":"수동 요약","tags":["ops","OPS"],"keywords":["runbook"]}"#,
+                    ))
+                    .unwrap(),
+            )
+            .await
+            .unwrap(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(updated.source, ClassificationSource::Manual);
+    assert!(updated.manual_locked);
+    assert_eq!(updated.category, "manual");
+    assert_eq!(updated.summary, "수동 요약");
+    assert_eq!(updated.tags, vec!["ops"]);
+    assert_eq!(updated.keywords, vec!["runbook"]);
+
+    let (status, _, reset): (_, _, DocumentClassification) = response_json(
+        admin_app
+            .oneshot(
+                Request::patch("/api/v1/documents/index-rollbacks/classification")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(r#"{"reset_to_rule":true}"#))
+                    .unwrap(),
+            )
+            .await
+            .unwrap(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(reset.source, ClassificationSource::Rule);
+    assert!(!reset.manual_locked);
+    assert_eq!(reset.category, "design");
 }

@@ -1,6 +1,17 @@
 //! Administration DTOs for background indexing jobs, classification, and source management.
 
+use dok3_core::Dok3Error;
 use serde::{Deserialize, Serialize};
+
+use crate::ids::DocumentId;
+
+/// Top-level document classification categories enforced by REST and search taxonomy.
+pub const ALLOWED_CLASSIFICATION_CATEGORIES: [&str; 5] =
+    ["guide", "manual", "code", "policy", "design"];
+/// Maximum number of tags or keywords per document classification.
+pub const MAX_CLASSIFICATION_TERMS: usize = 12;
+/// Maximum character length of a classification summary.
+pub const MAX_CLASSIFICATION_SUMMARY_CHARS: usize = 500;
 
 /// Indexing run mode for manual or scheduled jobs.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -55,4 +66,92 @@ pub struct IndexJobListResponse {
     pub active_generation: Option<String>,
     pub active_epoch: u64,
     pub refresh_interval_secs: Option<u64>,
+}
+
+/// Origin of the active document classification metadata.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ClassificationSource {
+    Rule,
+    Manual,
+}
+
+/// Stored classification metadata associated with a document without altering original bytes.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DocumentClassification {
+    pub document_id: DocumentId,
+    pub summary: String,
+    pub category: String,
+    pub tags: Vec<String>,
+    pub keywords: Vec<String>,
+    pub source: ClassificationSource,
+    pub manual_locked: bool,
+    pub updated_at_ms: u64,
+    pub content_hash: String,
+}
+
+/// Request payload for `PATCH /api/v1/documents/{id}/classification`.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct UpdateClassificationRequest {
+    #[serde(default)]
+    pub summary: Option<String>,
+    #[serde(default)]
+    pub category: Option<String>,
+    #[serde(default)]
+    pub tags: Option<Vec<String>>,
+    #[serde(default)]
+    pub keywords: Option<Vec<String>>,
+    #[serde(default)]
+    pub reset_to_rule: bool,
+}
+
+/// Validates and normalizes a classification category against [`ALLOWED_CLASSIFICATION_CATEGORIES`].
+pub fn validate_classification_category(raw: &str) -> Result<String, Dok3Error> {
+    let normalized = raw.trim().to_ascii_lowercase();
+    if ALLOWED_CLASSIFICATION_CATEGORIES.contains(&normalized.as_str()) {
+        Ok(normalized)
+    } else {
+        Err(Dok3Error::InvalidInput(format!(
+            "unsupported classification category '{}' (allowed: {})",
+            raw.trim(),
+            ALLOWED_CLASSIFICATION_CATEGORIES.join(", ")
+        )))
+    }
+}
+
+/// Validates and trims a classification summary (`<= MAX_CLASSIFICATION_SUMMARY_CHARS`).
+pub fn validate_classification_summary(raw: &str) -> Result<String, Dok3Error> {
+    let trimmed = raw.trim();
+    if trimmed.chars().count() > MAX_CLASSIFICATION_SUMMARY_CHARS {
+        return Err(Dok3Error::InvalidInput(format!(
+            "classification summary exceeds {MAX_CLASSIFICATION_SUMMARY_CHARS} characters"
+        )));
+    }
+    Ok(trimmed.to_string())
+}
+
+/// Trims, removes empty entries, deduplicates case-insensitively, and enforces [`MAX_CLASSIFICATION_TERMS`].
+pub fn normalize_classification_terms(
+    field_name: &str,
+    items: &[String],
+) -> Result<Vec<String>, Dok3Error> {
+    let mut normalized: Vec<String> = Vec::new();
+    for item in items {
+        let trimmed = item.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+        if !normalized
+            .iter()
+            .any(|existing| existing.eq_ignore_ascii_case(trimmed))
+        {
+            normalized.push(trimmed.to_string());
+        }
+    }
+    if normalized.len() > MAX_CLASSIFICATION_TERMS {
+        return Err(Dok3Error::InvalidInput(format!(
+            "classification {field_name} exceeds maximum of {MAX_CLASSIFICATION_TERMS} items"
+        )));
+    }
+    Ok(normalized)
 }

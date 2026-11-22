@@ -1,5 +1,6 @@
 //! dok3search server binary entrypoint.
 
+mod classification;
 mod local_index;
 // --- slice-B: mcp ---
 mod mcp;
@@ -146,7 +147,9 @@ fn build_api_state(
         state = state.with_principal(Principal::local_admin());
     }
     if let Some(runtime) = persistent_runtime {
-        state = state.with_index_jobs(Arc::clone(runtime) as _);
+        state = state
+            .with_index_jobs(Arc::clone(runtime) as _)
+            .with_classification(Arc::clone(runtime) as _);
     }
     state.mode = mode.into();
     state
@@ -201,7 +204,10 @@ mod tests {
     use axum::body::Body;
     use axum::http::{Method, Request, StatusCode, header};
     use dok3_core::ServerConfig;
-    use dok3_domain::{IndexJobListResponse, IndexJobMode, IndexJobRecord, IndexJobState};
+    use dok3_domain::{
+        ClassificationSource, DocumentClassification, IndexJobListResponse, IndexJobMode,
+        IndexJobRecord, IndexJobState,
+    };
     use http_body_util::BodyExt;
     use serde_json::{Value, json};
     use tower::ServiceExt;
@@ -299,6 +305,27 @@ mod tests {
         assert_eq!(record.mode, IndexJobMode::Full);
         assert_eq!(record.state, IndexJobState::Succeeded);
         assert!(record.rebuilt);
+
+        let cls_resp = app
+            .clone()
+            .oneshot(
+                Request::patch("/api/v1/documents/local-markdown:guide-a.md/classification")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(
+                        r#"{"category":"manual","summary":"수동 분류 요약"}"#,
+                    ))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(cls_resp.status(), StatusCode::OK);
+        let cls_body: DocumentClassification =
+            serde_json::from_slice(&cls_resp.into_body().collect().await.unwrap().to_bytes())
+                .unwrap();
+        assert_eq!(cls_body.source, ClassificationSource::Manual);
+        assert!(cls_body.manual_locked);
+        assert_eq!(cls_body.category, "manual");
+        assert_eq!(cls_body.summary, "수동 분류 요약");
 
         // Verify /mcp remains anonymous_public (not escalated to admin) and searches live docs.
         let mcp_req = Request::builder()

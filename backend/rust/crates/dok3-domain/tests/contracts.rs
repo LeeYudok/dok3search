@@ -1,12 +1,14 @@
 use std::str::FromStr;
 
 use dok3_domain::{
-    AclScope, CategoryCount, ChangeEvent, ChangeKind, DEFAULT_SECTION_MAX_CHARS, Document,
-    DocumentDetail, DocumentFormatLinks, DocumentId, DocumentSection, GenerationId,
-    IndexJobListResponse, IndexJobMode, IndexJobRecord, IndexJobState, MAX_SECTION_MAX_CHARS,
-    Principal, ReaderState, RevisionId, SearchFilters, SearchHit, SearchRequest, SearchResponse,
-    SearchSnapshotMeta, SectionCitation, SectionId, SectionReadRequest, SectionReadResponse,
-    SectionSummary, Sequence, SourceId, TriggerIndexJobRequest,
+    AclScope, CategoryCount, ChangeEvent, ChangeKind, ClassificationSource,
+    DEFAULT_SECTION_MAX_CHARS, Document, DocumentClassification, DocumentDetail,
+    DocumentFormatLinks, DocumentId, DocumentSection, GenerationId, IndexJobListResponse,
+    IndexJobMode, IndexJobRecord, IndexJobState, MAX_SECTION_MAX_CHARS, Principal, ReaderState,
+    RevisionId, SearchFilters, SearchHit, SearchRequest, SearchResponse, SearchSnapshotMeta,
+    SectionCitation, SectionId, SectionReadRequest, SectionReadResponse, SectionSummary, Sequence,
+    SourceId, TriggerIndexJobRequest, UpdateClassificationRequest, normalize_classification_terms,
+    validate_classification_category, validate_classification_summary,
 };
 
 #[test]
@@ -298,4 +300,37 @@ fn contract_dtos_round_trip_json() {
     let round_jobs: IndexJobListResponse =
         serde_json::from_str(&serde_json::to_string(&job_list).unwrap()).unwrap();
     assert_eq!(round_jobs, job_list);
+
+    let cls = DocumentClassification {
+        document_id: DocumentId::new("local-markdown:guide.md"),
+        summary: "테스트 요약".to_string(),
+        category: validate_classification_category(" Guide ").unwrap(),
+        tags: normalize_classification_terms(
+            "tags",
+            &[
+                " rust ".to_string(),
+                "Rust".to_string(),
+                "".to_string(),
+                "ko".to_string(),
+            ],
+        )
+        .unwrap(),
+        keywords: normalize_classification_terms("keywords", &["ownership".to_string()]).unwrap(),
+        source: ClassificationSource::Manual,
+        manual_locked: true,
+        updated_at_ms: 1_700_000_000_200,
+        content_hash: "abc".to_string(),
+    };
+    assert_eq!(cls.category, "guide");
+    assert_eq!(cls.tags, vec!["rust", "ko"]);
+    let round_cls: DocumentClassification =
+        serde_json::from_str(&serde_json::to_string(&cls).unwrap()).unwrap();
+    assert_eq!(round_cls, cls);
+
+    let upd: UpdateClassificationRequest = serde_json::from_str("{}").unwrap();
+    assert!(!upd.reset_to_rule);
+    assert!(validate_classification_category("unknown").is_err());
+    assert!(validate_classification_summary(&"a".repeat(501)).is_err());
+    let too_many: Vec<String> = (0..13).map(|i| format!("tag-{i}")).collect();
+    assert!(normalize_classification_terms("tags", &too_many).is_err());
 }

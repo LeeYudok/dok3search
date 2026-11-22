@@ -411,3 +411,62 @@ fn journal_open_does_not_delete_store_temp_files() {
     let _journal = FileChangeJournal::open(&root.0).unwrap();
     assert!(active_store_tmp.exists());
 }
+
+#[test]
+fn update_metadata_preserves_original_and_rejects_corrupted_object_without_overwriting() {
+    let root = TempRoot::new("meta-only");
+    let store = FileDocumentStore::open(&root.0).unwrap();
+    let content = b"immutable original bytes";
+    let original_doc = doc("m1", AclScope::Public, "original body");
+
+    assert!(matches!(
+        store.put(original_doc, content).unwrap(),
+        PutOutcome::Stored(_)
+    ));
+    let hash = content_revision(content)
+        .as_str()
+        .trim_start_matches("sha256:")
+        .to_string();
+    let obj_path = root.0.join("objects").join(&hash);
+
+    // Metadata-only update succeeds and leaves original bytes + original fields intact.
+    let mut updated_doc = doc("m1", AclScope::Public, "caller altered body");
+    updated_doc.markdown = Some("caller altered markdown".to_string());
+    updated_doc.source_uri = "file:///caller-altered".to_string();
+    updated_doc.summary = "updated summary".to_string();
+    updated_doc.category = "policy".to_string();
+    assert_eq!(
+        store.update_metadata(updated_doc.clone()).unwrap(),
+        PutOutcome::Stored(content_revision(content))
+    );
+    let stored = store
+        .get_stored_document(&public(), &DocumentId::new("m1"))
+        .unwrap();
+    assert_eq!(stored.body, "original body");
+    assert_ne!(stored.source_uri, "file:///caller-altered");
+    assert_eq!(
+        store
+            .read_original(&public(), &DocumentId::new("m1"))
+            .unwrap(),
+        content
+    );
+
+    // Repeating identical metadata returns Unchanged.
+    assert_eq!(
+        store.update_metadata(updated_doc.clone()).unwrap(),
+        PutOutcome::Unchanged(content_revision(content))
+    );
+
+    // Corrupting the stored object fails both update_metadata and put_immutable without overwriting.
+    fs::write(&obj_path, b"tampered").unwrap();
+    updated_doc.summary = "second update".to_string();
+    assert!(matches!(
+        store.update_metadata(updated_doc),
+        Err(dok3_core::Dok3Error::Storage(_))
+    ));
+    assert!(matches!(
+        store.put_immutable(doc("m2", AclScope::Public, "original body"), content),
+        Err(dok3_core::Dok3Error::Storage(_))
+    ));
+    assert_eq!(fs::read(&obj_path).unwrap(), b"tampered");
+}

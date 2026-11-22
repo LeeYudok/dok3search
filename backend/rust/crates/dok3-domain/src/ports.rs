@@ -3,7 +3,10 @@
 use dok3_core::Dok3Error;
 
 use crate::acl::Principal;
-use crate::admin::{IndexJobListResponse, IndexJobRecord, TriggerIndexJobRequest};
+use crate::admin::{
+    DocumentClassification, IndexJobListResponse, IndexJobRecord, TriggerIndexJobRequest,
+    UpdateClassificationRequest,
+};
 use crate::change::ChangeEvent;
 use crate::document::{DocumentDetail, ParsedDocument, SectionReadRequest, SectionReadResponse};
 use crate::ids::{DocumentId, Sequence};
@@ -51,4 +54,19 @@ pub trait IndexJobPort: Send + Sync {
     fn list_jobs(&self) -> Result<IndexJobListResponse, Dok3Error>;
     fn get_job(&self, job_id: &str) -> Result<IndexJobRecord, Dok3Error>;
     fn trigger_job(&self, req: &TriggerIndexJobRequest) -> Result<IndexJobRecord, Dok3Error>;
+}
+
+/// Port for reading and updating document classification without altering original bytes.
+pub trait ClassificationPort: Send + Sync {
+    fn get_classification(
+        &self,
+        principal: &Principal,
+        id: &DocumentId,
+    ) -> Result<DocumentClassification, Dok3Error>;
+    fn update_classification(
+        &self,
+        principal: &Principal,
+        id: &DocumentId,
+        req: &UpdateClassificationRequest,
+    ) -> Result<DocumentClassification, Dok3Error>;
 }

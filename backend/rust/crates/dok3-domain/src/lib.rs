@@ -10,7 +10,11 @@ pub mod search;
 
 pub use acl::{AclScope, Principal};
 pub use admin::{
-    IndexJobListResponse, IndexJobMode, IndexJobRecord, IndexJobState, TriggerIndexJobRequest,
+    ALLOWED_CLASSIFICATION_CATEGORIES, ClassificationSource, DocumentClassification,
+    IndexJobListResponse, IndexJobMode, IndexJobRecord, IndexJobState,
+    MAX_CLASSIFICATION_SUMMARY_CHARS, MAX_CLASSIFICATION_TERMS, TriggerIndexJobRequest,
+    UpdateClassificationRequest, normalize_classification_terms, validate_classification_category,
+    validate_classification_summary,
 };
 pub use change::{ChangeEvent, ChangeKind};
 pub use document::{
@@ -20,7 +24,8 @@ pub use document::{
 };
 pub use ids::{DocumentId, GenerationId, RevisionId, SectionId, Sequence, SourceId};
 pub use ports::{
-    ChangeJournalPort, DocumentParserPort, DocumentStorePort, IndexJobPort, SearchPort,
+    ChangeJournalPort, ClassificationPort, DocumentParserPort, DocumentStorePort, IndexJobPort,
+    SearchPort,
 };
 pub use search::{
     CategoryCount, HealthReadyResponse, ReaderState, SearchFilters, SearchHit, SearchRequest,

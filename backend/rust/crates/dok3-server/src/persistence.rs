@@ -12,10 +12,11 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use dok3_connectors::{LocalFileConnector, SourceConfig, build_document};
 use dok3_core::Dok3Error;
 use dok3_domain::{
-    ChangeEvent, ChangeJournalPort, ChangeKind, Document, DocumentId, DocumentParserPort,
-    DocumentStorePort, GenerationId, IndexJobListResponse, IndexJobMode, IndexJobPort,
-    IndexJobRecord, IndexJobState, Principal, ReaderState, RevisionId, SearchPort, SearchRequest,
-    SearchResponse, SearchSnapshotMeta, Sequence, SourceId, TriggerIndexJobRequest,
+    ChangeEvent, ChangeJournalPort, ChangeKind, ClassificationPort, Document,
+    DocumentClassification, DocumentId, DocumentParserPort, DocumentStorePort, GenerationId,
+    IndexJobListResponse, IndexJobMode, IndexJobPort, IndexJobRecord, IndexJobState, Principal,
+    ReaderState, RevisionId, SearchPort, SearchRequest, SearchResponse, SearchSnapshotMeta,
+    Sequence, SourceId, TriggerIndexJobRequest, UpdateClassificationRequest,
 };
 use dok3_index::{SCHEMA_VERSION, TantivyIndex};
 use dok3_index_manager::{
@@ -24,9 +25,10 @@ use dok3_index_manager::{
 };
 use dok3_parser::MarkdownParser;
 use dok3_search::SearchService;
-use dok3_storage::{FileChangeJournal, FileDocumentStore, PutOutcome};
+use dok3_storage::{FileChangeJournal, FileDocumentStore, PutOutcome, content_revision};
 use serde::{Deserialize, Serialize};
 
+use crate::classification::{ClassificationStore, classification_from_doc};
 use crate::local_index::{BuildReport, apply_detected_language};
 
 const ANALYZER_VERSION: u64 = 1;
@@ -627,6 +629,7 @@ pub struct PersistentRuntime {
     service: SearchService,
     job_exec_lock: Mutex<()>,
     jobs: Arc<Mutex<JobHistoryStore>>,
+    classifications: Arc<Mutex<ClassificationStore>>,
 }
 
 impl PersistentRuntime {
@@ -647,8 +650,10 @@ impl PersistentRuntime {
         let store = Arc::new(FileDocumentStore::open(&storage_dir).map_err(|err| err.to_string())?);
         let journal =
             Arc::new(FileChangeJournal::open(&storage_dir).map_err(|err| err.to_string())?);
+        let mut classification_store = ClassificationStore::open(&storage_dir)?;
 
-        let report = sync_source_to_storage(source_dir, &store, &journal)?;
+        let report =
+            sync_source_to_storage(source_dir, &store, &journal, &mut classification_store)?;
         quarantine_incompatible_generations(&generations_dir)?;
 
         let backend = LocalGenerationBackend::new(
@@ -662,6 +667,7 @@ impl PersistentRuntime {
             .reconcile_on_startup()
             .map_err(|err| err.to_string())?;
         let rebuilt = ensure_active_generation(&mut manager, &store, &journal, false)?;
+        classification_store.clear_all_pending_index_sync()?;
         manager.gc_retired().map_err(|err| err.to_string())?;
 
         let mut job_store = JobHistoryStore::open(
@@ -694,6 +700,7 @@ impl PersistentRuntime {
             service,
             job_exec_lock: Mutex::new(()),
             jobs: Arc::new(Mutex::new(job_store)),
+            classifications: Arc::new(Mutex::new(classification_store)),
         };
         Ok((runtime, report))
     }
@@ -722,11 +729,16 @@ impl PersistentRuntime {
             .manager
             .lock()
             .map_err(|_| "persistent index manager mutex poisoned".to_string())?;
+        let mut classifications = self
+            .classifications
+            .lock()
+            .map_err(|_| "classification store mutex poisoned".to_string())?;
         let result = refresh_locked(
             &mut manager,
             &self.source_dir,
             &self.store,
             &self.journal,
+            &mut classifications,
             false,
         )?;
         if let Ok(mut jobs) = self.jobs.lock() {
@@ -814,11 +826,16 @@ impl PersistentRuntime {
             .manager
             .lock()
             .map_err(|_| "persistent index manager mutex poisoned".to_string())?;
+        let mut classifications = self
+            .classifications
+            .lock()
+            .map_err(|_| "classification store mutex poisoned".to_string())?;
         refresh_locked(
             &mut manager,
             &self.source_dir,
             &self.store,
             &self.journal,
+            &mut classifications,
             req.mode == IndexJobMode::Full,
         )
     }
@@ -915,6 +932,111 @@ impl IndexJobPort for PersistentRuntime {
     }
 }
 
+impl ClassificationPort for PersistentRuntime {
+    fn get_classification(
+        &self,
+        principal: &Principal,
+        id: &DocumentId,
+    ) -> Result<DocumentClassification, Dok3Error> {
+        if id.as_str().trim().is_empty() {
+            return Err(Dok3Error::InvalidInput(
+                "document_id must not be empty".to_string(),
+            ));
+        }
+        let doc = self.store.get_stored_document(principal, id)?;
+        let classifications = self
+            .classifications
+            .lock()
+            .map_err(|_| Dok3Error::Internal("classification store mutex poisoned".into()))?;
+        Ok(classifications
+            .get(id)
+            .unwrap_or_else(|| classification_from_doc(&doc)))
+    }
+
+    fn update_classification(
+        &self,
+        principal: &Principal,
+        id: &DocumentId,
+        req: &UpdateClassificationRequest,
+    ) -> Result<DocumentClassification, Dok3Error> {
+        if !principal.is_admin {
+            return Err(Dok3Error::Forbidden(format!(
+                "principal '{}' does not have admin privileges",
+                principal.subject
+            )));
+        }
+        if id.as_str().trim().is_empty() {
+            return Err(Dok3Error::InvalidInput(
+                "document_id must not be empty".to_string(),
+            ));
+        }
+
+        let _exec_guard = self
+            .job_exec_lock
+            .lock()
+            .map_err(|_| Dok3Error::Internal("index job execution lock poisoned".into()))?;
+        let _orig_bytes = self.store.read_original(principal, id)?;
+        let mut doc = self.store.get_stored_document(principal, id)?;
+
+        let orig_body = doc.body.clone();
+        let orig_markdown = doc.markdown.clone();
+        let orig_uri = doc.source_uri.clone();
+        let orig_hash = doc.content_hash.clone();
+        let orig_rev = doc.revision_id.clone();
+
+        let (updated_classification, pending_sync) = {
+            let mut classifications = self
+                .classifications
+                .lock()
+                .map_err(|_| Dok3Error::Internal("classification store mutex poisoned".into()))?;
+            let updated = classifications.update_manual(&mut doc, "docs", principal, req)?;
+            let pending = classifications.is_pending_index_sync(id);
+            (updated, pending)
+        };
+
+        // Enforce original-content immutability invariant.
+        doc.body = orig_body;
+        doc.markdown = orig_markdown;
+        doc.source_uri = orig_uri;
+        doc.content_hash = orig_hash;
+        doc.revision_id = orig_rev;
+
+        let outcome = self.store.update_metadata(doc)?;
+        if matches!(outcome, PutOutcome::Stored(_)) || pending_sync {
+            let rev = outcome.revision().clone();
+            self.journal.append(ChangeEvent {
+                sequence: Sequence::new(0),
+                document_id: id.clone(),
+                revision_id: rev,
+                kind: ChangeKind::Upsert,
+            })?;
+            let mut manager = self.manager.lock().map_err(|_| {
+                Dok3Error::Internal("persistent index manager mutex poisoned".into())
+            })?;
+            ensure_active_generation(&mut manager, &self.store, &self.journal, false)
+                .map_err(Dok3Error::Index)?;
+            manager
+                .gc_retired()
+                .map_err(|err| Dok3Error::Index(err.to_string()))?;
+            if let Ok(mut jobs) = self.jobs.lock() {
+                jobs.update_active(
+                    manager.state().active_generation.clone(),
+                    manager.state().active_epoch,
+                );
+            }
+            drop(manager);
+            let mut classifications = self
+                .classifications
+                .lock()
+                .map_err(|_| Dok3Error::Internal("classification store mutex poisoned".into()))?;
+            classifications
+                .clear_pending_index_sync(id)
+                .map_err(Dok3Error::Storage)?;
+        }
+        Ok(updated_classification)
+    }
+}
+
 fn validate_job_source_id(source_id: Option<&str>) -> Result<(), Dok3Error> {
     if let Some(raw) = source_id {
         let trimmed = raw.trim();
@@ -935,13 +1057,15 @@ fn refresh_locked(
     source_dir: &Path,
     store: &FileDocumentStore,
     journal: &FileChangeJournal,
+    classifications: &mut ClassificationStore,
     force_rebuild: bool,
 ) -> Result<RefreshReport, String> {
     manager.reconcile_on_startup().map_err(|err| {
         format!("persistent index manager reconciliation failed; restart required: {err}")
     })?;
-    let report = sync_source_to_storage(source_dir, store, journal)?;
+    let report = sync_source_to_storage(source_dir, store, journal, classifications)?;
     let rebuilt = ensure_active_generation(manager, store, journal, force_rebuild)?;
+    classifications.clear_all_pending_index_sync()?;
     manager.gc_retired().map_err(|err| err.to_string())?;
     Ok(RefreshReport {
         report,
@@ -992,13 +1116,13 @@ fn ensure_active_generation(
     Ok(true)
 }
 
-fn now_ms() -> u64 {
+pub(crate) fn now_ms() -> u64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map_or(0, |dur| u64::try_from(dur.as_millis()).unwrap_or(u64::MAX))
 }
 
-fn atomic_write_bytes(path: &Path, bytes: &[u8]) -> Result<(), String> {
+pub(crate) fn atomic_write_bytes(path: &Path, bytes: &[u8]) -> Result<(), String> {
     let dir = path
         .parent()
         .ok_or_else(|| format!("path '{}' has no parent", path.display()))?;
@@ -1045,6 +1169,7 @@ fn sync_source_to_storage(
     source_dir: &Path,
     store: &FileDocumentStore,
     journal: &FileChangeJournal,
+    classifications: &mut ClassificationStore,
 ) -> Result<BuildReport, String> {
     let connector = LocalFileConnector::new(SourceConfig::markdown_defaults(
         SourceId::new("local-markdown"),
@@ -1064,6 +1189,7 @@ fn sync_source_to_storage(
 
     let parser = MarkdownParser::new();
     let mut seen_ids = HashSet::with_capacity(report.files.len());
+    let mut synced_this_pass = HashSet::with_capacity(report.files.len());
     for file in report.files {
         let parsed = match parser.parse(&file.filename, &file.bytes) {
             Ok(parsed) => parsed,
@@ -1076,21 +1202,42 @@ fn sync_source_to_storage(
         };
         let mut document = build_document(connector.config(), &file, &parsed);
         apply_detected_language(&mut document, &parsed.normalized_text);
+        let rev = content_revision(&file.bytes);
+        let content_hash = rev
+            .as_str()
+            .strip_prefix("sha256:")
+            .unwrap_or(rev.as_str())
+            .to_string();
+        classifications.apply_during_sync(
+            &mut document,
+            connector.config().default_tag.as_str(),
+            &content_hash,
+        )?;
         let doc_id = document.id.clone();
         seen_ids.insert(doc_id.as_str().to_string());
 
-        if let PutOutcome::Stored(rev) = store
-            .put(document, &file.bytes)
+        let put_outcome = if store
+            .existing_content_hash(&doc_id)
             .map_err(|err| err.to_string())?
+            .as_deref()
+            == Some(content_hash.as_str())
         {
+            store.update_metadata(document)
+        } else {
+            store.put_immutable(document, &file.bytes)
+        }
+        .map_err(|err| err.to_string())?;
+
+        if let PutOutcome::Stored(rev) = put_outcome {
             journal
                 .append(ChangeEvent {
                     sequence: Sequence::new(0),
-                    document_id: doc_id,
+                    document_id: doc_id.clone(),
                     revision_id: rev,
                     kind: ChangeKind::Upsert,
                 })
                 .map_err(|err| err.to_string())?;
+            synced_this_pass.insert(doc_id.as_str().to_string());
         }
         build_report.indexed += 1;
     }
@@ -1108,8 +1255,14 @@ fn sync_source_to_storage(
                 .map_err(|err| err.to_string())?;
         }
     }
+    classifications.prune_deleted(&seen_ids)?;
 
-    reconcile_store_journal(store, journal)?;
+    let pending_for_reconcile: HashSet<String> = classifications
+        .pending_index_ids()
+        .into_iter()
+        .filter(|id| !synced_this_pass.contains(id))
+        .collect();
+    reconcile_store_journal(store, journal, &pending_for_reconcile)?;
 
     Ok(build_report)
 }
@@ -1174,6 +1327,7 @@ fn generation_incompatible(generations_dir: &Path, state: &DurableState, gen_id:
 fn reconcile_store_journal(
     store: &FileDocumentStore,
     journal: &FileChangeJournal,
+    pending_index_ids: &HashSet<String>,
 ) -> Result<(), String> {
     let events = journal
         .read_after(Sequence::new(0), usize::MAX)
@@ -1191,7 +1345,9 @@ fn reconcile_store_journal(
     let mut live_ids = HashSet::with_capacity(docs.len());
     for doc in docs {
         let key = doc.id.as_str().to_string();
-        if latest.get(&key).and_then(|v| v.as_ref()) != Some(&doc.revision_id) {
+        if latest.get(&key).and_then(|v| v.as_ref()) != Some(&doc.revision_id)
+            || pending_index_ids.contains(&key)
+        {
             journal
                 .append(ChangeEvent {
                     sequence: Sequence::new(0),
@@ -1243,7 +1399,10 @@ mod tests {
     use axum::body::Body;
     use axum::http::{Request, StatusCode, header};
     use dok3_api::{ApiState, build_router};
-    use dok3_domain::{DocumentDetail, HealthReadyResponse, SearchResponse, SectionReadResponse};
+    use dok3_domain::{
+        ClassificationSource, DocumentDetail, HealthReadyResponse, SearchResponse,
+        SectionReadResponse,
+    };
     use dok3_index_manager::{DurableState, GenerationFiles, GenerationState};
     use http_body_util::BodyExt;
     use serde::de::DeserializeOwned;
@@ -2142,5 +2301,365 @@ mod tests {
         let persisted = restarted.get_job("job-0002").unwrap();
         assert_eq!(persisted.state, IndexJobState::Succeeded);
         assert_eq!(persisted.active_epoch, 2);
+    }
+
+    #[test]
+    fn manual_classification_keeps_original_bytes_survives_refresh_and_updates_search_and_reset() {
+        let source_root = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+        let doc_path = source_root.path().join("guide-a.md");
+        fs::write(
+            &doc_path,
+            "# Retry 운영 매뉴얼\n\nretryoriginaltoken first body\n",
+        )
+        .unwrap();
+
+        let admin = Principal::local_admin();
+        let public = Principal::anonymous_public();
+        let doc_id = DocumentId::new("local-markdown:guide-a.md");
+
+        let (runtime, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        assert!(
+            data_root
+                .path()
+                .join("storage/classifications.json")
+                .is_file()
+        );
+
+        let orig_bytes = runtime.store.read_original(&admin, &doc_id).unwrap();
+        let orig_doc = runtime.store.get_stored_document(&admin, &doc_id).unwrap();
+        let initial = runtime.get_classification(&public, &doc_id).unwrap();
+        assert_eq!(initial.source, ClassificationSource::Rule);
+        assert!(!initial.manual_locked);
+        assert_eq!(initial.category, "manual");
+
+        let forbidden = runtime.update_classification(
+            &public,
+            &doc_id,
+            &UpdateClassificationRequest {
+                category: Some("policy".to_string()),
+                ..UpdateClassificationRequest::default()
+            },
+        );
+        assert!(matches!(forbidden, Err(Dok3Error::Forbidden(_))));
+
+        let updated = runtime
+            .update_classification(
+                &admin,
+                &doc_id,
+                &UpdateClassificationRequest {
+                    category: Some("policy".to_string()),
+                    summary: Some("manual classification summary custommanualtoken".to_string()),
+                    tags: Some(vec!["manualtagalpha".to_string()]),
+                    keywords: Some(vec!["kwbeta".to_string()]),
+                    reset_to_rule: false,
+                },
+            )
+            .unwrap();
+        assert_eq!(updated.source, ClassificationSource::Manual);
+        assert!(updated.manual_locked);
+        assert_eq!(updated.category, "policy");
+        assert_eq!(updated.content_hash, orig_doc.content_hash);
+
+        // Original bytes, body, markdown, URI, and hashes stay strictly immutable.
+        assert_eq!(
+            runtime.store.read_original(&admin, &doc_id).unwrap(),
+            orig_bytes
+        );
+        let stored_after = runtime.store.get_stored_document(&admin, &doc_id).unwrap();
+        assert_eq!(stored_after.body, orig_doc.body);
+        assert_eq!(stored_after.markdown, orig_doc.markdown);
+        assert_eq!(stored_after.source_uri, orig_doc.source_uri);
+        assert_eq!(stored_after.content_hash, orig_doc.content_hash);
+        assert_eq!(stored_after.revision_id, orig_doc.revision_id);
+
+        // Tantivy reflects updated summary, category filter, tags, and keywords immediately.
+        for query in ["custommanualtoken", "manualtagalpha", "kwbeta"] {
+            let res = runtime
+                .service()
+                .search(
+                    &public,
+                    &SearchRequest {
+                        query: query.to_string(),
+                        filters: dok3_domain::SearchFilters {
+                            category: Some("policy".to_string()),
+                            ..Default::default()
+                        },
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap();
+            assert_eq!(res.total_hits, 1, "missing search hit for {query}");
+        }
+
+        // Source body changes + incremental refresh must preserve manual override.
+        fs::write(
+            &doc_path,
+            "# Retry 운영 매뉴얼\n\nrefreshedbodytoken updated body content\n",
+        )
+        .unwrap();
+        runtime
+            .run_job(
+                "manual",
+                &TriggerIndexJobRequest {
+                    source_id: None,
+                    mode: IndexJobMode::Incremental,
+                },
+            )
+            .unwrap();
+
+        let after_refresh = runtime
+            .service()
+            .search(
+                &public,
+                &SearchRequest {
+                    query: "refreshedbodytoken".to_string(),
+                    filters: dok3_domain::SearchFilters {
+                        category: Some("policy".to_string()),
+                        ..Default::default()
+                    },
+                    ..SearchRequest::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(after_refresh.total_hits, 1);
+        let preserved = runtime.get_classification(&public, &doc_id).unwrap();
+        assert_eq!(preserved.source, ClassificationSource::Manual);
+        assert!(preserved.manual_locked);
+        assert_eq!(preserved.category, "policy");
+        assert_eq!(
+            preserved.summary,
+            "manual classification summary custommanualtoken"
+        );
+        drop(runtime);
+
+        // Restart persistence & audit log verification.
+        let (restarted, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        assert!(
+            data_root
+                .path()
+                .join("storage/classification_audit.jsonl")
+                .is_file()
+        );
+        let persisted = restarted.get_classification(&public, &doc_id).unwrap();
+        assert_eq!(persisted.source, ClassificationSource::Manual);
+        assert!(persisted.manual_locked);
+        assert_eq!(persisted.category, "policy");
+
+        let reset = restarted
+            .update_classification(
+                &admin,
+                &doc_id,
+                &UpdateClassificationRequest {
+                    reset_to_rule: true,
+                    ..UpdateClassificationRequest::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(reset.source, ClassificationSource::Rule);
+        assert!(!reset.manual_locked);
+        assert_eq!(reset.category, "manual");
+
+        let old_policy_hits = restarted
+            .service()
+            .search(
+                &public,
+                &SearchRequest {
+                    query: "refreshedbodytoken".to_string(),
+                    filters: dok3_domain::SearchFilters {
+                        category: Some("policy".to_string()),
+                        ..Default::default()
+                    },
+                    ..SearchRequest::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(old_policy_hits.total_hits, 0);
+
+        let reverted_hits = restarted
+            .service()
+            .search(
+                &public,
+                &SearchRequest {
+                    query: "refreshedbodytoken".to_string(),
+                    filters: dok3_domain::SearchFilters {
+                        category: Some("manual".to_string()),
+                        ..Default::default()
+                    },
+                    ..SearchRequest::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(reverted_hits.total_hits, 1);
+    }
+
+    #[test]
+    fn classification_pending_sync_recovers_after_crash_between_metadata_and_journal() {
+        let source_root = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+        fs::write(
+            source_root.path().join("guide-a.md"),
+            "# Crash Recovery Doc\n\ncrashrecoverytoken body\n",
+        )
+        .unwrap();
+
+        let admin = Principal::local_admin();
+        let public = Principal::anonymous_public();
+        let doc_id = DocumentId::new("local-markdown:guide-a.md");
+
+        let (runtime, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        let orig_bytes = runtime.store.read_original(&admin, &doc_id).unwrap();
+        let orig_doc = runtime.store.get_stored_document(&admin, &doc_id).unwrap();
+
+        // Simulate crash after saving classifications.json + documents.json before journal/index.
+        let mut crashed_doc = runtime.store.get_stored_document(&admin, &doc_id).unwrap();
+        let req_a = UpdateClassificationRequest {
+            category: Some("policy".to_string()),
+            summary: Some("crashrecoverysummaryalpha".to_string()),
+            tags: Some(vec!["recoverytag".to_string()]),
+            keywords: Some(vec!["pendingidx".to_string()]),
+            reset_to_rule: false,
+        };
+        {
+            let mut cls = runtime.classifications.lock().unwrap();
+            cls.update_manual(&mut crashed_doc, "docs", &admin, &req_a)
+                .unwrap();
+            assert!(cls.is_pending_index_sync(&doc_id));
+        }
+        assert!(matches!(
+            runtime.store.update_metadata(crashed_doc).unwrap(),
+            PutOutcome::Stored(_)
+        ));
+        assert_eq!(
+            runtime
+                .service()
+                .search(
+                    &public,
+                    &SearchRequest {
+                        query: "crashrecoverysummaryalpha".to_string(),
+                        filters: dok3_domain::SearchFilters {
+                            category: Some("policy".to_string()),
+                            ..Default::default()
+                        },
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap()
+                .total_hits,
+            0
+        );
+
+        // Part (a): Retrying the identical PATCH recovers journal + Tantivy index immediately.
+        runtime
+            .update_classification(&admin, &doc_id, &req_a)
+            .unwrap();
+        assert!(
+            !runtime
+                .classifications
+                .lock()
+                .unwrap()
+                .is_pending_index_sync(&doc_id)
+        );
+        assert_eq!(
+            runtime
+                .service()
+                .search(
+                    &public,
+                    &SearchRequest {
+                        query: "crashrecoverysummaryalpha".to_string(),
+                        filters: dok3_domain::SearchFilters {
+                            category: Some("policy".to_string()),
+                            ..Default::default()
+                        },
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap()
+                .total_hits,
+            1
+        );
+
+        // Part (b): Another crash between metadata write and journal is recovered on restart.
+        let mut crashed_doc_b = runtime.store.get_stored_document(&admin, &doc_id).unwrap();
+        let req_b = UpdateClassificationRequest {
+            category: Some("manual".to_string()),
+            summary: Some("restartrecoveredbeta".to_string()),
+            tags: Some(vec!["restarttag".to_string()]),
+            keywords: Some(vec!["restartkw".to_string()]),
+            reset_to_rule: false,
+        };
+        {
+            let mut cls = runtime.classifications.lock().unwrap();
+            cls.update_manual(&mut crashed_doc_b, "docs", &admin, &req_b)
+                .unwrap();
+            assert!(cls.is_pending_index_sync(&doc_id));
+        }
+        assert!(matches!(
+            runtime.store.update_metadata(crashed_doc_b).unwrap(),
+            PutOutcome::Stored(_)
+        ));
+        drop(runtime);
+
+        let (restarted, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        assert!(
+            !restarted
+                .classifications
+                .lock()
+                .unwrap()
+                .is_pending_index_sync(&doc_id)
+        );
+        assert_eq!(
+            restarted
+                .service()
+                .search(
+                    &public,
+                    &SearchRequest {
+                        query: "restartrecoveredbeta".to_string(),
+                        filters: dok3_domain::SearchFilters {
+                            category: Some("manual".to_string()),
+                            ..Default::default()
+                        },
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap()
+                .total_hits,
+            1
+        );
+        let stored_after = restarted
+            .store
+            .get_stored_document(&admin, &doc_id)
+            .unwrap();
+        assert_eq!(stored_after.revision_id, orig_doc.revision_id);
+        assert_eq!(stored_after.content_hash, orig_doc.content_hash);
+        assert_eq!(
+            restarted.store.read_original(&admin, &doc_id).unwrap(),
+            orig_bytes
+        );
+    }
+
+    #[test]
+    fn refresh_rejects_corrupted_existing_object_without_overwriting() {
+        let source_root = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+        fs::write(
+            source_root.path().join("guide-a.md"),
+            "# Object Immutability\n\nimmutableobjectcheck body\n",
+        )
+        .unwrap();
+
+        let admin = Principal::local_admin();
+        let doc_id = DocumentId::new("local-markdown:guide-a.md");
+        let (runtime, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        let hash = runtime
+            .store
+            .get_stored_document(&admin, &doc_id)
+            .unwrap()
+            .content_hash;
+        let obj_path = data_root.path().join("storage/objects").join(&hash);
+
+        fs::write(&obj_path, b"corrupted-by-fault").unwrap();
+        assert!(runtime.refresh().is_err());
+        assert_eq!(fs::read(&obj_path).unwrap(), b"corrupted-by-fault");
     }
 }
