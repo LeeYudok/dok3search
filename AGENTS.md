@@ -41,6 +41,8 @@
 - `DOK3_STATIC_DIR`: 정적 React 빌드(`frontend/dist`) 경로 (미지정 시 자동 탐색)
 - `DOK3_DESIGN_DIR`: 설계 문서 시드(`frontend/src/samples/design`) 경로 (미지정 시 자동 탐색)
 
+- `DOK3_SOURCE_DIR`: 시작할 때 색인할 Markdown 폴더. 설정하면 IPv4 루프백에서만 열리고, 매번 현재 파일로 메모리 검색 스냅샷을 새로 구성한다. 읽을 수 없거나 비어 있거나 UTF-8이 아닌 파일은 경로와 사유를 기록하고 나머지 문서 색인은 계속한다.
+
 ## 검증 및 실행 명령
 
 - 프론트엔드 빌드: `npm --prefix frontend run build`

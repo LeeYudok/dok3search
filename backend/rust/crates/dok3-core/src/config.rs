@@ -13,6 +13,7 @@ pub struct ServerConfig {
     pub port: u16,
     pub static_dir: Option<PathBuf>,
     pub design_docs_dir: Option<PathBuf>,
+    pub source_dir: Option<PathBuf>,
 }
 
 impl Default for ServerConfig {
@@ -22,12 +23,13 @@ impl Default for ServerConfig {
             port: 8080,
             static_dir: None,
             design_docs_dir: None,
+            source_dir: None,
         }
     }
 }
 
 impl ServerConfig {
-    /// Loads server configuration from `DOK3_BIND`, `DOK3_PORT`, `DOK3_STATIC_DIR`, and `DOK3_DESIGN_DIR`.
+    /// Loads server configuration from `DOK3_BIND`, `DOK3_PORT`, `DOK3_STATIC_DIR`, `DOK3_DESIGN_DIR`, and `DOK3_SOURCE_DIR`.
     pub fn from_env() -> Result<Self, Dok3Error> {
         Self::from_lookup(|key| std::env::var(key).ok())
     }
@@ -64,6 +66,8 @@ impl ServerConfig {
 
         config.static_dir = non_empty_path(lookup("DOK3_STATIC_DIR"));
         config.design_docs_dir = non_empty_path(lookup("DOK3_DESIGN_DIR"));
+
+        config.source_dir = non_empty_path(lookup("DOK3_SOURCE_DIR"));
 
         Ok(config)
     }

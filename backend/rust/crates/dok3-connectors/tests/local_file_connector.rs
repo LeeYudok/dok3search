@@ -153,6 +153,6 @@ fn scan_and_parse_over_100_real_offline_markdown_samples() {
         assert!(!doc.title.trim().is_empty());
         assert!(!doc.sections.is_empty());
         assert_eq!(doc.category, "guide");
-        assert!(doc.source_uri.starts_with("file://"));
+        assert!(doc.source_uri.starts_with("file:///"));
     }
 }
