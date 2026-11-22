@@ -8,3 +8,5 @@ publish.workspace = true
 [dependencies]
 dok3-core.workspace = true
 dok3-domain.workspace = true
+ego-tree = "0.11.1"
+scraper = "0.29.0"

@@ -5,4 +5,7 @@
 
 pub mod markdown;
 
+pub mod html;
+
+pub use html::{HTML_EXTENSIONS, HtmlParser};
 pub use markdown::MarkdownParser;
