@@ -676,6 +676,7 @@ impl PersistentRuntime {
             .map_err(|err| err.to_string())?;
         let rebuilt = ensure_active_generation(&mut manager, &store, &journal, false)?;
         classification_store.clear_all_pending_index_sync()?;
+        source_registry.finalize_all_pending_deletes()?;
         manager.gc_retired().map_err(|err| err.to_string())?;
 
         let mut job_store = JobHistoryStore::open(
@@ -1128,7 +1129,7 @@ impl SourceRegistryPort for PersistentRuntime {
 
             match sync_outcome {
                 Ok(refresh) => {
-                    let result = sources.get(&source_id).ok_or_else(|| {
+                    let result = sources.get_active(&source_id).ok_or_else(|| {
                         Dok3Error::Internal(format!(
                             "registered source '{source_id}' missing after sync"
                         ))
@@ -1140,8 +1141,38 @@ impl SourceRegistryPort for PersistentRuntime {
                     result
                 }
                 Err(err) => {
-                    let _ = sources.remove_source(&source_id);
-                    return Err(Dok3Error::Storage(err));
+                    if let Err(mark_err) = sources.mark_pending_delete(&source_id) {
+                        return Err(Dok3Error::Storage(format!(
+                            "source registration failed ({err}); failed to record rollback pending delete: {mark_err}"
+                        )));
+                    }
+                    let cleanup_res = (|| -> Result<(), Dok3Error> {
+                        let mut classifications = self.classifications.lock().map_err(|_| {
+                            Dok3Error::Internal("classification store mutex poisoned".into())
+                        })?;
+                        let _ = cleanup_source_docs(
+                            &source_id,
+                            &self.store,
+                            &self.journal,
+                            &mut classifications,
+                        )?;
+                        Ok(())
+                    })();
+                    match cleanup_res {
+                        Ok(()) => {
+                            if let Err(fin_err) = sources.finalize_delete(&source_id) {
+                                return Err(Dok3Error::Storage(format!(
+                                    "source registration failed ({err}); rollback finalize failed: {fin_err}"
+                                )));
+                            }
+                            return Err(Dok3Error::Storage(err));
+                        }
+                        Err(clean_err) => {
+                            return Err(Dok3Error::Storage(format!(
+                                "source registration failed ({err}); rollback cleanup failed (kept pending_delete): {clean_err}"
+                            )));
+                        }
+                    }
                 }
             }
         };
@@ -1154,46 +1185,23 @@ impl SourceRegistryPort for PersistentRuntime {
             .lock()
             .map_err(|_| Dok3Error::Internal("index job execution lock poisoned".into()))?;
 
-        let (removed, deleted_documents, active_generation, active_epoch) = {
+        let (entry, deleted_documents, active_generation, active_epoch) = {
             let mut sources = self
                 .sources
                 .lock()
                 .map_err(|_| Dok3Error::Internal("source registry mutex poisoned".into()))?;
-            let removed = sources.remove_source(source_id)?;
+            let entry = sources.mark_pending_delete(source_id)?;
 
-            let docs = self.store.list_documents()?;
-            let mut deleted_documents = 0usize;
-            for doc in docs {
-                if doc.source_id.as_str() == removed.source_id && self.store.delete(&doc.id)? {
-                    self.journal.append(ChangeEvent {
-                        sequence: Sequence::new(0),
-                        document_id: doc.id,
-                        revision_id: RevisionId::new("deleted"),
-                        kind: ChangeKind::Delete,
-                    })?;
-                    deleted_documents += 1;
-                }
-            }
-
-            let surviving_ids: HashSet<String> = self
-                .store
-                .document_ids()?
-                .into_iter()
-                .map(|id| id.as_str().to_string())
-                .collect();
             let mut classifications = self
                 .classifications
                 .lock()
                 .map_err(|_| Dok3Error::Internal("classification store mutex poisoned".into()))?;
-            classifications
-                .prune_deleted(&surviving_ids)
-                .map_err(Dok3Error::Storage)?;
-            reconcile_store_journal(
+            let deleted_documents = cleanup_source_docs(
+                &entry.source_id,
                 &self.store,
                 &self.journal,
-                &classifications.pending_index_ids(),
-            )
-            .map_err(Dok3Error::Storage)?;
+                &mut classifications,
+            )?;
 
             let mut manager = self.manager.lock().map_err(|_| {
                 Dok3Error::Internal("persistent index manager mutex poisoned".into())
@@ -1206,12 +1214,15 @@ impl SourceRegistryPort for PersistentRuntime {
             manager
                 .gc_retired()
                 .map_err(|err| Dok3Error::Index(err.to_string()))?;
-            (
-                removed,
-                deleted_documents,
-                manager.state().active_generation.clone(),
-                manager.state().active_epoch,
-            )
+            let active_gen = manager.state().active_generation.clone();
+            let active_ep = manager.state().active_epoch;
+            drop(manager);
+            drop(classifications);
+
+            sources
+                .finalize_delete(&entry.source_id)
+                .map_err(Dok3Error::Storage)?;
+            (entry, deleted_documents, active_gen, active_ep)
         };
 
         if let Ok(mut jobs) = self.jobs.lock() {
@@ -1219,12 +1230,44 @@ impl SourceRegistryPort for PersistentRuntime {
         }
 
         Ok(DeleteSourceResponse {
-            source_id: removed.source_id,
+            source_id: entry.source_id,
             deleted_documents,
             active_generation,
             active_epoch,
         })
     }
+}
+
+fn cleanup_source_docs(
+    source_id: &str,
+    store: &FileDocumentStore,
+    journal: &FileChangeJournal,
+    classifications: &mut ClassificationStore,
+) -> Result<usize, Dok3Error> {
+    let docs = store.list_documents()?;
+    let mut deleted_documents = 0usize;
+    for doc in docs {
+        if doc.source_id.as_str() == source_id && store.delete(&doc.id)? {
+            journal.append(ChangeEvent {
+                sequence: Sequence::new(0),
+                document_id: doc.id,
+                revision_id: RevisionId::new("deleted"),
+                kind: ChangeKind::Delete,
+            })?;
+            deleted_documents += 1;
+        }
+    }
+    let surviving_ids: HashSet<String> = store
+        .document_ids()?
+        .into_iter()
+        .map(|id| id.as_str().to_string())
+        .collect();
+    classifications
+        .prune_deleted(&surviving_ids)
+        .map_err(Dok3Error::Storage)?;
+    reconcile_store_journal(store, journal, &classifications.pending_index_ids())
+        .map_err(Dok3Error::Storage)?;
+    Ok(deleted_documents)
 }
 
 fn validate_job_source_id(
@@ -1238,7 +1281,7 @@ fn validate_job_source_id(
                 "source_id must not be empty".to_string(),
             ));
         }
-        if !sources.contains(trimmed) {
+        if !sources.contains_active(trimmed) {
             return Err(Dok3Error::NotFound(format!("source '{trimmed}' not found")));
         }
         return Ok(Some(trimmed.to_string()));
@@ -1262,6 +1305,7 @@ fn refresh_locked(
         sync_sources_to_storage(sources, target_source_id, store, journal, classifications)?;
     let rebuilt = ensure_active_generation(manager, store, journal, force_rebuild)?;
     classifications.clear_all_pending_index_sync()?;
+    sources.finalize_all_pending_deletes()?;
     manager.gc_retired().map_err(|err| err.to_string())?;
     Ok(RefreshReport {
         report,
@@ -1476,11 +1520,11 @@ fn sync_sources_to_storage(
     let targets: Vec<RegisteredSource> = match target_source_id {
         Some(id) => {
             let entry = sources
-                .get(id)
+                .get_active(id)
                 .ok_or_else(|| format!("source '{id}' not found"))?;
             vec![entry]
         }
-        None => sources.list(),
+        None => sources.active_sources(),
     };
 
     let mut build_report = BuildReport::default();
@@ -1526,7 +1570,7 @@ fn sync_sources_to_storage(
     }
 
     let live_source_ids: HashSet<String> = sources
-        .list()
+        .active_sources()
         .into_iter()
         .map(|src| src.source_id)
         .collect();
@@ -3207,5 +3251,169 @@ mod tests {
         ));
         assert!(team_dir.path().join("note-b.md").is_file());
         assert!(team_dir.path().join("added-d.md").is_file());
+    }
+
+    #[test]
+    fn interrupted_source_delete_retries_without_404_and_recovers_on_restart() {
+        let env_dir = tempfile::tempdir().unwrap();
+        let src_a_dir = tempfile::tempdir().unwrap();
+        let src_b_dir = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+
+        fs::write(env_dir.path().join("env.md"), "# Env\n\nenvkeep\n").unwrap();
+        fs::write(src_a_dir.path().join("a.md"), "# Source A\n\npendingdela\n").unwrap();
+        fs::write(src_b_dir.path().join("b.md"), "# Source B\n\npendingdelb\n").unwrap();
+
+        let public = Principal::anonymous_public();
+        let (runtime, _) = PersistentRuntime::open(env_dir.path(), data_root.path()).unwrap();
+        runtime
+            .register_source(&CreateSourceRequest {
+                source_id: "src-a".to_string(),
+                label: "Source A".to_string(),
+                path: src_a_dir.path().to_string_lossy().into_owned(),
+                default_category: None,
+                default_tag: None,
+            })
+            .unwrap();
+        runtime
+            .register_source(&CreateSourceRequest {
+                source_id: "src-b".to_string(),
+                label: "Source B".to_string(),
+                path: src_b_dir.path().to_string_lossy().into_owned(),
+                default_category: None,
+                default_tag: None,
+            })
+            .unwrap();
+
+        // Simulate crash right after marking pending_delete for src-a before cleanup/generation.
+        runtime
+            .sources
+            .lock()
+            .unwrap()
+            .mark_pending_delete("src-a")
+            .unwrap();
+        assert!(
+            runtime
+                .list_sources()
+                .unwrap()
+                .sources
+                .iter()
+                .any(|s| s.source_id == "src-a")
+        );
+
+        // Retrying DELETE completes cleanup instead of returning 404.
+        let retried = runtime.delete_source("src-a").unwrap();
+        assert_eq!(retried.source_id, "src-a");
+        assert_eq!(retried.deleted_documents, 1);
+        assert_eq!(
+            runtime
+                .service()
+                .search(
+                    &public,
+                    &SearchRequest {
+                        query: "pendingdela".to_string(),
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap()
+                .total_hits,
+            0
+        );
+
+        // Now mark pending_delete for src-b and drop runtime (simulate restart recovery).
+        runtime
+            .sources
+            .lock()
+            .unwrap()
+            .mark_pending_delete("src-b")
+            .unwrap();
+        drop(runtime);
+
+        let (restarted, _) = PersistentRuntime::open(env_dir.path(), data_root.path()).unwrap();
+        assert!(
+            !restarted
+                .list_sources()
+                .unwrap()
+                .sources
+                .iter()
+                .any(|s| s.source_id == "src-b")
+        );
+        assert_eq!(
+            restarted
+                .service()
+                .search(
+                    &public,
+                    &SearchRequest {
+                        query: "pendingdelb".to_string(),
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap()
+                .total_hits,
+            0
+        );
+        assert!(src_b_dir.path().join("b.md").is_file());
+    }
+
+    #[test]
+    fn failed_source_registration_cleans_up_orphaned_docs_and_allows_retry() {
+        let env_dir = tempfile::tempdir().unwrap();
+        let team_dir = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+
+        fs::write(env_dir.path().join("env.md"), "# Env\n\nenvstable\n").unwrap();
+        fs::write(
+            team_dir.path().join("note.md"),
+            "# Team Doc\n\nteamrollbacktoken\n",
+        )
+        .unwrap();
+
+        let (runtime, _) = PersistentRuntime::open(env_dir.path(), data_root.path()).unwrap();
+        // Force generation build failure AFTER sync_sources_to_storage writes store/journal.
+        let blocking_gen = data_root.path().join("generations/gen-000002-seq-000002");
+        fs::write(&blocking_gen, b"block-build-generation").unwrap();
+
+        let err = runtime
+            .register_source(&CreateSourceRequest {
+                source_id: "team-notes".to_string(),
+                label: "Team Notes".to_string(),
+                path: team_dir.path().to_string_lossy().into_owned(),
+                default_category: None,
+                default_tag: None,
+            })
+            .unwrap_err();
+        assert!(matches!(err, Dok3Error::Storage(_)));
+
+        // Zero orphaned docs remain in store and source is removed cleanly from registry.
+        assert!(
+            !runtime
+                .list_sources()
+                .unwrap()
+                .sources
+                .iter()
+                .any(|s| s.source_id == "team-notes")
+        );
+        assert!(
+            !runtime
+                .store
+                .document_ids()
+                .unwrap()
+                .iter()
+                .any(|id| id.as_str().starts_with("team-notes:"))
+        );
+
+        // Clearing fault allows clean retry of the exact same registration.
+        fs::remove_file(&blocking_gen).unwrap();
+        let registered = runtime
+            .register_source(&CreateSourceRequest {
+                source_id: "team-notes".to_string(),
+                label: "Team Notes".to_string(),
+                path: team_dir.path().to_string_lossy().into_owned(),
+                default_category: None,
+                default_tag: None,
+            })
+            .unwrap();
+        assert_eq!(registered.source_id, "team-notes");
+        assert_eq!(registered.document_count, 1);
     }
 }

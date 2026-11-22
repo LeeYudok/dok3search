@@ -1,6 +1,6 @@
 //! Durable local source registry (`sources.json`) backing `/api/v1/sources*`.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -20,12 +20,15 @@ const ENV_SOURCE_LABEL: &str = "Local Markdown";
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 struct SourcesDisk {
     sources: Vec<RegisteredSource>,
+    #[serde(default)]
+    pending_deletes: BTreeSet<String>,
 }
 
 /// Persistent registry of local Markdown directories indexed by [`crate::persistence::PersistentRuntime`].
 pub(crate) struct SourceRegistry {
     path: PathBuf,
     sources: Vec<RegisteredSource>,
+    pending_deletes: BTreeSet<String>,
 }
 
 impl SourceRegistry {
@@ -47,6 +50,7 @@ impl SourceRegistry {
 
         let env_path_str = canonical_or_raw(env_source_dir);
         let mut dirty = !existed;
+        disk.pending_deletes.remove(ENV_SOURCE_ID);
         if let Some(existing) = disk
             .sources
             .iter_mut()
@@ -92,12 +96,13 @@ impl SourceRegistry {
         }
 
         if dirty {
-            persist_sources(&path, &disk.sources)?;
+            persist_state(&path, &disk.sources, &disk.pending_deletes)?;
         }
 
         Ok(Self {
             path,
             sources: disk.sources,
+            pending_deletes: disk.pending_deletes,
         })
     }
 
@@ -105,15 +110,27 @@ impl SourceRegistry {
         self.sources.clone()
     }
 
-    pub(crate) fn get(&self, source_id: &str) -> Option<RegisteredSource> {
+    pub(crate) fn active_sources(&self) -> Vec<RegisteredSource> {
+        self.sources
+            .iter()
+            .filter(|src| !self.pending_deletes.contains(&src.source_id))
+            .cloned()
+            .collect()
+    }
+
+    pub(crate) fn get_active(&self, source_id: &str) -> Option<RegisteredSource> {
+        if self.pending_deletes.contains(source_id) {
+            return None;
+        }
         self.sources
             .iter()
             .find(|src| src.source_id == source_id)
             .cloned()
     }
 
-    pub(crate) fn contains(&self, source_id: &str) -> bool {
-        self.sources.iter().any(|src| src.source_id == source_id)
+    pub(crate) fn contains_active(&self, source_id: &str) -> bool {
+        !self.pending_deletes.contains(source_id)
+            && self.sources.iter().any(|src| src.source_id == source_id)
     }
 
     pub(crate) fn defaults_for(&self, source_id: &str) -> (String, String) {
@@ -149,7 +166,7 @@ impl SourceRegistry {
                 "source label must be 1..=120 non-whitespace characters".to_string(),
             ));
         }
-        if self.contains(&source_id) {
+        if self.sources.iter().any(|src| src.source_id == source_id) {
             return Err(Dok3Error::InvalidInput(format!(
                 "source '{source_id}' already exists"
             )));
@@ -179,8 +196,8 @@ impl SourceRegistry {
             ));
         }
         let candidate = Path::new(raw_path);
-        validate_real_directory(candidate)?;
-        let canonical = fs::canonicalize(candidate).map_err(|err| {
+        let normalized = validate_real_directory(candidate)?;
+        let canonical = fs::canonicalize(&normalized).map_err(|err| {
             Dok3Error::InvalidInput(format!("failed to canonicalize path '{raw_path}': {err}"))
         })?;
         for existing in &self.sources {
@@ -219,31 +236,65 @@ impl SourceRegistry {
     pub(crate) fn insert_source(&mut self, source: RegisteredSource) -> Result<(), String> {
         let mut next = self.sources.clone();
         next.push(source);
-        persist_sources(&self.path, &next)?;
+        persist_state(&self.path, &next, &self.pending_deletes)?;
         self.sources = next;
         Ok(())
     }
 
-    pub(crate) fn remove_source(&mut self, source_id: &str) -> Result<RegisteredSource, Dok3Error> {
+    pub(crate) fn mark_pending_delete(
+        &mut self,
+        source_id: &str,
+    ) -> Result<RegisteredSource, Dok3Error> {
         let trimmed = source_id.trim();
         if trimmed.is_empty() {
             return Err(Dok3Error::InvalidInput(
                 "source_id must not be empty".to_string(),
             ));
         }
-        let Some(pos) = self.sources.iter().position(|src| src.source_id == trimmed) else {
+        let Some(existing) = self.sources.iter().find(|src| src.source_id == trimmed) else {
             return Err(Dok3Error::NotFound(format!("source '{trimmed}' not found")));
         };
-        if self.sources[pos].managed_by_env {
+        if existing.managed_by_env {
             return Err(Dok3Error::InvalidInput(format!(
                 "cannot delete environment-managed source '{trimmed}'"
             )));
         }
-        let mut next = self.sources.clone();
-        let removed = next.remove(pos);
-        persist_sources(&self.path, &next).map_err(Dok3Error::Storage)?;
-        self.sources = next;
-        Ok(removed)
+        let entry = existing.clone();
+        if !self.pending_deletes.contains(trimmed) {
+            let mut next_pending = self.pending_deletes.clone();
+            next_pending.insert(trimmed.to_string());
+            persist_state(&self.path, &self.sources, &next_pending).map_err(Dok3Error::Storage)?;
+            self.pending_deletes = next_pending;
+        }
+        Ok(entry)
+    }
+
+    pub(crate) fn finalize_delete(&mut self, source_id: &str) -> Result<(), String> {
+        let mut next_sources = self.sources.clone();
+        let before_len = next_sources.len();
+        next_sources.retain(|src| src.source_id != source_id);
+        let mut next_pending = self.pending_deletes.clone();
+        let removed_pending = next_pending.remove(source_id);
+        if next_sources.len() == before_len && !removed_pending {
+            return Ok(());
+        }
+        persist_state(&self.path, &next_sources, &next_pending)?;
+        self.sources = next_sources;
+        self.pending_deletes = next_pending;
+        Ok(())
+    }
+
+    pub(crate) fn finalize_all_pending_deletes(&mut self) -> Result<(), String> {
+        if self.pending_deletes.is_empty() {
+            return Ok(());
+        }
+        let mut next_sources = self.sources.clone();
+        next_sources.retain(|src| !self.pending_deletes.contains(&src.source_id));
+        let next_pending = BTreeSet::new();
+        persist_state(&self.path, &next_sources, &next_pending)?;
+        self.sources = next_sources;
+        self.pending_deletes = next_pending;
+        Ok(())
     }
 
     pub(crate) fn update_sync_results(
@@ -271,15 +322,50 @@ impl SourceRegistry {
             }
         }
         if next != self.sources {
-            persist_sources(&self.path, &next)?;
+            persist_state(&self.path, &next, &self.pending_deletes)?;
             self.sources = next;
         }
         Ok(())
     }
 }
 
-pub(crate) fn validate_real_directory(path: &Path) -> Result<(), Dok3Error> {
-    let meta = fs::symlink_metadata(path).map_err(|err| {
+pub(crate) fn validate_real_directory(path: &Path) -> Result<PathBuf, Dok3Error> {
+    let mut normalized = PathBuf::new();
+    for comp in path.components() {
+        match comp {
+            std::path::Component::CurDir => {}
+            std::path::Component::ParentDir => {
+                return Err(Dok3Error::InvalidInput(format!(
+                    "source path '{}' must not contain '..' components",
+                    path.display()
+                )));
+            }
+            std::path::Component::Normal(part) => {
+                normalized.push(part);
+                let is_macos_root_link = cfg!(target_os = "macos")
+                    && matches!(normalized.to_str(), Some("/tmp" | "/var" | "/etc"));
+                if !is_macos_root_link {
+                    let meta = fs::symlink_metadata(&normalized).map_err(|err| {
+                        Dok3Error::InvalidInput(format!(
+                            "source directory '{}' is inaccessible: {err}",
+                            path.display()
+                        ))
+                    })?;
+                    if meta.file_type().is_symlink() {
+                        return Err(Dok3Error::InvalidInput(format!(
+                            "source directory '{}' must not be or traverse a symbolic link",
+                            path.display()
+                        )));
+                    }
+                }
+            }
+            other => normalized.push(other),
+        }
+    }
+    if normalized.as_os_str().is_empty() {
+        normalized.push(".");
+    }
+    let meta = fs::symlink_metadata(&normalized).map_err(|err| {
         Dok3Error::InvalidInput(format!(
             "source directory '{}' is inaccessible: {err}",
             path.display()
@@ -287,7 +373,7 @@ pub(crate) fn validate_real_directory(path: &Path) -> Result<(), Dok3Error> {
     })?;
     if meta.file_type().is_symlink() {
         return Err(Dok3Error::InvalidInput(format!(
-            "source directory '{}' must not be a symbolic link",
+            "source directory '{}' must not be or traverse a symbolic link",
             path.display()
         )));
     }
@@ -297,7 +383,7 @@ pub(crate) fn validate_real_directory(path: &Path) -> Result<(), Dok3Error> {
             path.display()
         )));
     }
-    Ok(())
+    Ok(normalized)
 }
 
 pub(crate) fn source_config_for(entry: &RegisteredSource) -> SourceConfig {
@@ -318,9 +404,14 @@ fn canonical_or_raw(path: &Path) -> String {
         .into_owned()
 }
 
-fn persist_sources(path: &Path, sources: &[RegisteredSource]) -> Result<(), String> {
+fn persist_state(
+    path: &Path,
+    sources: &[RegisteredSource],
+    pending_deletes: &BTreeSet<String>,
+) -> Result<(), String> {
     let disk = SourcesDisk {
         sources: sources.to_vec(),
+        pending_deletes: pending_deletes.clone(),
     };
     let bytes = serde_json::to_vec_pretty(&disk)
         .map_err(|err| format!("failed to serialize sources registry: {err}"))?;
@@ -344,7 +435,7 @@ mod tests {
         assert!(reg.list()[0].managed_by_env);
 
         assert!(matches!(
-            reg.remove_source(ENV_SOURCE_ID),
+            reg.mark_pending_delete(ENV_SOURCE_ID),
             Err(Dok3Error::InvalidInput(_))
         ));
 
@@ -360,22 +451,47 @@ mod tests {
             Err(Dok3Error::InvalidInput(_))
         ));
 
-        // Reject symlink directory.
+        // Reject symlink directory (including trailing `/` and trailing `/.`) plus `..` components.
+        assert!(matches!(
+            reg.validate_new_source(&CreateSourceRequest {
+                source_id: "parent-rel".to_string(),
+                label: "Parent".to_string(),
+                path: format!(
+                    "{}/../{}",
+                    extra_dir.path().display(),
+                    extra_dir.path().file_name().unwrap().to_string_lossy()
+                ),
+                default_category: None,
+                default_tag: None,
+            }),
+            Err(Dok3Error::InvalidInput(_))
+        ));
         #[cfg(unix)]
         {
+            fs::create_dir_all(extra_dir.path().join("sub")).unwrap();
             let link_parent = tempfile::tempdir().unwrap();
             let link_path = link_parent.path().join("sym");
             std::os::unix::fs::symlink(extra_dir.path(), &link_path).unwrap();
-            assert!(matches!(
-                reg.validate_new_source(&CreateSourceRequest {
-                    source_id: "sym-src".to_string(),
-                    label: "Sym".to_string(),
-                    path: link_path.to_string_lossy().into_owned(),
-                    default_category: None,
-                    default_tag: None,
-                }),
-                Err(Dok3Error::InvalidInput(_))
-            ));
+            for candidate in [
+                link_path.to_string_lossy().into_owned(),
+                format!("{}/", link_path.display()),
+                format!("{}/.", link_path.display()),
+                format!("{}/sub", link_path.display()),
+            ] {
+                assert!(
+                    matches!(
+                        reg.validate_new_source(&CreateSourceRequest {
+                            source_id: "sym-src".to_string(),
+                            label: "Sym".to_string(),
+                            path: candidate.clone(),
+                            default_category: None,
+                            default_tag: None,
+                        }),
+                        Err(Dok3Error::InvalidInput(_))
+                    ),
+                    "expected symlink path '{candidate}' to be rejected"
+                );
+            }
         }
 
         let validated = reg
@@ -396,8 +512,11 @@ mod tests {
         drop(reg);
         let mut reopened = SourceRegistry::open(data_dir.path(), env_dir.path()).unwrap();
         assert_eq!(reopened.list().len(), 2);
-        let removed = reopened.remove_source("team-notes").unwrap();
-        assert_eq!(removed.source_id, "team-notes");
+        let marked = reopened.mark_pending_delete("team-notes").unwrap();
+        assert_eq!(marked.source_id, "team-notes");
+        assert!(!reopened.contains_active("team-notes"));
+        reopened.finalize_delete("team-notes").unwrap();
+        assert_eq!(reopened.list().len(), 1);
         assert!(extra_dir.path().join("note.md").is_file());
     }
 }
