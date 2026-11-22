@@ -667,6 +667,7 @@ impl PersistentRuntime {
             .reconcile_on_startup()
             .map_err(|err| err.to_string())?;
         let rebuilt = ensure_active_generation(&mut manager, &store, &journal, false)?;
+        classification_store.clear_all_pending_index_sync()?;
         manager.gc_retired().map_err(|err| err.to_string())?;
 
         let mut job_store = JobHistoryStore::open(
@@ -974,7 +975,7 @@ impl ClassificationPort for PersistentRuntime {
             .job_exec_lock
             .lock()
             .map_err(|_| Dok3Error::Internal("index job execution lock poisoned".into()))?;
-        let orig_bytes = self.store.read_original(principal, id)?;
+        let _orig_bytes = self.store.read_original(principal, id)?;
         let mut doc = self.store.get_stored_document(principal, id)?;
 
         let orig_body = doc.body.clone();
@@ -983,12 +984,14 @@ impl ClassificationPort for PersistentRuntime {
         let orig_hash = doc.content_hash.clone();
         let orig_rev = doc.revision_id.clone();
 
-        let updated_classification = {
+        let (updated_classification, pending_sync) = {
             let mut classifications = self
                 .classifications
                 .lock()
                 .map_err(|_| Dok3Error::Internal("classification store mutex poisoned".into()))?;
-            classifications.update_manual(&mut doc, "docs", principal, req)?
+            let updated = classifications.update_manual(&mut doc, "docs", principal, req)?;
+            let pending = classifications.is_pending_index_sync(id);
+            (updated, pending)
         };
 
         // Enforce original-content immutability invariant.
@@ -998,7 +1001,9 @@ impl ClassificationPort for PersistentRuntime {
         doc.content_hash = orig_hash;
         doc.revision_id = orig_rev;
 
-        if let PutOutcome::Stored(rev) = self.store.put(doc, &orig_bytes)? {
+        let outcome = self.store.update_metadata(doc)?;
+        if matches!(outcome, PutOutcome::Stored(_)) || pending_sync {
+            let rev = outcome.revision().clone();
             self.journal.append(ChangeEvent {
                 sequence: Sequence::new(0),
                 document_id: id.clone(),
@@ -1019,6 +1024,14 @@ impl ClassificationPort for PersistentRuntime {
                     manager.state().active_epoch,
                 );
             }
+            drop(manager);
+            let mut classifications = self
+                .classifications
+                .lock()
+                .map_err(|_| Dok3Error::Internal("classification store mutex poisoned".into()))?;
+            classifications
+                .clear_pending_index_sync(id)
+                .map_err(Dok3Error::Storage)?;
         }
         Ok(updated_classification)
     }
@@ -1052,6 +1065,7 @@ fn refresh_locked(
     })?;
     let report = sync_source_to_storage(source_dir, store, journal, classifications)?;
     let rebuilt = ensure_active_generation(manager, store, journal, force_rebuild)?;
+    classifications.clear_all_pending_index_sync()?;
     manager.gc_retired().map_err(|err| err.to_string())?;
     Ok(RefreshReport {
         report,
@@ -1175,6 +1189,7 @@ fn sync_source_to_storage(
 
     let parser = MarkdownParser::new();
     let mut seen_ids = HashSet::with_capacity(report.files.len());
+    let mut synced_this_pass = HashSet::with_capacity(report.files.len());
     for file in report.files {
         let parsed = match parser.parse(&file.filename, &file.bytes) {
             Ok(parsed) => parsed,
@@ -1201,18 +1216,31 @@ fn sync_source_to_storage(
         let doc_id = document.id.clone();
         seen_ids.insert(doc_id.as_str().to_string());
 
-        if let PutOutcome::Stored(rev) = store
-            .put(document, &file.bytes)
+        let put_outcome = if store
+            .existing_content_hash(&doc_id)
             .map_err(|err| err.to_string())?
+            .as_deref()
+            == Some(content_hash.as_str())
         {
+            store.update_metadata(document)
+        } else {
+            store
+                .verify_existing_object(&content_hash)
+                .map_err(|err| err.to_string())?;
+            store.put(document, &file.bytes)
+        }
+        .map_err(|err| err.to_string())?;
+
+        if let PutOutcome::Stored(rev) = put_outcome {
             journal
                 .append(ChangeEvent {
                     sequence: Sequence::new(0),
-                    document_id: doc_id,
+                    document_id: doc_id.clone(),
                     revision_id: rev,
                     kind: ChangeKind::Upsert,
                 })
                 .map_err(|err| err.to_string())?;
+            synced_this_pass.insert(doc_id.as_str().to_string());
         }
         build_report.indexed += 1;
     }
@@ -1232,7 +1260,12 @@ fn sync_source_to_storage(
     }
     classifications.prune_deleted(&seen_ids)?;
 
-    reconcile_store_journal(store, journal)?;
+    let pending_for_reconcile: HashSet<String> = classifications
+        .pending_index_ids()
+        .into_iter()
+        .filter(|id| !synced_this_pass.contains(id))
+        .collect();
+    reconcile_store_journal(store, journal, &pending_for_reconcile)?;
 
     Ok(build_report)
 }
@@ -1297,6 +1330,7 @@ fn generation_incompatible(generations_dir: &Path, state: &DurableState, gen_id:
 fn reconcile_store_journal(
     store: &FileDocumentStore,
     journal: &FileChangeJournal,
+    pending_index_ids: &HashSet<String>,
 ) -> Result<(), String> {
     let events = journal
         .read_after(Sequence::new(0), usize::MAX)
@@ -1314,7 +1348,9 @@ fn reconcile_store_journal(
     let mut live_ids = HashSet::with_capacity(docs.len());
     for doc in docs {
         let key = doc.id.as_str().to_string();
-        if latest.get(&key).and_then(|v| v.as_ref()) != Some(&doc.revision_id) {
+        if latest.get(&key).and_then(|v| v.as_ref()) != Some(&doc.revision_id)
+            || pending_index_ids.contains(&key)
+        {
             journal
                 .append(ChangeEvent {
                     sequence: Sequence::new(0),
@@ -2458,5 +2494,175 @@ mod tests {
             )
             .unwrap();
         assert_eq!(reverted_hits.total_hits, 1);
+    }
+
+    #[test]
+    fn classification_pending_sync_recovers_after_crash_between_metadata_and_journal() {
+        let source_root = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+        fs::write(
+            source_root.path().join("guide-a.md"),
+            "# Crash Recovery Doc\n\ncrashrecoverytoken body\n",
+        )
+        .unwrap();
+
+        let admin = Principal::local_admin();
+        let public = Principal::anonymous_public();
+        let doc_id = DocumentId::new("local-markdown:guide-a.md");
+
+        let (runtime, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        let orig_bytes = runtime.store.read_original(&admin, &doc_id).unwrap();
+        let orig_doc = runtime.store.get_stored_document(&admin, &doc_id).unwrap();
+
+        // Simulate crash after saving classifications.json + documents.json before journal/index.
+        let mut crashed_doc = runtime.store.get_stored_document(&admin, &doc_id).unwrap();
+        let req_a = UpdateClassificationRequest {
+            category: Some("policy".to_string()),
+            summary: Some("crashrecoverysummaryalpha".to_string()),
+            tags: Some(vec!["recoverytag".to_string()]),
+            keywords: Some(vec!["pendingidx".to_string()]),
+            reset_to_rule: false,
+        };
+        {
+            let mut cls = runtime.classifications.lock().unwrap();
+            cls.update_manual(&mut crashed_doc, "docs", &admin, &req_a)
+                .unwrap();
+            assert!(cls.is_pending_index_sync(&doc_id));
+        }
+        assert!(matches!(
+            runtime.store.update_metadata(crashed_doc).unwrap(),
+            PutOutcome::Stored(_)
+        ));
+        assert_eq!(
+            runtime
+                .service()
+                .search(
+                    &public,
+                    &SearchRequest {
+                        query: "crashrecoverysummaryalpha".to_string(),
+                        filters: dok3_domain::SearchFilters {
+                            category: Some("policy".to_string()),
+                            ..Default::default()
+                        },
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap()
+                .total_hits,
+            0
+        );
+
+        // Part (a): Retrying the identical PATCH recovers journal + Tantivy index immediately.
+        runtime
+            .update_classification(&admin, &doc_id, &req_a)
+            .unwrap();
+        assert!(
+            !runtime
+                .classifications
+                .lock()
+                .unwrap()
+                .is_pending_index_sync(&doc_id)
+        );
+        assert_eq!(
+            runtime
+                .service()
+                .search(
+                    &public,
+                    &SearchRequest {
+                        query: "crashrecoverysummaryalpha".to_string(),
+                        filters: dok3_domain::SearchFilters {
+                            category: Some("policy".to_string()),
+                            ..Default::default()
+                        },
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap()
+                .total_hits,
+            1
+        );
+
+        // Part (b): Another crash between metadata write and journal is recovered on restart.
+        let mut crashed_doc_b = runtime.store.get_stored_document(&admin, &doc_id).unwrap();
+        let req_b = UpdateClassificationRequest {
+            category: Some("manual".to_string()),
+            summary: Some("restartrecoveredbeta".to_string()),
+            tags: Some(vec!["restarttag".to_string()]),
+            keywords: Some(vec!["restartkw".to_string()]),
+            reset_to_rule: false,
+        };
+        {
+            let mut cls = runtime.classifications.lock().unwrap();
+            cls.update_manual(&mut crashed_doc_b, "docs", &admin, &req_b)
+                .unwrap();
+            assert!(cls.is_pending_index_sync(&doc_id));
+        }
+        assert!(matches!(
+            runtime.store.update_metadata(crashed_doc_b).unwrap(),
+            PutOutcome::Stored(_)
+        ));
+        drop(runtime);
+
+        let (restarted, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        assert!(
+            !restarted
+                .classifications
+                .lock()
+                .unwrap()
+                .is_pending_index_sync(&doc_id)
+        );
+        assert_eq!(
+            restarted
+                .service()
+                .search(
+                    &public,
+                    &SearchRequest {
+                        query: "restartrecoveredbeta".to_string(),
+                        filters: dok3_domain::SearchFilters {
+                            category: Some("manual".to_string()),
+                            ..Default::default()
+                        },
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap()
+                .total_hits,
+            1
+        );
+        let stored_after = restarted
+            .store
+            .get_stored_document(&admin, &doc_id)
+            .unwrap();
+        assert_eq!(stored_after.revision_id, orig_doc.revision_id);
+        assert_eq!(stored_after.content_hash, orig_doc.content_hash);
+        assert_eq!(
+            restarted.store.read_original(&admin, &doc_id).unwrap(),
+            orig_bytes
+        );
+    }
+
+    #[test]
+    fn refresh_rejects_corrupted_existing_object_without_overwriting() {
+        let source_root = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+        fs::write(
+            source_root.path().join("guide-a.md"),
+            "# Object Immutability\n\nimmutableobjectcheck body\n",
+        )
+        .unwrap();
+
+        let admin = Principal::local_admin();
+        let doc_id = DocumentId::new("local-markdown:guide-a.md");
+        let (runtime, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        let hash = runtime
+            .store
+            .get_stored_document(&admin, &doc_id)
+            .unwrap()
+            .content_hash;
+        let obj_path = data_root.path().join("storage/objects").join(&hash);
+
+        fs::write(&obj_path, b"corrupted-by-fault").unwrap();
+        assert!(runtime.refresh().is_err());
+        assert_eq!(fs::read(&obj_path).unwrap(), b"corrupted-by-fault");
     }
 }

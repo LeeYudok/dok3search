@@ -169,6 +169,70 @@ impl FileDocumentStore {
         Ok(docs.keys().map(|id| DocumentId::new(id.clone())).collect())
     }
 
+    /// Returns the stored SHA-256 hex content hash if `id` is currently tracked in metadata.
+    pub fn existing_content_hash(&self, id: &DocumentId) -> Result<Option<String>, Dok3Error> {
+        let docs = self
+            .docs
+            .read()
+            .map_err(|_| Dok3Error::Internal("store lock poisoned".into()))?;
+        Ok(docs.get(id.as_str()).map(|doc| doc.content_hash.clone()))
+    }
+
+    /// Fails with [`Dok3Error::Storage`] if `objects/<content_hash>` already exists on disk
+    /// and fails SHA-256 verification. Used on refresh so existing objects are never rewritten.
+    pub fn verify_existing_object(&self, content_hash: &str) -> Result<(), Dok3Error> {
+        let path = self.object_path(content_hash);
+        match fs::read(&path) {
+            Ok(bytes) => {
+                if sha256_hex(&bytes) != content_hash {
+                    return Err(Dok3Error::Storage(format!(
+                        "existing object '{}' failed integrity check",
+                        path.display()
+                    )));
+                }
+                Ok(())
+            }
+            Err(err) if err.kind() == std::io::ErrorKind::NotFound => Ok(()),
+            Err(err) => Err(storage_err("verify existing object", err)),
+        }
+    }
+
+    /// Updates metadata for an existing document without creating or rewriting `objects/<sha256>`.
+    /// Fails with [`Dok3Error::Storage`] if the existing object is missing or corrupted.
+    pub fn update_metadata(&self, mut doc: Document) -> Result<PutOutcome, Dok3Error> {
+        if doc.id.as_str().trim().is_empty() {
+            return Err(Dok3Error::InvalidInput(
+                "document id must not be empty".into(),
+            ));
+        }
+        let mut docs = self.write()?;
+        let existing = docs
+            .get(doc.id.as_str())
+            .ok_or_else(|| Dok3Error::NotFound(format!("document '{}' not found", doc.id)))?;
+        let hash = existing.content_hash.clone();
+        let revision = existing.revision_id.clone();
+        doc.content_hash = hash.clone();
+        doc.revision_id = revision.clone();
+
+        if !object_intact(&self.object_path(&hash), &hash) {
+            return Err(Dok3Error::Storage(format!(
+                "original for '{}' failed integrity check",
+                doc.id
+            )));
+        }
+        if docs.get(doc.id.as_str()) == Some(&doc) {
+            return Ok(PutOutcome::Unchanged(revision));
+        }
+        let mut next = docs.clone();
+        next.insert(doc.id.as_str().to_string(), doc);
+        if let Err(err) = self.persist(&next) {
+            self.resync_from_disk(&mut docs);
+            return Err(err);
+        }
+        *docs = next;
+        Ok(PutOutcome::Stored(revision))
+    }
+
     /// Returns clones of all documents currently stored in metadata.
     pub fn list_documents(&self) -> Result<Vec<Document>, Dok3Error> {
         let docs = self

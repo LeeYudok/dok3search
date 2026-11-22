@@ -1,6 +1,6 @@
 //! Deterministic offline rule-based document classification and immutable-original storage.
 
-use std::collections::{BTreeMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashSet};
 use std::fs::{self, OpenOptions};
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -322,6 +322,8 @@ struct ClassificationAuditEntry {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 struct ClassificationDisk {
     records: BTreeMap<String, DocumentClassification>,
+    #[serde(default)]
+    pending_index_sync: BTreeSet<String>,
 }
 
 /// Durable storage for document classification (`classifications.json`) and audit trail (`classification_audit.jsonl`).
@@ -329,6 +331,7 @@ pub(crate) struct ClassificationStore {
     path: PathBuf,
     audit_path: PathBuf,
     records: BTreeMap<String, DocumentClassification>,
+    pending_index_sync: BTreeSet<String>,
 }
 
 impl ClassificationStore {
@@ -345,11 +348,41 @@ impl ClassificationStore {
             path,
             audit_path,
             records: disk.records,
+            pending_index_sync: disk.pending_index_sync,
         })
     }
 
     pub(crate) fn get(&self, id: &DocumentId) -> Option<DocumentClassification> {
         self.records.get(id.as_str()).cloned()
+    }
+
+    pub(crate) fn pending_index_ids(&self) -> HashSet<String> {
+        self.pending_index_sync.iter().cloned().collect()
+    }
+
+    pub(crate) fn is_pending_index_sync(&self, id: &DocumentId) -> bool {
+        self.pending_index_sync.contains(id.as_str())
+    }
+
+    pub(crate) fn clear_pending_index_sync(&mut self, id: &DocumentId) -> Result<(), String> {
+        if !self.pending_index_sync.contains(id.as_str()) {
+            return Ok(());
+        }
+        let mut next_pending = self.pending_index_sync.clone();
+        next_pending.remove(id.as_str());
+        self.persist_state(&self.records, &next_pending)?;
+        self.pending_index_sync = next_pending;
+        Ok(())
+    }
+
+    pub(crate) fn clear_all_pending_index_sync(&mut self) -> Result<(), String> {
+        if self.pending_index_sync.is_empty() {
+            return Ok(());
+        }
+        let next_pending = BTreeSet::new();
+        self.persist_state(&self.records, &next_pending)?;
+        self.pending_index_sync = next_pending;
+        Ok(())
     }
 
     /// Applies either existing manual classification (when `manual_locked`) or deterministic rule
@@ -412,15 +445,26 @@ impl ClassificationStore {
             .filter(|id| !live_ids.contains(id.as_str()))
             .cloned()
             .collect();
-        if stale.is_empty() {
+        let stale_pending: Vec<String> = self
+            .pending_index_sync
+            .iter()
+            .filter(|id| !live_ids.contains(id.as_str()))
+            .cloned()
+            .collect();
+        if stale.is_empty() && stale_pending.is_empty() {
             return Ok(());
         }
         let mut next_records = self.records.clone();
         for id in stale {
             next_records.remove(&id);
         }
-        self.persist_map(&next_records)?;
+        let mut next_pending = self.pending_index_sync.clone();
+        for id in stale_pending {
+            next_pending.remove(&id);
+        }
+        self.persist_state(&next_records, &next_pending)?;
         self.records = next_records;
+        self.pending_index_sync = next_pending;
         Ok(())
     }
 
@@ -492,9 +536,13 @@ impl ClassificationStore {
         action: &str,
     ) -> Result<(), String> {
         let mut next_records = self.records.clone();
-        next_records.insert(record.document_id.as_str().to_string(), record.clone());
-        self.persist_map(&next_records)?;
+        let mut next_pending = self.pending_index_sync.clone();
+        let key = record.document_id.as_str().to_string();
+        next_records.insert(key.clone(), record.clone());
+        next_pending.insert(key);
+        self.persist_state(&next_records, &next_pending)?;
         self.records = next_records;
+        self.pending_index_sync = next_pending;
         self.append_audit(&ClassificationAuditEntry {
             timestamp_ms: record.updated_at_ms,
             document_id: record.document_id.as_str().to_string(),
@@ -508,12 +556,14 @@ impl ClassificationStore {
         Ok(())
     }
 
-    fn persist_map(
+    fn persist_state(
         &self,
         records: &BTreeMap<String, DocumentClassification>,
+        pending_index_sync: &BTreeSet<String>,
     ) -> Result<(), String> {
         let disk = ClassificationDisk {
             records: records.clone(),
+            pending_index_sync: pending_index_sync.clone(),
         };
         let bytes = serde_json::to_vec_pretty(&disk)
             .map_err(|err| format!("failed to serialize classifications: {err}"))?;
