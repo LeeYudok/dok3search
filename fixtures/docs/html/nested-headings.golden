@@ -1,0 +1,22 @@
+title: Architecture
+warnings: 0
+sections: 4
+
+[1] id=architecture anchor=architecture lines=1-4
+heading: Architecture
+| Text before a nested section.
+
+[2] id=rust anchor=rust lines=5-6
+heading: Rust
+
+[3] id=ownership anchor=ownership lines=7-10
+heading: Ownership
+| Ownership rules.
+
+[4] id=rust-1 anchor=rust-1 lines=11-17
+heading: Rust
+| A repeated heading receives a unique anchor.
+|
+| #### Deep Heading
+|
+| Level four remains in the containing section.
