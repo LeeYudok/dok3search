@@ -23,7 +23,7 @@
 - `backend/rust/` — Cargo workspace (`crates/` 아래 13개 크레이트: `dok3-core` ~ `dok3-server`)
 - `config/` — 환경별 설정 예시 및 스키마 배치 위치
 - `contracts/` — REST·MCP·도메인 계약 정의 배치 위치
-- `docs/` — 아키텍처·ADR·운영 매뉴얼 배치 위치
+- `docs/` — 아키텍처·ADR·운영 매뉴얼 배치 위치; `docs/manual/dok3search-manual.md`은 자체 운영 매뉴얼 Knowledge Pack을 자동 색인한다.
 - `tests/` — 워크스페이스 단위 외 통합·장애 주입·성능 테스트 배치 위치
 - `scripts/` — 저장소 검증·유틸리티 스크립트 (`check-agents-yaml.sh`)
 
@@ -34,14 +34,23 @@
 - `dok3-index-manager`는 `dok3-storage`와 `dok3-index`를 조합해 세대 빌드·전환·복구를 담당한다.
 - `dok3-api`와 `dok3-agent`는 `dok3-search` 응용 서비스를 호출하며 도메인 로직을 중복 구현하지 않는다.
 
-## 실행 환경 변수 (`dok3-server`)
+## 실행 환경 변수 및 기동 모드 (`dok3-server`)
 
 - `DOK3_BIND`: HTTP 바인드 주소 (기본 `127.0.0.1`)
 - `DOK3_PORT`: HTTP 포트 (기본 `8080`)
+- `DOK3_DATA_DIR`: 영속 스토어 루트 경로. 세대 전환은 `tantivy-persistent` 백엔드를 사용한다.
 - `DOK3_STATIC_DIR`: 정적 React 빌드(`frontend/dist`) 경로 (미지정 시 자동 탐색)
 - `DOK3_DESIGN_DIR`: 설계 문서 시드(`frontend/src/samples/design`) 경로 (미지정 시 자동 탐색)
 
 - `DOK3_SOURCE_DIR`: 시작할 때 색인할 Markdown 폴더. 설정하면 IPv4 루프백에서만 열리고, 매번 현재 파일로 메모리 검색 스냅샷을 새로 구성한다. 읽을 수 없거나 비어 있거나 UTF-8이 아닌 파일은 경로와 사유를 기록하고 나머지 문서 색인은 계속한다.
+
+- `--mcp-stdio`: MCP 서버를 표준입출력 모드로 시작한다. `POST /mcp`는 HTTP 모드의 MCP 엔드포인트다. 두 경로 모두 `Principal::anonymous_public()` 고정을 사용한다.
+
+## 협업 및 머지 규칙
+
+- 이슈에는 `owner:<agent_id>` 라벨과 담당 코멘트를 먼저 남기고, `batch/<agent>-<YYYYMMDD>-<8hex>` 브랜치에서 작업한다.
+- PR 본문에 `Closes #N`으로 이슈 연결을 명시한다.
+- 자동 머지는 타 에이전트 교차 리뷰와 필수 CI 통과를 모두 만족할 때만 현재 지휘자가 `--merge`로 즉시 수행하며, squash 금지를 유지한다.
 
 ## 검증 및 실행 명령
 
