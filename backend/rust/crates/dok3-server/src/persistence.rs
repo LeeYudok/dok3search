@@ -9,13 +9,13 @@ use std::sync::{Arc, Mutex};
 use dok3_connectors::{LocalFileConnector, SourceConfig, build_document};
 use dok3_core::Dok3Error;
 use dok3_domain::{
-    ChangeEvent, ChangeJournalPort, ChangeKind, Document, DocumentParserPort, DocumentStorePort,
-    GenerationId, Principal, ReaderState, RevisionId, SearchPort, SearchRequest, SearchResponse,
-    SearchSnapshotMeta, Sequence, SourceId,
+    ChangeEvent, ChangeJournalPort, ChangeKind, Document, DocumentId, DocumentParserPort,
+    DocumentStorePort, GenerationId, Principal, ReaderState, RevisionId, SearchPort, SearchRequest,
+    SearchResponse, SearchSnapshotMeta, Sequence, SourceId,
 };
 use dok3_index::{SCHEMA_VERSION, TantivyIndex};
 use dok3_index_manager::{
-    Error as ManagerError, GenerationBackend, IndexManager, Manifest, ReaderAccess,
+    DurableState, Error as ManagerError, GenerationBackend, IndexManager, Manifest, ReaderAccess,
     Result as ManagerResult, SearchSnapshot, ValidationCheck,
 };
 use dok3_parser::MarkdownParser;
@@ -358,6 +358,9 @@ fn snapshot_meta_from_lease(lease: &SearchSnapshot<Arc<TantivyIndex>>) -> Search
 }
 
 /// Summary returned by [`PersistentRuntime::refresh`].
+///
+/// `report.indexed` records the total scanned-and-stored source documents verified on this pass,
+/// including when `rebuilt` is `false`.
 #[cfg_attr(not(test), allow(dead_code))]
 #[derive(Debug, PartialEq, Eq)]
 pub struct RefreshReport {
@@ -390,6 +393,7 @@ impl PersistentRuntime {
             Arc::new(FileChangeJournal::open(&storage_dir).map_err(|err| err.to_string())?);
 
         let report = sync_source_to_storage(source_dir, &store, &journal)?;
+        quarantine_incompatible_generations(&generations_dir)?;
 
         let backend = LocalGenerationBackend::new(
             generations_dir.clone(),
@@ -441,6 +445,9 @@ impl PersistentRuntime {
             .manager
             .lock()
             .map_err(|_| "persistent index manager mutex poisoned".to_string())?;
+        manager.reconcile_on_startup().map_err(|err| {
+            format!("persistent index manager reconciliation failed; restart required: {err}")
+        })?;
         let report = sync_source_to_storage(&self.source_dir, &self.store, &self.journal)?;
         let rebuilt = ensure_active_generation(&mut manager, &self.store, &self.journal)?;
         manager.gc_retired().map_err(|err| err.to_string())?;
@@ -579,7 +586,114 @@ fn sync_source_to_storage(
         }
     }
 
+    reconcile_store_journal(store, journal)?;
+
     Ok(build_report)
+}
+
+fn quarantine_incompatible_generations(generations_dir: &Path) -> Result<(), String> {
+    let state_path = generations_dir.join("generation_state.json");
+    let raw = match fs::read(&state_path) {
+        Ok(bytes) => bytes,
+        Err(err) if err.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+        Err(err) => return Err(format!("failed to read generation_state.json: {err}")),
+    };
+    let state: DurableState = match serde_json::from_slice(&raw) {
+        Ok(parsed) => parsed,
+        Err(_) => return Ok(()),
+    };
+
+    let active_incompatible = state
+        .active_generation
+        .as_deref()
+        .is_some_and(|id| generation_incompatible(generations_dir, &state, id));
+    let transition_incompatible = state.activating_transition.as_ref().is_some_and(|intent| {
+        generation_incompatible(generations_dir, &state, &intent.to_generation)
+    });
+
+    if !active_incompatible && !transition_incompatible {
+        return Ok(());
+    }
+
+    fs::remove_file(&state_path)
+        .map_err(|err| format!("failed to reset incompatible generation state: {err}"))?;
+    for id in state.generations.keys() {
+        let dir = generations_dir.join(id);
+        match fs::remove_dir_all(&dir) {
+            Ok(()) => {}
+            Err(err) if err.kind() == std::io::ErrorKind::NotFound => {}
+            Err(err) => {
+                return Err(format!(
+                    "failed to remove incompatible generation '{}': {err}",
+                    dir.display()
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+
+fn generation_incompatible(generations_dir: &Path, state: &DurableState, gen_id: &str) -> bool {
+    let disk_manifest = fs::read(generations_dir.join(gen_id).join("manifest.json"))
+        .ok()
+        .and_then(|bytes| serde_json::from_slice::<Manifest>(&bytes).ok());
+    let manifest = disk_manifest.as_ref().or_else(|| {
+        state
+            .generations
+            .get(gen_id)
+            .and_then(|record| record.manifest.as_ref())
+    });
+    manifest.is_some_and(|m| {
+        m.schema_version != u64::from(SCHEMA_VERSION) || m.analyzer_version != ANALYZER_VERSION
+    })
+}
+
+fn reconcile_store_journal(
+    store: &FileDocumentStore,
+    journal: &FileChangeJournal,
+) -> Result<(), String> {
+    let events = journal
+        .read_after(Sequence::new(0), usize::MAX)
+        .map_err(|err| err.to_string())?;
+    let mut latest: BTreeMap<String, Option<RevisionId>> = BTreeMap::new();
+    for event in events {
+        let state = match event.kind {
+            ChangeKind::Upsert => Some(event.revision_id),
+            ChangeKind::Delete => None,
+        };
+        latest.insert(event.document_id.as_str().to_string(), state);
+    }
+
+    let docs = store.list_documents().map_err(|err| err.to_string())?;
+    let mut live_ids = HashSet::with_capacity(docs.len());
+    for doc in docs {
+        let key = doc.id.as_str().to_string();
+        if latest.get(&key).and_then(|v| v.as_ref()) != Some(&doc.revision_id) {
+            journal
+                .append(ChangeEvent {
+                    sequence: Sequence::new(0),
+                    document_id: doc.id,
+                    revision_id: doc.revision_id,
+                    kind: ChangeKind::Upsert,
+                })
+                .map_err(|err| err.to_string())?;
+        }
+        live_ids.insert(key);
+    }
+
+    for (id, recorded) in latest {
+        if recorded.is_some() && !live_ids.contains(&id) {
+            journal
+                .append(ChangeEvent {
+                    sequence: Sequence::new(0),
+                    document_id: DocumentId::new(id),
+                    revision_id: RevisionId::new("deleted"),
+                    kind: ChangeKind::Delete,
+                })
+                .map_err(|err| err.to_string())?;
+        }
+    }
+    Ok(())
 }
 
 fn allocate_generation_id(manager: &IndexManager<LocalGenerationBackend>, seq: u64) -> String {
@@ -1066,5 +1180,155 @@ mod tests {
             )
             .unwrap();
         assert_eq!(search.total_hits, 1);
+    }
+
+    #[test]
+    fn upgrades_incompatible_disk_schema_generation_on_startup() {
+        let source_root = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+
+        fs::write(
+            source_root.path().join("guide-a.md"),
+            "# Schema Upgrade\n\nupgradealpha body text\n",
+        )
+        .unwrap();
+
+        let (runtime, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        drop(runtime);
+
+        let mut durable = read_durable_state(data_root.path());
+        let old_gen = durable.active_generation.clone().unwrap();
+        let old_record = durable.generations.get_mut(&old_gen).unwrap();
+        let old_manifest = old_record.manifest.as_mut().unwrap();
+        old_manifest.schema_version = 1;
+        let old_manifest_clone = old_manifest.clone();
+        old_record.manifest_checksum = Some(old_manifest_clone.checksum().unwrap());
+
+        let old_gen_dir = data_root.path().join("generations").join(&old_gen);
+        fs::write(
+            old_gen_dir.join("manifest.json"),
+            serde_json::to_vec_pretty(&old_manifest_clone).unwrap(),
+        )
+        .unwrap();
+        // Simulate an incompatible on-disk Tantivy index that would fail restore_active().
+        fs::write(
+            old_gen_dir.join("tantivy/meta.json"),
+            br#"{"corrupt_v1":true}"#,
+        )
+        .unwrap();
+
+        #[derive(serde::Serialize)]
+        struct TestStateEnvelope {
+            format_version: u32,
+            state_checksum: String,
+            #[serde(flatten)]
+            state: DurableState,
+        }
+        let state_checksum = dok3_storage::content_revision(&serde_json::to_vec(&durable).unwrap())
+            .as_str()
+            .to_owned();
+        let encoded = serde_json::to_vec_pretty(&TestStateEnvelope {
+            format_version: 1,
+            state_checksum,
+            state: durable,
+        })
+        .unwrap();
+        fs::write(
+            data_root.path().join("generations/generation_state.json"),
+            encoded,
+        )
+        .unwrap();
+
+        let (upgraded, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        let after = read_durable_state(data_root.path());
+        let new_gen = after.active_generation.clone().unwrap();
+        assert_eq!(
+            after
+                .generations
+                .get(&new_gen)
+                .unwrap()
+                .manifest
+                .as_ref()
+                .unwrap()
+                .schema_version,
+            u64::from(SCHEMA_VERSION)
+        );
+        let search = upgraded
+            .service()
+            .search(
+                &Principal::anonymous_public(),
+                &SearchRequest {
+                    query: "upgradealpha".to_string(),
+                    ..SearchRequest::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(search.total_hits, 1);
+    }
+
+    #[test]
+    fn recovers_from_crash_between_store_put_and_journal_append() {
+        let source_root = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+        let file_path = source_root.path().join("guide-a.md");
+
+        fs::write(
+            &file_path,
+            "# Crash Boundary\n\ngapversionone initial body\n",
+        )
+        .unwrap();
+        let (runtime, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        drop(runtime);
+
+        // Simulate source update persisted by store.put() before journal.append() ran.
+        fs::write(
+            &file_path,
+            "# Crash Boundary\n\ngapversiontwo updated body\n",
+        )
+        .unwrap();
+        let connector = LocalFileConnector::new(SourceConfig::markdown_defaults(
+            SourceId::new("local-markdown"),
+            "Local Markdown",
+            source_root.path(),
+        ))
+        .unwrap();
+        let report = connector.scan().unwrap();
+        let parser = MarkdownParser::new();
+        let scanned = &report.files[0];
+        let parsed = parser.parse(&scanned.filename, &scanned.bytes).unwrap();
+        let mut updated_doc = build_document(connector.config(), scanned, &parsed);
+        apply_detected_language(&mut updated_doc, &parsed.normalized_text);
+        let store = FileDocumentStore::open(&data_root.path().join("storage")).unwrap();
+        assert!(matches!(
+            store.put(updated_doc, &scanned.bytes).unwrap(),
+            PutOutcome::Stored(_)
+        ));
+        drop(store);
+
+        let (restarted, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        let public = Principal::anonymous_public();
+        let stale = restarted
+            .service()
+            .search(
+                &public,
+                &SearchRequest {
+                    query: "gapversionone".to_string(),
+                    ..SearchRequest::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(stale.total_hits, 0);
+
+        let updated = restarted
+            .service()
+            .search(
+                &public,
+                &SearchRequest {
+                    query: "gapversiontwo".to_string(),
+                    ..SearchRequest::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(updated.total_hits, 1);
     }
 }
