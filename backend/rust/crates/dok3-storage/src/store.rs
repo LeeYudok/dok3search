@@ -223,6 +223,7 @@ impl DocumentStorePort for FileDocumentStore {
             title: doc.title,
             summary: doc.summary,
             category: doc.category,
+            topic: doc.topic,
             tag: doc.tag,
             tags: doc.tags,
             keywords: doc.keywords,

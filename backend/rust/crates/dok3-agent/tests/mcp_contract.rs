@@ -29,6 +29,7 @@ fn make_doc(
         title: title.to_string(),
         summary: format!("{title} 요약"),
         category: category.to_string(),
+        topic: None,
         tag: tag.to_string(),
         tags: vec![tag.to_string()],
         keywords: vec![tag.to_string()],
