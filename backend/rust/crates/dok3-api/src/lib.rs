@@ -11,11 +11,12 @@ use axum::extract::{Path, Query, State};
 use axum::http::{HeaderMap, HeaderValue, Method, Request, StatusCode, header};
 use axum::middleware::{self, Next};
 use axum::response::{IntoResponse, Response};
-use axum::routing::{any, get, post};
+use axum::routing::{any, delete, get, post};
 use dok3_core::Dok3Error;
 use dok3_domain::{
-    ClassificationPort, DocumentId, IndexJobPort, Principal, SearchRequest, SectionId,
-    SectionReadRequest, TriggerIndexJobRequest, UpdateClassificationRequest,
+    ClassificationPort, CreateSourceRequest, DocumentId, IndexJobPort, Principal, SearchRequest,
+    SectionId, SectionReadRequest, SourceRegistryPort, TriggerIndexJobRequest,
+    UpdateClassificationRequest,
 };
 use dok3_search::SearchService;
 use serde::{Deserialize, Serialize};
@@ -35,6 +36,7 @@ pub struct ApiState {
     pub mode: String,
     pub index_jobs: Option<Arc<dyn IndexJobPort>>,
     pub classification: Option<Arc<dyn ClassificationPort>>,
+    pub sources: Option<Arc<dyn SourceRegistryPort>>,
 }
 
 impl ApiState {
@@ -47,6 +49,7 @@ impl ApiState {
             mode: "in-memory-fake".to_string(),
             index_jobs: None,
             classification: None,
+            sources: None,
         }
     }
 
@@ -68,6 +71,13 @@ impl ApiState {
     #[must_use]
     pub fn with_classification(mut self, classification: Arc<dyn ClassificationPort>) -> Self {
         self.classification = Some(classification);
+        self
+    }
+
+    /// Attaches a source registry port for `/api/v1/sources*` endpoints.
+    #[must_use]
+    pub fn with_sources(mut self, sources: Arc<dyn SourceRegistryPort>) -> Self {
+        self.sources = Some(sources);
         self
     }
 }
@@ -93,6 +103,8 @@ pub fn build_router_with_extra(
             get(list_index_jobs).post(trigger_index_job),
         )
         .route("/api/v1/index/jobs/{job_id}", get(get_index_job))
+        .route("/api/v1/sources", get(list_sources).post(create_source))
+        .route("/api/v1/sources/{id}", delete(delete_source))
         .layer(middleware::from_fn_with_state(
             state.clone(),
             require_admin_middleware,
@@ -516,4 +528,60 @@ async fn update_document_classification(
                 )))
             })??;
     Ok(Json(updated))
+}
+
+fn require_sources(state: &ApiState) -> Result<&Arc<dyn SourceRegistryPort>, ApiError> {
+    state.sources.as_ref().ok_or_else(|| {
+        ApiError(Dok3Error::InvalidInput(
+            "source registry requires persistent mode (DOK3_SOURCE_DIR + DOK3_DATA_DIR)"
+                .to_string(),
+        ))
+    })
+}
+
+async fn list_sources(State(state): State<ApiState>) -> Result<impl IntoResponse, ApiError> {
+    let port = Arc::clone(require_sources(&state)?);
+    let response = tokio::task::spawn_blocking(move || port.list_sources())
+        .await
+        .map_err(|err| {
+            ApiError(Dok3Error::Internal(format!(
+                "source list task failed: {err}"
+            )))
+        })??;
+    Ok(Json(response))
+}
+
+async fn create_source(
+    State(state): State<ApiState>,
+    body: Bytes,
+) -> Result<impl IntoResponse, ApiError> {
+    let port = Arc::clone(require_sources(&state)?);
+    let req = serde_json::from_slice::<CreateSourceRequest>(&body).map_err(|err| {
+        ApiError(Dok3Error::InvalidInput(format!(
+            "invalid source registration JSON: {err}"
+        )))
+    })?;
+    let registered = tokio::task::spawn_blocking(move || port.register_source(&req))
+        .await
+        .map_err(|err| {
+            ApiError(Dok3Error::Internal(format!(
+                "source registration task failed: {err}"
+            )))
+        })??;
+    Ok((StatusCode::CREATED, Json(registered)))
+}
+
+async fn delete_source(
+    State(state): State<ApiState>,
+    Path(id): Path<String>,
+) -> Result<impl IntoResponse, ApiError> {
+    let port = Arc::clone(require_sources(&state)?);
+    let deleted = tokio::task::spawn_blocking(move || port.delete_source(&id))
+        .await
+        .map_err(|err| {
+            ApiError(Dok3Error::Internal(format!(
+                "source deletion task failed: {err}"
+            )))
+        })??;
+    Ok(Json(deleted))
 }

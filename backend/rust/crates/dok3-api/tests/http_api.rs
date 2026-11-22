@@ -5,12 +5,13 @@ use axum::body::Body;
 use axum::http::{Request, StatusCode, header};
 use dok3_api::{ApiState, build_router};
 use dok3_domain::{
-    AclScope, ClassificationPort, ClassificationSource, Document, DocumentClassification,
-    DocumentDetail, DocumentId, DocumentSection, HealthReadyResponse, IndexJobListResponse,
-    IndexJobMode, IndexJobPort, IndexJobRecord, IndexJobState, Principal, RevisionId,
-    SearchResponse, SectionId, SectionReadResponse, SourceId, TriggerIndexJobRequest,
+    AclScope, ClassificationPort, ClassificationSource, CreateSourceRequest, DeleteSourceResponse,
+    Document, DocumentClassification, DocumentDetail, DocumentId, DocumentSection,
+    HealthReadyResponse, IndexJobListResponse, IndexJobMode, IndexJobPort, IndexJobRecord,
+    IndexJobState, Principal, RegisteredSource, RevisionId, SearchResponse, SectionId,
+    SectionReadResponse, SourceId, SourceListResponse, SourceRegistryPort, TriggerIndexJobRequest,
     UpdateClassificationRequest, normalize_classification_terms, validate_classification_category,
-    validate_classification_summary,
+    validate_classification_summary, validate_source_id_slug,
 };
 use dok3_search::{InMemorySearchRepository, SearchService};
 use http_body_util::BodyExt;
@@ -807,4 +808,253 @@ async fn classification_routes_enforce_acl_admin_guards_and_validation() {
     assert_eq!(reset.source, ClassificationSource::Rule);
     assert!(!reset.manual_locked);
     assert_eq!(reset.category, "design");
+}
+
+struct StubSources {
+    sources: Mutex<Vec<RegisteredSource>>,
+}
+
+impl StubSources {
+    fn new() -> Self {
+        Self {
+            sources: Mutex::new(vec![RegisteredSource {
+                source_id: "local-markdown".to_string(),
+                label: "Local Markdown".to_string(),
+                path: "/tmp/env-docs".to_string(),
+                default_category: "guide".to_string(),
+                default_tag: "docs".to_string(),
+                managed_by_env: true,
+                created_at_ms: 100,
+                last_synced_at_ms: Some(110),
+                document_count: 2,
+                last_error: None,
+            }]),
+        }
+    }
+}
+
+impl SourceRegistryPort for StubSources {
+    fn list_sources(&self) -> Result<SourceListResponse, dok3_core::Dok3Error> {
+        Ok(SourceListResponse {
+            sources: self.sources.lock().unwrap().clone(),
+        })
+    }
+
+    fn register_source(
+        &self,
+        req: &CreateSourceRequest,
+    ) -> Result<RegisteredSource, dok3_core::Dok3Error> {
+        let source_id = validate_source_id_slug(&req.source_id)?;
+        let label = req.label.trim();
+        if label.is_empty() {
+            return Err(dok3_core::Dok3Error::InvalidInput(
+                "source label must not be empty".to_string(),
+            ));
+        }
+        let default_category = match req.default_category.as_deref() {
+            Some(c) if !c.trim().is_empty() => validate_classification_category(c)?,
+            _ => "guide".to_string(),
+        };
+        let mut guard = self.sources.lock().unwrap();
+        if guard.iter().any(|s| s.source_id == source_id) {
+            return Err(dok3_core::Dok3Error::InvalidInput(format!(
+                "source '{source_id}' already exists"
+            )));
+        }
+        let entry = RegisteredSource {
+            source_id,
+            label: label.to_string(),
+            path: req.path.trim().to_string(),
+            default_category,
+            default_tag: req
+                .default_tag
+                .as_deref()
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+                .unwrap_or("docs")
+                .to_string(),
+            managed_by_env: false,
+            created_at_ms: 200,
+            last_synced_at_ms: Some(210),
+            document_count: 1,
+            last_error: None,
+        };
+        guard.push(entry.clone());
+        Ok(entry)
+    }
+
+    fn delete_source(&self, source_id: &str) -> Result<DeleteSourceResponse, dok3_core::Dok3Error> {
+        let mut guard = self.sources.lock().unwrap();
+        let Some(pos) = guard.iter().position(|s| s.source_id == source_id) else {
+            return Err(dok3_core::Dok3Error::NotFound(format!(
+                "source '{source_id}' not found"
+            )));
+        };
+        if guard[pos].managed_by_env {
+            return Err(dok3_core::Dok3Error::InvalidInput(
+                "cannot delete environment-managed source".to_string(),
+            ));
+        }
+        guard.remove(pos);
+        Ok(DeleteSourceResponse {
+            source_id: source_id.to_string(),
+            deleted_documents: 1,
+            active_generation: Some("gen-000002-seq-000004".to_string()),
+            active_epoch: 2,
+        })
+    }
+}
+
+#[tokio::test]
+async fn source_routes_enforce_admin_guards_and_crud() {
+    let repo = Arc::new(InMemorySearchRepository::from_seed(None));
+    let service = Arc::new(SearchService::new(repo.clone(), repo));
+
+    let public_app = build_router(
+        ApiState::new(Arc::clone(&service)).with_sources(Arc::new(StubSources::new())),
+        None,
+    );
+    let oversized_body = vec![b'a'; 3 * 1024 * 1024];
+    for req in [
+        Request::get("/api/v1/sources").body(Body::empty()).unwrap(),
+        Request::post("/api/v1/sources")
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from(oversized_body))
+            .unwrap(),
+        Request::delete("/api/v1/sources/%FF")
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::empty())
+            .unwrap(),
+    ] {
+        let resp = public_app.clone().oneshot(req).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::FORBIDDEN);
+    }
+
+    let admin_unwired = build_router(
+        ApiState::new(Arc::clone(&service)).with_principal(Principal::local_admin()),
+        None,
+    );
+    let unwired_resp = admin_unwired
+        .oneshot(Request::get("/api/v1/sources").body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+    assert_eq!(unwired_resp.status(), StatusCode::BAD_REQUEST);
+
+    let admin_app = build_router(
+        ApiState::new(service)
+            .with_principal(Principal::local_admin())
+            .with_sources(Arc::new(StubSources::new())),
+        None,
+    );
+
+    let bad_origin = admin_app
+        .clone()
+        .oneshot(
+            Request::post("/api/v1/sources")
+                .header(header::ORIGIN, "https://evil.example")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from("{}"))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(bad_origin.status(), StatusCode::FORBIDDEN);
+
+    let cross_site = admin_app
+        .clone()
+        .oneshot(
+            Request::delete("/api/v1/sources/team-notes")
+                .header("sec-fetch-site", "cross-site")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(cross_site.status(), StatusCode::FORBIDDEN);
+
+    let missing_delete_ct = admin_app
+        .clone()
+        .oneshot(
+            Request::delete("/api/v1/sources/team-notes")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(missing_delete_ct.status(), StatusCode::BAD_REQUEST);
+
+    let (status, _, initial_list): (_, _, SourceListResponse) = response_json(
+        admin_app
+            .clone()
+            .oneshot(Request::get("/api/v1/sources").body(Body::empty()).unwrap())
+            .await
+            .unwrap(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(initial_list.sources.len(), 1);
+    assert_eq!(initial_list.sources[0].source_id, "local-markdown");
+
+    let (status, _, created): (_, _, RegisteredSource) = response_json(
+        admin_app
+            .clone()
+            .oneshot(
+                Request::post("/api/v1/sources")
+                    .header(header::ORIGIN, "http://127.0.0.1:5173")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(
+                        r#"{"source_id":"team-notes","label":"Team Notes","path":"/tmp/team","default_category":"manual","default_tag":"ops"}"#,
+                    ))
+                    .unwrap(),
+            )
+            .await
+            .unwrap(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::CREATED);
+    assert_eq!(created.source_id, "team-notes");
+    assert_eq!(created.default_category, "manual");
+    assert!(!created.managed_by_env);
+
+    let delete_env = admin_app
+        .clone()
+        .oneshot(
+            Request::delete("/api/v1/sources/local-markdown")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(delete_env.status(), StatusCode::BAD_REQUEST);
+
+    let (status, _, deleted): (_, _, DeleteSourceResponse) = response_json(
+        admin_app
+            .clone()
+            .oneshot(
+                Request::delete("/api/v1/sources/team-notes")
+                    .header(header::ORIGIN, "http://127.0.0.1:5173")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(deleted.source_id, "team-notes");
+    assert_eq!(deleted.deleted_documents, 1);
+
+    let delete_missing = admin_app
+        .oneshot(
+            Request::delete("/api/v1/sources/team-notes")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(delete_missing.status(), StatusCode::NOT_FOUND);
 }

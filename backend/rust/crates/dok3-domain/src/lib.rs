@@ -10,11 +10,12 @@ pub mod search;
 
 pub use acl::{AclScope, Principal};
 pub use admin::{
-    ALLOWED_CLASSIFICATION_CATEGORIES, ClassificationSource, DocumentClassification,
-    IndexJobListResponse, IndexJobMode, IndexJobRecord, IndexJobState,
-    MAX_CLASSIFICATION_SUMMARY_CHARS, MAX_CLASSIFICATION_TERMS, TriggerIndexJobRequest,
+    ALLOWED_CLASSIFICATION_CATEGORIES, ClassificationSource, CreateSourceRequest,
+    DeleteSourceResponse, DocumentClassification, IndexJobListResponse, IndexJobMode,
+    IndexJobRecord, IndexJobState, MAX_CLASSIFICATION_SUMMARY_CHARS, MAX_CLASSIFICATION_TERMS,
+    MAX_SOURCE_ID_LEN, RegisteredSource, SourceListResponse, TriggerIndexJobRequest,
     UpdateClassificationRequest, normalize_classification_terms, validate_classification_category,
-    validate_classification_summary,
+    validate_classification_summary, validate_source_id_slug,
 };
 pub use change::{ChangeEvent, ChangeKind};
 pub use document::{
@@ -25,7 +26,7 @@ pub use document::{
 pub use ids::{DocumentId, GenerationId, RevisionId, SectionId, Sequence, SourceId};
 pub use ports::{
     ChangeJournalPort, ClassificationPort, DocumentParserPort, DocumentStorePort, IndexJobPort,
-    SearchPort,
+    SearchPort, SourceRegistryPort,
 };
 pub use search::{
     CategoryCount, HealthReadyResponse, ReaderState, SearchFilters, SearchHit, SearchRequest,

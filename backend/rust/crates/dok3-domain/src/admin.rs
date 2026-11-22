@@ -12,6 +12,8 @@ pub const ALLOWED_CLASSIFICATION_CATEGORIES: [&str; 5] =
 pub const MAX_CLASSIFICATION_TERMS: usize = 12;
 /// Maximum character length of a classification summary.
 pub const MAX_CLASSIFICATION_SUMMARY_CHARS: usize = 500;
+/// Maximum byte length of a source identifier slug.
+pub const MAX_SOURCE_ID_LEN: usize = 64;
 
 /// Indexing run mode for manual or scheduled jobs.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -154,4 +156,67 @@ pub fn normalize_classification_terms(
         )));
     }
     Ok(normalized)
+}
+
+/// Durable registered local filesystem source definition and sync status.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RegisteredSource {
+    pub source_id: String,
+    pub label: String,
+    pub path: String,
+    pub default_category: String,
+    pub default_tag: String,
+    pub managed_by_env: bool,
+    pub created_at_ms: u64,
+    pub last_synced_at_ms: Option<u64>,
+    pub document_count: usize,
+    pub last_error: Option<String>,
+}
+
+/// Request payload for `POST /api/v1/sources`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CreateSourceRequest {
+    pub source_id: String,
+    pub label: String,
+    pub path: String,
+    #[serde(default)]
+    pub default_category: Option<String>,
+    #[serde(default)]
+    pub default_tag: Option<String>,
+}
+
+/// Response returned by `GET /api/v1/sources`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SourceListResponse {
+    pub sources: Vec<RegisteredSource>,
+}
+
+/// Response returned by `DELETE /api/v1/sources/{id}`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DeleteSourceResponse {
+    pub source_id: String,
+    pub deleted_documents: usize,
+    pub active_generation: Option<String>,
+    pub active_epoch: u64,
+}
+
+/// Validates and normalizes a source identifier slug against `^[a-z0-9][a-z0-9_-]{0,63}$`.
+pub fn validate_source_id_slug(raw: &str) -> Result<String, Dok3Error> {
+    let trimmed = raw.trim();
+    if trimmed.is_empty() || trimmed.len() > MAX_SOURCE_ID_LEN {
+        return Err(Dok3Error::InvalidInput(format!(
+            "source_id must be 1..={MAX_SOURCE_ID_LEN} characters matching ^[a-z0-9][a-z0-9_-]{{0,63}}$"
+        )));
+    }
+    let bytes = trimmed.as_bytes();
+    let valid_first = bytes[0].is_ascii_lowercase() || bytes[0].is_ascii_digit();
+    let valid_rest = bytes[1..]
+        .iter()
+        .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || *b == b'-' || *b == b'_');
+    if !valid_first || !valid_rest {
+        return Err(Dok3Error::InvalidInput(format!(
+            "invalid source_id '{trimmed}' (must match ^[a-z0-9][a-z0-9_-]{{0,63}}$)"
+        )));
+    }
+    Ok(trimmed.to_string())
 }
