@@ -4,19 +4,22 @@ use std::future::Future;
 use std::path::PathBuf;
 use std::sync::Arc;
 
+use axum::Json;
 use axum::extract::rejection::{JsonRejection, QueryRejection};
 use axum::extract::{Path, Query, State};
 use axum::http::{HeaderValue, Request, StatusCode, header};
 use axum::middleware::{self, Next};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{any, get, post};
-use axum::{Json, Router};
 use dok3_core::Dok3Error;
 use dok3_domain::{DocumentId, Principal, SearchRequest, SectionId, SectionReadRequest};
 use dok3_search::SearchService;
 use serde::{Deserialize, Serialize};
 use tower::ServiceExt;
 use tower_http::services::{ServeDir, ServeFile};
+
+/// Re-exported so callers can compose extra routes without a direct `axum` dependency.
+pub use axum::Router;
 
 const CSP_POLICY: &str = "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'";
 
@@ -49,7 +52,20 @@ impl ApiState {
 
 /// Builds the Axum router with `/health/ready`, `/api/v1/*`, JSON `/api` 404 fallback, security headers, and optional static SPA hosting.
 pub fn build_router(state: ApiState, static_dir: Option<PathBuf>) -> Router {
-    let router = Router::new()
+    build_router_with_extra(state, static_dir, None)
+}
+
+/// Builds the same router as [`build_router`] and merges `extra` routes (e.g. MCP `/mcp`)
+/// before the SPA fallback and security-header layer, so extra routes win over the SPA
+/// fallback and still receive the common security headers.
+///
+/// `extra` must not define its own fallback or overlap existing routes; Axum panics on either.
+pub fn build_router_with_extra(
+    state: ApiState,
+    static_dir: Option<PathBuf>,
+    extra: Option<Router>,
+) -> Router {
+    let mut router = Router::new()
         .route("/health/ready", get(health_ready))
         .route("/api/v1/search", post(search))
         .route("/api/v1/documents/{id}", get(get_document))
@@ -57,6 +73,10 @@ pub fn build_router(state: ApiState, static_dir: Option<PathBuf>) -> Router {
         .route("/api", any(api_not_found))
         .route("/api/{*rest}", any(api_not_found))
         .with_state(state);
+
+    if let Some(extra) = extra {
+        router = router.merge(extra);
+    }
 
     let router = match static_dir {
         Some(dir) if dir.join("index.html").is_file() => {

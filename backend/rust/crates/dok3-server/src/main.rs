@@ -1,13 +1,16 @@
 //! dok3search server binary entrypoint.
 
 mod local_index;
+// --- slice-B: mcp ---
+mod mcp;
+// --- /slice-B: mcp ---
 
 use std::net::Ipv4Addr;
 use std::path::PathBuf;
 use std::process::ExitCode;
 use std::sync::Arc;
 
-use dok3_api::{ApiState, build_router};
+use dok3_api::ApiState;
 use dok3_core::ServerConfig;
 use dok3_search::{InMemorySearchRepository, SearchService};
 use tokio::net::TcpListener;
@@ -24,6 +27,9 @@ async fn main() -> ExitCode {
 }
 
 async fn run() -> Result<(), String> {
+    // --- slice-B: mcp ---
+    let mcp_stdio = mcp::stdio_requested(std::env::args().skip(1))?;
+    // --- /slice-B: mcp ---
     let config = ServerConfig::from_env().map_err(|err| err.to_string())?;
     let design_dir = config.design_docs_dir.or_else(|| {
         resolve_first_dir(&[
@@ -38,7 +44,8 @@ async fn run() -> Result<(), String> {
     let (service, mode) = if let Some(root) = config.source_dir.as_deref() {
         validate_source_bind(&config.bind)?;
         let (service, report) = local_index::build(root)?;
-        println!(
+        // slice-B: stderr keeps stdout a clean JSON-RPC channel under --mcp-stdio.
+        eprintln!(
             "local Markdown snapshot: indexed={} skipped={}",
             report.indexed,
             report.skipped.len()
@@ -52,9 +59,16 @@ async fn run() -> Result<(), String> {
         (SearchService::new(repo.clone(), repo), "in-memory-fake")
     };
     let doc_count = service.health_ready(mode).document_count;
-    let mut state = ApiState::new(Arc::new(service));
+    // --- slice-B: mcp ---
+    let search_arc = Arc::new(service);
+    if mcp_stdio {
+        eprintln!("dok3search MCP stdio ready (docs={doc_count}, mode={mode})");
+        return mcp::serve_stdio(search_arc).await;
+    }
+    let mut state = ApiState::new(Arc::clone(&search_arc));
     state.mode = mode.into();
-    let app = build_router(state, static_dir.clone());
+    let app = mcp::build_app(state, static_dir.clone());
+    // --- /slice-B: mcp ---
 
     let addr = format!("{}:{}", config.bind, config.port);
     let listener = TcpListener::bind(&addr)
