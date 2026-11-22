@@ -1091,6 +1091,59 @@ impl SourceRegistryPort for PersistentRuntime {
     }
 
     fn register_source(&self, req: &CreateSourceRequest) -> Result<RegisteredSource, Dok3Error> {
+        self.register_source_with_hook(req, || Ok(()))
+    }
+
+    fn delete_source(&self, source_id: &str) -> Result<DeleteSourceResponse, Dok3Error> {
+        let _exec_guard = self
+            .job_exec_lock
+            .lock()
+            .map_err(|_| Dok3Error::Internal("index job execution lock poisoned".into()))?;
+
+        let (entry, deleted_documents, active_generation, active_epoch) = {
+            let mut sources = self
+                .sources
+                .lock()
+                .map_err(|_| Dok3Error::Internal("source registry mutex poisoned".into()))?;
+            let entry = sources.mark_pending_delete(source_id)?;
+
+            let mut manager = self.manager.lock().map_err(|_| {
+                Dok3Error::Internal("persistent index manager mutex poisoned".into())
+            })?;
+            let mut classifications = self
+                .classifications
+                .lock()
+                .map_err(|_| Dok3Error::Internal("classification store mutex poisoned".into()))?;
+            let (deleted_documents, active_gen, active_ep) = finalize_pending_source_delete_locked(
+                &mut manager,
+                &mut sources,
+                &mut classifications,
+                &self.store,
+                &self.journal,
+                &entry.source_id,
+            )?;
+            (entry, deleted_documents, active_gen, active_ep)
+        };
+
+        if let Ok(mut jobs) = self.jobs.lock() {
+            jobs.update_active(active_generation.clone(), active_epoch);
+        }
+
+        Ok(DeleteSourceResponse {
+            source_id: entry.source_id,
+            deleted_documents,
+            active_generation,
+            active_epoch,
+        })
+    }
+}
+
+impl PersistentRuntime {
+    fn register_source_with_hook(
+        &self,
+        req: &CreateSourceRequest,
+        after_refresh: impl FnOnce() -> Result<(), String>,
+    ) -> Result<RegisteredSource, Dok3Error> {
         let _exec_guard = self
             .job_exec_lock
             .lock()
@@ -1116,7 +1169,7 @@ impl SourceRegistryPort for PersistentRuntime {
                     .classifications
                     .lock()
                     .map_err(|_| "classification store mutex poisoned".to_string())?;
-                refresh_locked(
+                let report = refresh_locked(
                     &mut manager,
                     &mut sources,
                     Some(&source_id),
@@ -1124,7 +1177,9 @@ impl SourceRegistryPort for PersistentRuntime {
                     &self.journal,
                     &mut classifications,
                     false,
-                )
+                )?;
+                after_refresh()?;
+                Ok(report)
             })();
 
             match sync_outcome {
@@ -1146,96 +1201,70 @@ impl SourceRegistryPort for PersistentRuntime {
                             "source registration failed ({err}); failed to record rollback pending delete: {mark_err}"
                         )));
                     }
-                    let cleanup_res = (|| -> Result<(), Dok3Error> {
+                    let rollback_res = (|| -> Result<(), Dok3Error> {
+                        let mut manager = self.manager.lock().map_err(|_| {
+                            Dok3Error::Internal("persistent index manager mutex poisoned".into())
+                        })?;
                         let mut classifications = self.classifications.lock().map_err(|_| {
                             Dok3Error::Internal("classification store mutex poisoned".into())
                         })?;
-                        let _ = cleanup_source_docs(
-                            &source_id,
+                        let (_, active_gen, active_ep) = finalize_pending_source_delete_locked(
+                            &mut manager,
+                            &mut sources,
+                            &mut classifications,
                             &self.store,
                             &self.journal,
-                            &mut classifications,
+                            &source_id,
                         )?;
+                        drop(classifications);
+                        drop(manager);
+                        if let Ok(mut jobs) = self.jobs.lock() {
+                            jobs.update_active(active_gen, active_ep);
+                        }
                         Ok(())
                     })();
-                    match cleanup_res {
-                        Ok(()) => {
-                            if let Err(fin_err) = sources.finalize_delete(&source_id) {
-                                return Err(Dok3Error::Storage(format!(
-                                    "source registration failed ({err}); rollback finalize failed: {fin_err}"
-                                )));
-                            }
-                            return Err(Dok3Error::Storage(err));
-                        }
-                        Err(clean_err) => {
-                            return Err(Dok3Error::Storage(format!(
-                                "source registration failed ({err}); rollback cleanup failed (kept pending_delete): {clean_err}"
-                            )));
-                        }
+                    if let Err(rollback_err) = rollback_res {
+                        return Err(Dok3Error::Storage(format!(
+                            "source registration failed ({err}); rollback failed (kept pending_delete): {rollback_err}"
+                        )));
                     }
+                    return Err(Dok3Error::Storage(err));
                 }
             }
         };
         Ok(registered)
     }
+}
 
-    fn delete_source(&self, source_id: &str) -> Result<DeleteSourceResponse, Dok3Error> {
-        let _exec_guard = self
-            .job_exec_lock
-            .lock()
-            .map_err(|_| Dok3Error::Internal("index job execution lock poisoned".into()))?;
-
-        let (entry, deleted_documents, active_generation, active_epoch) = {
-            let mut sources = self
-                .sources
-                .lock()
-                .map_err(|_| Dok3Error::Internal("source registry mutex poisoned".into()))?;
-            let entry = sources.mark_pending_delete(source_id)?;
-
-            let mut classifications = self
-                .classifications
-                .lock()
-                .map_err(|_| Dok3Error::Internal("classification store mutex poisoned".into()))?;
-            let deleted_documents = cleanup_source_docs(
-                &entry.source_id,
-                &self.store,
-                &self.journal,
-                &mut classifications,
-            )?;
-
-            let mut manager = self.manager.lock().map_err(|_| {
-                Dok3Error::Internal("persistent index manager mutex poisoned".into())
-            })?;
-            ensure_active_generation(&mut manager, &self.store, &self.journal, false)
-                .map_err(Dok3Error::Index)?;
-            classifications
-                .clear_all_pending_index_sync()
-                .map_err(Dok3Error::Storage)?;
-            manager
-                .gc_retired()
-                .map_err(|err| Dok3Error::Index(err.to_string()))?;
-            let active_gen = manager.state().active_generation.clone();
-            let active_ep = manager.state().active_epoch;
-            drop(manager);
-            drop(classifications);
-
-            sources
-                .finalize_delete(&entry.source_id)
-                .map_err(Dok3Error::Storage)?;
-            (entry, deleted_documents, active_gen, active_ep)
-        };
-
-        if let Ok(mut jobs) = self.jobs.lock() {
-            jobs.update_active(active_generation.clone(), active_epoch);
-        }
-
-        Ok(DeleteSourceResponse {
-            source_id: entry.source_id,
-            deleted_documents,
-            active_generation,
-            active_epoch,
-        })
-    }
+fn finalize_pending_source_delete_locked(
+    manager: &mut IndexManager<LocalGenerationBackend>,
+    sources: &mut SourceRegistry,
+    classifications: &mut ClassificationStore,
+    store: &FileDocumentStore,
+    journal: &FileChangeJournal,
+    source_id: &str,
+) -> Result<(usize, Option<String>, u64), Dok3Error> {
+    manager.reconcile_on_startup().map_err(|err| {
+        Dok3Error::Index(format!(
+            "persistent index manager reconciliation failed; restart required: {err}"
+        ))
+    })?;
+    let deleted_documents = cleanup_source_docs(source_id, store, journal, classifications)?;
+    ensure_active_generation(manager, store, journal, false).map_err(Dok3Error::Index)?;
+    classifications
+        .clear_all_pending_index_sync()
+        .map_err(Dok3Error::Storage)?;
+    manager
+        .gc_retired()
+        .map_err(|err| Dok3Error::Index(err.to_string()))?;
+    sources
+        .finalize_delete(source_id)
+        .map_err(Dok3Error::Storage)?;
+    Ok((
+        deleted_documents,
+        manager.state().active_generation.clone(),
+        manager.state().active_epoch,
+    ))
 }
 
 fn cleanup_source_docs(
@@ -3285,13 +3314,17 @@ mod tests {
             })
             .unwrap();
 
-        // Simulate crash right after marking pending_delete for src-a before cleanup/generation.
+        // Simulate interrupted generation build AND failed index transition during DELETE,
+        // then verify retrying DELETE reconciles IndexManager and finishes cleanly without 404.
         runtime
-            .sources
+            .manager
             .lock()
             .unwrap()
-            .mark_pending_delete("src-a")
+            .build_generation("gen-interrupted-del", 99)
             .unwrap();
+        let blocking_del_gen = data_root.path().join("generations/gen-000004-seq-000004");
+        fs::write(&blocking_del_gen, b"block-delete-gen").unwrap();
+        assert!(runtime.delete_source("src-a").is_err());
         assert!(
             runtime
                 .list_sources()
@@ -3301,10 +3334,15 @@ mod tests {
                 .any(|s| s.source_id == "src-a")
         );
 
-        // Retrying DELETE completes cleanup instead of returning 404.
+        fs::remove_file(&blocking_del_gen).unwrap();
+        runtime
+            .manager
+            .lock()
+            .unwrap()
+            .build_generation("gen-interrupted-retry", 99)
+            .unwrap();
         let retried = runtime.delete_source("src-a").unwrap();
         assert_eq!(retried.source_id, "src-a");
-        assert_eq!(retried.deleted_documents, 1);
         assert_eq!(
             runtime
                 .service()
@@ -3359,6 +3397,7 @@ mod tests {
     fn failed_source_registration_cleans_up_orphaned_docs_and_allows_retry() {
         let env_dir = tempfile::tempdir().unwrap();
         let team_dir = tempfile::tempdir().unwrap();
+        let post_dir = tempfile::tempdir().unwrap();
         let data_root = tempfile::tempdir().unwrap();
 
         fs::write(env_dir.path().join("env.md"), "# Env\n\nenvstable\n").unwrap();
@@ -3367,9 +3406,15 @@ mod tests {
             "# Team Doc\n\nteamrollbacktoken\n",
         )
         .unwrap();
+        fs::write(
+            post_dir.path().join("post.md"),
+            "# Post Activate Fail\n\npostfailtoken\n",
+        )
+        .unwrap();
 
+        let public = Principal::anonymous_public();
         let (runtime, _) = PersistentRuntime::open(env_dir.path(), data_root.path()).unwrap();
-        // Force generation build failure AFTER sync_sources_to_storage writes store/journal.
+        // Part A: Force generation build failure BEFORE activation (after store/journal writes).
         let blocking_gen = data_root.path().join("generations/gen-000002-seq-000002");
         fs::write(&blocking_gen, b"block-build-generation").unwrap();
 
@@ -3415,5 +3460,69 @@ mod tests {
             .unwrap();
         assert_eq!(registered.source_id, "team-notes");
         assert_eq!(registered.document_count, 1);
+
+        // Part B: Simulate failure AFTER generation activation: rollback MUST republish active index
+        // without the rolled-back source's docs AND remove it from registry.
+        let post_err = runtime
+            .register_source_with_hook(
+                &CreateSourceRequest {
+                    source_id: "team-postfail".to_string(),
+                    label: "Team Post Fail".to_string(),
+                    path: post_dir.path().to_string_lossy().into_owned(),
+                    default_category: None,
+                    default_tag: None,
+                },
+                || Err("simulated post-activation failure".to_string()),
+            )
+            .unwrap_err();
+        assert!(matches!(post_err, Dok3Error::Storage(_)));
+        assert!(
+            !runtime
+                .list_sources()
+                .unwrap()
+                .sources
+                .iter()
+                .any(|s| s.source_id == "team-postfail")
+        );
+        assert_eq!(
+            runtime
+                .service()
+                .search(
+                    &public,
+                    &SearchRequest {
+                        query: "postfailtoken".to_string(),
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap()
+                .total_hits,
+            0
+        );
+
+        // Clean retry after post-activation rollback succeeds.
+        let retried = runtime
+            .register_source(&CreateSourceRequest {
+                source_id: "team-postfail".to_string(),
+                label: "Team Post Fail".to_string(),
+                path: post_dir.path().to_string_lossy().into_owned(),
+                default_category: None,
+                default_tag: None,
+            })
+            .unwrap();
+        assert_eq!(retried.document_count, 1);
+        assert_eq!(
+            runtime
+                .service()
+                .search(
+                    &public,
+                    &SearchRequest {
+                        query: "postfailtoken".to_string(),
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap()
+                .total_hits,
+            1
+        );
     }
 }
