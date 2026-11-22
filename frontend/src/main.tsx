@@ -280,7 +280,10 @@ function SearchPage() {
   const browseDesign = category === 'design' && !query
 
   function documentUrl(id: string, page: number) {
-    return searchUrl(query, category, page, topic).replace('/search', '/docs/' + id)
+    // Search hits carry ids like `local-markdown:samples/.../rust-version.md`;
+    // the raw `:` and `/` must be escaped or the URL gains extra path segments
+    // and the single-segment /docs/:id route never matches.
+    return searchUrl(query, category, page, topic).replace('/search', '/docs/' + encodeURIComponent(id))
   }
 
   async function copyTitle(title: string) {
