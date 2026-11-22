@@ -5,6 +5,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use axum::Json;
+use axum::body::Bytes;
 use axum::extract::rejection::{JsonRejection, QueryRejection};
 use axum::extract::{Path, Query, State};
 use axum::http::{HeaderValue, Request, StatusCode, header};
@@ -12,7 +13,10 @@ use axum::middleware::{self, Next};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{any, get, post};
 use dok3_core::Dok3Error;
-use dok3_domain::{DocumentId, Principal, SearchRequest, SectionId, SectionReadRequest};
+use dok3_domain::{
+    DocumentId, IndexJobPort, Principal, SearchRequest, SectionId, SectionReadRequest,
+    TriggerIndexJobRequest,
+};
 use dok3_search::SearchService;
 use serde::{Deserialize, Serialize};
 use tower::ServiceExt;
@@ -29,6 +33,7 @@ pub struct ApiState {
     pub search: Arc<SearchService>,
     pub default_principal: Principal,
     pub mode: String,
+    pub index_jobs: Option<Arc<dyn IndexJobPort>>,
 }
 
 impl ApiState {
@@ -39,6 +44,7 @@ impl ApiState {
             search,
             default_principal: Principal::anonymous_public(),
             mode: "in-memory-fake".to_string(),
+            index_jobs: None,
         }
     }
 
@@ -46,6 +52,13 @@ impl ApiState {
     #[must_use]
     pub fn with_principal(mut self, principal: Principal) -> Self {
         self.default_principal = principal;
+        self
+    }
+
+    /// Attaches a durable indexing job port for `/api/v1/index/jobs*` endpoints.
+    #[must_use]
+    pub fn with_index_jobs(mut self, index_jobs: Arc<dyn IndexJobPort>) -> Self {
+        self.index_jobs = Some(index_jobs);
         self
     }
 }
@@ -70,6 +83,11 @@ pub fn build_router_with_extra(
         .route("/api/v1/search", post(search))
         .route("/api/v1/documents/{id}", get(get_document))
         .route("/api/v1/documents/{id}/sections/{sid}", get(get_section))
+        .route(
+            "/api/v1/index/jobs",
+            get(list_index_jobs).post(trigger_index_job),
+        )
+        .route("/api/v1/index/jobs/{job_id}", get(get_index_job))
         .route("/api", any(api_not_found))
         .route("/api/{*rest}", any(api_not_found))
         .with_state(state);
@@ -237,4 +255,77 @@ async fn get_section(
     }
     let response = state.search.get_section(&state.default_principal, &req)?;
     Ok(Json(response))
+}
+
+fn require_admin(principal: &Principal) -> Result<(), ApiError> {
+    if !principal.is_admin {
+        return Err(Dok3Error::Forbidden(format!(
+            "principal '{}' does not have admin privileges",
+            principal.subject
+        ))
+        .into());
+    }
+    Ok(())
+}
+
+fn require_index_jobs(state: &ApiState) -> Result<&Arc<dyn IndexJobPort>, ApiError> {
+    state.index_jobs.as_ref().ok_or_else(|| {
+        ApiError(Dok3Error::InvalidInput(
+            "index jobs require persistent mode (DOK3_SOURCE_DIR + DOK3_DATA_DIR)".to_string(),
+        ))
+    })
+}
+
+async fn list_index_jobs(State(state): State<ApiState>) -> Result<impl IntoResponse, ApiError> {
+    require_admin(&state.default_principal)?;
+    let port = Arc::clone(require_index_jobs(&state)?);
+    let response = tokio::task::spawn_blocking(move || port.list_jobs())
+        .await
+        .map_err(|err| {
+            ApiError(Dok3Error::Internal(format!(
+                "index job list task failed: {err}"
+            )))
+        })??;
+    Ok(Json(response))
+}
+
+async fn get_index_job(
+    State(state): State<ApiState>,
+    Path(job_id): Path<String>,
+) -> Result<impl IntoResponse, ApiError> {
+    require_admin(&state.default_principal)?;
+    let port = Arc::clone(require_index_jobs(&state)?);
+    let record = tokio::task::spawn_blocking(move || port.get_job(&job_id))
+        .await
+        .map_err(|err| {
+            ApiError(Dok3Error::Internal(format!(
+                "index job lookup task failed: {err}"
+            )))
+        })??;
+    Ok(Json(record))
+}
+
+async fn trigger_index_job(
+    State(state): State<ApiState>,
+    body: Bytes,
+) -> Result<impl IntoResponse, ApiError> {
+    require_admin(&state.default_principal)?;
+    let port = Arc::clone(require_index_jobs(&state)?);
+    let req = if body.iter().all(|b| b.is_ascii_whitespace()) {
+        TriggerIndexJobRequest::default()
+    } else {
+        serde_json::from_slice::<TriggerIndexJobRequest>(&body).map_err(|err| {
+            ApiError(Dok3Error::InvalidInput(format!(
+                "invalid index job request JSON: {err}"
+            )))
+        })?
+    };
+    let record = tokio::task::spawn_blocking(move || port.trigger_job(&req))
+        .await
+        .map_err(|err| {
+            ApiError(Dok3Error::Internal(format!(
+                "index job execution task failed: {err}"
+            )))
+        })??;
+    Ok(Json(record))
 }

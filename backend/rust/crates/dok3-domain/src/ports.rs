@@ -3,6 +3,7 @@
 use dok3_core::Dok3Error;
 
 use crate::acl::Principal;
+use crate::admin::{IndexJobListResponse, IndexJobRecord, TriggerIndexJobRequest};
 use crate::change::ChangeEvent;
 use crate::document::{DocumentDetail, ParsedDocument, SectionReadRequest, SectionReadResponse};
 use crate::ids::{DocumentId, Sequence};
@@ -43,4 +44,11 @@ pub trait DocumentParserPort: Send + Sync {
 pub trait ChangeJournalPort: Send + Sync {
     fn append(&self, change: ChangeEvent) -> Result<Sequence, Dok3Error>;
     fn read_after(&self, seq: Sequence, limit: usize) -> Result<Vec<ChangeEvent>, Dok3Error>;
+}
+
+/// Port for inspecting and triggering durable indexing jobs.
+pub trait IndexJobPort: Send + Sync {
+    fn list_jobs(&self) -> Result<IndexJobListResponse, Dok3Error>;
+    fn get_job(&self, job_id: &str) -> Result<IndexJobRecord, Dok3Error>;
+    fn trigger_job(&self, req: &TriggerIndexJobRequest) -> Result<IndexJobRecord, Dok3Error>;
 }

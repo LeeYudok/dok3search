@@ -6,7 +6,8 @@ use axum::http::{Request, StatusCode, header};
 use dok3_api::{ApiState, build_router};
 use dok3_domain::{
     AclScope, Document, DocumentDetail, DocumentId, DocumentSection, HealthReadyResponse,
-    RevisionId, SearchResponse, SectionId, SectionReadResponse, SourceId,
+    IndexJobListResponse, IndexJobMode, IndexJobPort, IndexJobRecord, IndexJobState, Principal,
+    RevisionId, SearchResponse, SectionId, SectionReadResponse, SourceId, TriggerIndexJobRequest,
 };
 use dok3_search::{InMemorySearchRepository, SearchService};
 use http_body_util::BodyExt;
@@ -303,4 +304,182 @@ async fn invalid_json_and_query_params_return_unified_json_error() {
         assert_eq!(body["error"]["code"], "INVALID_INPUT");
         assert!(body["error"]["message"].is_string());
     }
+}
+
+struct StubIndexJobs;
+
+impl IndexJobPort for StubIndexJobs {
+    fn list_jobs(&self) -> Result<IndexJobListResponse, dok3_core::Dok3Error> {
+        Ok(IndexJobListResponse {
+            jobs: vec![IndexJobRecord {
+                job_id: "job-0001".to_string(),
+                source_id: None,
+                trigger: "startup".to_string(),
+                mode: IndexJobMode::Incremental,
+                state: IndexJobState::Succeeded,
+                started_at_ms: 100,
+                finished_at_ms: Some(120),
+                indexed_documents: 1,
+                rebuilt: true,
+                active_generation: Some("gen-000001-seq-000001".to_string()),
+                active_epoch: 1,
+                skipped_files: vec![],
+                error: None,
+            }],
+            active_generation: Some("gen-000001-seq-000001".to_string()),
+            active_epoch: 1,
+            refresh_interval_secs: Some(30),
+        })
+    }
+
+    fn get_job(&self, job_id: &str) -> Result<IndexJobRecord, dok3_core::Dok3Error> {
+        if job_id == "job-0001" {
+            Ok(self.list_jobs()?.jobs.into_iter().next().unwrap())
+        } else {
+            Err(dok3_core::Dok3Error::NotFound(format!(
+                "job '{job_id}' not found"
+            )))
+        }
+    }
+
+    fn trigger_job(
+        &self,
+        req: &TriggerIndexJobRequest,
+    ) -> Result<IndexJobRecord, dok3_core::Dok3Error> {
+        Ok(IndexJobRecord {
+            job_id: "job-0002".to_string(),
+            source_id: req.source_id.clone(),
+            trigger: "manual".to_string(),
+            mode: req.mode,
+            state: IndexJobState::Succeeded,
+            started_at_ms: 200,
+            finished_at_ms: Some(250),
+            indexed_documents: 2,
+            rebuilt: req.mode == IndexJobMode::Full,
+            active_generation: Some("gen-000002-seq-000001".to_string()),
+            active_epoch: 2,
+            skipped_files: vec![],
+            error: None,
+        })
+    }
+}
+
+#[tokio::test]
+async fn index_job_routes_enforce_admin_mode_and_payload_validation() {
+    let repo = Arc::new(InMemorySearchRepository::from_seed(None));
+    let service = Arc::new(SearchService::new(repo.clone(), repo));
+
+    // 1. Non-admin caller always receives 403 FORBIDDEN even when index_jobs is None or Some.
+    let public_app = build_router(
+        ApiState::new(Arc::clone(&service)).with_index_jobs(Arc::new(StubIndexJobs)),
+        None,
+    );
+    for req in [
+        Request::get("/api/v1/index/jobs")
+            .body(Body::empty())
+            .unwrap(),
+        Request::post("/api/v1/index/jobs")
+            .body(Body::empty())
+            .unwrap(),
+        Request::get("/api/v1/index/jobs/job-0001")
+            .body(Body::empty())
+            .unwrap(),
+    ] {
+        let resp = public_app.clone().oneshot(req).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::FORBIDDEN);
+    }
+
+    // 2. Admin caller without persistent job runtime receives 400 INVALID_INPUT.
+    let admin_unwired = build_router(
+        ApiState::new(Arc::clone(&service)).with_principal(Principal::local_admin()),
+        None,
+    );
+    let unwired_resp = admin_unwired
+        .oneshot(
+            Request::get("/api/v1/index/jobs")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(unwired_resp.status(), StatusCode::BAD_REQUEST);
+
+    // 3. Admin caller with IndexJobPort succeeds for list, get, empty POST, JSON POST, and rejects bad JSON.
+    let admin_app = build_router(
+        ApiState::new(service)
+            .with_principal(Principal::local_admin())
+            .with_index_jobs(Arc::new(StubIndexJobs)),
+        None,
+    );
+
+    let (status, _, list): (_, _, IndexJobListResponse) = response_json(
+        admin_app
+            .clone()
+            .oneshot(
+                Request::get("/api/v1/index/jobs")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(list.jobs.len(), 1);
+    assert_eq!(list.refresh_interval_secs, Some(30));
+
+    let (status, _, empty_post): (_, _, IndexJobRecord) = response_json(
+        admin_app
+            .clone()
+            .oneshot(
+                Request::post("/api/v1/index/jobs")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(empty_post.mode, IndexJobMode::Incremental);
+    assert!(!empty_post.rebuilt);
+
+    let (status, _, full_post): (_, _, IndexJobRecord) = response_json(
+        admin_app
+            .clone()
+            .oneshot(
+                Request::post("/api/v1/index/jobs")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(r#"{"mode":"full"}"#))
+                    .unwrap(),
+            )
+            .await
+            .unwrap(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(full_post.mode, IndexJobMode::Full);
+    assert!(full_post.rebuilt);
+
+    let bad_json = admin_app
+        .clone()
+        .oneshot(
+            Request::post("/api/v1/index/jobs")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from("{invalid"))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(bad_json.status(), StatusCode::BAD_REQUEST);
+
+    let missing_job = admin_app
+        .oneshot(
+            Request::get("/api/v1/index/jobs/job-9999")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(missing_job.status(), StatusCode::NOT_FOUND);
 }

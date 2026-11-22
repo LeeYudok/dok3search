@@ -102,6 +102,16 @@ impl Principal {
         }
     }
 
+    /// Returns a local loopback administrator principal (`is_admin: true`).
+    #[must_use]
+    pub fn local_admin() -> Self {
+        Self {
+            subject: "local-admin".to_string(),
+            allowed_scopes: vec![AclScope::Public],
+            is_admin: true,
+        }
+    }
+
     /// Default-deny authorization check: a scope is allowed only if explicitly granted.
     #[must_use]
     pub fn allows(&self, scope: &AclScope) -> bool {
