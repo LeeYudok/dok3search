@@ -6,6 +6,7 @@ use std::path::Path;
 use std::str::FromStr;
 use std::sync::{Mutex, RwLock};
 
+use dok3_analyzer::{AnalyzeOptions, analyze_text, word_spans};
 use dok3_core::Dok3Error;
 use dok3_domain::{
     AclScope, CategoryCount, Document, DocumentId, GenerationId, Principal, ReaderState, SearchHit,
@@ -13,15 +14,14 @@ use dok3_domain::{
 };
 use tantivy::collector::{Count, TopDocs};
 use tantivy::directory::MmapDirectory;
-use tantivy::query::{AllQuery, BooleanQuery, BoostQuery, Occur, Query, QueryParser, TermQuery};
+use tantivy::query::{AllQuery, BooleanQuery, BoostQuery, EmptyQuery, Occur, Query, TermQuery};
 use tantivy::schema::{IndexRecordOption, Schema};
 use tantivy::snippet::SnippetGenerator;
-use tantivy::tokenizer::TokenStream;
 use tantivy::{Index, IndexReader, IndexWriter, ReloadPolicy, Searcher, TantivyDocument, Term};
 
 use crate::schema::{
-    IndexFields, SCHEMA_VERSION, StoredHitMeta, TOKENIZER_NGRAM, build_schema, read_stored_str,
-    register_tokenizers, to_tantivy_document,
+    IndexFields, SCHEMA_VERSION, StoredHitMeta, build_schema, read_stored_str, register_tokenizers,
+    to_tantivy_document,
 };
 
 const WRITER_HEAP_BYTES: usize = 15_000_000;
@@ -38,7 +38,6 @@ const DEFAULT_CATEGORIES: &[(&str, &str)] = &[
 
 /// Tantivy-backed search index with a single serialized writer and manual reader reloads.
 pub struct TantivyIndex {
-    index: Index,
     fields: IndexFields,
     writer: Mutex<IndexWriter<TantivyDocument>>,
     reader: IndexReader,
@@ -69,8 +68,11 @@ impl TantivyIndex {
         let (schema, fields) = build_schema();
         let directory = MmapDirectory::open(dir)
             .map_err(|e| Dok3Error::Index(format!("failed to open index dir: {e}")))?;
-        let index = Index::open_or_create(directory, schema.clone())
-            .map_err(|e| Dok3Error::Index(format!("failed to open/create tantivy index: {e}")))?;
+        let index = Index::open_or_create(directory, schema.clone()).map_err(|e| {
+            Dok3Error::Index(format!(
+                "failed to open/create Tantivy index (expected schema v{SCHEMA_VERSION}): {e}"
+            ))
+        })?;
         let reconciled = reconcile_fields(&index.schema(), fields)?;
         Self::finish_init(index, reconciled, generation_id)
     }
@@ -80,7 +82,7 @@ impl TantivyIndex {
         fields: IndexFields,
         generation_id: GenerationId,
     ) -> Result<Self, Dok3Error> {
-        register_tokenizers(&index)?;
+        register_tokenizers(&index);
         let writer = index
             .writer_with_num_threads(1, WRITER_HEAP_BYTES)
             .map_err(|e| Dok3Error::Index(format!("failed to open index writer: {e}")))?;
@@ -100,7 +102,6 @@ impl TantivyIndex {
         };
 
         Ok(Self {
-            index,
             fields,
             writer: Mutex::new(writer),
             reader,
@@ -276,76 +277,92 @@ impl TantivyIndex {
     }
 
     fn build_text_query(&self, raw_query: &str) -> (Box<dyn Query>, Box<dyn Query>) {
-        let mut text_parser = QueryParser::for_index(
-            &self.index,
-            vec![
-                self.fields.title,
-                self.fields.summary,
-                self.fields.tags_text,
-                self.fields.body,
-            ],
+        let whole = analyze_text(
+            raw_query,
+            AnalyzeOptions {
+                split_identifiers: false,
+                char_ngrams: true,
+            },
         );
-        text_parser.set_field_boost(self.fields.title, 3.0);
-        text_parser.set_field_boost(self.fields.tags_text, 2.0);
-        text_parser.set_field_boost(self.fields.summary, 1.5);
-        text_parser.set_field_boost(self.fields.body, 1.0);
-        text_parser.set_conjunction_by_default();
-
-        let normalized = normalize_query_text(raw_query);
-        let parse_input = if normalized.is_empty() {
-            raw_query
-        } else {
-            normalized.as_str()
-        };
-
-        let (text_q, _) = text_parser.parse_query_lenient(parse_input);
-        let snippet_q = text_q.box_clone();
-        match self.build_ngram_query(parse_input) {
-            Some(ngram_q) => {
-                let combined =
-                    BooleanQuery::union(vec![text_q, Box::new(BoostQuery::new(ngram_q, 0.35))]);
-                (Box::new(combined), snippet_q)
-            }
-            None => (text_q, snippet_q),
+        if whole.terms.is_empty() {
+            return (Box::new(EmptyQuery), Box::new(EmptyQuery));
         }
+
+        let mut seen = HashSet::new();
+        let words = word_spans(raw_query)
+            .filter(|&(_, _, word)| seen.insert(word))
+            .map(|(_, _, word)| {
+                let analyzed = analyze_text(
+                    word,
+                    AnalyzeOptions {
+                        split_identifiers: true,
+                        char_ngrams: false,
+                    },
+                );
+                let mut terms = analyzed.terms.iter();
+                let exact = self.build_term_query(terms.next().expect("nonempty analyzed word"));
+                let components: Vec<_> = terms.map(|term| self.build_term_query(term)).collect();
+                if components.is_empty() {
+                    return exact;
+                }
+                Box::new(BooleanQuery::union(vec![
+                    exact,
+                    Box::new(BoostQuery::new(
+                        Box::new(BooleanQuery::intersection(components)),
+                        0.6,
+                    )),
+                ])) as Box<dyn Query>
+            })
+            .collect();
+        let snippet = BooleanQuery::intersection(words);
+        let mut alternatives = vec![Box::new(snippet.clone()) as Box<dyn Query>];
+
+        // A word too short to emit a gram must still match as a whole term.
+        if !whole.char_ngrams.is_empty() && whole.terms.iter().all(|word| word.chars().count() >= 2)
+        {
+            let mut seen = HashSet::new();
+            let grams = whole
+                .char_ngrams
+                .iter()
+                .filter(|gram| seen.insert(*gram))
+                .map(|gram| {
+                    Box::new(TermQuery::new(
+                        Term::from_field_text(self.fields.body_ngram, gram),
+                        IndexRecordOption::Basic,
+                    )) as Box<dyn Query>
+                })
+                .collect();
+            alternatives.push(Box::new(BoostQuery::new(
+                Box::new(BooleanQuery::intersection(grams)),
+                0.35,
+            )));
+        }
+        (
+            Box::new(BooleanQuery::union(alternatives)),
+            Box::new(snippet),
+        )
     }
 
-    fn build_ngram_query(&self, parse_input: &str) -> Option<Box<dyn Query>> {
-        let mut analyzer = self.index.tokenizers().get(TOKENIZER_NGRAM)?;
-        let words: Vec<&str> = parse_input.split_whitespace().collect();
-        if words.is_empty() {
-            return None;
-        }
-
-        let mut word_queries: Vec<Box<dyn Query>> = Vec::with_capacity(words.len());
-        for word in words {
-            let mut seen = HashSet::new();
-            let mut term_queries: Vec<Box<dyn Query>> = Vec::new();
-            let mut stream = analyzer.token_stream(word);
-            stream.process(&mut |token| {
-                if seen.insert(token.text.clone()) {
-                    term_queries.push(Box::new(TermQuery::new(
-                        Term::from_field_text(self.fields.body_ngram, &token.text),
-                        IndexRecordOption::Basic,
-                    )));
-                }
-            });
-            if term_queries.is_empty() {
-                return None;
-            }
-            let word_query: Box<dyn Query> = if term_queries.len() == 1 {
-                term_queries.into_iter().next()?
-            } else {
-                Box::new(BooleanQuery::intersection(term_queries))
-            };
-            word_queries.push(word_query);
-        }
-
-        if word_queries.len() == 1 {
-            word_queries.into_iter().next()
-        } else {
-            Some(Box::new(BooleanQuery::intersection(word_queries)))
-        }
+    fn build_term_query(&self, term: &str) -> Box<dyn Query> {
+        let fields = [
+            (self.fields.title, 3.0),
+            (self.fields.tags_text, 2.0),
+            (self.fields.summary, 1.5),
+            (self.fields.body, 1.0),
+        ];
+        let matches = fields
+            .into_iter()
+            .map(|(field, boost)| {
+                Box::new(BoostQuery::new(
+                    Box::new(TermQuery::new(
+                        Term::from_field_text(field, term),
+                        IndexRecordOption::WithFreqs,
+                    )),
+                    boost,
+                )) as Box<dyn Query>
+            })
+            .collect();
+        Box::new(BooleanQuery::union(matches))
     }
 
     fn compute_category_counts(
@@ -573,38 +590,6 @@ fn reconcile_fields(schema: &Schema, fallback: IndexFields) -> Result<IndexField
         body_ngram: field("body_ngram")?,
         hit_payload: field("hit_payload")?,
     })
-}
-
-fn normalize_query_text(raw: &str) -> String {
-    raw.chars()
-        .map(|ch| {
-            if matches!(
-                ch,
-                ':' | '('
-                    | ')'
-                    | '['
-                    | ']'
-                    | '{'
-                    | '}'
-                    | '^'
-                    | '~'
-                    | '*'
-                    | '?'
-                    | '\\'
-                    | '"'
-                    | '+'
-                    | '/'
-                    | '-'
-            ) {
-                ' '
-            } else {
-                ch
-            }
-        })
-        .collect::<String>()
-        .split_whitespace()
-        .collect::<Vec<_>>()
-        .join(" ")
 }
 
 fn clone_clauses(clauses: &[(Occur, Box<dyn Query>)]) -> Vec<(Occur, Box<dyn Query>)> {
