@@ -52,6 +52,8 @@ export type ReaderDocument = {
   summary: string
   source: string
   tag: string
+  tags?: string[]
+  keywords?: string[]
   date?: string
   category: string
   body: string
@@ -59,6 +61,40 @@ export type ReaderDocument = {
   samplePath?: string
   topic?: ReferenceTopic
   formats?: DocumentFormatPair
+}
+
+export type ClassificationSource = 'rule' | 'manual'
+
+export type DocumentClassification = {
+  documentId: string
+  summary: string
+  category: string
+  tags: string[]
+  keywords: string[]
+  source: ClassificationSource
+  manualLocked: boolean
+  updatedAtMs: number
+  contentHash: string
+}
+
+export type UpdateClassificationInput = {
+  summary?: string
+  category?: string
+  tags?: string[]
+  keywords?: string[]
+  resetToRule?: boolean
+}
+
+export class ApiRequestError extends Error {
+  readonly status: number
+  readonly code?: string
+
+  constructor(message: string, status: number, code?: string) {
+    super(message)
+    this.name = 'ApiRequestError'
+    this.status = status
+    this.code = code
+  }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -109,6 +145,15 @@ function expectStringArray(record: Record<string, unknown>, key: string): string
   const value = record[key]
   if (!Array.isArray(value) || !value.every((item): item is string => typeof item === 'string')) {
     throw new Error(`Invalid API field '${key}': expected string array`)
+  }
+  return value
+}
+
+function optionalStringArray(record: Record<string, unknown>, key: string): string[] | undefined {
+  const value = record[key]
+  if (value === undefined || value === null) return undefined
+  if (!Array.isArray(value) || !value.every((item): item is string => typeof item === 'string')) {
+    throw new Error(`Invalid API field '${key}': expected string array or null`)
   }
   return value
 }
@@ -183,6 +228,8 @@ function parseDocumentDetail(raw: unknown): ReaderDocument {
     summary: expectString(raw, 'summary'),
     source: expectString(raw, 'source'),
     tag: expectString(raw, 'tag'),
+    tags: optionalStringArray(raw, 'tags'),
+    keywords: optionalStringArray(raw, 'keywords'),
     date: optionalString(raw, 'date'),
     category: expectString(raw, 'category'),
     body: expectString(raw, 'body'),
@@ -191,6 +238,30 @@ function parseDocumentDetail(raw: unknown): ReaderDocument {
     topic: optionalTopic(raw),
     formats,
   }
+}
+
+function parseDocumentClassification(raw: unknown): DocumentClassification {
+  if (!isRecord(raw)) throw new Error('Invalid classification response payload')
+  const source = expectString(raw, 'source')
+  if (source !== 'rule' && source !== 'manual') {
+    throw new Error("Invalid API field 'source': expected 'rule' or 'manual'")
+  }
+  return {
+    documentId: expectString(raw, 'document_id'),
+    summary: expectString(raw, 'summary'),
+    category: expectString(raw, 'category'),
+    tags: expectStringArray(raw, 'tags'),
+    keywords: expectStringArray(raw, 'keywords'),
+    source,
+    manualLocked: expectBoolean(raw, 'manual_locked'),
+    updatedAtMs: expectNumber(raw, 'updated_at_ms'),
+    contentHash: expectString(raw, 'content_hash'),
+  }
+}
+
+function parseApiErrorCode(raw: unknown): string | undefined {
+  if (!isRecord(raw) || !isRecord(raw.error)) return undefined
+  return typeof raw.error.code === 'string' ? raw.error.code : undefined
 }
 
 function parseApiErrorMessage(raw: unknown, fallback: string): string {
@@ -388,4 +459,89 @@ export async function fetchDocument(
     if (doc) return { doc, mode: 'local-fallback' }
     throw err
   }
+}
+
+async function parseResponseJsonOrUndefined(response: Response): Promise<unknown> {
+  const contentType = response.headers.get('content-type') ?? ''
+  if (!contentType.includes('application/json')) return undefined
+  try {
+    return await response.json()
+  } catch {
+    return undefined
+  }
+}
+
+export async function fetchClassification(
+  id: string,
+  signal?: AbortSignal,
+): Promise<DocumentClassification | null> {
+  try {
+    const response = await fetch('/api/v1/documents/' + encodeURIComponent(id) + '/classification', {
+      signal,
+    })
+
+    if (
+      response.status === 400 ||
+      response.status === 404 ||
+      isProxyOrNetworkUnavailableStatus(response.status)
+    ) {
+      return null
+    }
+
+    const contentType = response.headers.get('content-type') ?? ''
+    if (!contentType.includes('application/json')) {
+      return null
+    }
+
+    const json: unknown = await response.json()
+    if (!response.ok) {
+      throw new ApiRequestError(
+        parseApiErrorMessage(json, `분류 정보를 불러오지 못했습니다 (${response.status}).`),
+        response.status,
+        parseApiErrorCode(json),
+      )
+    }
+
+    return parseDocumentClassification(json)
+  } catch (err) {
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw err
+    }
+    if (err instanceof TypeError) {
+      return null
+    }
+    throw err
+  }
+}
+
+export async function updateClassification(
+  id: string,
+  input: UpdateClassificationInput,
+): Promise<DocumentClassification> {
+  const payload = input.resetToRule
+    ? { reset_to_rule: true }
+    : {
+        summary: input.summary,
+        category: input.category,
+        tags: input.tags,
+        keywords: input.keywords,
+        reset_to_rule: false,
+      }
+
+  const response = await fetch('/api/v1/documents/' + encodeURIComponent(id) + '/classification', {
+    method: 'PATCH',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+
+  const json = await parseResponseJsonOrUndefined(response)
+  if (!response.ok) {
+    throw new ApiRequestError(
+      parseApiErrorMessage(json, `분류 수정에 실패했습니다 (${response.status}).`),
+      response.status,
+      parseApiErrorCode(json),
+    )
+  }
+
+  return parseDocumentClassification(json)
 }

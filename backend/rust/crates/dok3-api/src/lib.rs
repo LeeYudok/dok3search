@@ -14,8 +14,8 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::{any, get, post};
 use dok3_core::Dok3Error;
 use dok3_domain::{
-    DocumentId, IndexJobPort, Principal, SearchRequest, SectionId, SectionReadRequest,
-    TriggerIndexJobRequest,
+    ClassificationPort, DocumentId, IndexJobPort, Principal, SearchRequest, SectionId,
+    SectionReadRequest, TriggerIndexJobRequest, UpdateClassificationRequest,
 };
 use dok3_search::SearchService;
 use serde::{Deserialize, Serialize};
@@ -34,6 +34,7 @@ pub struct ApiState {
     pub default_principal: Principal,
     pub mode: String,
     pub index_jobs: Option<Arc<dyn IndexJobPort>>,
+    pub classification: Option<Arc<dyn ClassificationPort>>,
 }
 
 impl ApiState {
@@ -45,6 +46,7 @@ impl ApiState {
             default_principal: Principal::anonymous_public(),
             mode: "in-memory-fake".to_string(),
             index_jobs: None,
+            classification: None,
         }
     }
 
@@ -59,6 +61,13 @@ impl ApiState {
     #[must_use]
     pub fn with_index_jobs(mut self, index_jobs: Arc<dyn IndexJobPort>) -> Self {
         self.index_jobs = Some(index_jobs);
+        self
+    }
+
+    /// Attaches a classification port for `/api/v1/documents/{id}/classification` endpoints.
+    #[must_use]
+    pub fn with_classification(mut self, classification: Arc<dyn ClassificationPort>) -> Self {
+        self.classification = Some(classification);
         self
     }
 }
@@ -89,12 +98,23 @@ pub fn build_router_with_extra(
             require_admin_middleware,
         ));
 
+    let doc_classification_router = Router::new()
+        .route(
+            "/api/v1/documents/{id}/classification",
+            get(get_document_classification).patch(update_document_classification),
+        )
+        .layer(middleware::from_fn_with_state(
+            state.clone(),
+            require_admin_for_mutations_middleware,
+        ));
+
     let mut router = Router::new()
         .route("/health/ready", get(health_ready))
         .route("/api/v1/search", post(search))
         .route("/api/v1/documents/{id}", get(get_document))
         .route("/api/v1/documents/{id}/sections/{sid}", get(get_section))
         .merge(admin_router)
+        .merge(doc_classification_router)
         .route("/api", any(api_not_found))
         .route("/api/{*rest}", any(api_not_found))
         .with_state(state);
@@ -269,18 +289,35 @@ async fn require_admin_middleware(
     request: Request<axum::body::Body>,
     next: Next,
 ) -> Response {
-    if let Err(err) = require_admin(&state.default_principal) {
+    if let Err(err) = check_admin_guards(&state.default_principal, &request) {
         return err.into_response();
     }
-    if let Err(err) = validate_admin_origin(request.headers()) {
-        return err.into_response();
-    }
-    if is_mutating_method(request.method())
-        && let Err(err) = require_json_content_type(request.headers())
+    next.run(request).await
+}
+
+async fn require_admin_for_mutations_middleware(
+    State(state): State<ApiState>,
+    request: Request<axum::body::Body>,
+    next: Next,
+) -> Response {
+    if !matches!(*request.method(), Method::GET | Method::HEAD)
+        && let Err(err) = check_admin_guards(&state.default_principal, &request)
     {
         return err.into_response();
     }
     next.run(request).await
+}
+
+fn check_admin_guards(
+    principal: &Principal,
+    request: &Request<axum::body::Body>,
+) -> Result<(), ApiError> {
+    require_admin(principal)?;
+    validate_admin_origin(request.headers())?;
+    if is_mutating_method(request.method()) {
+        require_json_content_type(request.headers())?;
+    }
+    Ok(())
 }
 
 fn require_admin(principal: &Principal) -> Result<(), ApiError> {
@@ -428,4 +465,55 @@ async fn trigger_index_job(
             )))
         })??;
     Ok(Json(record))
+}
+
+fn require_classification(state: &ApiState) -> Result<&Arc<dyn ClassificationPort>, ApiError> {
+    state.classification.as_ref().ok_or_else(|| {
+        ApiError(Dok3Error::InvalidInput(
+            "document classification requires persistent mode (DOK3_SOURCE_DIR + DOK3_DATA_DIR)"
+                .to_string(),
+        ))
+    })
+}
+
+async fn get_document_classification(
+    State(state): State<ApiState>,
+    Path(id): Path<String>,
+) -> Result<impl IntoResponse, ApiError> {
+    let port = Arc::clone(require_classification(&state)?);
+    let principal = state.default_principal.clone();
+    let doc_id = DocumentId::new(id);
+    let classification =
+        tokio::task::spawn_blocking(move || port.get_classification(&principal, &doc_id))
+            .await
+            .map_err(|err| {
+                ApiError(Dok3Error::Internal(format!(
+                    "classification lookup task failed: {err}"
+                )))
+            })??;
+    Ok(Json(classification))
+}
+
+async fn update_document_classification(
+    State(state): State<ApiState>,
+    Path(id): Path<String>,
+    body: Bytes,
+) -> Result<impl IntoResponse, ApiError> {
+    let port = Arc::clone(require_classification(&state)?);
+    let req = serde_json::from_slice::<UpdateClassificationRequest>(&body).map_err(|err| {
+        ApiError(Dok3Error::InvalidInput(format!(
+            "invalid classification update JSON: {err}"
+        )))
+    })?;
+    let principal = state.default_principal.clone();
+    let doc_id = DocumentId::new(id);
+    let updated =
+        tokio::task::spawn_blocking(move || port.update_classification(&principal, &doc_id, &req))
+            .await
+            .map_err(|err| {
+                ApiError(Dok3Error::Internal(format!(
+                    "classification update task failed: {err}"
+                )))
+            })??;
+    Ok(Json(updated))
 }

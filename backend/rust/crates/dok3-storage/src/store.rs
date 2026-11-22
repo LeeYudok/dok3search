@@ -151,6 +151,15 @@ impl FileDocumentStore {
         Ok(bytes)
     }
 
+    /// Returns an authorized copy of the stored domain [`Document`].
+    pub fn get_stored_document(
+        &self,
+        principal: &Principal,
+        id: &DocumentId,
+    ) -> Result<Document, Dok3Error> {
+        self.authorized(principal, id)
+    }
+
     /// Returns sorted document IDs currently tracked in metadata.
     pub fn document_ids(&self) -> Result<Vec<DocumentId>, Dok3Error> {
         let docs = self

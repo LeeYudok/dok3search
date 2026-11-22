@@ -1,10 +1,18 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { ArrowCounterClockwise, Check, LockSimple, PencilSimple, SlidersHorizontal, Tag, X } from '@phosphor-icons/react'
+import { type FormEvent, useEffect, useMemo, useRef, useState } from 'react'
 import Markdown, { defaultUrlTransform } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkParse from 'remark-parse'
 import { unified } from 'unified'
 import { toString } from 'mdast-util-to-string'
-import { fetchDocument, type ReaderDocument } from './api'
+import {
+  ApiRequestError,
+  type DocumentClassification,
+  fetchClassification,
+  fetchDocument,
+  type ReaderDocument,
+  updateClassification,
+} from './api'
 import { categories, categoryLabels, designDocuments, documentHeadingId, isReferenceTopic, searchUrl, topics, type Document } from './documents'
 import type { ReferenceCorpus } from './reference-corpus'
 
@@ -186,6 +194,22 @@ function MarkdownBody({ markdown, sections, samplePath, corpus, corpora }: {
   )
 }
 
+const MAX_CLASSIFICATION_SUMMARY_CHARS = 200
+
+function parseCommaSeparatedTerms(raw: string): string[] {
+  const terms: string[] = []
+  const seen = new Set<string>()
+  for (const part of raw.split(',')) {
+    const trimmed = part.trim()
+    if (!trimmed) continue
+    const lowered = trimmed.toLowerCase()
+    if (seen.has(lowered)) continue
+    seen.add(lowered)
+    terms.push(trimmed)
+  }
+  return terms
+}
+
 export function DocumentPage({ id, corpora }: { id: string; corpora?: readonly ReferenceCorpus[] }) {
   const corpus = corpora?.find((item) => item.documents.some((doc) => doc.id === id))
   const localDoc = corpus?.documents.find((item) => item.id === id)
@@ -197,17 +221,42 @@ export function DocumentPage({ id, corpora }: { id: string; corpora?: readonly R
   const progress = useRef<HTMLDivElement>(null)
   const [activeSection, setActiveSection] = useState('overview')
 
+  const [classification, setClassification] = useState<DocumentClassification | null>(null)
+  const [editingClassification, setEditingClassification] = useState(false)
+  const [clsCategory, setClsCategory] = useState('guide')
+  const [clsSummary, setClsSummary] = useState('')
+  const [clsTags, setClsTags] = useState('')
+  const [clsKeywords, setClsKeywords] = useState('')
+  const [clsSaving, setClsSaving] = useState(false)
+  const [clsError, setClsError] = useState<string | null>(null)
+  const [clsNotice, setClsNotice] = useState<string | null>(null)
+
+  function syncDraftFromClassification(next: DocumentClassification) {
+    setClsCategory(next.category)
+    setClsSummary(next.summary)
+    setClsTags(next.tags.join(', '))
+    setClsKeywords(next.keywords.join(', '))
+  }
+
   useEffect(() => {
     if (corpora?.length) {
       document.title = (localDoc?.title ?? '문서를 찾을 수 없습니다') + ' · dok3search'
+      setClassification(null)
+      setEditingClassification(false)
+      setClsError(null)
+      setClsNotice(null)
       return
     }
 
     const controller = new AbortController()
     setApiState({ status: 'loading' })
+    setClassification(null)
+    setEditingClassification(false)
+    setClsError(null)
+    setClsNotice(null)
 
     void fetchDocument(id, controller.signal).then(
-      ({ doc }) => {
+      ({ doc, mode }) => {
         if (controller.signal.aborted) return
         if (!doc) {
           document.title = '문서를 찾을 수 없습니다 · dok3search'
@@ -216,6 +265,19 @@ export function DocumentPage({ id, corpora }: { id: string; corpora?: readonly R
         }
         document.title = doc.title + ' · dok3search'
         setApiState({ status: 'ready', doc })
+
+        if (mode === 'api') {
+          void fetchClassification(doc.id, controller.signal).then(
+            (cls) => {
+              if (controller.signal.aborted || !cls) return
+              setClassification(cls)
+              syncDraftFromClassification(cls)
+            },
+            () => {
+              // Ignore optional classification load errors so reading remains uninterrupted.
+            },
+          )
+        }
       },
       (error: unknown) => {
         if (controller.signal.aborted) return
@@ -228,6 +290,71 @@ export function DocumentPage({ id, corpora }: { id: string; corpora?: readonly R
 
     return () => controller.abort()
   }, [id, corpora, localDoc])
+
+  function applyUpdatedClassification(updated: DocumentClassification) {
+    setClassification(updated)
+    syncDraftFromClassification(updated)
+    setEditingClassification(false)
+    setClsError(null)
+    setClsNotice(updated.manualLocked ? '수동 분류를 저장했습니다.' : '규칙 자동 분류로 되돌렸습니다.')
+    setApiState((prev) => {
+      if (prev.status !== 'ready') return prev
+      return {
+        status: 'ready',
+        doc: {
+          ...prev.doc,
+          category: updated.category,
+          summary: updated.summary,
+          tag: updated.tags[0] ?? prev.doc.tag,
+          tags: updated.tags,
+          keywords: updated.keywords,
+        },
+      }
+    })
+  }
+
+  function formatClassificationError(err: unknown): string {
+    if (err instanceof ApiRequestError && err.status === 403) {
+      return '관리자 권한이 필요합니다. 서버를 DOK3_ENABLE_ADMIN=true 환경 변수로 실행한 뒤 다시 시도하세요.'
+    }
+    return err instanceof Error ? err.message : '분류 수정 중 오류가 발생했습니다.'
+  }
+
+  async function handleSaveClassification(event: FormEvent) {
+    event.preventDefault()
+    if (!classification) return
+    setClsSaving(true)
+    setClsError(null)
+    setClsNotice(null)
+    try {
+      const updated = await updateClassification(classification.documentId, {
+        category: clsCategory,
+        summary: clsSummary,
+        tags: parseCommaSeparatedTerms(clsTags),
+        keywords: parseCommaSeparatedTerms(clsKeywords),
+      })
+      applyUpdatedClassification(updated)
+    } catch (err) {
+      setClsError(formatClassificationError(err))
+    } finally {
+      setClsSaving(false)
+    }
+  }
+
+  async function handleResetClassification() {
+    if (!classification) return
+    setClsSaving(true)
+    setClsError(null)
+    setClsNotice(null)
+    try {
+      const updated = await updateClassification(classification.documentId, { resetToRule: true })
+      applyUpdatedClassification(updated)
+    } catch (err) {
+      setClsError(formatClassificationError(err))
+    } finally {
+      setClsSaving(false)
+    }
+  }
 
   const doc = readerState.status === 'ready' ? readerState.doc : null
 
@@ -339,17 +466,129 @@ export function DocumentPage({ id, corpora }: { id: string; corpora?: readonly R
         {doc && (
           <>
             <header className="article-header">
-              <a className="article-category" href={searchUrl('', doc.category, 1, doc.topic)}>
-                {categoryLabels.get(doc.category as typeof categories[number]['id']) ?? doc.category}
-              </a>
-              {doc.topic && <a className="article-tag" href={searchUrl('', 'guide', 1, doc.topic)}>
-                {topics.find((item) => item.id === doc.topic)?.label}
-              </a>}
+              <div className="article-eyebrow">
+                <a className="article-category" href={searchUrl('', doc.category, 1, doc.topic)}>
+                  {categoryLabels.get(doc.category as typeof categories[number]['id']) ?? doc.category}
+                </a>
+                {doc.topic && <a className="article-tag" href={searchUrl('', 'guide', 1, doc.topic)}>
+                  {topics.find((item) => item.id === doc.topic)?.label}
+                </a>}
+                {classification && !corpus && (
+                  <>
+                    <span className={classification.manualLocked ? 'cls-badge cls-badge-manual' : 'cls-badge'}>
+                      {classification.manualLocked
+                        ? <LockSimple size={13} weight="bold" aria-hidden="true" />
+                        : <SlidersHorizontal size={13} aria-hidden="true" />}
+                      {classification.manualLocked ? '수동 수정 유지됨' : '규칙 자동 분류'}
+                    </span>
+                    <button
+                      type="button"
+                      className="cls-toggle-button"
+                      aria-expanded={editingClassification}
+                      onClick={() => {
+                        setClsError(null)
+                        setClsNotice(null)
+                        syncDraftFromClassification(classification)
+                        setEditingClassification((prev) => !prev)
+                      }}
+                    >
+                      <PencilSimple size={13} aria-hidden="true" />
+                      {editingClassification ? '편집 닫기' : '분류 편집'}
+                    </button>
+                  </>
+                )}
+              </div>
               <h1>{doc.title}</h1>
               <p className="article-meta">
                 <span>{corpus ? doc.source : doc.samplePath ?? doc.source}</span>{doc.date && <time dateTime={doc.date}>{doc.date}</time>}
                 {corpus?.licenses.map(({ label, url }) => <a href={url} key={label}>{label}</a>)}
               </p>
+              {clsNotice && !editingClassification && (
+                <p className="cls-notice" role="status">{clsNotice}</p>
+              )}
+              {editingClassification && classification && !corpus && (
+                <section className="cls-panel" aria-label="문서 분류 편집">
+                  <form className="cls-form" onSubmit={(event) => void handleSaveClassification(event)}>
+                    <div className="cls-field">
+                      <label htmlFor="cls-category">카테고리</label>
+                      <select
+                        id="cls-category"
+                        value={clsCategory}
+                        disabled={clsSaving}
+                        onChange={(event) => setClsCategory(event.target.value)}
+                      >
+                        {categories.map((item) => (
+                          <option key={item.id} value={item.id}>{item.label} ({item.id})</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="cls-field">
+                      <label htmlFor="cls-summary">
+                        요약 <span>({clsSummary.length}/{MAX_CLASSIFICATION_SUMMARY_CHARS})</span>
+                      </label>
+                      <textarea
+                        id="cls-summary"
+                        rows={3}
+                        maxLength={MAX_CLASSIFICATION_SUMMARY_CHARS}
+                        value={clsSummary}
+                        disabled={clsSaving}
+                        onChange={(event) => setClsSummary(event.target.value)}
+                      />
+                    </div>
+                    <div className="cls-field-row">
+                      <div className="cls-field">
+                        <label htmlFor="cls-tags">태그 (쉼표 구분, 최대 16개)</label>
+                        <input
+                          id="cls-tags"
+                          type="text"
+                          value={clsTags}
+                          disabled={clsSaving}
+                          onChange={(event) => setClsTags(event.target.value)}
+                        />
+                      </div>
+                      <div className="cls-field">
+                        <label htmlFor="cls-keywords">키워드 (쉼표 구분, 최대 16개)</label>
+                        <input
+                          id="cls-keywords"
+                          type="text"
+                          value={clsKeywords}
+                          disabled={clsSaving}
+                          onChange={(event) => setClsKeywords(event.target.value)}
+                        />
+                      </div>
+                    </div>
+                    {clsError && <p className="cls-error" role="alert">{clsError}</p>}
+                    <div className="cls-actions">
+                      <button type="submit" className="cls-btn-primary" disabled={clsSaving}>
+                        <Check size={14} weight="bold" aria-hidden="true" />
+                        {clsSaving ? '저장 중...' : '저장'}
+                      </button>
+                      <button
+                        type="button"
+                        className="cls-btn-secondary"
+                        disabled={clsSaving || !classification.manualLocked}
+                        onClick={() => void handleResetClassification()}
+                      >
+                        <ArrowCounterClockwise size={14} aria-hidden="true" />
+                        규칙 재분류
+                      </button>
+                      <button
+                        type="button"
+                        className="cls-btn-secondary"
+                        disabled={clsSaving}
+                        onClick={() => {
+                          syncDraftFromClassification(classification)
+                          setEditingClassification(false)
+                          setClsError(null)
+                        }}
+                      >
+                        <X size={14} aria-hidden="true" />
+                        취소
+                      </button>
+                    </div>
+                  </form>
+                </section>
+              )}
               {doc.formats && (
                 <nav className="category-filters article-formats" aria-label="문서 형식">
                   {[
@@ -380,7 +619,17 @@ export function DocumentPage({ id, corpora }: { id: string; corpora?: readonly R
                     <p>{doc.body}</p>
                   </section>
                 )}
-                <a className="article-tag" href={searchUrl(doc.tag)}>{doc.tag}</a>
+                <div className="article-terms">
+                  {(doc.tags?.length ? doc.tags : [doc.tag]).map((tag) => (
+                    <a className="article-tag" key={'tag-' + tag} href={searchUrl(tag)}>
+                      <Tag size={12} aria-hidden="true" />
+                      {tag}
+                    </a>
+                  ))}
+                  {(doc.keywords ?? []).map((kw) => (
+                    <a className="article-keyword" key={'kw-' + kw} href={searchUrl(kw)}>{kw}</a>
+                  ))}
+                </div>
               </article>
               <nav className="article-toc" aria-label="이 문서의 목차">
                 <strong>목차</strong>
