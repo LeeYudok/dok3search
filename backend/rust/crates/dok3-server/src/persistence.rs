@@ -4,14 +4,18 @@ use std::collections::{BTreeMap, HashSet};
 use std::fs::{self, File};
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex};
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{Arc, Mutex, mpsc};
+use std::thread::{self, JoinHandle};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use dok3_connectors::{LocalFileConnector, SourceConfig, build_document};
 use dok3_core::Dok3Error;
 use dok3_domain::{
     ChangeEvent, ChangeJournalPort, ChangeKind, Document, DocumentId, DocumentParserPort,
-    DocumentStorePort, GenerationId, Principal, ReaderState, RevisionId, SearchPort, SearchRequest,
-    SearchResponse, SearchSnapshotMeta, Sequence, SourceId,
+    DocumentStorePort, GenerationId, IndexJobListResponse, IndexJobMode, IndexJobPort,
+    IndexJobRecord, IndexJobState, Principal, ReaderState, RevisionId, SearchPort, SearchRequest,
+    SearchResponse, SearchSnapshotMeta, Sequence, SourceId, TriggerIndexJobRequest,
 };
 use dok3_index::{SCHEMA_VERSION, TantivyIndex};
 use dok3_index_manager::{
@@ -21,12 +25,15 @@ use dok3_index_manager::{
 use dok3_parser::MarkdownParser;
 use dok3_search::SearchService;
 use dok3_storage::{FileChangeJournal, FileDocumentStore, PutOutcome};
+use serde::{Deserialize, Serialize};
 
 use crate::local_index::{BuildReport, apply_detected_language};
 
 const ANALYZER_VERSION: u64 = 1;
 const ACL_POLICY_VERSION: u64 = 1;
 const DEFAULT_AVAILABLE_DISK_BYTES: u64 = 100 * 1024 * 1024 * 1024;
+const MAX_JOB_HISTORY: usize = 100;
+static JOB_TMP_SEQ: AtomicU64 = AtomicU64::new(0);
 
 struct LocalGenerationBackend {
     generations_dir: PathBuf,
@@ -361,7 +368,6 @@ fn snapshot_meta_from_lease(lease: &SearchSnapshot<Arc<TantivyIndex>>) -> Search
 ///
 /// `report.indexed` records the total scanned-and-stored source documents verified on this pass,
 /// including when `rebuilt` is `false`.
-#[cfg_attr(not(test), allow(dead_code))]
 #[derive(Debug, PartialEq, Eq)]
 pub struct RefreshReport {
     pub report: BuildReport,
@@ -370,8 +376,248 @@ pub struct RefreshReport {
     pub active_epoch: u64,
 }
 
+/// Handle for shutting down the periodic refresh background thread.
+pub struct WorkerHandle {
+    stop_tx: Option<mpsc::Sender<()>>,
+    join: Option<JoinHandle<()>>,
+}
+
+impl WorkerHandle {
+    /// Signals the periodic refresh worker to exit and waits for its thread to finish.
+    pub fn stop(mut self) {
+        self.shutdown();
+    }
+
+    fn shutdown(&mut self) {
+        if let Some(tx) = self.stop_tx.take() {
+            let _ = tx.send(());
+        }
+        if let Some(join) = self.join.take() {
+            let _ = join.join();
+        }
+    }
+}
+
+impl Drop for WorkerHandle {
+    fn drop(&mut self) {
+        self.shutdown();
+    }
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+struct JobHistoryDisk {
+    next_seq: u64,
+    jobs: Vec<IndexJobRecord>,
+}
+
+struct JobHistoryStore {
+    path: PathBuf,
+    next_seq: u64,
+    jobs: Vec<IndexJobRecord>,
+    active_generation: Option<String>,
+    active_epoch: u64,
+    refresh_interval_secs: Option<u64>,
+    dirty: bool,
+}
+
+impl JobHistoryStore {
+    fn open(
+        path: PathBuf,
+        active_generation: Option<String>,
+        active_epoch: u64,
+        refresh_interval_secs: Option<u64>,
+    ) -> Result<Self, String> {
+        let mut disk = match fs::read(&path) {
+            Ok(raw) => serde_json::from_slice::<JobHistoryDisk>(&raw)
+                .map_err(|err| format!("failed to decode {}: {err}", path.display()))?,
+            Err(err) if err.kind() == std::io::ErrorKind::NotFound => JobHistoryDisk::default(),
+            Err(err) => return Err(format!("failed to read {}: {err}", path.display())),
+        };
+        let interrupted_at = now_ms();
+        for job in &mut disk.jobs {
+            if matches!(job.state, IndexJobState::Pending | IndexJobState::Running) {
+                job.state = IndexJobState::Failed;
+                job.finished_at_ms = Some(interrupted_at);
+                job.error = Some("interrupted by server restart".to_string());
+            }
+        }
+        if disk.jobs.len() > MAX_JOB_HISTORY {
+            let excess = disk.jobs.len() - MAX_JOB_HISTORY;
+            disk.jobs.drain(0..excess);
+        }
+        let max_seen = disk
+            .jobs
+            .iter()
+            .filter_map(|job| job.job_id.strip_prefix("job-")?.parse::<u64>().ok())
+            .max()
+            .unwrap_or(0);
+        let next_seq = disk.next_seq.max(max_seen);
+        Ok(Self {
+            path,
+            next_seq,
+            jobs: disk.jobs,
+            active_generation,
+            active_epoch,
+            refresh_interval_secs,
+            dirty: false,
+        })
+    }
+
+    fn persist_snapshot(path: &Path, next_seq: u64, jobs: &[IndexJobRecord]) -> Result<(), String> {
+        let disk = JobHistoryDisk {
+            next_seq,
+            jobs: jobs.to_vec(),
+        };
+        let bytes = serde_json::to_vec_pretty(&disk)
+            .map_err(|err| format!("failed to serialize index jobs: {err}"))?;
+        atomic_write_bytes(path, &bytes)
+    }
+
+    fn trim_completed_history(jobs: &mut Vec<IndexJobRecord>) {
+        while jobs.len() > MAX_JOB_HISTORY {
+            if let Some(idx) = jobs.iter().position(|job| {
+                !matches!(job.state, IndexJobState::Pending | IndexJobState::Running)
+            }) {
+                jobs.remove(idx);
+            } else {
+                break;
+            }
+        }
+    }
+
+    fn start_job(
+        &mut self,
+        source_id: Option<String>,
+        trigger: &str,
+        mode: IndexJobMode,
+    ) -> Result<IndexJobRecord, Dok3Error> {
+        let next_seq = self.next_seq + 1;
+        let record = IndexJobRecord {
+            job_id: format!("job-{next_seq:04}"),
+            source_id,
+            trigger: trigger.to_string(),
+            mode,
+            state: IndexJobState::Running,
+            started_at_ms: now_ms(),
+            finished_at_ms: None,
+            indexed_documents: 0,
+            rebuilt: false,
+            active_generation: self.active_generation.clone(),
+            active_epoch: self.active_epoch,
+            skipped_files: Vec::new(),
+            error: None,
+        };
+        let mut next_jobs = self.jobs.clone();
+        next_jobs.push(record.clone());
+        Self::trim_completed_history(&mut next_jobs);
+        Self::persist_snapshot(&self.path, next_seq, &next_jobs).map_err(Dok3Error::Storage)?;
+        self.next_seq = next_seq;
+        self.jobs = next_jobs;
+        self.dirty = false;
+        Ok(record)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn finish_job(
+        &mut self,
+        job_id: &str,
+        state: IndexJobState,
+        indexed_documents: usize,
+        rebuilt: bool,
+        active_generation: Option<String>,
+        active_epoch: u64,
+        skipped_files: Vec<String>,
+        error: Option<String>,
+    ) -> Result<IndexJobRecord, Dok3Error> {
+        let finished_at = now_ms();
+        let snapshot = {
+            let record = self
+                .jobs
+                .iter_mut()
+                .find(|job| job.job_id == job_id)
+                .ok_or_else(|| Dok3Error::Internal(format!("missing in-flight job '{job_id}'")))?;
+            record.state = state;
+            record.finished_at_ms = Some(finished_at);
+            record.indexed_documents = indexed_documents;
+            record.rebuilt = rebuilt;
+            record.active_generation = active_generation.clone();
+            record.active_epoch = active_epoch;
+            record.skipped_files = skipped_files;
+            record.error = error;
+            record.clone()
+        };
+        Self::trim_completed_history(&mut self.jobs);
+        self.active_generation = active_generation;
+        self.active_epoch = active_epoch;
+        self.dirty = true;
+        Self::persist_snapshot(&self.path, self.next_seq, &self.jobs)
+            .map_err(Dok3Error::Storage)?;
+        self.dirty = false;
+        Ok(snapshot)
+    }
+
+    fn flush_if_dirty(&mut self) {
+        if self.dirty && Self::persist_snapshot(&self.path, self.next_seq, &self.jobs).is_ok() {
+            self.dirty = false;
+        }
+    }
+
+    fn record_startup(
+        &mut self,
+        report: &BuildReport,
+        rebuilt: bool,
+        active_generation: Option<String>,
+        active_epoch: u64,
+    ) -> Result<IndexJobRecord, String> {
+        let next_seq = self.next_seq + 1;
+        let now = now_ms();
+        let record = IndexJobRecord {
+            job_id: format!("job-{next_seq:04}"),
+            source_id: None,
+            trigger: "startup".to_string(),
+            mode: IndexJobMode::Incremental,
+            state: IndexJobState::Succeeded,
+            started_at_ms: now,
+            finished_at_ms: Some(now),
+            indexed_documents: report.indexed,
+            rebuilt,
+            active_generation: active_generation.clone(),
+            active_epoch,
+            skipped_files: report.skipped.clone(),
+            error: None,
+        };
+        let mut next_jobs = self.jobs.clone();
+        next_jobs.push(record.clone());
+        Self::trim_completed_history(&mut next_jobs);
+        Self::persist_snapshot(&self.path, next_seq, &next_jobs)?;
+        self.next_seq = next_seq;
+        self.jobs = next_jobs;
+        self.active_generation = active_generation;
+        self.active_epoch = active_epoch;
+        Ok(record)
+    }
+
+    #[cfg_attr(not(test), allow(dead_code))]
+    fn update_active(&mut self, active_generation: Option<String>, active_epoch: u64) {
+        self.active_generation = active_generation;
+        self.active_epoch = active_epoch;
+    }
+
+    fn list(&self) -> IndexJobListResponse {
+        IndexJobListResponse {
+            jobs: self.jobs.iter().rev().cloned().collect(),
+            active_generation: self.active_generation.clone(),
+            active_epoch: self.active_epoch,
+            refresh_interval_secs: self.refresh_interval_secs,
+        }
+    }
+
+    fn get(&self, job_id: &str) -> Option<IndexJobRecord> {
+        self.jobs.iter().find(|job| job.job_id == job_id).cloned()
+    }
+}
+
 /// Long-lived handle to durable storage, journal, and Blue-Green generation state.
-#[cfg_attr(not(test), allow(dead_code))]
 pub struct PersistentRuntime {
     source_dir: PathBuf,
     store: Arc<FileDocumentStore>,
@@ -379,12 +625,22 @@ pub struct PersistentRuntime {
     manager: Arc<Mutex<IndexManager<LocalGenerationBackend>>>,
     access: ReaderAccess<Arc<TantivyIndex>>,
     service: SearchService,
+    job_exec_lock: Mutex<()>,
+    jobs: Arc<Mutex<JobHistoryStore>>,
 }
 
-#[cfg_attr(not(test), allow(dead_code))]
 impl PersistentRuntime {
     /// Opens (or reconciles) persistent storage/generations under `data_dir` and syncs `source_dir`.
     pub fn open(source_dir: &Path, data_dir: &Path) -> Result<(Self, BuildReport), String> {
+        Self::open_with_refresh(source_dir, data_dir, None)
+    }
+
+    /// Opens persistent runtime and configures reported periodic refresh interval metadata.
+    pub fn open_with_refresh(
+        source_dir: &Path,
+        data_dir: &Path,
+        refresh_interval_secs: Option<u64>,
+    ) -> Result<(Self, BuildReport), String> {
         let storage_dir = data_dir.join("storage");
         let generations_dir = data_dir.join("generations");
 
@@ -405,8 +661,21 @@ impl PersistentRuntime {
         manager
             .reconcile_on_startup()
             .map_err(|err| err.to_string())?;
-        let _ = ensure_active_generation(&mut manager, &store, &journal)?;
+        let rebuilt = ensure_active_generation(&mut manager, &store, &journal, false)?;
         manager.gc_retired().map_err(|err| err.to_string())?;
+
+        let mut job_store = JobHistoryStore::open(
+            storage_dir.join("index_jobs.json"),
+            manager.state().active_generation.clone(),
+            manager.state().active_epoch,
+            refresh_interval_secs,
+        )?;
+        job_store.record_startup(
+            &report,
+            rebuilt,
+            manager.state().active_generation.clone(),
+            manager.state().active_epoch,
+        )?;
 
         let access = manager.reader_access();
         let manager = Arc::new(Mutex::new(manager));
@@ -423,6 +692,8 @@ impl PersistentRuntime {
             manager,
             access,
             service,
+            job_exec_lock: Mutex::new(()),
+            jobs: Arc::new(Mutex::new(job_store)),
         };
         Ok((runtime, report))
     }
@@ -434,32 +705,170 @@ impl PersistentRuntime {
     }
 
     /// Returns a cloneable handle for acquiring protected `ReaderLease` snapshots.
+    #[cfg_attr(not(test), allow(dead_code))]
     #[must_use]
     pub fn reader_access(&self) -> ReaderAccess<Arc<TantivyIndex>> {
         self.access.clone()
     }
 
     /// Re-scans `source_dir`, persists deltas, activates a new generation when changed, and GCs retired generations.
+    #[cfg_attr(not(test), allow(dead_code))]
     pub fn refresh(&self) -> Result<RefreshReport, String> {
+        let _exec_guard = self
+            .job_exec_lock
+            .lock()
+            .map_err(|_| "index job execution lock poisoned".to_string())?;
         let mut manager = self
             .manager
             .lock()
             .map_err(|_| "persistent index manager mutex poisoned".to_string())?;
-        manager.reconcile_on_startup().map_err(|err| {
-            format!("persistent index manager reconciliation failed; restart required: {err}")
-        })?;
-        let report = sync_source_to_storage(&self.source_dir, &self.store, &self.journal)?;
-        let rebuilt = ensure_active_generation(&mut manager, &self.store, &self.journal)?;
-        manager.gc_retired().map_err(|err| err.to_string())?;
-        Ok(RefreshReport {
-            report,
-            rebuilt,
-            active_generation: manager.state().active_generation.clone(),
-            active_epoch: manager.state().active_epoch,
-        })
+        let result = refresh_locked(
+            &mut manager,
+            &self.source_dir,
+            &self.store,
+            &self.journal,
+            false,
+        )?;
+        if let Ok(mut jobs) = self.jobs.lock() {
+            jobs.update_active(result.active_generation.clone(), result.active_epoch);
+        }
+        Ok(result)
+    }
+
+    /// Runs a serialized indexing job (`Incremental` or `Full`), persisting its outcome to `index_jobs.json`.
+    /// Scan/indexing errors are recorded as `IndexJobState::Failed`; persistence failures return `Dok3Error::Storage`.
+    pub fn run_job(
+        &self,
+        trigger: &str,
+        req: &TriggerIndexJobRequest,
+    ) -> Result<IndexJobRecord, Dok3Error> {
+        self.run_job_with_hook(trigger, req, || {})
+    }
+
+    fn run_job_with_hook(
+        &self,
+        trigger: &str,
+        req: &TriggerIndexJobRequest,
+        after_execute: impl FnOnce(),
+    ) -> Result<IndexJobRecord, Dok3Error> {
+        let _exec_guard = self
+            .job_exec_lock
+            .lock()
+            .map_err(|_| Dok3Error::Internal("index job execution lock poisoned".to_string()))?;
+
+        let started = {
+            let mut jobs = self
+                .jobs
+                .lock()
+                .map_err(|_| Dok3Error::Internal("index job store mutex poisoned".to_string()))?;
+            jobs.start_job(req.source_id.clone(), trigger, req.mode)?
+        };
+
+        let outcome = self.execute_job(req);
+        after_execute();
+
+        let (live_gen, live_epoch) = self.live_active_generation();
+        let mut jobs = self
+            .jobs
+            .lock()
+            .map_err(|_| Dok3Error::Internal("index job store mutex poisoned".to_string()))?;
+        let fallback_gen = live_gen.or_else(|| jobs.active_generation.clone());
+        let fallback_epoch = live_epoch.unwrap_or(jobs.active_epoch);
+        match outcome {
+            Ok(result) => jobs.finish_job(
+                &started.job_id,
+                IndexJobState::Succeeded,
+                result.report.indexed,
+                result.rebuilt,
+                result.active_generation,
+                result.active_epoch,
+                result.report.skipped,
+                None,
+            ),
+            Err(err) => jobs.finish_job(
+                &started.job_id,
+                IndexJobState::Failed,
+                0,
+                false,
+                fallback_gen,
+                fallback_epoch,
+                Vec::new(),
+                Some(err),
+            ),
+        }
+    }
+
+    fn live_active_generation(&self) -> (Option<String>, Option<u64>) {
+        match self.access.acquire() {
+            Some(lease) => (
+                Some(lease.manifest.generation_id.clone()),
+                Some(lease.epoch),
+            ),
+            None => (None, None),
+        }
+    }
+
+    fn execute_job(&self, req: &TriggerIndexJobRequest) -> Result<RefreshReport, String> {
+        validate_job_source_id(req.source_id.as_deref()).map_err(|err| err.to_string())?;
+        let mut manager = self
+            .manager
+            .lock()
+            .map_err(|_| "persistent index manager mutex poisoned".to_string())?;
+        refresh_locked(
+            &mut manager,
+            &self.source_dir,
+            &self.store,
+            &self.journal,
+            req.mode == IndexJobMode::Full,
+        )
+    }
+
+    /// Spawns a background thread that runs incremental [`Self::run_job`] every `interval_secs`
+    /// until the returned [`WorkerHandle`] is stopped or dropped.
+    #[must_use]
+    pub fn spawn_periodic_worker(self: &Arc<Self>, interval_secs: u64) -> WorkerHandle {
+        let interval = Duration::from_secs(interval_secs.max(1));
+        let (stop_tx, stop_rx) = mpsc::channel();
+        let runtime = Arc::clone(self);
+        let join = thread::Builder::new()
+            .name("dok3-periodic-refresh".to_string())
+            .spawn(move || {
+                loop {
+                    match stop_rx.recv_timeout(interval) {
+                        Ok(()) | Err(mpsc::RecvTimeoutError::Disconnected) => break,
+                        Err(mpsc::RecvTimeoutError::Timeout) => {
+                            match runtime.run_job(
+                                "periodic",
+                                &TriggerIndexJobRequest {
+                                    source_id: None,
+                                    mode: IndexJobMode::Incremental,
+                                },
+                            ) {
+                                Ok(record) => {
+                                    if let Some(err) = record.error {
+                                        eprintln!(
+                                            "periodic refresh job {} failed: {err}",
+                                            record.job_id
+                                        );
+                                    }
+                                }
+                                Err(err) => {
+                                    eprintln!("periodic refresh job persistence failed: {err}");
+                                }
+                            }
+                        }
+                    }
+                }
+            })
+            .expect("failed to spawn dok3-periodic-refresh worker thread");
+        WorkerHandle {
+            stop_tx: Some(stop_tx),
+            join: Some(join),
+        }
     }
 
     /// Attempts to delete files of retired generations with zero active reader leases.
+    #[cfg_attr(not(test), allow(dead_code))]
     pub fn gc_retired(&self) -> Result<Vec<String>, String> {
         let mut manager = self
             .manager
@@ -469,29 +878,104 @@ impl PersistentRuntime {
     }
 }
 
+impl IndexJobPort for PersistentRuntime {
+    fn list_jobs(&self) -> Result<IndexJobListResponse, Dok3Error> {
+        let mut resp = {
+            let mut jobs = self
+                .jobs
+                .lock()
+                .map_err(|_| Dok3Error::Internal("index job store mutex poisoned".into()))?;
+            jobs.flush_if_dirty();
+            jobs.list()
+        };
+        if let Some(lease) = self.access.acquire() {
+            resp.active_generation = Some(lease.manifest.generation_id.clone());
+            resp.active_epoch = lease.epoch;
+        }
+        Ok(resp)
+    }
+
+    fn get_job(&self, job_id: &str) -> Result<IndexJobRecord, Dok3Error> {
+        let trimmed = job_id.trim();
+        if trimmed.is_empty() {
+            return Err(Dok3Error::InvalidInput("job_id must not be empty".into()));
+        }
+        let mut jobs = self
+            .jobs
+            .lock()
+            .map_err(|_| Dok3Error::Internal("index job store mutex poisoned".into()))?;
+        jobs.flush_if_dirty();
+        jobs.get(trimmed)
+            .ok_or_else(|| Dok3Error::NotFound(format!("index job '{trimmed}' not found")))
+    }
+
+    fn trigger_job(&self, req: &TriggerIndexJobRequest) -> Result<IndexJobRecord, Dok3Error> {
+        validate_job_source_id(req.source_id.as_deref())?;
+        self.run_job("manual", req)
+    }
+}
+
+fn validate_job_source_id(source_id: Option<&str>) -> Result<(), Dok3Error> {
+    if let Some(raw) = source_id {
+        let trimmed = raw.trim();
+        if trimmed.is_empty() {
+            return Err(Dok3Error::InvalidInput(
+                "source_id must not be empty".to_string(),
+            ));
+        }
+        if trimmed != "local-markdown" {
+            return Err(Dok3Error::NotFound(format!("source '{trimmed}' not found")));
+        }
+    }
+    Ok(())
+}
+
+fn refresh_locked(
+    manager: &mut IndexManager<LocalGenerationBackend>,
+    source_dir: &Path,
+    store: &FileDocumentStore,
+    journal: &FileChangeJournal,
+    force_rebuild: bool,
+) -> Result<RefreshReport, String> {
+    manager.reconcile_on_startup().map_err(|err| {
+        format!("persistent index manager reconciliation failed; restart required: {err}")
+    })?;
+    let report = sync_source_to_storage(source_dir, store, journal)?;
+    let rebuilt = ensure_active_generation(manager, store, journal, force_rebuild)?;
+    manager.gc_retired().map_err(|err| err.to_string())?;
+    Ok(RefreshReport {
+        report,
+        rebuilt,
+        active_generation: manager.state().active_generation.clone(),
+        active_epoch: manager.state().active_epoch,
+    })
+}
+
 fn ensure_active_generation(
     manager: &mut IndexManager<LocalGenerationBackend>,
     store: &FileDocumentStore,
     journal: &FileChangeJournal,
+    force_rebuild: bool,
 ) -> Result<bool, String> {
     let seq = journal
         .last_sequence()
         .map_err(|err| err.to_string())?
         .get();
     let expected_docs = store.document_count() as u64;
-    let active_matches = manager
-        .state()
-        .active_generation
-        .as_ref()
-        .and_then(|active_id| manager.state().generations.get(active_id))
-        .is_some_and(|record| {
-            record.target_sequence == seq
-                && record.manifest.as_ref().is_some_and(|manifest| {
-                    manifest.doc_count == expected_docs
-                        && manifest.schema_version == u64::from(SCHEMA_VERSION)
-                        && manifest.analyzer_version == ANALYZER_VERSION
-                })
-        });
+    let active_matches = !force_rebuild
+        && manager
+            .state()
+            .active_generation
+            .as_ref()
+            .and_then(|active_id| manager.state().generations.get(active_id))
+            .is_some_and(|record| {
+                record.target_sequence == seq
+                    && record.manifest.as_ref().is_some_and(|manifest| {
+                        manifest.doc_count == expected_docs
+                            && manifest.schema_version == u64::from(SCHEMA_VERSION)
+                            && manifest.analyzer_version == ANALYZER_VERSION
+                    })
+            });
 
     if active_matches {
         return Ok(false);
@@ -508,8 +992,47 @@ fn ensure_active_generation(
     Ok(true)
 }
 
+fn now_ms() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map_or(0, |dur| u64::try_from(dur.as_millis()).unwrap_or(u64::MAX))
+}
+
+fn atomic_write_bytes(path: &Path, bytes: &[u8]) -> Result<(), String> {
+    let dir = path
+        .parent()
+        .ok_or_else(|| format!("path '{}' has no parent", path.display()))?;
+    fs::create_dir_all(dir)
+        .map_err(|err| format!("failed to create dir '{}': {err}", dir.display()))?;
+    let name = path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .ok_or_else(|| format!("invalid file name '{}'", path.display()))?;
+    let seq = JOB_TMP_SEQ.fetch_add(1, Ordering::Relaxed);
+    let tmp = dir.join(format!(".{name}.tmp.{}.{seq}", std::process::id()));
+    let write_res = (|| -> Result<(), String> {
+        let mut file = File::create(&tmp)
+            .map_err(|err| format!("failed to create '{}': {err}", tmp.display()))?;
+        file.write_all(bytes)
+            .map_err(|err| format!("failed to write '{}': {err}", tmp.display()))?;
+        file.sync_all()
+            .map_err(|err| format!("failed to sync '{}': {err}", tmp.display()))?;
+        fs::rename(&tmp, path)
+            .map_err(|err| format!("failed to rename '{}': {err}", path.display()))?;
+        if let Ok(handle) = File::open(dir) {
+            let _ = handle.sync_all();
+        }
+        Ok(())
+    })();
+    if write_res.is_err() {
+        let _ = fs::remove_file(&tmp);
+    }
+    write_res
+}
+
 /// Scans `source_dir`, persists originals/metadata/journal under `data_dir/storage`, and
 /// serves the active Blue-Green generation managed under `data_dir/generations`.
+#[cfg_attr(not(test), allow(dead_code))]
 pub fn build_persistent(
     source_dir: &Path,
     data_dir: &Path,
@@ -1330,5 +1853,294 @@ mod tests {
             )
             .unwrap();
         assert_eq!(updated.total_hits, 1);
+    }
+
+    #[test]
+    fn periodic_worker_detects_new_file_and_stops_cleanly() {
+        let source_root = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+        fs::write(
+            source_root.path().join("guide-a.md"),
+            "# Initial\n\ninitialworkerdoc token\n",
+        )
+        .unwrap();
+
+        let (runtime, _) =
+            PersistentRuntime::open_with_refresh(source_root.path(), data_root.path(), Some(1))
+                .unwrap();
+        let runtime = Arc::new(runtime);
+        let startup_list = runtime.list_jobs().unwrap();
+        assert_eq!(startup_list.jobs.len(), 1);
+        assert_eq!(startup_list.jobs[0].trigger, "startup");
+        assert_eq!(startup_list.jobs[0].state, IndexJobState::Succeeded);
+        assert_eq!(startup_list.refresh_interval_secs, Some(1));
+
+        let worker = runtime.spawn_periodic_worker(1);
+
+        fs::write(
+            source_root.path().join("guide-b.md"),
+            "# Periodic Added\n\nperiodicwatchertoken live body\n",
+        )
+        .unwrap();
+
+        let public = Principal::anonymous_public();
+        let deadline = std::time::Instant::now() + Duration::from_secs(6);
+        let mut found = false;
+        while std::time::Instant::now() < deadline {
+            let resp = runtime
+                .service()
+                .search(
+                    &public,
+                    &SearchRequest {
+                        query: "periodicwatchertoken".to_string(),
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap();
+            if resp.total_hits == 1 {
+                found = true;
+                break;
+            }
+            thread::sleep(Duration::from_millis(100));
+        }
+        worker.stop();
+
+        assert!(found, "periodic worker did not index newly added document");
+        let after = runtime.list_jobs().unwrap();
+        assert!(
+            after.jobs.iter().any(|job| job.trigger == "periodic"
+                && job.state == IndexJobState::Succeeded
+                && job.rebuilt),
+            "expected at least one rebuilt periodic job, got: {:?}",
+            after.jobs
+        );
+    }
+
+    #[test]
+    fn manual_jobs_persist_across_restart_and_full_mode_forces_new_generation() {
+        let source_root = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+        fs::write(
+            source_root.path().join("guide-a.md"),
+            "# Persistent Jobs\n\njobhistorytoken body\n",
+        )
+        .unwrap();
+
+        let (runtime1, _) =
+            PersistentRuntime::open_with_refresh(source_root.path(), data_root.path(), Some(30))
+                .unwrap();
+        let inc = runtime1
+            .trigger_job(&TriggerIndexJobRequest {
+                source_id: None,
+                mode: IndexJobMode::Incremental,
+            })
+            .unwrap();
+        assert_eq!(inc.trigger, "manual");
+        assert_eq!(inc.mode, IndexJobMode::Incremental);
+        assert!(!inc.rebuilt);
+        assert_eq!(inc.active_epoch, 1);
+
+        let full = runtime1
+            .trigger_job(&TriggerIndexJobRequest {
+                source_id: Some("local-markdown".to_string()),
+                mode: IndexJobMode::Full,
+            })
+            .unwrap();
+        assert_eq!(full.mode, IndexJobMode::Full);
+        assert!(full.rebuilt);
+        assert_eq!(full.active_epoch, 2);
+
+        assert_eq!(runtime1.get_job(&full.job_id).unwrap(), full);
+        assert!(matches!(
+            runtime1.trigger_job(&TriggerIndexJobRequest {
+                source_id: Some(" ".to_string()),
+                mode: IndexJobMode::Incremental,
+            }),
+            Err(Dok3Error::InvalidInput(_))
+        ));
+        assert!(matches!(
+            runtime1.trigger_job(&TriggerIndexJobRequest {
+                source_id: Some("missing-src".to_string()),
+                mode: IndexJobMode::Incremental,
+            }),
+            Err(Dok3Error::NotFound(_))
+        ));
+        drop(runtime1);
+
+        let (runtime2, _) =
+            PersistentRuntime::open_with_refresh(source_root.path(), data_root.path(), Some(30))
+                .unwrap();
+        let list = runtime2.list_jobs().unwrap();
+        assert_eq!(list.jobs.len(), 4);
+        assert_eq!(list.jobs[0].job_id, "job-0004");
+        assert_eq!(list.jobs[0].trigger, "startup");
+        assert_eq!(list.jobs[1].job_id, full.job_id);
+        assert_eq!(list.active_epoch, 2);
+    }
+
+    #[test]
+    fn failed_job_records_error_without_disrupting_active_search() {
+        let source_root = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+        let source_path = source_root.path().join("docs");
+        fs::create_dir_all(&source_path).unwrap();
+        fs::write(
+            source_path.join("guide-a.md"),
+            "# Resilient\n\nresilientsearchtoken body\n",
+        )
+        .unwrap();
+
+        let (runtime, _) = PersistentRuntime::open(&source_path, data_root.path()).unwrap();
+        fs::remove_dir_all(&source_path).unwrap();
+
+        let failed = runtime
+            .run_job("manual", &TriggerIndexJobRequest::default())
+            .unwrap();
+        assert_eq!(failed.state, IndexJobState::Failed);
+        assert!(failed.error.is_some());
+        assert_eq!(failed.active_epoch, 1);
+
+        let search = runtime
+            .service()
+            .search(
+                &Principal::anonymous_public(),
+                &SearchRequest {
+                    query: "resilientsearchtoken".to_string(),
+                    ..SearchRequest::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(search.total_hits, 1);
+    }
+
+    #[test]
+    fn concurrent_jobs_serialize_epochs_and_preserve_disk_consistency_on_write_failure() {
+        let source_root = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+        fs::write(
+            source_root.path().join("guide-a.md"),
+            "# Concurrency\n\nconcurrencytoken body\n",
+        )
+        .unwrap();
+
+        let (runtime, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        let runtime = Arc::new(runtime);
+
+        let mut handles = Vec::new();
+        for idx in 0..4 {
+            let rt = Arc::clone(&runtime);
+            handles.push(thread::spawn(move || {
+                let trigger = if idx % 2 == 0 { "manual" } else { "periodic" };
+                rt.run_job(
+                    trigger,
+                    &TriggerIndexJobRequest {
+                        source_id: None,
+                        mode: IndexJobMode::Full,
+                    },
+                )
+            }));
+        }
+        let mut results = Vec::new();
+        for h in handles {
+            results.push(h.join().unwrap().unwrap());
+        }
+        let list = runtime.list_jobs().unwrap();
+        assert_eq!(list.jobs.len(), 5);
+        assert_eq!(list.active_epoch, 5);
+        assert_eq!(list.jobs[0].active_epoch, 5);
+        let epochs: Vec<u64> = list.jobs.iter().rev().map(|j| j.active_epoch).collect();
+        assert_eq!(epochs, vec![1, 2, 3, 4, 5]);
+
+        // Force persistence failure on index_jobs.json by replacing it with a directory.
+        let jobs_path = data_root.path().join("storage/index_jobs.json");
+        fs::remove_file(&jobs_path).unwrap();
+        fs::create_dir(&jobs_path).unwrap();
+
+        let err = runtime
+            .trigger_job(&TriggerIndexJobRequest::default())
+            .unwrap_err();
+        assert!(matches!(err, Dok3Error::Storage(_)));
+        let list_after_err = runtime.list_jobs().unwrap();
+        assert_eq!(list_after_err.jobs.len(), 5);
+        assert_eq!(list_after_err.active_epoch, 5);
+
+        // Restore a valid JSON file containing a simulated interrupted Running job, then reopen.
+        fs::remove_dir(&jobs_path).unwrap();
+        let interrupted_disk = JobHistoryDisk {
+            next_seq: 6,
+            jobs: vec![IndexJobRecord {
+                job_id: "job-0006".to_string(),
+                source_id: None,
+                trigger: "manual".to_string(),
+                mode: IndexJobMode::Incremental,
+                state: IndexJobState::Running,
+                started_at_ms: 1,
+                finished_at_ms: None,
+                indexed_documents: 0,
+                rebuilt: false,
+                active_generation: list_after_err.active_generation.clone(),
+                active_epoch: 5,
+                skipped_files: Vec::new(),
+                error: None,
+            }],
+        };
+        fs::write(&jobs_path, serde_json::to_vec(&interrupted_disk).unwrap()).unwrap();
+        drop(runtime);
+
+        let (restarted, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        let recovered = restarted.get_job("job-0006").unwrap();
+        assert_eq!(recovered.state, IndexJobState::Failed);
+        assert_eq!(
+            recovered.error.as_deref(),
+            Some("interrupted by server restart")
+        );
+    }
+
+    #[test]
+    fn finish_job_write_failure_reports_live_epoch_and_recovers_history() {
+        let source_root = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+        fs::write(
+            source_root.path().join("guide-a.md"),
+            "# Finish Failure\n\nfinishfailureinit token\n",
+        )
+        .unwrap();
+
+        let (runtime, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        let jobs_path = data_root.path().join("storage/index_jobs.json");
+
+        // Start job succeeds, generation epoch 2 activates, then finish_job persistence fails.
+        let err = runtime
+            .run_job_with_hook(
+                "manual",
+                &TriggerIndexJobRequest {
+                    source_id: None,
+                    mode: IndexJobMode::Full,
+                },
+                || {
+                    fs::remove_file(&jobs_path).unwrap();
+                    fs::create_dir(&jobs_path).unwrap();
+                },
+            )
+            .unwrap_err();
+        assert!(matches!(err, Dok3Error::Storage(_)));
+
+        // Even while persist failed, list_jobs reports live active epoch 2 and non-zombie Succeeded state.
+        let live_list = runtime.list_jobs().unwrap();
+        assert_eq!(live_list.active_epoch, 2);
+        assert_eq!(live_list.jobs[0].job_id, "job-0002");
+        assert_eq!(live_list.jobs[0].state, IndexJobState::Succeeded);
+        assert_eq!(live_list.jobs[0].active_epoch, 2);
+
+        // Once disk obstacle is cleared, reading jobs flushes dirty state and restart preserves Succeeded.
+        fs::remove_dir(&jobs_path).unwrap();
+        let flushed = runtime.get_job("job-0002").unwrap();
+        assert_eq!(flushed.state, IndexJobState::Succeeded);
+        drop(runtime);
+
+        let (restarted, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        let persisted = restarted.get_job("job-0002").unwrap();
+        assert_eq!(persisted.state, IndexJobState::Succeeded);
+        assert_eq!(persisted.active_epoch, 2);
     }
 }

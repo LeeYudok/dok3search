@@ -3,9 +3,10 @@ use std::str::FromStr;
 use dok3_domain::{
     AclScope, CategoryCount, ChangeEvent, ChangeKind, DEFAULT_SECTION_MAX_CHARS, Document,
     DocumentDetail, DocumentFormatLinks, DocumentId, DocumentSection, GenerationId,
-    MAX_SECTION_MAX_CHARS, Principal, ReaderState, RevisionId, SearchFilters, SearchHit,
-    SearchRequest, SearchResponse, SearchSnapshotMeta, SectionCitation, SectionId,
-    SectionReadRequest, SectionReadResponse, SectionSummary, Sequence, SourceId,
+    IndexJobListResponse, IndexJobMode, IndexJobRecord, IndexJobState, MAX_SECTION_MAX_CHARS,
+    Principal, ReaderState, RevisionId, SearchFilters, SearchHit, SearchRequest, SearchResponse,
+    SearchSnapshotMeta, SectionCitation, SectionId, SectionReadRequest, SectionReadResponse,
+    SectionSummary, Sequence, SourceId, TriggerIndexJobRequest,
 };
 
 #[test]
@@ -263,4 +264,38 @@ fn contract_dtos_round_trip_json() {
     let round_change: ChangeEvent =
         serde_json::from_str(&serde_json::to_string(&change).unwrap()).unwrap();
     assert_eq!(round_change, change);
+
+    let admin = Principal::local_admin();
+    assert!(admin.is_admin);
+    assert!(admin.allows(&AclScope::Public));
+    assert!(!admin.allows(&AclScope::internal("security")));
+
+    let trigger_default: TriggerIndexJobRequest = serde_json::from_str("{}").unwrap();
+    assert_eq!(trigger_default.mode, IndexJobMode::Incremental);
+    assert_eq!(trigger_default.source_id, None);
+
+    let job_record = IndexJobRecord {
+        job_id: "job-0001".to_string(),
+        source_id: Some("local-markdown".to_string()),
+        trigger: "manual".to_string(),
+        mode: IndexJobMode::Full,
+        state: IndexJobState::Succeeded,
+        started_at_ms: 1_700_000_000_000,
+        finished_at_ms: Some(1_700_000_000_125),
+        indexed_documents: 3,
+        rebuilt: true,
+        active_generation: Some("gen-000001-seq-000003".to_string()),
+        active_epoch: 1,
+        skipped_files: vec![],
+        error: None,
+    };
+    let job_list = IndexJobListResponse {
+        jobs: vec![job_record],
+        active_generation: Some("gen-000001-seq-000003".to_string()),
+        active_epoch: 1,
+        refresh_interval_secs: Some(30),
+    };
+    let round_jobs: IndexJobListResponse =
+        serde_json::from_str(&serde_json::to_string(&job_list).unwrap()).unwrap();
+    assert_eq!(round_jobs, job_list);
 }

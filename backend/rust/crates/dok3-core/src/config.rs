@@ -15,6 +15,8 @@ pub struct ServerConfig {
     pub design_docs_dir: Option<PathBuf>,
     pub source_dir: Option<PathBuf>,
     pub data_dir: Option<PathBuf>,
+    pub refresh_interval_secs: Option<u64>,
+    pub admin_enabled: bool,
 }
 
 impl Default for ServerConfig {
@@ -26,12 +28,15 @@ impl Default for ServerConfig {
             design_docs_dir: None,
             source_dir: None,
             data_dir: None,
+            refresh_interval_secs: None,
+            admin_enabled: false,
         }
     }
 }
 
 impl ServerConfig {
-    /// Loads server configuration from `DOK3_BIND`, `DOK3_PORT`, `DOK3_STATIC_DIR`, `DOK3_DESIGN_DIR`, `DOK3_SOURCE_DIR`, and `DOK3_DATA_DIR`.
+    /// Loads server configuration from `DOK3_BIND`, `DOK3_PORT`, `DOK3_STATIC_DIR`, `DOK3_DESIGN_DIR`,
+    /// `DOK3_SOURCE_DIR`, `DOK3_DATA_DIR`, `DOK3_REFRESH_INTERVAL_SECS`, and `DOK3_ENABLE_ADMIN`.
     pub fn from_env() -> Result<Self, Dok3Error> {
         Self::from_lookup(|key| std::env::var(key).ok())
     }
@@ -72,6 +77,34 @@ impl ServerConfig {
         config.source_dir = non_empty_path(lookup("DOK3_SOURCE_DIR"));
         config.data_dir = non_empty_path(lookup("DOK3_DATA_DIR"));
 
+        if let Some(interval_raw) = lookup("DOK3_REFRESH_INTERVAL_SECS") {
+            let trimmed = interval_raw.trim();
+            let interval = trimmed.parse::<u64>().map_err(|_| {
+                Dok3Error::InvalidInput(format!(
+                    "invalid DOK3_REFRESH_INTERVAL_SECS value '{trimmed}'"
+                ))
+            })?;
+            if interval == 0 {
+                return Err(Dok3Error::InvalidInput(
+                    "DOK3_REFRESH_INTERVAL_SECS must be at least 1".to_string(),
+                ));
+            }
+            config.refresh_interval_secs = Some(interval);
+        }
+
+        if let Some(admin_raw) = lookup("DOK3_ENABLE_ADMIN") {
+            let trimmed = admin_raw.trim();
+            config.admin_enabled = match trimmed.to_ascii_lowercase().as_str() {
+                "1" | "true" => true,
+                "0" | "false" => false,
+                _ => {
+                    return Err(Dok3Error::InvalidInput(format!(
+                        "invalid DOK3_ENABLE_ADMIN value '{trimmed}' (expected true/false/1/0)"
+                    )));
+                }
+            };
+        }
+
         Ok(config)
     }
 }
@@ -100,6 +133,8 @@ mod tests {
         assert_eq!(cfg.design_docs_dir, None);
         assert_eq!(cfg.source_dir, None);
         assert_eq!(cfg.data_dir, None);
+        assert_eq!(cfg.refresh_interval_secs, None);
+        assert!(!cfg.admin_enabled);
     }
 
     #[test]
@@ -110,6 +145,8 @@ mod tests {
             ("DOK3_STATIC_DIR", " frontend/dist "),
             ("DOK3_DESIGN_DIR", ""),
             ("DOK3_DATA_DIR", " /var/lib/dok3 "),
+            ("DOK3_REFRESH_INTERVAL_SECS", " 30 "),
+            ("DOK3_ENABLE_ADMIN", "true"),
         ]);
         let cfg = ServerConfig::from_lookup(|k| map.get(k).map(|v| (*v).to_string()))
             .expect("valid overrides should parse");
@@ -118,6 +155,22 @@ mod tests {
         assert_eq!(cfg.static_dir, Some(PathBuf::from("frontend/dist")));
         assert_eq!(cfg.design_docs_dir, None);
         assert_eq!(cfg.data_dir, Some(PathBuf::from("/var/lib/dok3")));
+        assert_eq!(cfg.refresh_interval_secs, Some(30));
+        assert!(cfg.admin_enabled);
+
+        let flag_one = ServerConfig::from_lookup(|k| match k {
+            "DOK3_ENABLE_ADMIN" => Some("1".to_string()),
+            _ => None,
+        })
+        .expect("1 should parse as true");
+        assert!(flag_one.admin_enabled);
+
+        let flag_false = ServerConfig::from_lookup(|k| match k {
+            "DOK3_ENABLE_ADMIN" => Some("FALSE".to_string()),
+            _ => None,
+        })
+        .expect("FALSE should parse as false");
+        assert!(!flag_false.admin_enabled);
     }
 
     #[test]
@@ -139,5 +192,27 @@ mod tests {
             _ => None,
         });
         assert!(matches!(empty_bind, Err(Dok3Error::InvalidInput(_))));
+
+        for bad_interval in ["0", "-5", "abc", ""] {
+            let err = ServerConfig::from_lookup(|k| match k {
+                "DOK3_REFRESH_INTERVAL_SECS" => Some(bad_interval.to_string()),
+                _ => None,
+            });
+            assert!(
+                matches!(err, Err(Dok3Error::InvalidInput(_))),
+                "expected invalid interval error for '{bad_interval}'"
+            );
+        }
+
+        for bad_admin in ["yes", "2", ""] {
+            let err = ServerConfig::from_lookup(|k| match k {
+                "DOK3_ENABLE_ADMIN" => Some(bad_admin.to_string()),
+                _ => None,
+            });
+            assert!(
+                matches!(err, Err(Dok3Error::InvalidInput(_))),
+                "expected invalid admin flag error for '{bad_admin}'"
+            );
+        }
     }
 }
