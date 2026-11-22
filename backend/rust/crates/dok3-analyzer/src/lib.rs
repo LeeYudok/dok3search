@@ -1,6 +1,7 @@
 //! Shared text analysis for indexing and query normalization.
 
 mod identifier;
+mod korean;
 mod ngram;
 
 use std::collections::HashSet;
@@ -13,7 +14,7 @@ pub fn init() {}
 /// Controls which additional tokens text analysis emits.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct AnalyzeOptions {
-    /// Emit the components of compound code identifiers and structured codes.
+    /// Emit identifier components, Korean stems, and Korean compound components.
     pub split_identifiers: bool,
     /// Emit character bigrams and trigrams in a separate output field.
     pub char_ngrams: bool,
@@ -37,7 +38,7 @@ pub struct AnalyzedTokens {
     pub char_ngrams: Vec<String>,
 }
 
-/// Analyzes Unicode text without locale-specific stemming or normalization.
+/// Analyzes Unicode text with optional dictionary-backed Korean expansion.
 ///
 /// Namespace separators are token boundaries. Underscores and code separators
 /// inside forms such as `ORA-00904`, `HTTP/2` and `v1.2` are retained
@@ -70,6 +71,7 @@ fn analyze_terms(text: &str, split_identifiers: bool) -> Vec<String> {
         terms.push(word.to_lowercase());
         if split_identifiers {
             terms.extend(identifier::components(word).map(str::to_lowercase));
+            terms.extend(korean::expansions(word).map(str::to_owned));
         }
     }
     terms

@@ -2,8 +2,8 @@
 # Run the same benchmark harness against a Git baseline and the working tree.
 set -eu
 
-if [ "$#" -ne 1 ]; then
-    echo "Usage: $0 <baseline-commit>" >&2
+if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
+    echo "Usage: $0 <baseline-commit> [korean]" >&2
     exit 2
 fi
 
@@ -12,7 +12,8 @@ baseline=$(git -C "$repo" rev-parse --verify "$1^{commit}")
 comparison="$repo/backend/rust/crates/dok3-benchmark/comparison"
 scratch=$(mktemp -d /tmp/dok3-tantivy-comparison.XXXXXX)
 trap 'rm -rf "$scratch"' EXIT
-export CARGO_TARGET_DIR=/tmp/dok3-target-slice-a
+suite=${2:-default}
+export CARGO_TARGET_DIR=${CARGO_TARGET_DIR:-/tmp/dok3-target-slice-a}
 
 for variant in baseline candidate; do
     tree="$scratch/$variant"
@@ -21,7 +22,9 @@ for variant in baseline candidate; do
     tar -xf "$tree/source.tar" -C "$tree"
     workspace="$tree/backend/rust"
     for crate in dok3-benchmark dok3-index dok3-analyzer; do
-        if [ "$variant" = candidate ] || [ "$crate" = dok3-benchmark ]; then
+        if [ "$crate" = dok3-benchmark ] || {
+            [ "$variant" = candidate ] && { [ "$suite" != korean ] || [ "$crate" = dok3-analyzer ]; }
+        }; then
             rm -rf "$workspace/crates/$crate"
             cp -R "$repo/backend/rust/crates/$crate" "$workspace/crates/$crate"
         fi
@@ -39,5 +42,5 @@ done
 
 for variant in baseline candidate; do
     printf '%s\n' "$variant ($baseline)"
-    "$scratch/$variant-bin" "$variant"
+    "$scratch/$variant-bin" "$variant" "$suite"
 done
