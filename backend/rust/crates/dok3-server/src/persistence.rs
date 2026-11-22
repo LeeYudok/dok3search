@@ -417,6 +417,7 @@ struct JobHistoryStore {
     active_generation: Option<String>,
     active_epoch: u64,
     refresh_interval_secs: Option<u64>,
+    dirty: bool,
 }
 
 impl JobHistoryStore {
@@ -458,6 +459,7 @@ impl JobHistoryStore {
             active_generation,
             active_epoch,
             refresh_interval_secs,
+            dirty: false,
         })
     }
 
@@ -511,6 +513,7 @@ impl JobHistoryStore {
         Self::persist_snapshot(&self.path, next_seq, &next_jobs).map_err(Dok3Error::Storage)?;
         self.next_seq = next_seq;
         self.jobs = next_jobs;
+        self.dirty = false;
         Ok(record)
     }
 
@@ -527,9 +530,9 @@ impl JobHistoryStore {
         error: Option<String>,
     ) -> Result<IndexJobRecord, Dok3Error> {
         let finished_at = now_ms();
-        let mut next_jobs = self.jobs.clone();
         let snapshot = {
-            let record = next_jobs
+            let record = self
+                .jobs
                 .iter_mut()
                 .find(|job| job.job_id == job_id)
                 .ok_or_else(|| Dok3Error::Internal(format!("missing in-flight job '{job_id}'")))?;
@@ -543,13 +546,20 @@ impl JobHistoryStore {
             record.error = error;
             record.clone()
         };
-        Self::trim_completed_history(&mut next_jobs);
-        Self::persist_snapshot(&self.path, self.next_seq, &next_jobs)
-            .map_err(Dok3Error::Storage)?;
-        self.jobs = next_jobs;
+        Self::trim_completed_history(&mut self.jobs);
         self.active_generation = active_generation;
         self.active_epoch = active_epoch;
+        self.dirty = true;
+        Self::persist_snapshot(&self.path, self.next_seq, &self.jobs)
+            .map_err(Dok3Error::Storage)?;
+        self.dirty = false;
         Ok(snapshot)
+    }
+
+    fn flush_if_dirty(&mut self) {
+        if self.dirty && Self::persist_snapshot(&self.path, self.next_seq, &self.jobs).is_ok() {
+            self.dirty = false;
+        }
     }
 
     fn record_startup(
@@ -613,7 +623,6 @@ pub struct PersistentRuntime {
     store: Arc<FileDocumentStore>,
     journal: Arc<FileChangeJournal>,
     manager: Arc<Mutex<IndexManager<LocalGenerationBackend>>>,
-    #[cfg_attr(not(test), allow(dead_code))]
     access: ReaderAccess<Arc<TantivyIndex>>,
     service: SearchService,
     job_exec_lock: Mutex<()>,
@@ -733,6 +742,15 @@ impl PersistentRuntime {
         trigger: &str,
         req: &TriggerIndexJobRequest,
     ) -> Result<IndexJobRecord, Dok3Error> {
+        self.run_job_with_hook(trigger, req, || {})
+    }
+
+    fn run_job_with_hook(
+        &self,
+        trigger: &str,
+        req: &TriggerIndexJobRequest,
+        after_execute: impl FnOnce(),
+    ) -> Result<IndexJobRecord, Dok3Error> {
         let _exec_guard = self
             .job_exec_lock
             .lock()
@@ -747,12 +765,15 @@ impl PersistentRuntime {
         };
 
         let outcome = self.execute_job(req);
+        after_execute();
+
+        let (live_gen, live_epoch) = self.live_active_generation();
         let mut jobs = self
             .jobs
             .lock()
             .map_err(|_| Dok3Error::Internal("index job store mutex poisoned".to_string()))?;
-        let fallback_gen = jobs.active_generation.clone();
-        let fallback_epoch = jobs.active_epoch;
+        let fallback_gen = live_gen.or_else(|| jobs.active_generation.clone());
+        let fallback_epoch = live_epoch.unwrap_or(jobs.active_epoch);
         match outcome {
             Ok(result) => jobs.finish_job(
                 &started.job_id,
@@ -774,6 +795,16 @@ impl PersistentRuntime {
                 Vec::new(),
                 Some(err),
             ),
+        }
+    }
+
+    fn live_active_generation(&self) -> (Option<String>, Option<u64>) {
+        match self.access.acquire() {
+            Some(lease) => (
+                Some(lease.manifest.generation_id.clone()),
+                Some(lease.epoch),
+            ),
+            None => (None, None),
         }
     }
 
@@ -849,11 +880,19 @@ impl PersistentRuntime {
 
 impl IndexJobPort for PersistentRuntime {
     fn list_jobs(&self) -> Result<IndexJobListResponse, Dok3Error> {
-        let jobs = self
-            .jobs
-            .lock()
-            .map_err(|_| Dok3Error::Internal("index job store mutex poisoned".into()))?;
-        Ok(jobs.list())
+        let mut resp = {
+            let mut jobs = self
+                .jobs
+                .lock()
+                .map_err(|_| Dok3Error::Internal("index job store mutex poisoned".into()))?;
+            jobs.flush_if_dirty();
+            jobs.list()
+        };
+        if let Some(lease) = self.access.acquire() {
+            resp.active_generation = Some(lease.manifest.generation_id.clone());
+            resp.active_epoch = lease.epoch;
+        }
+        Ok(resp)
     }
 
     fn get_job(&self, job_id: &str) -> Result<IndexJobRecord, Dok3Error> {
@@ -861,10 +900,11 @@ impl IndexJobPort for PersistentRuntime {
         if trimmed.is_empty() {
             return Err(Dok3Error::InvalidInput("job_id must not be empty".into()));
         }
-        let jobs = self
+        let mut jobs = self
             .jobs
             .lock()
             .map_err(|_| Dok3Error::Internal("index job store mutex poisoned".into()))?;
+        jobs.flush_if_dirty();
         jobs.get(trimmed)
             .ok_or_else(|| Dok3Error::NotFound(format!("index job '{trimmed}' not found")))
     }
@@ -2054,5 +2094,53 @@ mod tests {
             recovered.error.as_deref(),
             Some("interrupted by server restart")
         );
+    }
+
+    #[test]
+    fn finish_job_write_failure_reports_live_epoch_and_recovers_history() {
+        let source_root = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+        fs::write(
+            source_root.path().join("guide-a.md"),
+            "# Finish Failure\n\nfinishfailureinit token\n",
+        )
+        .unwrap();
+
+        let (runtime, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        let jobs_path = data_root.path().join("storage/index_jobs.json");
+
+        // Start job succeeds, generation epoch 2 activates, then finish_job persistence fails.
+        let err = runtime
+            .run_job_with_hook(
+                "manual",
+                &TriggerIndexJobRequest {
+                    source_id: None,
+                    mode: IndexJobMode::Full,
+                },
+                || {
+                    fs::remove_file(&jobs_path).unwrap();
+                    fs::create_dir(&jobs_path).unwrap();
+                },
+            )
+            .unwrap_err();
+        assert!(matches!(err, Dok3Error::Storage(_)));
+
+        // Even while persist failed, list_jobs reports live active epoch 2 and non-zombie Succeeded state.
+        let live_list = runtime.list_jobs().unwrap();
+        assert_eq!(live_list.active_epoch, 2);
+        assert_eq!(live_list.jobs[0].job_id, "job-0002");
+        assert_eq!(live_list.jobs[0].state, IndexJobState::Succeeded);
+        assert_eq!(live_list.jobs[0].active_epoch, 2);
+
+        // Once disk obstacle is cleared, reading jobs flushes dirty state and restart preserves Succeeded.
+        fs::remove_dir(&jobs_path).unwrap();
+        let flushed = runtime.get_job("job-0002").unwrap();
+        assert_eq!(flushed.state, IndexJobState::Succeeded);
+        drop(runtime);
+
+        let (restarted, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        let persisted = restarted.get_job("job-0002").unwrap();
+        assert_eq!(persisted.state, IndexJobState::Succeeded);
+        assert_eq!(persisted.active_epoch, 2);
     }
 }
