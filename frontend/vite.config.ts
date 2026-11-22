@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       host: '127.0.0.1',
+      fs: { allow: ['.', '../docs/manual'] },
       proxy: {
         '/api': apiTarget,
         '/health': apiTarget,

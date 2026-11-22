@@ -28,7 +28,14 @@ struct DesignManifest {
     tree_order: HashMap<String, usize>,
 }
 
-/// Loads `dok3search-design` files (if `design_dir` exists) followed by the 20 built-in samples.
+/// Product and operations manual embedded at build time so every in-memory seed can search it.
+const MANUAL_MARKDOWN: &str = include_str!("../../../../../docs/manual/dok3search-manual.md");
+const MANUAL_DOCUMENT_ID: &str = "dok3search-manual";
+const MANUAL_SOURCE_PATH: &str = "docs/manual/dok3search-manual.md";
+const MANUAL_SUMMARY: &str = "기동 모드, 환경 변수, HTTP API, MCP 도구, 재색인, 백업과 복구 절차를 정리한 제품·운영 매뉴얼입니다.";
+
+/// Loads `dok3search-design` files (if `design_dir` exists), the 20 built-in samples, and the
+/// built-in `dok3search-manual` Knowledge Pack document (appended last to keep sample ranks).
 #[must_use]
 pub fn load_seed_dataset(design_dir: Option<&Path>) -> SeedDataset {
     let mut dataset = SeedDataset::default();
@@ -40,7 +47,48 @@ pub fn load_seed_dataset(design_dir: Option<&Path>) -> SeedDataset {
     }
 
     dataset.documents.extend(builtin_sample_documents());
+    dataset.documents.push(builtin_manual_document());
     dataset
+}
+
+fn builtin_manual_document() -> Document {
+    let title = MANUAL_MARKDOWN
+        .lines()
+        .next()
+        .and_then(|line| line.strip_prefix("# "))
+        .map_or("dok3search 제품·운영 매뉴얼", str::trim)
+        .to_string();
+    let markdown = strip_leading_h1(MANUAL_MARKDOWN);
+    let sections = parse_h2_sections(&markdown);
+    let revision_hash = fnv1a_64_hex(MANUAL_MARKDOWN.as_bytes());
+
+    Document {
+        id: DocumentId::new(MANUAL_DOCUMENT_ID),
+        revision_id: RevisionId::new(format!("fnv1a64:{revision_hash}")),
+        source_id: SourceId::new(MANUAL_DOCUMENT_ID),
+        source: "dok3search 운영 매뉴얼".to_string(),
+        title,
+        summary: MANUAL_SUMMARY.to_string(),
+        category: "manual".to_string(),
+        topic: None,
+        tag: "dok3search".to_string(),
+        tags: vec!["dok3search".to_string(), "매뉴얼".to_string()],
+        keywords: vec![
+            "dok3search".to_string(),
+            "운영 매뉴얼".to_string(),
+            "MCP".to_string(),
+        ],
+        language: "ko".to_string(),
+        version: env!("CARGO_PKG_VERSION").to_string(),
+        date: Some("2026-11-22".to_string()),
+        source_uri: format!("repo://{MANUAL_SOURCE_PATH}"),
+        sample_path: None,
+        acl_scope: AclScope::Public,
+        content_hash: revision_hash,
+        body: String::new(),
+        markdown: Some(markdown),
+        sections,
+    }
 }
 
 fn load_design_documents(dir: &Path) -> (Vec<Document>, Vec<DocumentFormatLinks>) {
@@ -727,4 +775,52 @@ fn builtin_sample_documents() -> Vec<Document> {
             }
         })
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{MANUAL_DOCUMENT_ID, builtin_manual_document, load_seed_dataset};
+
+    #[test]
+    fn manual_is_appended_after_builtin_samples_with_h2_sections() {
+        let seed = load_seed_dataset(None);
+        assert_eq!(seed.documents.len(), 21);
+        assert_eq!(seed.documents[0].id.as_str(), "index-rollbacks");
+
+        let manual = seed.documents.last().unwrap();
+        assert_eq!(manual.id.as_str(), MANUAL_DOCUMENT_ID);
+        assert_eq!(manual.category, "manual");
+        assert_eq!(manual.source_id.as_str(), MANUAL_DOCUMENT_ID);
+        assert_eq!(manual.title, "dok3search 제품·운영 매뉴얼");
+        assert_eq!(manual.acl_scope, dok3_domain::AclScope::Public);
+
+        let markdown = manual.markdown.as_deref().unwrap();
+        assert!(!markdown.starts_with("# "), "leading H1 must be stripped");
+        let ids: Vec<&str> = manual
+            .sections
+            .iter()
+            .map(|s| s.section_id.as_str())
+            .collect();
+        for expected in [
+            "section-개요",
+            "section-환경-변수",
+            "section-기동-모드",
+            "section-mcp-도구",
+            "section-스키마-버전과-재색인",
+            "section-백업과-복구",
+        ] {
+            assert!(ids.contains(&expected), "missing {expected} in {ids:?}");
+        }
+        // `##` lines inside fenced code blocks and `###` headings never become sections.
+        assert!(manual.sections.iter().all(|s| !s.heading.starts_with('#')));
+        assert!(manual.sections.iter().all(|s| !s.body.is_empty()));
+    }
+
+    #[test]
+    fn manual_revision_is_stable_across_loads() {
+        let a = builtin_manual_document();
+        let b = builtin_manual_document();
+        assert_eq!(a.revision_id, b.revision_id);
+        assert_eq!(a.content_hash, b.content_hash);
+    }
 }
