@@ -14,6 +14,7 @@ pub struct ServerConfig {
     pub static_dir: Option<PathBuf>,
     pub design_docs_dir: Option<PathBuf>,
     pub source_dir: Option<PathBuf>,
+    pub data_dir: Option<PathBuf>,
 }
 
 impl Default for ServerConfig {
@@ -24,12 +25,13 @@ impl Default for ServerConfig {
             static_dir: None,
             design_docs_dir: None,
             source_dir: None,
+            data_dir: None,
         }
     }
 }
 
 impl ServerConfig {
-    /// Loads server configuration from `DOK3_BIND`, `DOK3_PORT`, `DOK3_STATIC_DIR`, `DOK3_DESIGN_DIR`, and `DOK3_SOURCE_DIR`.
+    /// Loads server configuration from `DOK3_BIND`, `DOK3_PORT`, `DOK3_STATIC_DIR`, `DOK3_DESIGN_DIR`, `DOK3_SOURCE_DIR`, and `DOK3_DATA_DIR`.
     pub fn from_env() -> Result<Self, Dok3Error> {
         Self::from_lookup(|key| std::env::var(key).ok())
     }
@@ -68,6 +70,7 @@ impl ServerConfig {
         config.design_docs_dir = non_empty_path(lookup("DOK3_DESIGN_DIR"));
 
         config.source_dir = non_empty_path(lookup("DOK3_SOURCE_DIR"));
+        config.data_dir = non_empty_path(lookup("DOK3_DATA_DIR"));
 
         Ok(config)
     }
@@ -95,6 +98,8 @@ mod tests {
         assert_eq!(cfg.port, 8080);
         assert_eq!(cfg.static_dir, None);
         assert_eq!(cfg.design_docs_dir, None);
+        assert_eq!(cfg.source_dir, None);
+        assert_eq!(cfg.data_dir, None);
     }
 
     #[test]
@@ -104,6 +109,7 @@ mod tests {
             ("DOK3_PORT", "18080"),
             ("DOK3_STATIC_DIR", " frontend/dist "),
             ("DOK3_DESIGN_DIR", ""),
+            ("DOK3_DATA_DIR", " /var/lib/dok3 "),
         ]);
         let cfg = ServerConfig::from_lookup(|k| map.get(k).map(|v| (*v).to_string()))
             .expect("valid overrides should parse");
@@ -111,6 +117,7 @@ mod tests {
         assert_eq!(cfg.port, 18080);
         assert_eq!(cfg.static_dir, Some(PathBuf::from("frontend/dist")));
         assert_eq!(cfg.design_docs_dir, None);
+        assert_eq!(cfg.data_dir, Some(PathBuf::from("/var/lib/dok3")));
     }
 
     #[test]

@@ -69,7 +69,7 @@ pub fn build(root: &Path) -> Result<(SearchService, BuildReport), String> {
     Ok((SearchService::new(index, store), build_report))
 }
 
-fn apply_detected_language(document: &mut dok3_domain::Document, text: &str) {
+pub(crate) fn apply_detected_language(document: &mut dok3_domain::Document, text: &str) {
     let language = detect_language(text);
     document.language = language.to_string();
     document
