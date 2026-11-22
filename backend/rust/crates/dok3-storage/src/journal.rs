@@ -70,6 +70,17 @@ impl FileChangeJournal {
             .map_err(|_| Dok3Error::Internal("journal mutex poisoned".to_string()))
     }
 
+    /// Returns the latest monotonically assigned sequence number (`0` when empty).
+    pub fn last_sequence(&self) -> Result<Sequence, Dok3Error> {
+        let state = self.lock_state()?;
+        if state.poisoned {
+            return Err(Dok3Error::Storage(
+                "change journal is poisoned after failed rollback; reopen required".to_string(),
+            ));
+        }
+        Ok(Sequence::new(state.last))
+    }
+
     fn append_with_hooks<S, W, R>(
         &self,
         mut change: ChangeEvent,
@@ -353,9 +364,11 @@ mod tests {
 
         // Reopen truncates the torn fragment and restores usability.
         let reopened = FileChangeJournal::open(&dir.0).unwrap();
+        assert_eq!(reopened.last_sequence().unwrap(), Sequence::new(0));
         assert_eq!(
             reopened.append(sample_event("c")).unwrap(),
             Sequence::new(1)
         );
+        assert_eq!(reopened.last_sequence().unwrap(), Sequence::new(1));
     }
 }
