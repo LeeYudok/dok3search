@@ -47,9 +47,12 @@ nodes:
 - {id: dok3_analyzer, type: rust-crate, label: 'Korean, English, n-gram, identifier analyzers', path: backend/rust/crates/dok3-analyzer/src/lib.rs}
 - {id: dok3_connectors, type: rust-crate, label: 'File, Git, SVN, DB source connectors', path: backend/rust/crates/dok3-connectors/src/lib.rs}
 - {id: dok3_benchmark, type: rust-crate, label: 'Reproducible indexing and search load benchmarks', path: backend/rust/crates/dok3-benchmark/src/lib.rs}
+- {id: manual_doc, type: markdown-doc, label: 'Self-operating manual Knowledge Pack', path: docs/manual/dok3search-manual.md}
 
 edges:
 - {from: frontend, to: dok3_api, rel: calls_rest_api}
+- {from: dok3_search, to: manual_doc, rel: indexes_operating_manual}
+- {from: frontend, to: manual_doc, rel: searches_and_renders_manual}
 - {from: frontend, to: comprehensive_rust, rel: searches_and_renders_local_corpus}
 - {from: frontend, to: rust_book, rel: searches_and_renders_local_corpus}
 - {from: frontend, to: rust_reference, rel: searches_and_renders_local_corpus}
@@ -106,7 +109,7 @@ ports:
 - {id: dok3_server_http, port: 8080, protocol: http, note: 'Default local dev HTTP bind (127.0.0.1); override with DOK3_PORT'}
 
 env_keys:
-  dok3_server: [DOK3_BIND, DOK3_PORT, DOK3_STATIC_DIR, DOK3_DESIGN_DIR, DOK3_SOURCE_DIR]
+  dok3_server: [DOK3_BIND, DOK3_PORT, DOK3_DATA_DIR, DOK3_STATIC_DIR, DOK3_DESIGN_DIR, DOK3_SOURCE_DIR]
 
 commands:
   frontend:
@@ -130,6 +133,7 @@ policies:
 - {id: agents_yaml_sync, rule: 'Update AGENTS.md and AGENTS.yaml together when components, paths, commands or env keys change; run scripts/check-agents-yaml.sh', source: AGENTS.md}
 - {id: dependency_direction, rule: 'Keep dok3-domain free of external crate implementations; prevent dok3-parser from depending on dok3-index; route API and agent calls through dok3-search', source: AGENTS.md}
 - {id: airgap_no_external_navigation, rule: 'Render external Markdown URLs as non-clickable offline citations; only local documents, sections and bundled license files may navigate', source: AGENTS.md}
+- {id: auto_merge, rule: 'Require cross-agent review and required CI checks; the current conductor may immediately merge with --merge only when both pass; prohibit squash merges', source: AGENTS.md}
 
 known_issues: []
 
@@ -139,6 +143,7 @@ docs:
 - {path: DESIGN.md, what: 'UI design overview'}
 - {path: CHANGELOG.md, what: 'Repository changelog'}
 - {path: .github/workflows/ci.yml, what: 'GitHub Actions required PR checks'}
+- {path: docs/manual/dok3search-manual.md, what: 'Self-operating manual Knowledge Pack'}
 - {path: LICENSE, what: 'MIT license'}
 - {path: frontend/src/samples/comprehensive-rust/README.md, what: 'Comprehensive Rust provenance, license and import inputs'}
 - {path: frontend/src/samples/rust-book/README.md, what: 'Official Rust Book provenance and license'}
