@@ -1,0 +1,27 @@
+# Keep the build context lean and deterministic. Sources needed by the build
+# and runtime layers (frontend/src/samples, docs/manual, package-lock.json,
+# backend source) are intentionally NOT ignored.
+.git
+.gitignore
+.dockerignore
+Dockerfile
+
+# Build outputs
+**/node_modules
+frontend/dist
+backend/rust/target
+**/target
+
+# Local/CI noise
+.DS_Store
+.env
+.env.*
+*.log
+deploy
+tests
+fixtures
+README.md
+CHANGELOG.md
+DESIGN.md
+AGENTS.md
+AGENTS.yaml

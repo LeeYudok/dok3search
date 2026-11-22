@@ -82,7 +82,8 @@ impl ApiState {
     }
 }
 
-/// Builds the Axum router with `/health/ready`, `/api/v1/*`, JSON `/api` 404 fallback, security headers, and optional static SPA hosting.
+/// Builds the Axum router with `/health` (alias of `/health/ready`), `/health/ready`,
+/// `/api/v1/*`, JSON `/api` 404 fallback, security headers, and optional static SPA hosting.
 pub fn build_router(state: ApiState, static_dir: Option<PathBuf>) -> Router {
     build_router_with_extra(state, static_dir, None)
 }
@@ -121,6 +122,9 @@ pub fn build_router_with_extra(
         ));
 
     let mut router = Router::new()
+        // `/health` is a thin alias of the readiness probe so liveness/readiness
+        // checks and the frontend dev proxy can share one endpoint.
+        .route("/health", get(health_ready))
         .route("/health/ready", get(health_ready))
         .route("/api/v1/search", post(search))
         .route("/api/v1/documents/{id}", get(get_document))

@@ -17,6 +17,11 @@ pub struct ServerConfig {
     pub data_dir: Option<PathBuf>,
     pub refresh_interval_secs: Option<u64>,
     pub admin_enabled: bool,
+    /// Explicit operator opt-in that allows a non-loopback `DOK3_BIND` while
+    /// `DOK3_SOURCE_DIR` is set (for container deployments behind an
+    /// authenticating reverse proxy). Defaults to false so the loopback guard
+    /// stays in force unless it is deliberately disabled.
+    pub allow_non_loopback_bind: bool,
 }
 
 impl Default for ServerConfig {
@@ -30,13 +35,15 @@ impl Default for ServerConfig {
             data_dir: None,
             refresh_interval_secs: None,
             admin_enabled: false,
+            allow_non_loopback_bind: false,
         }
     }
 }
 
 impl ServerConfig {
     /// Loads server configuration from `DOK3_BIND`, `DOK3_PORT`, `DOK3_STATIC_DIR`, `DOK3_DESIGN_DIR`,
-    /// `DOK3_SOURCE_DIR`, `DOK3_DATA_DIR`, `DOK3_REFRESH_INTERVAL_SECS`, and `DOK3_ENABLE_ADMIN`.
+    /// `DOK3_SOURCE_DIR`, `DOK3_DATA_DIR`, `DOK3_REFRESH_INTERVAL_SECS`, `DOK3_ENABLE_ADMIN`,
+    /// and `DOK3_ALLOW_NON_LOOPBACK_BIND`.
     pub fn from_env() -> Result<Self, Dok3Error> {
         Self::from_lookup(|key| std::env::var(key).ok())
     }
@@ -93,19 +100,26 @@ impl ServerConfig {
         }
 
         if let Some(admin_raw) = lookup("DOK3_ENABLE_ADMIN") {
-            let trimmed = admin_raw.trim();
-            config.admin_enabled = match trimmed.to_ascii_lowercase().as_str() {
-                "1" | "true" => true,
-                "0" | "false" => false,
-                _ => {
-                    return Err(Dok3Error::InvalidInput(format!(
-                        "invalid DOK3_ENABLE_ADMIN value '{trimmed}' (expected true/false/1/0)"
-                    )));
-                }
-            };
+            config.admin_enabled = parse_bool_flag("DOK3_ENABLE_ADMIN", &admin_raw)?;
+        }
+
+        if let Some(allow_raw) = lookup("DOK3_ALLOW_NON_LOOPBACK_BIND") {
+            config.allow_non_loopback_bind =
+                parse_bool_flag("DOK3_ALLOW_NON_LOOPBACK_BIND", &allow_raw)?;
         }
 
         Ok(config)
+    }
+}
+
+fn parse_bool_flag(name: &str, raw: &str) -> Result<bool, Dok3Error> {
+    let trimmed = raw.trim();
+    match trimmed.to_ascii_lowercase().as_str() {
+        "1" | "true" => Ok(true),
+        "0" | "false" => Ok(false),
+        _ => Err(Dok3Error::InvalidInput(format!(
+            "invalid {name} value '{trimmed}' (expected true/false/1/0)"
+        ))),
     }
 }
 
@@ -135,6 +149,7 @@ mod tests {
         assert_eq!(cfg.data_dir, None);
         assert_eq!(cfg.refresh_interval_secs, None);
         assert!(!cfg.admin_enabled);
+        assert!(!cfg.allow_non_loopback_bind);
     }
 
     #[test]
@@ -147,6 +162,7 @@ mod tests {
             ("DOK3_DATA_DIR", " /var/lib/dok3 "),
             ("DOK3_REFRESH_INTERVAL_SECS", " 30 "),
             ("DOK3_ENABLE_ADMIN", "true"),
+            ("DOK3_ALLOW_NON_LOOPBACK_BIND", "true"),
         ]);
         let cfg = ServerConfig::from_lookup(|k| map.get(k).map(|v| (*v).to_string()))
             .expect("valid overrides should parse");
@@ -157,6 +173,7 @@ mod tests {
         assert_eq!(cfg.data_dir, Some(PathBuf::from("/var/lib/dok3")));
         assert_eq!(cfg.refresh_interval_secs, Some(30));
         assert!(cfg.admin_enabled);
+        assert!(cfg.allow_non_loopback_bind);
 
         let flag_one = ServerConfig::from_lookup(|k| match k {
             "DOK3_ENABLE_ADMIN" => Some("1".to_string()),
@@ -171,6 +188,13 @@ mod tests {
         })
         .expect("FALSE should parse as false");
         assert!(!flag_false.admin_enabled);
+
+        let allow_false = ServerConfig::from_lookup(|k| match k {
+            "DOK3_ALLOW_NON_LOOPBACK_BIND" => Some("0".to_string()),
+            _ => None,
+        })
+        .expect("0 should parse as false");
+        assert!(!allow_false.allow_non_loopback_bind);
     }
 
     #[test]
@@ -212,6 +236,17 @@ mod tests {
             assert!(
                 matches!(err, Err(Dok3Error::InvalidInput(_))),
                 "expected invalid admin flag error for '{bad_admin}'"
+            );
+        }
+
+        for bad_allow in ["yes", "2", ""] {
+            let err = ServerConfig::from_lookup(|k| match k {
+                "DOK3_ALLOW_NON_LOOPBACK_BIND" => Some(bad_allow.to_string()),
+                _ => None,
+            });
+            assert!(
+                matches!(err, Err(Dok3Error::InvalidInput(_))),
+                "expected invalid allow-non-loopback flag error for '{bad_allow}'"
             );
         }
     }

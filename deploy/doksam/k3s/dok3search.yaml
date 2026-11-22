@@ -1,0 +1,226 @@
+# dok3search on the doksam Kubernetes node, served on Host www.doksam.com.
+#
+# Routing: Cloudflare/DNS -> doksam public 443 -> Traefik (hostPort 80/443)
+#          -> Ingress `dok3search` (websecure) -> ClusterIP Service -> pod :8080.
+#
+# Security: the entire Ingress is wrapped by the Traefik basicAuth middleware
+# `auth`, so an unauthenticated direct request to doksam:443 with
+# `Host: www.doksam.com` returns 401. TLS uses the existing cert-manager
+# ClusterIssuer `letsencrypt-dns01` (DNS-01), so no ACME HTTP path needs to be
+# public and every path can stay authenticated.
+#
+# Secrets are NOT stored here. The basicAuth htpasswd lives only in the
+# Kubernetes Secret `dok3search-basic-auth` (key `users`) and a 0600 file on the
+# operator machine, both created by `deploy/doksam/scripts/create-basic-auth-secret.sh`.
+# See `deploy/doksam/README.md` for paths and key names.
+#
+# Image tag: replaced by the deploy script with the build commit SHA
+# (`dok3search:sha-<git-sha>`). The literal below is only a placeholder /
+# rollback anchor and must never be published to a registry.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dok3search
+  labels:
+    app.kubernetes.io/name: dok3search
+---
+# Persistent store for the SQLite journal and Tantivy blue-green generations.
+# Backed by the cluster default StorageClass `local-path`.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dok3search-data
+  namespace: dok3search
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dok3search
+  namespace: dok3search
+  labels:
+    app.kubernetes.io/name: dok3search
+spec:
+  replicas: 1
+  # Single writer to the local index: replace the pod instead of overlapping it.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dok3search
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dok3search
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: dok3search
+          image: dok3search:doksam
+          # The image is imported into containerd on the node. A unique
+          # commit-SHA tag is immutable, so IfNotPresent reuses the imported
+          # layers and never reaches out to a registry.
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: DOK3_BIND
+              value: 0.0.0.0
+            - name: DOK3_PORT
+              value: "8080"
+            - name: DOK3_DATA_DIR
+              value: /data
+            - name: DOK3_SOURCE_DIR
+              value: /app/knowledge
+            - name: DOK3_STATIC_DIR
+              value: /app/frontend/dist
+            - name: DOK3_DESIGN_DIR
+              value: /app/knowledge/samples/design
+            # Explicit opt-in: DOK3_SOURCE_DIR may run on a non-loopback bind
+            # because Traefik basicAuth fronts the only exposed route.
+            - name: DOK3_ALLOW_NON_LOOPBACK_BIND
+              value: "true"
+            # readOnlyRootFilesystem: only /data (PVC) and /tmp (emptyDir) are writable.
+            - name: TMPDIR
+              value: /tmp
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 768Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: dok3search-data
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dok3search
+  namespace: dok3search
+  labels:
+    app.kubernetes.io/name: dok3search
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: dok3search
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+---
+# Traefik basicAuth middleware. The referenced Secret is created out-of-band by
+# `deploy/doksam/scripts/create-basic-auth-secret.sh` and is never committed.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: auth
+  namespace: dok3search
+spec:
+  basicAuth:
+    secret: dok3search-basic-auth
+    realm: dok3search
+    removeHeader: true
+---
+# http -> https redirect for the public host.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: https-redirect
+  namespace: dok3search
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dok3search
+  namespace: dok3search
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-dns01
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.middlewares: dok3search-auth@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - www.doksam.com
+      secretName: dok3search-www-tls
+  rules:
+    - host: www.doksam.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dok3search
+                port:
+                  name: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dok3search-http
+  namespace: dok3search
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+    traefik.ingress.kubernetes.io/router.middlewares: dok3search-https-redirect@kubernetescrd
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: www.doksam.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dok3search
+                port:
+                  name: http
