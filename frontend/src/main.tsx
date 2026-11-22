@@ -223,14 +223,20 @@ function SearchForm({ query = '', category = '', topic = '' }: { query?: string;
 
 function HomePage() {
   return (
-    <main id="content" className="shell home">
-      <h1 className="brand home-brand"><img className="logo" src="/favicon.svg" alt="" />dok3search</h1>
-      <SearchForm />
-      <nav className="category-filters" aria-label="문서 카테고리">
-        <a href="/search">전체</a>
-        {categories.map((item) => <a key={item.id} href={searchUrl('', item.id)}>{item.label}</a>)}
-      </nav>
-    </main>
+    <div className="home-wrap">
+      <main id="content" className="shell home">
+        <h1 className="brand home-brand"><img className="logo" src="/favicon.svg" alt="" />dok3search</h1>
+        <SearchForm />
+        <nav className="category-filters" aria-label="문서 카테고리">
+          <a href="/search">전체</a>
+          {categories.map((item) => <a key={item.id} href={searchUrl('', item.id)}>{item.label}</a>)}
+        </nav>
+      </main>
+      <footer className="shell footer home-footer">
+        <span>폐쇄망 문서·코드 검색</span>
+        <a href="/admin">관리</a>
+      </footer>
+    </div>
   )
 }
 
@@ -431,6 +437,7 @@ function SearchPage() {
             ? `Rust API 연결됨 · ${searchState.data.snapshot.generationId}`
             : searchState.mode === 'local-reference' ? '로컬 개발 참고 자료' : '샘플 데이터로 구동되는 로컬 미리보기')}
         </span>
+        <a href="/admin">관리</a>
       </footer>
       <div className="visually-hidden" role="status">{copyStatus}</div>
     </>
@@ -438,6 +445,7 @@ function SearchPage() {
 }
 
 const path = window.location.pathname
+const adminMatch = /^\/admin(?:\/(sources|jobs))?\/?$/.exec(path)
 const detail = /^\/docs\/([^/]+)\/?$/.exec(path)
 const legacyIds: Record<string, string> = {
   'design-design-md': 'design-index-md',
@@ -460,7 +468,13 @@ if (detail) {
 const rootElement = document.getElementById('root')
 if (rootElement) {
   const root = createRoot(rootElement)
-  if (detailId) {
+  if (adminMatch) {
+    const initialTab = adminMatch[1] === 'jobs' ? 'jobs' : 'sources'
+    void import('./admin-page').then(
+      ({ AdminPage }) => root.render(<AdminPage initialTab={initialTab} />),
+      () => root.render(<main className="shell reader"><p role="alert">관리 화면을 불러올 수 없습니다.</p></main>),
+    )
+  } else if (detailId) {
     void Promise.all([import('./document-reader'), loadReferenceCorpora(detailId)]).then(
       ([{ DocumentPage }, corpora]) => root.render(<DocumentPage id={detailId} corpora={corpora} />),
       () => root.render(<main className="shell reader"><p role="alert">문서를 불러올 수 없습니다.</p></main>),

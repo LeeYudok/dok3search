@@ -1,14 +1,15 @@
 use std::str::FromStr;
 
 use dok3_domain::{
-    AclScope, CategoryCount, ChangeEvent, ChangeKind, ClassificationSource,
-    DEFAULT_SECTION_MAX_CHARS, Document, DocumentClassification, DocumentDetail,
-    DocumentFormatLinks, DocumentId, DocumentSection, GenerationId, IndexJobListResponse,
-    IndexJobMode, IndexJobRecord, IndexJobState, MAX_SECTION_MAX_CHARS, Principal, ReaderState,
-    RevisionId, SearchFilters, SearchHit, SearchRequest, SearchResponse, SearchSnapshotMeta,
-    SectionCitation, SectionId, SectionReadRequest, SectionReadResponse, SectionSummary, Sequence,
-    SourceId, TriggerIndexJobRequest, UpdateClassificationRequest, normalize_classification_terms,
-    validate_classification_category, validate_classification_summary,
+    AclScope, CategoryCount, ChangeEvent, ChangeKind, ClassificationSource, CreateSourceRequest,
+    DEFAULT_SECTION_MAX_CHARS, DeleteSourceResponse, Document, DocumentClassification,
+    DocumentDetail, DocumentFormatLinks, DocumentId, DocumentSection, GenerationId,
+    IndexJobListResponse, IndexJobMode, IndexJobRecord, IndexJobState, MAX_SECTION_MAX_CHARS,
+    Principal, ReaderState, RegisteredSource, RevisionId, SearchFilters, SearchHit, SearchRequest,
+    SearchResponse, SearchSnapshotMeta, SectionCitation, SectionId, SectionReadRequest,
+    SectionReadResponse, SectionSummary, Sequence, SourceId, SourceListResponse,
+    TriggerIndexJobRequest, UpdateClassificationRequest, normalize_classification_terms,
+    validate_classification_category, validate_classification_summary, validate_source_id_slug,
 };
 
 #[test]
@@ -333,4 +334,51 @@ fn contract_dtos_round_trip_json() {
     assert!(validate_classification_summary(&"a".repeat(501)).is_err());
     let too_many: Vec<String> = (0..13).map(|i| format!("tag-{i}")).collect();
     assert!(normalize_classification_terms("tags", &too_many).is_err());
+
+    assert_eq!(
+        validate_source_id_slug(" team-notes_01 ").unwrap(),
+        "team-notes_01"
+    );
+    assert!(validate_source_id_slug("").is_err());
+    assert!(validate_source_id_slug("TeamNotes").is_err());
+    assert!(validate_source_id_slug("-leading-dash").is_err());
+    assert!(validate_source_id_slug("../escape").is_err());
+    assert!(validate_source_id_slug(&"a".repeat(65)).is_err());
+
+    let create_src: CreateSourceRequest =
+        serde_json::from_str(r#"{"source_id":"team-docs","label":"Team Docs","path":"/tmp/docs"}"#)
+            .unwrap();
+    assert_eq!(create_src.default_category, None);
+    assert_eq!(create_src.default_tag, None);
+
+    let reg_src = RegisteredSource {
+        source_id: "team-docs".to_string(),
+        label: "Team Docs".to_string(),
+        path: "/tmp/docs".to_string(),
+        default_category: "guide".to_string(),
+        default_tag: "docs".to_string(),
+        managed_by_env: false,
+        created_at_ms: 1_700_000_000_000,
+        last_synced_at_ms: Some(1_700_000_001_000),
+        document_count: 5,
+        last_error: None,
+    };
+    let round_sources: SourceListResponse = serde_json::from_str(
+        &serde_json::to_string(&SourceListResponse {
+            sources: vec![reg_src],
+        })
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(round_sources.sources[0].source_id, "team-docs");
+
+    let del_src = DeleteSourceResponse {
+        source_id: "team-docs".to_string(),
+        deleted_documents: 5,
+        active_generation: Some("gen-000002-seq-000008".to_string()),
+        active_epoch: 2,
+    };
+    let round_del: DeleteSourceResponse =
+        serde_json::from_str(&serde_json::to_string(&del_src).unwrap()).unwrap();
+    assert_eq!(round_del, del_src);
 }

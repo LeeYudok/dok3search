@@ -7,9 +7,10 @@ use std::path::{Path, PathBuf};
 
 use dok3_core::Dok3Error;
 use dok3_domain::{
-    ClassificationSource, Document, DocumentClassification, DocumentId, MAX_CLASSIFICATION_TERMS,
-    Principal, UpdateClassificationRequest, normalize_classification_terms,
-    validate_classification_category, validate_classification_summary,
+    ALLOWED_CLASSIFICATION_CATEGORIES, ClassificationSource, Document, DocumentClassification,
+    DocumentId, MAX_CLASSIFICATION_TERMS, Principal, UpdateClassificationRequest,
+    normalize_classification_terms, validate_classification_category,
+    validate_classification_summary,
 };
 use serde::{Deserialize, Serialize};
 
@@ -29,7 +30,16 @@ pub(crate) struct RuleOutput {
 }
 
 impl RuleClassifier {
+    #[cfg_attr(not(test), allow(dead_code))]
     pub(crate) fn classify(doc: &Document, default_tag: &str) -> RuleOutput {
+        Self::classify_with_defaults(doc, "guide", default_tag)
+    }
+
+    pub(crate) fn classify_with_defaults(
+        doc: &Document,
+        default_category: &str,
+        default_tag: &str,
+    ) -> RuleOutput {
         let path_lower = doc
             .sample_path
             .as_deref()
@@ -38,7 +48,13 @@ impl RuleClassifier {
         let title_lower = doc.title.to_lowercase();
         let body_lower = doc.body.to_lowercase();
 
-        let category = classify_category(&path_lower, &title_lower, &doc.body, &body_lower);
+        let category = classify_category(
+            &path_lower,
+            &title_lower,
+            &doc.body,
+            &body_lower,
+            default_category,
+        );
         let summary = summarize_document(&doc.title, &doc.body);
         let tags = extract_tags(doc, &category, default_tag, &path_lower, &body_lower);
         let keywords = extract_keywords(&doc.title, &doc.body, &doc.sections);
@@ -57,6 +73,7 @@ fn classify_category(
     title_lower: &str,
     body_raw: &str,
     body_lower: &str,
+    default_category: &str,
 ) -> String {
     if contains_any(
         path_lower,
@@ -97,7 +114,12 @@ fn classify_category(
     {
         return "code".to_string();
     }
-    "guide".to_string()
+    let normalized = default_category.trim().to_ascii_lowercase();
+    if ALLOWED_CLASSIFICATION_CATEGORIES.contains(&normalized.as_str()) {
+        normalized
+    } else {
+        "guide".to_string()
+    }
 }
 
 fn has_error_or_code_markers(body_raw: &str, body_lower: &str) -> bool {
@@ -387,9 +409,20 @@ impl ClassificationStore {
 
     /// Applies either existing manual classification (when `manual_locked`) or deterministic rule
     /// classification to `doc` before storing it.
+    #[cfg_attr(not(test), allow(dead_code))]
     pub(crate) fn apply_during_sync(
         &mut self,
         doc: &mut Document,
+        default_tag: &str,
+        content_hash: &str,
+    ) -> Result<(), String> {
+        self.apply_during_sync_with_defaults(doc, "guide", default_tag, content_hash)
+    }
+
+    pub(crate) fn apply_during_sync_with_defaults(
+        &mut self,
+        doc: &mut Document,
+        default_category: &str,
         default_tag: &str,
         content_hash: &str,
     ) -> Result<(), String> {
@@ -406,7 +439,7 @@ impl ClassificationStore {
             return Ok(());
         }
 
-        let rule = RuleClassifier::classify(doc, default_tag);
+        let rule = RuleClassifier::classify_with_defaults(doc, default_category, default_tag);
         let unchanged = self.records.get(doc.id.as_str()).is_some_and(|existing| {
             !existing.manual_locked
                 && existing.source == ClassificationSource::Rule
@@ -468,6 +501,7 @@ impl ClassificationStore {
         Ok(())
     }
 
+    #[cfg_attr(not(test), allow(dead_code))]
     pub(crate) fn update_manual(
         &mut self,
         doc: &mut Document,
@@ -475,8 +509,19 @@ impl ClassificationStore {
         principal: &Principal,
         req: &UpdateClassificationRequest,
     ) -> Result<DocumentClassification, Dok3Error> {
+        self.update_manual_with_defaults(doc, "guide", default_tag, principal, req)
+    }
+
+    pub(crate) fn update_manual_with_defaults(
+        &mut self,
+        doc: &mut Document,
+        default_category: &str,
+        default_tag: &str,
+        principal: &Principal,
+        req: &UpdateClassificationRequest,
+    ) -> Result<DocumentClassification, Dok3Error> {
         let next = if req.reset_to_rule {
-            let rule = RuleClassifier::classify(doc, default_tag);
+            let rule = RuleClassifier::classify_with_defaults(doc, default_category, default_tag);
             DocumentClassification {
                 document_id: doc.id.clone(),
                 summary: rule.summary,

@@ -6,6 +6,7 @@ mod local_index;
 mod mcp;
 // --- /slice-B: mcp ---
 mod persistence;
+mod sources;
 
 use std::net::Ipv4Addr;
 use std::path::PathBuf;
@@ -149,7 +150,8 @@ fn build_api_state(
     if let Some(runtime) = persistent_runtime {
         state = state
             .with_index_jobs(Arc::clone(runtime) as _)
-            .with_classification(Arc::clone(runtime) as _);
+            .with_classification(Arc::clone(runtime) as _)
+            .with_sources(Arc::clone(runtime) as _);
     }
     state.mode = mode.into();
     state
@@ -206,7 +208,7 @@ mod tests {
     use dok3_core::ServerConfig;
     use dok3_domain::{
         ClassificationSource, DocumentClassification, IndexJobListResponse, IndexJobMode,
-        IndexJobRecord, IndexJobState,
+        IndexJobRecord, IndexJobState, SourceListResponse,
     };
     use http_body_util::BodyExt;
     use serde_json::{Value, json};
@@ -326,6 +328,19 @@ mod tests {
         assert!(cls_body.manual_locked);
         assert_eq!(cls_body.category, "manual");
         assert_eq!(cls_body.summary, "수동 분류 요약");
+
+        let sources_resp = app
+            .clone()
+            .oneshot(Request::get("/api/v1/sources").body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(sources_resp.status(), StatusCode::OK);
+        let sources_body: SourceListResponse =
+            serde_json::from_slice(&sources_resp.into_body().collect().await.unwrap().to_bytes())
+                .unwrap();
+        assert_eq!(sources_body.sources.len(), 1);
+        assert_eq!(sources_body.sources[0].source_id, "local-markdown");
+        assert!(sources_body.sources[0].managed_by_env);
 
         // Verify /mcp remains anonymous_public (not escalated to admin) and searches live docs.
         let mcp_req = Request::builder()

@@ -545,3 +545,219 @@ export async function updateClassification(
 
   return parseDocumentClassification(json)
 }
+
+export type RegisteredSource = {
+  sourceId: string
+  label: string
+  path: string
+  defaultCategory: string
+  defaultTag: string
+  managedByEnv: boolean
+  createdAtMs: number
+  lastSyncedAtMs?: number
+  documentCount: number
+  lastError?: string
+}
+
+export type SourceListResponse = {
+  sources: RegisteredSource[]
+}
+
+export type CreateSourceInput = {
+  sourceId: string
+  label: string
+  path: string
+  defaultCategory?: string
+  defaultTag?: string
+}
+
+export type DeleteSourceResponse = {
+  sourceId: string
+  deletedDocuments: number
+  activeGeneration?: string
+  activeEpoch: number
+}
+
+export type IndexJobMode = 'incremental' | 'full'
+export type IndexJobState = 'pending' | 'running' | 'succeeded' | 'failed'
+
+export type IndexJobRecord = {
+  jobId: string
+  sourceId?: string
+  trigger: string
+  mode: IndexJobMode
+  state: IndexJobState
+  startedAtMs: number
+  finishedAtMs?: number
+  indexedDocuments: number
+  rebuilt: boolean
+  activeGeneration?: string
+  activeEpoch: number
+  skippedFiles: string[]
+  error?: string
+}
+
+export type IndexJobListResponse = {
+  jobs: IndexJobRecord[]
+  activeGeneration?: string
+  activeEpoch: number
+  refreshIntervalSecs?: number
+}
+
+function optionalNumber(record: Record<string, unknown>, key: string): number | undefined {
+  const value = record[key]
+  if (value === undefined || value === null) return undefined
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new Error(`Invalid API field '${key}': expected finite number or null`)
+  }
+  return value
+}
+
+function parseRegisteredSource(raw: unknown): RegisteredSource {
+  if (!isRecord(raw)) throw new Error('Invalid source record payload')
+  return {
+    sourceId: expectString(raw, 'source_id'),
+    label: expectString(raw, 'label'),
+    path: expectString(raw, 'path'),
+    defaultCategory: expectString(raw, 'default_category'),
+    defaultTag: expectString(raw, 'default_tag'),
+    managedByEnv: expectBoolean(raw, 'managed_by_env'),
+    createdAtMs: expectNumber(raw, 'created_at_ms'),
+    lastSyncedAtMs: optionalNumber(raw, 'last_synced_at_ms'),
+    documentCount: expectNumber(raw, 'document_count'),
+    lastError: optionalString(raw, 'last_error'),
+  }
+}
+
+function parseIndexJobRecord(raw: unknown): IndexJobRecord {
+  if (!isRecord(raw)) throw new Error('Invalid index job record payload')
+  const mode = expectString(raw, 'mode')
+  if (mode !== 'incremental' && mode !== 'full') {
+    throw new Error("Invalid API field 'mode'")
+  }
+  const state = expectString(raw, 'state')
+  if (state !== 'pending' && state !== 'running' && state !== 'succeeded' && state !== 'failed') {
+    throw new Error("Invalid API field 'state'")
+  }
+  return {
+    jobId: expectString(raw, 'job_id'),
+    sourceId: optionalString(raw, 'source_id'),
+    trigger: expectString(raw, 'trigger'),
+    mode,
+    state,
+    startedAtMs: expectNumber(raw, 'started_at_ms'),
+    finishedAtMs: optionalNumber(raw, 'finished_at_ms'),
+    indexedDocuments: expectNumber(raw, 'indexed_documents'),
+    rebuilt: expectBoolean(raw, 'rebuilt'),
+    activeGeneration: optionalString(raw, 'active_generation'),
+    activeEpoch: expectNumber(raw, 'active_epoch'),
+    skippedFiles: expectStringArray(raw, 'skipped_files'),
+    error: optionalString(raw, 'error'),
+  }
+}
+
+async function requestAdminJson(url: string, init: RequestInit, fallbackError: string): Promise<unknown> {
+  let response: Response
+  try {
+    response = await fetch(url, init)
+  } catch (err) {
+    if (err instanceof DOMException && err.name === 'AbortError') throw err
+    throw new ApiRequestError('백엔드 API 서버에 연결할 수 없습니다.', 503)
+  }
+
+  const contentType = response.headers.get('content-type') ?? ''
+  if (!contentType.includes('application/json')) {
+    if (isProxyOrNetworkUnavailableStatus(response.status) || response.ok) {
+      throw new ApiRequestError('백엔드 API 서버에 연결할 수 없습니다.', 503)
+    }
+    throw new ApiRequestError(`${fallbackError} (${response.status})`, response.status)
+  }
+
+  const json: unknown = await response.json()
+  if (!response.ok) {
+    throw new ApiRequestError(
+      parseApiErrorMessage(json, `${fallbackError} (${response.status})`),
+      response.status,
+      parseApiErrorCode(json),
+    )
+  }
+  return json
+}
+
+export async function fetchSources(signal?: AbortSignal): Promise<SourceListResponse> {
+  const json = await requestAdminJson('/api/v1/sources', { signal }, '소스 목록을 불러오지 못했습니다')
+  if (!isRecord(json) || !Array.isArray(json.sources)) {
+    throw new Error('Invalid source list response')
+  }
+  return { sources: json.sources.map(parseRegisteredSource) }
+}
+
+export async function createSource(input: CreateSourceInput): Promise<RegisteredSource> {
+  const json = await requestAdminJson(
+    '/api/v1/sources',
+    {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        source_id: input.sourceId,
+        label: input.label,
+        path: input.path,
+        default_category: input.defaultCategory || undefined,
+        default_tag: input.defaultTag || undefined,
+      }),
+    },
+    '소스 등록에 실패했습니다',
+  )
+  return parseRegisteredSource(json)
+}
+
+export async function deleteSource(sourceId: string): Promise<DeleteSourceResponse> {
+  const json = await requestAdminJson(
+    '/api/v1/sources/' + encodeURIComponent(sourceId),
+    {
+      method: 'DELETE',
+      headers: { 'content-type': 'application/json' },
+    },
+    '소스 삭제에 실패했습니다',
+  )
+  if (!isRecord(json)) throw new Error('Invalid delete source response')
+  return {
+    sourceId: expectString(json, 'source_id'),
+    deletedDocuments: expectNumber(json, 'deleted_documents'),
+    activeGeneration: optionalString(json, 'active_generation'),
+    activeEpoch: expectNumber(json, 'active_epoch'),
+  }
+}
+
+export async function fetchIndexJobs(signal?: AbortSignal): Promise<IndexJobListResponse> {
+  const json = await requestAdminJson('/api/v1/index/jobs', { signal }, '색인 작업 목록을 불러오지 못했습니다')
+  if (!isRecord(json) || !Array.isArray(json.jobs)) {
+    throw new Error('Invalid index job list response')
+  }
+  return {
+    jobs: json.jobs.map(parseIndexJobRecord),
+    activeGeneration: optionalString(json, 'active_generation'),
+    activeEpoch: expectNumber(json, 'active_epoch'),
+    refreshIntervalSecs: optionalNumber(json, 'refresh_interval_secs'),
+  }
+}
+
+export async function triggerIndexJob(input?: {
+  sourceId?: string
+  mode?: IndexJobMode
+}): Promise<IndexJobRecord> {
+  const payload = {
+    source_id: input?.sourceId || undefined,
+    mode: input?.mode ?? 'incremental',
+  }
+  const json = await requestAdminJson(
+    '/api/v1/index/jobs',
+    {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    },
+    '색인 작업 실행에 실패했습니다',
+  )
+  return parseIndexJobRecord(json)
+}

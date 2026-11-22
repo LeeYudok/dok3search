@@ -9,14 +9,15 @@ use std::sync::{Arc, Mutex, mpsc};
 use std::thread::{self, JoinHandle};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use dok3_connectors::{LocalFileConnector, SourceConfig, build_document};
+use dok3_connectors::{LocalFileConnector, build_document};
 use dok3_core::Dok3Error;
 use dok3_domain::{
-    ChangeEvent, ChangeJournalPort, ChangeKind, ClassificationPort, Document,
-    DocumentClassification, DocumentId, DocumentParserPort, DocumentStorePort, GenerationId,
-    IndexJobListResponse, IndexJobMode, IndexJobPort, IndexJobRecord, IndexJobState, Principal,
-    ReaderState, RevisionId, SearchPort, SearchRequest, SearchResponse, SearchSnapshotMeta,
-    Sequence, SourceId, TriggerIndexJobRequest, UpdateClassificationRequest,
+    ChangeEvent, ChangeJournalPort, ChangeKind, ClassificationPort, CreateSourceRequest,
+    DeleteSourceResponse, Document, DocumentClassification, DocumentId, DocumentParserPort,
+    DocumentStorePort, GenerationId, IndexJobListResponse, IndexJobMode, IndexJobPort,
+    IndexJobRecord, IndexJobState, Principal, ReaderState, RegisteredSource, RevisionId,
+    SearchPort, SearchRequest, SearchResponse, SearchSnapshotMeta, Sequence, SourceListResponse,
+    SourceRegistryPort, TriggerIndexJobRequest, UpdateClassificationRequest,
 };
 use dok3_index::{SCHEMA_VERSION, TantivyIndex};
 use dok3_index_manager::{
@@ -30,6 +31,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::classification::{ClassificationStore, classification_from_doc};
 use crate::local_index::{BuildReport, apply_detected_language};
+use crate::sources::{SourceRegistry, source_config_for, validate_real_directory};
 
 const ANALYZER_VERSION: u64 = 1;
 const ACL_POLICY_VERSION: u64 = 1;
@@ -621,7 +623,7 @@ impl JobHistoryStore {
 
 /// Long-lived handle to durable storage, journal, and Blue-Green generation state.
 pub struct PersistentRuntime {
-    source_dir: PathBuf,
+    sources: Arc<Mutex<SourceRegistry>>,
     store: Arc<FileDocumentStore>,
     journal: Arc<FileChangeJournal>,
     manager: Arc<Mutex<IndexManager<LocalGenerationBackend>>>,
@@ -650,10 +652,16 @@ impl PersistentRuntime {
         let store = Arc::new(FileDocumentStore::open(&storage_dir).map_err(|err| err.to_string())?);
         let journal =
             Arc::new(FileChangeJournal::open(&storage_dir).map_err(|err| err.to_string())?);
+        let mut source_registry = SourceRegistry::open(&storage_dir, source_dir)?;
         let mut classification_store = ClassificationStore::open(&storage_dir)?;
 
-        let report =
-            sync_source_to_storage(source_dir, &store, &journal, &mut classification_store)?;
+        let report = sync_sources_to_storage(
+            &mut source_registry,
+            None,
+            &store,
+            &journal,
+            &mut classification_store,
+        )?;
         quarantine_incompatible_generations(&generations_dir)?;
 
         let backend = LocalGenerationBackend::new(
@@ -668,6 +676,7 @@ impl PersistentRuntime {
             .map_err(|err| err.to_string())?;
         let rebuilt = ensure_active_generation(&mut manager, &store, &journal, false)?;
         classification_store.clear_all_pending_index_sync()?;
+        source_registry.finalize_all_pending_deletes()?;
         manager.gc_retired().map_err(|err| err.to_string())?;
 
         let mut job_store = JobHistoryStore::open(
@@ -692,7 +701,7 @@ impl PersistentRuntime {
         let service = SearchService::new(search_port, Arc::clone(&store) as _);
 
         let runtime = Self {
-            source_dir: source_dir.to_path_buf(),
+            sources: Arc::new(Mutex::new(source_registry)),
             store,
             journal,
             manager,
@@ -718,13 +727,17 @@ impl PersistentRuntime {
         self.access.clone()
     }
 
-    /// Re-scans `source_dir`, persists deltas, activates a new generation when changed, and GCs retired generations.
+    /// Re-scans all registered sources, persists deltas, activates a new generation when changed, and GCs retired generations.
     #[cfg_attr(not(test), allow(dead_code))]
     pub fn refresh(&self) -> Result<RefreshReport, String> {
         let _exec_guard = self
             .job_exec_lock
             .lock()
             .map_err(|_| "index job execution lock poisoned".to_string())?;
+        let mut sources = self
+            .sources
+            .lock()
+            .map_err(|_| "source registry mutex poisoned".to_string())?;
         let mut manager = self
             .manager
             .lock()
@@ -735,12 +748,16 @@ impl PersistentRuntime {
             .map_err(|_| "classification store mutex poisoned".to_string())?;
         let result = refresh_locked(
             &mut manager,
-            &self.source_dir,
+            &mut sources,
+            None,
             &self.store,
             &self.journal,
             &mut classifications,
             false,
         )?;
+        drop(classifications);
+        drop(manager);
+        drop(sources);
         if let Ok(mut jobs) = self.jobs.lock() {
             jobs.update_active(result.active_generation.clone(), result.active_epoch);
         }
@@ -821,7 +838,12 @@ impl PersistentRuntime {
     }
 
     fn execute_job(&self, req: &TriggerIndexJobRequest) -> Result<RefreshReport, String> {
-        validate_job_source_id(req.source_id.as_deref()).map_err(|err| err.to_string())?;
+        let mut sources = self
+            .sources
+            .lock()
+            .map_err(|_| "source registry mutex poisoned".to_string())?;
+        let target = validate_job_source_id(&sources, req.source_id.as_deref())
+            .map_err(|err| err.to_string())?;
         let mut manager = self
             .manager
             .lock()
@@ -832,7 +854,8 @@ impl PersistentRuntime {
             .map_err(|_| "classification store mutex poisoned".to_string())?;
         refresh_locked(
             &mut manager,
-            &self.source_dir,
+            &mut sources,
+            target.as_deref(),
             &self.store,
             &self.journal,
             &mut classifications,
@@ -927,7 +950,13 @@ impl IndexJobPort for PersistentRuntime {
     }
 
     fn trigger_job(&self, req: &TriggerIndexJobRequest) -> Result<IndexJobRecord, Dok3Error> {
-        validate_job_source_id(req.source_id.as_deref())?;
+        {
+            let sources = self
+                .sources
+                .lock()
+                .map_err(|_| Dok3Error::Internal("source registry mutex poisoned".into()))?;
+            let _ = validate_job_source_id(&sources, req.source_id.as_deref())?;
+        }
         self.run_job("manual", req)
     }
 }
@@ -984,12 +1013,25 @@ impl ClassificationPort for PersistentRuntime {
         let orig_hash = doc.content_hash.clone();
         let orig_rev = doc.revision_id.clone();
 
+        let (default_category, default_tag) = {
+            let sources = self
+                .sources
+                .lock()
+                .map_err(|_| Dok3Error::Internal("source registry mutex poisoned".into()))?;
+            sources.defaults_for(doc.source_id.as_str())
+        };
         let (updated_classification, pending_sync) = {
             let mut classifications = self
                 .classifications
                 .lock()
                 .map_err(|_| Dok3Error::Internal("classification store mutex poisoned".into()))?;
-            let updated = classifications.update_manual(&mut doc, "docs", principal, req)?;
+            let updated = classifications.update_manual_with_defaults(
+                &mut doc,
+                &default_category,
+                &default_tag,
+                principal,
+                req,
+            )?;
             let pending = classifications.is_pending_index_sync(id);
             (updated, pending)
         };
@@ -1037,7 +1079,230 @@ impl ClassificationPort for PersistentRuntime {
     }
 }
 
-fn validate_job_source_id(source_id: Option<&str>) -> Result<(), Dok3Error> {
+impl SourceRegistryPort for PersistentRuntime {
+    fn list_sources(&self) -> Result<SourceListResponse, Dok3Error> {
+        let sources = self
+            .sources
+            .lock()
+            .map_err(|_| Dok3Error::Internal("source registry mutex poisoned".into()))?;
+        Ok(SourceListResponse {
+            sources: sources.list(),
+        })
+    }
+
+    fn register_source(&self, req: &CreateSourceRequest) -> Result<RegisteredSource, Dok3Error> {
+        self.register_source_with_hook(req, || Ok(()))
+    }
+
+    fn delete_source(&self, source_id: &str) -> Result<DeleteSourceResponse, Dok3Error> {
+        let _exec_guard = self
+            .job_exec_lock
+            .lock()
+            .map_err(|_| Dok3Error::Internal("index job execution lock poisoned".into()))?;
+
+        let (entry, deleted_documents, active_generation, active_epoch) = {
+            let mut sources = self
+                .sources
+                .lock()
+                .map_err(|_| Dok3Error::Internal("source registry mutex poisoned".into()))?;
+            let entry = sources.mark_pending_delete(source_id)?;
+
+            let mut manager = self.manager.lock().map_err(|_| {
+                Dok3Error::Internal("persistent index manager mutex poisoned".into())
+            })?;
+            let mut classifications = self
+                .classifications
+                .lock()
+                .map_err(|_| Dok3Error::Internal("classification store mutex poisoned".into()))?;
+            let (deleted_documents, active_gen, active_ep) = finalize_pending_source_delete_locked(
+                &mut manager,
+                &mut sources,
+                &mut classifications,
+                &self.store,
+                &self.journal,
+                &entry.source_id,
+            )?;
+            (entry, deleted_documents, active_gen, active_ep)
+        };
+
+        if let Ok(mut jobs) = self.jobs.lock() {
+            jobs.update_active(active_generation.clone(), active_epoch);
+        }
+
+        Ok(DeleteSourceResponse {
+            source_id: entry.source_id,
+            deleted_documents,
+            active_generation,
+            active_epoch,
+        })
+    }
+}
+
+impl PersistentRuntime {
+    fn register_source_with_hook(
+        &self,
+        req: &CreateSourceRequest,
+        after_refresh: impl FnOnce() -> Result<(), String>,
+    ) -> Result<RegisteredSource, Dok3Error> {
+        let _exec_guard = self
+            .job_exec_lock
+            .lock()
+            .map_err(|_| Dok3Error::Internal("index job execution lock poisoned".into()))?;
+
+        let registered = {
+            let mut sources = self
+                .sources
+                .lock()
+                .map_err(|_| Dok3Error::Internal("source registry mutex poisoned".into()))?;
+            let candidate = sources.validate_new_source(req)?;
+            let source_id = candidate.source_id.clone();
+            sources
+                .insert_source(candidate)
+                .map_err(Dok3Error::Storage)?;
+
+            let sync_outcome = (|| -> Result<RefreshReport, String> {
+                let mut manager = self
+                    .manager
+                    .lock()
+                    .map_err(|_| "persistent index manager mutex poisoned".to_string())?;
+                let mut classifications = self
+                    .classifications
+                    .lock()
+                    .map_err(|_| "classification store mutex poisoned".to_string())?;
+                let report = refresh_locked(
+                    &mut manager,
+                    &mut sources,
+                    Some(&source_id),
+                    &self.store,
+                    &self.journal,
+                    &mut classifications,
+                    false,
+                )?;
+                after_refresh()?;
+                Ok(report)
+            })();
+
+            match sync_outcome {
+                Ok(refresh) => {
+                    let result = sources.get_active(&source_id).ok_or_else(|| {
+                        Dok3Error::Internal(format!(
+                            "registered source '{source_id}' missing after sync"
+                        ))
+                    })?;
+                    drop(sources);
+                    if let Ok(mut jobs) = self.jobs.lock() {
+                        jobs.update_active(refresh.active_generation, refresh.active_epoch);
+                    }
+                    result
+                }
+                Err(err) => {
+                    if let Err(mark_err) = sources.mark_pending_delete(&source_id) {
+                        return Err(Dok3Error::Storage(format!(
+                            "source registration failed ({err}); failed to record rollback pending delete: {mark_err}"
+                        )));
+                    }
+                    let rollback_res = (|| -> Result<(), Dok3Error> {
+                        let mut manager = self.manager.lock().map_err(|_| {
+                            Dok3Error::Internal("persistent index manager mutex poisoned".into())
+                        })?;
+                        let mut classifications = self.classifications.lock().map_err(|_| {
+                            Dok3Error::Internal("classification store mutex poisoned".into())
+                        })?;
+                        let (_, active_gen, active_ep) = finalize_pending_source_delete_locked(
+                            &mut manager,
+                            &mut sources,
+                            &mut classifications,
+                            &self.store,
+                            &self.journal,
+                            &source_id,
+                        )?;
+                        drop(classifications);
+                        drop(manager);
+                        if let Ok(mut jobs) = self.jobs.lock() {
+                            jobs.update_active(active_gen, active_ep);
+                        }
+                        Ok(())
+                    })();
+                    if let Err(rollback_err) = rollback_res {
+                        return Err(Dok3Error::Storage(format!(
+                            "source registration failed ({err}); rollback failed (kept pending_delete): {rollback_err}"
+                        )));
+                    }
+                    return Err(Dok3Error::Storage(err));
+                }
+            }
+        };
+        Ok(registered)
+    }
+}
+
+fn finalize_pending_source_delete_locked(
+    manager: &mut IndexManager<LocalGenerationBackend>,
+    sources: &mut SourceRegistry,
+    classifications: &mut ClassificationStore,
+    store: &FileDocumentStore,
+    journal: &FileChangeJournal,
+    source_id: &str,
+) -> Result<(usize, Option<String>, u64), Dok3Error> {
+    manager.reconcile_on_startup().map_err(|err| {
+        Dok3Error::Index(format!(
+            "persistent index manager reconciliation failed; restart required: {err}"
+        ))
+    })?;
+    let deleted_documents = cleanup_source_docs(source_id, store, journal, classifications)?;
+    ensure_active_generation(manager, store, journal, false).map_err(Dok3Error::Index)?;
+    classifications
+        .clear_all_pending_index_sync()
+        .map_err(Dok3Error::Storage)?;
+    manager
+        .gc_retired()
+        .map_err(|err| Dok3Error::Index(err.to_string()))?;
+    sources
+        .finalize_delete(source_id)
+        .map_err(Dok3Error::Storage)?;
+    Ok((
+        deleted_documents,
+        manager.state().active_generation.clone(),
+        manager.state().active_epoch,
+    ))
+}
+
+fn cleanup_source_docs(
+    source_id: &str,
+    store: &FileDocumentStore,
+    journal: &FileChangeJournal,
+    classifications: &mut ClassificationStore,
+) -> Result<usize, Dok3Error> {
+    let docs = store.list_documents()?;
+    let mut deleted_documents = 0usize;
+    for doc in docs {
+        if doc.source_id.as_str() == source_id && store.delete(&doc.id)? {
+            journal.append(ChangeEvent {
+                sequence: Sequence::new(0),
+                document_id: doc.id,
+                revision_id: RevisionId::new("deleted"),
+                kind: ChangeKind::Delete,
+            })?;
+            deleted_documents += 1;
+        }
+    }
+    let surviving_ids: HashSet<String> = store
+        .document_ids()?
+        .into_iter()
+        .map(|id| id.as_str().to_string())
+        .collect();
+    classifications
+        .prune_deleted(&surviving_ids)
+        .map_err(Dok3Error::Storage)?;
+    reconcile_store_journal(store, journal, &classifications.pending_index_ids())
+        .map_err(Dok3Error::Storage)?;
+    Ok(deleted_documents)
+}
+
+fn validate_job_source_id(
+    sources: &SourceRegistry,
+    source_id: Option<&str>,
+) -> Result<Option<String>, Dok3Error> {
     if let Some(raw) = source_id {
         let trimmed = raw.trim();
         if trimmed.is_empty() {
@@ -1045,16 +1310,18 @@ fn validate_job_source_id(source_id: Option<&str>) -> Result<(), Dok3Error> {
                 "source_id must not be empty".to_string(),
             ));
         }
-        if trimmed != "local-markdown" {
+        if !sources.contains_active(trimmed) {
             return Err(Dok3Error::NotFound(format!("source '{trimmed}' not found")));
         }
+        return Ok(Some(trimmed.to_string()));
     }
-    Ok(())
+    Ok(None)
 }
 
 fn refresh_locked(
     manager: &mut IndexManager<LocalGenerationBackend>,
-    source_dir: &Path,
+    sources: &mut SourceRegistry,
+    target_source_id: Option<&str>,
     store: &FileDocumentStore,
     journal: &FileChangeJournal,
     classifications: &mut ClassificationStore,
@@ -1063,9 +1330,11 @@ fn refresh_locked(
     manager.reconcile_on_startup().map_err(|err| {
         format!("persistent index manager reconciliation failed; restart required: {err}")
     })?;
-    let report = sync_source_to_storage(source_dir, store, journal, classifications)?;
+    let report =
+        sync_sources_to_storage(sources, target_source_id, store, journal, classifications)?;
     let rebuilt = ensure_active_generation(manager, store, journal, force_rebuild)?;
     classifications.clear_all_pending_index_sync()?;
+    sources.finalize_all_pending_deletes()?;
     manager.gc_retired().map_err(|err| err.to_string())?;
     Ok(RefreshReport {
         report,
@@ -1165,38 +1434,48 @@ pub fn build_persistent(
     Ok((runtime.service, report))
 }
 
-fn sync_source_to_storage(
-    source_dir: &Path,
+enum SourceScanOutcome {
+    Scanned {
+        indexed: usize,
+        skipped: Vec<String>,
+        seen_ids: HashSet<String>,
+    },
+    ScanFailed(String),
+}
+
+fn scan_and_store_source(
+    entry: &RegisteredSource,
     store: &FileDocumentStore,
     journal: &FileChangeJournal,
     classifications: &mut ClassificationStore,
-) -> Result<BuildReport, String> {
-    let connector = LocalFileConnector::new(SourceConfig::markdown_defaults(
-        SourceId::new("local-markdown"),
-        "Local Markdown",
-        source_dir,
-    ))
-    .map_err(|err| err.to_string())?;
-    let report = connector.scan().map_err(|err| err.to_string())?;
-    let mut build_report = BuildReport {
-        skipped: report
-            .skipped
-            .into_iter()
-            .map(|file| format!("{}: {}", file.relative_path, file.reason))
-            .collect(),
-        ..BuildReport::default()
+    synced_this_pass: &mut HashSet<String>,
+) -> Result<SourceScanOutcome, String> {
+    if let Err(err) = validate_real_directory(Path::new(&entry.path)) {
+        return Ok(SourceScanOutcome::ScanFailed(err.to_string()));
+    }
+    let connector = match LocalFileConnector::new(source_config_for(entry)) {
+        Ok(connector) => connector,
+        Err(err) => return Ok(SourceScanOutcome::ScanFailed(err.to_string())),
+    };
+    let report = match connector.scan() {
+        Ok(report) => report,
+        Err(err) => return Ok(SourceScanOutcome::ScanFailed(err.to_string())),
     };
 
+    let mut skipped: Vec<String> = report
+        .skipped
+        .into_iter()
+        .map(|file| format!("{}: {}", file.relative_path, file.reason))
+        .collect();
     let parser = MarkdownParser::new();
     let mut seen_ids = HashSet::with_capacity(report.files.len());
-    let mut synced_this_pass = HashSet::with_capacity(report.files.len());
+    let mut indexed = 0usize;
+
     for file in report.files {
         let parsed = match parser.parse(&file.filename, &file.bytes) {
             Ok(parsed) => parsed,
             Err(err) => {
-                build_report
-                    .skipped
-                    .push(format!("{}: parse failed: {err}", file.relative_path));
+                skipped.push(format!("{}: parse failed: {err}", file.relative_path));
                 continue;
             }
         };
@@ -1208,8 +1487,9 @@ fn sync_source_to_storage(
             .strip_prefix("sha256:")
             .unwrap_or(rev.as_str())
             .to_string();
-        classifications.apply_during_sync(
+        classifications.apply_during_sync_with_defaults(
             &mut document,
+            connector.config().category.as_str(),
             connector.config().default_tag.as_str(),
             &content_hash,
         )?;
@@ -1239,23 +1519,122 @@ fn sync_source_to_storage(
                 .map_err(|err| err.to_string())?;
             synced_this_pass.insert(doc_id.as_str().to_string());
         }
-        build_report.indexed += 1;
+        indexed += 1;
     }
 
-    let existing_ids = store.document_ids().map_err(|err| err.to_string())?;
-    for id in existing_ids {
-        if !seen_ids.contains(id.as_str()) && store.delete(&id).map_err(|err| err.to_string())? {
+    Ok(SourceScanOutcome::Scanned {
+        indexed,
+        skipped,
+        seen_ids,
+    })
+}
+
+fn doc_counts_by_source(docs: &[Document]) -> BTreeMap<String, usize> {
+    let mut counts = BTreeMap::new();
+    for doc in docs {
+        *counts
+            .entry(doc.source_id.as_str().to_string())
+            .or_insert(0) += 1;
+    }
+    counts
+}
+
+fn sync_sources_to_storage(
+    sources: &mut SourceRegistry,
+    target_source_id: Option<&str>,
+    store: &FileDocumentStore,
+    journal: &FileChangeJournal,
+    classifications: &mut ClassificationStore,
+) -> Result<BuildReport, String> {
+    let targets: Vec<RegisteredSource> = match target_source_id {
+        Some(id) => {
+            let entry = sources
+                .get_active(id)
+                .ok_or_else(|| format!("source '{id}' not found"))?;
+            vec![entry]
+        }
+        None => sources.active_sources(),
+    };
+
+    let mut build_report = BuildReport::default();
+    let mut synced_this_pass = HashSet::new();
+    let mut healthy_scanned_sources = HashSet::new();
+    let mut seen_ids_by_source: BTreeMap<String, HashSet<String>> = BTreeMap::new();
+    let mut scan_outcomes: BTreeMap<String, Result<usize, String>> = BTreeMap::new();
+    let mut failed_errors = Vec::new();
+
+    for entry in &targets {
+        match scan_and_store_source(
+            entry,
+            store,
+            journal,
+            classifications,
+            &mut synced_this_pass,
+        )? {
+            SourceScanOutcome::Scanned {
+                indexed,
+                skipped,
+                seen_ids,
+            } => {
+                build_report.indexed += indexed;
+                build_report.skipped.extend(skipped);
+                healthy_scanned_sources.insert(entry.source_id.clone());
+                seen_ids_by_source.insert(entry.source_id.clone(), seen_ids);
+                scan_outcomes.insert(entry.source_id.clone(), Ok(indexed));
+            }
+            SourceScanOutcome::ScanFailed(err) => {
+                let message = format!("source:{}: {err}", entry.source_id);
+                build_report.skipped.push(message.clone());
+                failed_errors.push(message);
+                scan_outcomes.insert(entry.source_id.clone(), Err(err));
+            }
+        }
+    }
+
+    if healthy_scanned_sources.is_empty() && !failed_errors.is_empty() {
+        let existing_docs = store.list_documents().map_err(|err| err.to_string())?;
+        let counts = doc_counts_by_source(&existing_docs);
+        let _ = sources.update_sync_results(&scan_outcomes, &counts, now_ms());
+        return Err(failed_errors.join("; "));
+    }
+
+    let live_source_ids: HashSet<String> = sources
+        .active_sources()
+        .into_iter()
+        .map(|src| src.source_id)
+        .collect();
+    let existing_docs = store.list_documents().map_err(|err| err.to_string())?;
+    for doc in existing_docs {
+        let src_id = doc.source_id.as_str();
+        let should_delete = if !live_source_ids.contains(src_id) {
+            true
+        } else if healthy_scanned_sources.contains(src_id) {
+            !seen_ids_by_source
+                .get(src_id)
+                .is_some_and(|seen| seen.contains(doc.id.as_str()))
+        } else {
+            false
+        };
+        if should_delete && store.delete(&doc.id).map_err(|err| err.to_string())? {
             journal
                 .append(ChangeEvent {
                     sequence: Sequence::new(0),
-                    document_id: id,
+                    document_id: doc.id,
                     revision_id: RevisionId::new("deleted"),
                     kind: ChangeKind::Delete,
                 })
                 .map_err(|err| err.to_string())?;
         }
     }
-    classifications.prune_deleted(&seen_ids)?;
+
+    let surviving_docs = store.list_documents().map_err(|err| err.to_string())?;
+    let surviving_ids: HashSet<String> = surviving_docs
+        .iter()
+        .map(|doc| doc.id.as_str().to_string())
+        .collect();
+    let counts = doc_counts_by_source(&surviving_docs);
+    classifications.prune_deleted(&surviving_ids)?;
+    sources.update_sync_results(&scan_outcomes, &counts, now_ms())?;
 
     let pending_for_reconcile: HashSet<String> = classifications
         .pending_index_ids()
@@ -1399,9 +1778,10 @@ mod tests {
     use axum::body::Body;
     use axum::http::{Request, StatusCode, header};
     use dok3_api::{ApiState, build_router};
+    use dok3_connectors::SourceConfig;
     use dok3_domain::{
         ClassificationSource, DocumentDetail, HealthReadyResponse, SearchResponse,
-        SectionReadResponse,
+        SectionReadResponse, SourceId,
     };
     use dok3_index_manager::{DurableState, GenerationFiles, GenerationState};
     use http_body_util::BodyExt;
@@ -2661,5 +3041,488 @@ mod tests {
         fs::write(&obj_path, b"corrupted-by-fault").unwrap();
         assert!(runtime.refresh().is_err());
         assert_eq!(fs::read(&obj_path).unwrap(), b"corrupted-by-fault");
+    }
+
+    #[test]
+    fn multi_source_registration_rescan_restart_error_isolation_and_delete_preserves_disk() {
+        let env_dir = tempfile::tempdir().unwrap();
+        let team_dir = tempfile::tempdir().unwrap();
+        let broken_dir = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+
+        fs::write(
+            env_dir.path().join("env-a.md"),
+            "# Env Guide\n\nenvsourcetoken body\n",
+        )
+        .unwrap();
+        fs::write(
+            team_dir.path().join("note-b.md"),
+            "# Team Notes\n\nteamsourcetoken body\n",
+        )
+        .unwrap();
+        fs::write(
+            broken_dir.path().join("temp-c.md"),
+            "# Broken Source Doc\n\nbrokensourcetoken body\n",
+        )
+        .unwrap();
+
+        let public = Principal::anonymous_public();
+        let (runtime, _) = PersistentRuntime::open(env_dir.path(), data_root.path()).unwrap();
+        assert!(data_root.path().join("storage/sources.json").is_file());
+
+        let initial_sources = runtime.list_sources().unwrap();
+        assert_eq!(initial_sources.sources.len(), 1);
+        assert_eq!(initial_sources.sources[0].source_id, "local-markdown");
+        assert!(initial_sources.sources[0].managed_by_env);
+        assert_eq!(initial_sources.sources[0].document_count, 1);
+
+        // Environment-managed source cannot be deleted.
+        assert!(matches!(
+            runtime.delete_source("local-markdown"),
+            Err(Dok3Error::InvalidInput(_))
+        ));
+
+        // Register a second local source with custom default category and tag.
+        let team_src = runtime
+            .register_source(&CreateSourceRequest {
+                source_id: "team-notes".to_string(),
+                label: "Team Notes".to_string(),
+                path: team_dir.path().to_string_lossy().into_owned(),
+                default_category: Some("manual".to_string()),
+                default_tag: Some("ops".to_string()),
+            })
+            .unwrap();
+        assert_eq!(team_src.source_id, "team-notes");
+        assert_eq!(team_src.document_count, 1);
+        assert!(!team_src.managed_by_env);
+        assert!(team_src.last_synced_at_ms.is_some());
+
+        // Reject duplicate slug or canonical path.
+        assert!(matches!(
+            runtime.register_source(&CreateSourceRequest {
+                source_id: "team-notes".to_string(),
+                label: "Dup Slug".to_string(),
+                path: broken_dir.path().to_string_lossy().into_owned(),
+                default_category: None,
+                default_tag: None,
+            }),
+            Err(Dok3Error::InvalidInput(_))
+        ));
+        assert!(matches!(
+            runtime.register_source(&CreateSourceRequest {
+                source_id: "dup-path".to_string(),
+                label: "Dup Path".to_string(),
+                path: team_dir.path().to_string_lossy().into_owned(),
+                default_category: None,
+                default_tag: None,
+            }),
+            Err(Dok3Error::InvalidInput(_))
+        ));
+
+        let team_hits = runtime
+            .service()
+            .search(
+                &public,
+                &SearchRequest {
+                    query: "teamsourcetoken".to_string(),
+                    filters: dok3_domain::SearchFilters {
+                        category: Some("manual".to_string()),
+                        ..Default::default()
+                    },
+                    ..SearchRequest::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(team_hits.total_hits, 1);
+        assert_eq!(team_hits.hits[0].category, "manual");
+        assert!(team_hits.hits[0].tags.contains(&"ops".to_string()));
+
+        // Targeted single-source rescan indexes new team file without disturbing unscanned env docs.
+        fs::write(
+            team_dir.path().join("added-d.md"),
+            "# Team Added\n\nteamsinglescantoken\n",
+        )
+        .unwrap();
+        fs::write(
+            env_dir.path().join("unscanned-e.md"),
+            "# Env Added\n\nenvunscannedtoken\n",
+        )
+        .unwrap();
+        let partial_job = runtime
+            .trigger_job(&TriggerIndexJobRequest {
+                source_id: Some("team-notes".to_string()),
+                mode: IndexJobMode::Incremental,
+            })
+            .unwrap();
+        assert_eq!(partial_job.state, IndexJobState::Succeeded);
+        assert_eq!(
+            runtime
+                .service()
+                .search(
+                    &public,
+                    &SearchRequest {
+                        query: "teamsinglescantoken".to_string(),
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap()
+                .total_hits,
+            1
+        );
+        assert_eq!(
+            runtime
+                .service()
+                .search(
+                    &public,
+                    &SearchRequest {
+                        query: "envunscannedtoken".to_string(),
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap()
+                .total_hits,
+            0
+        );
+        assert_eq!(
+            runtime
+                .service()
+                .search(
+                    &public,
+                    &SearchRequest {
+                        query: "envsourcetoken".to_string(),
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap()
+                .total_hits,
+            1
+        );
+
+        // Broken source isolation: deleting broken_dir records last_error while keeping healthy sync & existing docs.
+        runtime
+            .register_source(&CreateSourceRequest {
+                source_id: "broken-src".to_string(),
+                label: "Broken Source".to_string(),
+                path: broken_dir.path().to_string_lossy().into_owned(),
+                default_category: None,
+                default_tag: None,
+            })
+            .unwrap();
+        fs::remove_dir_all(broken_dir.path()).unwrap();
+
+        let all_job = runtime
+            .trigger_job(&TriggerIndexJobRequest::default())
+            .unwrap();
+        assert_eq!(all_job.state, IndexJobState::Succeeded);
+        let sources_after_err = runtime.list_sources().unwrap();
+        let broken_state = sources_after_err
+            .sources
+            .iter()
+            .find(|s| s.source_id == "broken-src")
+            .unwrap();
+        assert!(broken_state.last_error.is_some());
+        assert_eq!(broken_state.document_count, 1);
+        assert_eq!(
+            runtime
+                .service()
+                .search(
+                    &public,
+                    &SearchRequest {
+                        query: "brokensourcetoken".to_string(),
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap()
+                .total_hits,
+            1
+        );
+        assert_eq!(
+            runtime
+                .service()
+                .search(
+                    &public,
+                    &SearchRequest {
+                        query: "envunscannedtoken".to_string(),
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap()
+                .total_hits,
+            1
+        );
+        drop(runtime);
+
+        // Restart restores all sources from sources.json.
+        let (restarted, _) = PersistentRuntime::open(env_dir.path(), data_root.path()).unwrap();
+        assert_eq!(restarted.list_sources().unwrap().sources.len(), 3);
+
+        // Deleting team-notes removes its indexed documents & classifications but leaves user disk files untouched.
+        let deleted = restarted.delete_source("team-notes").unwrap();
+        assert_eq!(deleted.source_id, "team-notes");
+        assert_eq!(deleted.deleted_documents, 2);
+        assert_eq!(
+            restarted
+                .service()
+                .search(
+                    &public,
+                    &SearchRequest {
+                        query: "teamsourcetoken".to_string(),
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap()
+                .total_hits,
+            0
+        );
+        assert!(matches!(
+            restarted.get_classification(&public, &DocumentId::new("team-notes:note-b.md")),
+            Err(Dok3Error::NotFound(_))
+        ));
+        assert!(team_dir.path().join("note-b.md").is_file());
+        assert!(team_dir.path().join("added-d.md").is_file());
+    }
+
+    #[test]
+    fn interrupted_source_delete_retries_without_404_and_recovers_on_restart() {
+        let env_dir = tempfile::tempdir().unwrap();
+        let src_a_dir = tempfile::tempdir().unwrap();
+        let src_b_dir = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+
+        fs::write(env_dir.path().join("env.md"), "# Env\n\nenvkeep\n").unwrap();
+        fs::write(src_a_dir.path().join("a.md"), "# Source A\n\npendingdela\n").unwrap();
+        fs::write(src_b_dir.path().join("b.md"), "# Source B\n\npendingdelb\n").unwrap();
+
+        let public = Principal::anonymous_public();
+        let (runtime, _) = PersistentRuntime::open(env_dir.path(), data_root.path()).unwrap();
+        runtime
+            .register_source(&CreateSourceRequest {
+                source_id: "src-a".to_string(),
+                label: "Source A".to_string(),
+                path: src_a_dir.path().to_string_lossy().into_owned(),
+                default_category: None,
+                default_tag: None,
+            })
+            .unwrap();
+        runtime
+            .register_source(&CreateSourceRequest {
+                source_id: "src-b".to_string(),
+                label: "Source B".to_string(),
+                path: src_b_dir.path().to_string_lossy().into_owned(),
+                default_category: None,
+                default_tag: None,
+            })
+            .unwrap();
+
+        // Simulate interrupted generation build AND failed index transition during DELETE,
+        // then verify retrying DELETE reconciles IndexManager and finishes cleanly without 404.
+        runtime
+            .manager
+            .lock()
+            .unwrap()
+            .build_generation("gen-interrupted-del", 99)
+            .unwrap();
+        let blocking_del_gen = data_root.path().join("generations/gen-000004-seq-000004");
+        fs::write(&blocking_del_gen, b"block-delete-gen").unwrap();
+        assert!(runtime.delete_source("src-a").is_err());
+        assert!(
+            runtime
+                .list_sources()
+                .unwrap()
+                .sources
+                .iter()
+                .any(|s| s.source_id == "src-a")
+        );
+
+        fs::remove_file(&blocking_del_gen).unwrap();
+        runtime
+            .manager
+            .lock()
+            .unwrap()
+            .build_generation("gen-interrupted-retry", 99)
+            .unwrap();
+        let retried = runtime.delete_source("src-a").unwrap();
+        assert_eq!(retried.source_id, "src-a");
+        assert_eq!(
+            runtime
+                .service()
+                .search(
+                    &public,
+                    &SearchRequest {
+                        query: "pendingdela".to_string(),
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap()
+                .total_hits,
+            0
+        );
+
+        // Now mark pending_delete for src-b and drop runtime (simulate restart recovery).
+        runtime
+            .sources
+            .lock()
+            .unwrap()
+            .mark_pending_delete("src-b")
+            .unwrap();
+        drop(runtime);
+
+        let (restarted, _) = PersistentRuntime::open(env_dir.path(), data_root.path()).unwrap();
+        assert!(
+            !restarted
+                .list_sources()
+                .unwrap()
+                .sources
+                .iter()
+                .any(|s| s.source_id == "src-b")
+        );
+        assert_eq!(
+            restarted
+                .service()
+                .search(
+                    &public,
+                    &SearchRequest {
+                        query: "pendingdelb".to_string(),
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap()
+                .total_hits,
+            0
+        );
+        assert!(src_b_dir.path().join("b.md").is_file());
+    }
+
+    #[test]
+    fn failed_source_registration_cleans_up_orphaned_docs_and_allows_retry() {
+        let env_dir = tempfile::tempdir().unwrap();
+        let team_dir = tempfile::tempdir().unwrap();
+        let post_dir = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+
+        fs::write(env_dir.path().join("env.md"), "# Env\n\nenvstable\n").unwrap();
+        fs::write(
+            team_dir.path().join("note.md"),
+            "# Team Doc\n\nteamrollbacktoken\n",
+        )
+        .unwrap();
+        fs::write(
+            post_dir.path().join("post.md"),
+            "# Post Activate Fail\n\npostfailtoken\n",
+        )
+        .unwrap();
+
+        let public = Principal::anonymous_public();
+        let (runtime, _) = PersistentRuntime::open(env_dir.path(), data_root.path()).unwrap();
+        // Part A: Force generation build failure BEFORE activation (after store/journal writes).
+        let blocking_gen = data_root.path().join("generations/gen-000002-seq-000002");
+        fs::write(&blocking_gen, b"block-build-generation").unwrap();
+
+        let err = runtime
+            .register_source(&CreateSourceRequest {
+                source_id: "team-notes".to_string(),
+                label: "Team Notes".to_string(),
+                path: team_dir.path().to_string_lossy().into_owned(),
+                default_category: None,
+                default_tag: None,
+            })
+            .unwrap_err();
+        assert!(matches!(err, Dok3Error::Storage(_)));
+
+        // Zero orphaned docs remain in store and source is removed cleanly from registry.
+        assert!(
+            !runtime
+                .list_sources()
+                .unwrap()
+                .sources
+                .iter()
+                .any(|s| s.source_id == "team-notes")
+        );
+        assert!(
+            !runtime
+                .store
+                .document_ids()
+                .unwrap()
+                .iter()
+                .any(|id| id.as_str().starts_with("team-notes:"))
+        );
+
+        // Clearing fault allows clean retry of the exact same registration.
+        fs::remove_file(&blocking_gen).unwrap();
+        let registered = runtime
+            .register_source(&CreateSourceRequest {
+                source_id: "team-notes".to_string(),
+                label: "Team Notes".to_string(),
+                path: team_dir.path().to_string_lossy().into_owned(),
+                default_category: None,
+                default_tag: None,
+            })
+            .unwrap();
+        assert_eq!(registered.source_id, "team-notes");
+        assert_eq!(registered.document_count, 1);
+
+        // Part B: Simulate failure AFTER generation activation: rollback MUST republish active index
+        // without the rolled-back source's docs AND remove it from registry.
+        let post_err = runtime
+            .register_source_with_hook(
+                &CreateSourceRequest {
+                    source_id: "team-postfail".to_string(),
+                    label: "Team Post Fail".to_string(),
+                    path: post_dir.path().to_string_lossy().into_owned(),
+                    default_category: None,
+                    default_tag: None,
+                },
+                || Err("simulated post-activation failure".to_string()),
+            )
+            .unwrap_err();
+        assert!(matches!(post_err, Dok3Error::Storage(_)));
+        assert!(
+            !runtime
+                .list_sources()
+                .unwrap()
+                .sources
+                .iter()
+                .any(|s| s.source_id == "team-postfail")
+        );
+        assert_eq!(
+            runtime
+                .service()
+                .search(
+                    &public,
+                    &SearchRequest {
+                        query: "postfailtoken".to_string(),
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap()
+                .total_hits,
+            0
+        );
+
+        // Clean retry after post-activation rollback succeeds.
+        let retried = runtime
+            .register_source(&CreateSourceRequest {
+                source_id: "team-postfail".to_string(),
+                label: "Team Post Fail".to_string(),
+                path: post_dir.path().to_string_lossy().into_owned(),
+                default_category: None,
+                default_tag: None,
+            })
+            .unwrap();
+        assert_eq!(retried.document_count, 1);
+        assert_eq!(
+            runtime
+                .service()
+                .search(
+                    &public,
+                    &SearchRequest {
+                        query: "postfailtoken".to_string(),
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap()
+                .total_hits,
+            1
+        );
     }
 }

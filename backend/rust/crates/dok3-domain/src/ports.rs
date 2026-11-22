@@ -4,7 +4,8 @@ use dok3_core::Dok3Error;
 
 use crate::acl::Principal;
 use crate::admin::{
-    DocumentClassification, IndexJobListResponse, IndexJobRecord, TriggerIndexJobRequest,
+    CreateSourceRequest, DeleteSourceResponse, DocumentClassification, IndexJobListResponse,
+    IndexJobRecord, RegisteredSource, SourceListResponse, TriggerIndexJobRequest,
     UpdateClassificationRequest,
 };
 use crate::change::ChangeEvent;
@@ -69,4 +70,11 @@ pub trait ClassificationPort: Send + Sync {
         id: &DocumentId,
         req: &UpdateClassificationRequest,
     ) -> Result<DocumentClassification, Dok3Error>;
+}
+
+/// Port for listing, registering, and deleting local document sources without altering disk files.
+pub trait SourceRegistryPort: Send + Sync {
+    fn list_sources(&self) -> Result<SourceListResponse, Dok3Error>;
+    fn register_source(&self, req: &CreateSourceRequest) -> Result<RegisteredSource, Dok3Error>;
+    fn delete_source(&self, source_id: &str) -> Result<DeleteSourceResponse, Dok3Error>;
 }
