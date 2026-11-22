@@ -1224,10 +1224,7 @@ fn sync_source_to_storage(
         {
             store.update_metadata(document)
         } else {
-            store
-                .verify_existing_object(&content_hash)
-                .map_err(|err| err.to_string())?;
-            store.put(document, &file.bytes)
+            store.put_immutable(document, &file.bytes)
         }
         .map_err(|err| err.to_string())?;
 

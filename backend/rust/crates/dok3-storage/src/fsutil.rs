@@ -113,3 +113,43 @@ pub(crate) fn atomic_write(path: &Path, bytes: &[u8]) -> Result<(), Dok3Error> {
     }
     result
 }
+
+/// Atomically creates `path` with `bytes` only if `path` does not already exist.
+/// Returns `Ok(true)` if newly created, `Ok(false)` if `path` already existed untouched.
+pub(crate) fn atomic_write_if_absent(path: &Path, bytes: &[u8]) -> Result<bool, Dok3Error> {
+    let dir = path
+        .parent()
+        .ok_or_else(|| storage_err("atomic create-if-absent", "path has no parent"))?;
+    fs::create_dir_all(dir).map_err(|e| storage_err("create dir", e))?;
+    let file_name = path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .ok_or_else(|| storage_err("atomic create-if-absent", "invalid file name"))?;
+    let seq = TMP_SEQ.fetch_add(1, Ordering::Relaxed);
+    let tmp = dir.join(format!(".{file_name}.tmp.{}.{seq}", std::process::id()));
+    let write_res = (|| {
+        let mut f = File::create(&tmp).map_err(|e| storage_err("create temp", e))?;
+        f.write_all(bytes)
+            .map_err(|e| storage_err("write temp", e))?;
+        f.sync_all().map_err(|e| storage_err("fsync temp", e))
+    })();
+    if let Err(err) = write_res {
+        let _ = fs::remove_file(&tmp);
+        return Err(err);
+    }
+    match fs::hard_link(&tmp, path) {
+        Ok(()) => {
+            let _ = fs::remove_file(&tmp);
+            sync_dir(dir)?;
+            Ok(true)
+        }
+        Err(err) if err.kind() == std::io::ErrorKind::AlreadyExists => {
+            let _ = fs::remove_file(&tmp);
+            Ok(false)
+        }
+        Err(err) => {
+            let _ = fs::remove_file(&tmp);
+            Err(storage_err("link immutable object", err))
+        }
+    }
+}

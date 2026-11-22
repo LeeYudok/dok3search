@@ -429,14 +429,21 @@ fn update_metadata_preserves_original_and_rejects_corrupted_object_without_overw
         .to_string();
     let obj_path = root.0.join("objects").join(&hash);
 
-    // Metadata-only update succeeds and leaves original bytes intact.
-    let mut updated_doc = doc("m1", AclScope::Public, "original body");
+    // Metadata-only update succeeds and leaves original bytes + original fields intact.
+    let mut updated_doc = doc("m1", AclScope::Public, "caller altered body");
+    updated_doc.markdown = Some("caller altered markdown".to_string());
+    updated_doc.source_uri = "file:///caller-altered".to_string();
     updated_doc.summary = "updated summary".to_string();
     updated_doc.category = "policy".to_string();
     assert_eq!(
         store.update_metadata(updated_doc.clone()).unwrap(),
         PutOutcome::Stored(content_revision(content))
     );
+    let stored = store
+        .get_stored_document(&public(), &DocumentId::new("m1"))
+        .unwrap();
+    assert_eq!(stored.body, "original body");
+    assert_ne!(stored.source_uri, "file:///caller-altered");
     assert_eq!(
         store
             .read_original(&public(), &DocumentId::new("m1"))
@@ -450,11 +457,15 @@ fn update_metadata_preserves_original_and_rejects_corrupted_object_without_overw
         PutOutcome::Unchanged(content_revision(content))
     );
 
-    // Corrupting the stored object must fail update_metadata without overwriting the file on disk.
+    // Corrupting the stored object fails both update_metadata and put_immutable without overwriting.
     fs::write(&obj_path, b"tampered").unwrap();
     updated_doc.summary = "second update".to_string();
     assert!(matches!(
         store.update_metadata(updated_doc),
+        Err(dok3_core::Dok3Error::Storage(_))
+    ));
+    assert!(matches!(
+        store.put_immutable(doc("m2", AclScope::Public, "original body"), content),
         Err(dok3_core::Dok3Error::Storage(_))
     ));
     assert_eq!(fs::read(&obj_path).unwrap(), b"tampered");
