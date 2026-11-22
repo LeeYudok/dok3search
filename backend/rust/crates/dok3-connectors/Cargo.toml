@@ -8,6 +8,8 @@ publish.workspace = true
 [dependencies]
 dok3-core.workspace = true
 dok3-domain.workspace = true
+rusqlite = { version = "0.43.0", default-features = false, features = ["bundled"] }
+sha2.workspace = true
 
 [dev-dependencies]
 dok3-parser.workspace = true
