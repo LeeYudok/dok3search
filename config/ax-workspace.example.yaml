@@ -1,0 +1,32 @@
+# Google AX (Agent Executor) declarative Workspace & Task example for dok3search.
+# AX acts as the sandboxed execution runtime while dok3search serves knowledge via MCP/A2A.
+apiVersion: ax.google/v1alpha1
+kind: Workspace
+metadata:
+  name: dok3search-coder-workspace
+spec:
+  description: Air-gapped coding workspace connected to dok3search MCP and A2A endpoints.
+  mcpServers:
+    dok3search:
+      transport: streamable-http
+      url: http://127.0.0.1:8080/mcp
+    dok3search-stdio:
+      transport: stdio
+      command: dok3search
+      args: ["--mcp-stdio"]
+  agentDiscovery:
+    agentCardUrl: http://127.0.0.1:8080/.well-known/agent.json
+    llmsTxtUrl: http://127.0.0.1:8080/llms.txt
+---
+apiVersion: ax.google/v1alpha1
+kind: Task
+metadata:
+  name: p8-background-classifier
+spec:
+  workspaceRef: dok3search-coder-workspace
+  goal: >
+    Query uncategorized documents via dok3search MCP, derive tags/summaries offline,
+    and submit classification updates to the loopback admin API.
+  checkpointing:
+    enabled: true
+    resumeOnFailure: true
