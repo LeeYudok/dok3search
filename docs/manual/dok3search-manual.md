@@ -79,7 +79,7 @@ local Markdown skipped: <상대 경로>: <사유>
 
 모든 응답에는 보안 헤더 `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, `Content-Security-Policy`(`frame-ancestors 'none'` 포함)가 붙는다.
 
-### 준비 상태
+### 준비 상태와 코퍼스 카탈로그
 
 `GET /health/ready`는 다음 필드를 돌려준다.
 
@@ -89,6 +89,8 @@ local Markdown skipped: <상대 경로>: <사유>
 - `snapshot`: 검색 세대 정보(`generation_id`, `epoch`, `schema_version`, `acl_policy_version`, `applied_change_sequence`, `reader_state`)
 
 `tantivy-persistent` 모드에서 활성 세대가 없으면 `snapshot.generation_id`는 `none`, `reader_state`는 `degraded`다.
+
+`GET /api/v1/corpora`는 현재 접근 권한(ACL)으로 열람 가능한 코퍼스 목록(`corpus_id`, `label`, `category`, `topic`, `version`, `toolchain`, `license`, `document_count`, `packages`)을 돌려준다. 관리자 권한 없이 조회할 수 있다.
 
 ### 검색
 

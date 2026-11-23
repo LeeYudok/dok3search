@@ -24,12 +24,13 @@ export type ReferenceCorpus = {
 }
 
 export function createReferenceCorpus({
-  folder, topic, source, language, chapters, markdown, images, licenses,
+  folder, topic, source, language, category = 'guide', chapters, markdown, images, licenses,
 }: {
   folder: string
   topic: ReferenceTopic
   source: string
   language: string
+  category?: 'guide' | 'code'
   chapters: readonly Chapter[]
   markdown: Record<string, string>
   images: Record<string, string>
@@ -46,7 +47,7 @@ export function createReferenceCorpus({
       summary,
       source: chapterSource ?? source,
       tag: chapterLanguage ?? language,
-      category: 'guide',
+      category,
       topic,
       body: '',
       markdown: original.replace(/^# .*\r?\n+/, ''),

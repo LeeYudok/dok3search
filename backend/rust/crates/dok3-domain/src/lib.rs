@@ -29,6 +29,7 @@ pub use ports::{
     SearchPort, SourceRegistryPort,
 };
 pub use search::{
-    CategoryCount, HealthReadyResponse, ReaderState, SearchFilters, SearchHit, SearchRequest,
-    SearchResponse, SearchSnapshotMeta,
+    CategoryCount, CorpusCatalogEntry, CorpusCatalogResponse, CorpusPackageVersion,
+    HealthReadyResponse, ReaderState, SearchFilters, SearchHit, SearchRequest, SearchResponse,
+    SearchSnapshotMeta, build_corpus_catalog,
 };

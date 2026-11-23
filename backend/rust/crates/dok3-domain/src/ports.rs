@@ -11,7 +11,7 @@ use crate::admin::{
 use crate::change::ChangeEvent;
 use crate::document::{DocumentDetail, ParsedDocument, SectionReadRequest, SectionReadResponse};
 use crate::ids::{DocumentId, Sequence};
-use crate::search::{SearchRequest, SearchResponse, SearchSnapshotMeta};
+use crate::search::{CorpusCatalogEntry, SearchRequest, SearchResponse, SearchSnapshotMeta};
 
 /// Port for executing ACL-scoped document search queries.
 pub trait SearchPort: Send + Sync {
@@ -36,6 +36,13 @@ pub trait DocumentStorePort: Send + Sync {
         req: &SectionReadRequest,
     ) -> Result<SectionReadResponse, Dok3Error>;
     fn document_count(&self) -> usize;
+    fn list_corpora(
+        &self,
+        principal: &Principal,
+    ) -> Result<(usize, Vec<CorpusCatalogEntry>), Dok3Error> {
+        let _ = principal;
+        Ok((0, Vec::new()))
+    }
 }
 
 /// Port for format-specific document parsing without touching Tantivy or storage directly.

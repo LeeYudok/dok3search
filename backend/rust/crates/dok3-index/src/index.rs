@@ -6,7 +6,9 @@ use std::path::Path;
 use std::str::FromStr;
 use std::sync::{Mutex, RwLock};
 
-use dok3_analyzer::{AnalyzeOptions, analyze_text, word_spans};
+use dok3_analyzer::{
+    AnalyzeOptions, SectionCandidate, analyze_text, select_matched_section_id, word_spans,
+};
 use dok3_core::Dok3Error;
 use dok3_domain::{
     AclScope, CategoryCount, Document, DocumentId, GenerationId, Principal, ReaderState, SearchHit,
@@ -397,6 +399,7 @@ impl TantivyIndex {
         &self,
         searcher: &Searcher,
         top_docs: Vec<(f32, tantivy::DocAddress)>,
+        query: &str,
         include_snippets: bool,
         snippet_query: Option<&dyn Query>,
     ) -> Result<Vec<SearchHit>, Dok3Error> {
@@ -416,6 +419,29 @@ impl TantivyIndex {
                 .map_err(|e| Dok3Error::Index(format!("invalid stored hit payload: {e}")))?;
             let acl_scope = AclScope::from_str(read_stored_str(&doc, self.fields.acl_scope))?;
 
+            let matched_id = if meta.sections.is_empty() {
+                meta.matched_section_id.clone()
+            } else {
+                let candidates: Vec<SectionCandidate<'_>> = meta
+                    .sections
+                    .iter()
+                    .map(|s| SectionCandidate {
+                        section_id: &s.section_id,
+                        heading: &s.heading,
+                        body: &s.body,
+                    })
+                    .collect();
+                select_matched_section_id(query, &candidates)
+                    .map(str::to_string)
+                    .or_else(|| meta.matched_section_id.clone())
+            };
+
+            let matched_section_body = matched_id
+                .as_deref()
+                .and_then(|sid| meta.sections.iter().find(|s| s.section_id == sid))
+                .map(|s| s.body.trim())
+                .filter(|b| !b.is_empty());
+
             let snippet = if include_snippets {
                 let fragment = snippet_gen
                     .as_ref()
@@ -423,7 +449,11 @@ impl TantivyIndex {
                     .filter(|s| !s.is_empty());
                 match fragment {
                     Some(text) => text.chars().take(280).collect(),
-                    None => meta.snippet_source.chars().take(280).collect(),
+                    None => matched_section_body
+                        .unwrap_or(&meta.snippet_source)
+                        .chars()
+                        .take(280)
+                        .collect(),
                 }
             } else {
                 String::new()
@@ -436,7 +466,7 @@ impl TantivyIndex {
                 summary: read_stored_str(&doc, self.fields.summary).to_string(),
                 snippet,
                 category: read_stored_str(&doc, self.fields.category).to_string(),
-                topic: None,
+                topic: meta.topic,
                 source: meta.source,
                 tag: meta.tag,
                 tags: meta.tags,
@@ -444,7 +474,7 @@ impl TantivyIndex {
                 sample_path: meta.sample_path,
                 acl_scope,
                 has_paired_formats: false,
-                matched_section_id: meta.matched_section_id.map(SectionId::new),
+                matched_section_id: matched_id.map(SectionId::new),
                 score,
             });
         }
@@ -533,6 +563,7 @@ impl SearchPort for TantivyIndex {
         let hits = self.load_hits(
             &searcher,
             top_docs,
+            &query_trimmed,
             req.include_snippets,
             snippet_q.as_deref(),
         )?;

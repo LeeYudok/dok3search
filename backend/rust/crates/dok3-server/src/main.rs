@@ -1,6 +1,7 @@
 //! dok3search server binary entrypoint.
 
 mod classification;
+mod corpus_meta;
 mod local_index;
 // --- slice-B: mcp ---
 mod mcp;

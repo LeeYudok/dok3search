@@ -1,5 +1,6 @@
 //! Tantivy schema definition, tokenizer registration, and document serialization helpers.
 
+use dok3_analyzer::SectionCandidate;
 use dok3_core::Dok3Error;
 use dok3_domain::Document;
 use serde::{Deserialize, Serialize};
@@ -37,13 +38,24 @@ pub struct IndexFields {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub(crate) struct StoredSectionMeta {
+    pub section_id: String,
+    pub heading: String,
+    pub body: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct StoredHitMeta {
     pub source: String,
     pub tag: String,
     pub tags: Vec<String>,
     pub date: Option<String>,
     pub sample_path: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub topic: Option<String>,
     pub matched_section_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub sections: Vec<StoredSectionMeta>,
     pub snippet_source: String,
 }
 
@@ -95,18 +107,37 @@ pub(crate) fn to_tantivy_document(
     fields: &IndexFields,
     doc: &Document,
 ) -> Result<TantivyDocument, Dok3Error> {
+    const MAX_STORED_SECTION_CHARS: usize = 16_384;
     let body_text = effective_body(doc);
     let snippet_source = build_snippet_source(doc, body_text);
+    let sections: Vec<StoredSectionMeta> = doc
+        .sections
+        .iter()
+        .map(|s| StoredSectionMeta {
+            section_id: s.section_id.as_str().to_string(),
+            heading: s.heading.clone(),
+            body: s.body.chars().take(MAX_STORED_SECTION_CHARS).collect(),
+        })
+        .collect();
+    let candidates: Vec<SectionCandidate<'_>> = sections
+        .iter()
+        .map(|s| SectionCandidate {
+            section_id: &s.section_id,
+            heading: &s.heading,
+            body: &s.body,
+        })
+        .collect();
+    let default_section =
+        dok3_analyzer::select_matched_section_id("", &candidates).map(str::to_string);
     let meta = StoredHitMeta {
         source: doc.source.clone(),
         tag: doc.tag.clone(),
         tags: doc.tags.clone(),
         date: doc.date.clone(),
         sample_path: doc.sample_path.clone(),
-        matched_section_id: doc
-            .sections
-            .first()
-            .map(|s| s.section_id.as_str().to_string()),
+        topic: doc.topic.clone(),
+        matched_section_id: default_section,
+        sections,
         snippet_source,
     };
     let payload_json = serde_json::to_string(&meta)

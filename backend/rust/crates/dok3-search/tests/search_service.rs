@@ -278,4 +278,10 @@ fn acl_denies_internal_docs_across_search_counts_and_readers() {
             .get_document(&authorized, &DocumentId::new("sec-1"))
             .is_ok()
     );
+
+    // Corpus catalog respects ACL: public sees only pub-1, authorized sees both.
+    let pub_corpora = service.list_corpora(&public, "in-memory-fake").unwrap();
+    assert_eq!(pub_corpora.total_documents, 1);
+    let auth_corpora = service.list_corpora(&authorized, "in-memory-fake").unwrap();
+    assert_eq!(auth_corpora.total_documents, 2);
 }

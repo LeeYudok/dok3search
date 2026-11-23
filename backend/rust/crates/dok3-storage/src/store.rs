@@ -7,8 +7,9 @@ use std::sync::RwLock;
 
 use dok3_core::Dok3Error;
 use dok3_domain::{
-    Document, DocumentDetail, DocumentId, DocumentStorePort, Principal, RevisionId,
-    SectionCitation, SectionReadRequest, SectionReadResponse, SectionSummary,
+    CorpusCatalogEntry, Document, DocumentDetail, DocumentId, DocumentStorePort, Principal,
+    RevisionId, SectionCitation, SectionReadRequest, SectionReadResponse, SectionSummary,
+    build_corpus_catalog,
 };
 use sha2::{Digest, Sha256};
 
@@ -268,6 +269,86 @@ impl FileDocumentStore {
         Ok(docs.values().cloned().collect())
     }
 
+    /// Persists a batch of scanned documents in a single `documents.json` rewrite while
+    /// preserving `objects/<sha256>` immutability (`atomic_write_if_absent` + `object_intact`).
+    pub fn sync_scanned_batch(
+        &self,
+        items: Vec<(Document, Option<Vec<u8>>)>,
+    ) -> Result<Vec<(DocumentId, PutOutcome)>, Dok3Error> {
+        let mut docs = self.write()?;
+        let mut next = docs.clone();
+        let mut outcomes = Vec::with_capacity(items.len());
+        let mut any_metadata_changed = false;
+
+        for (mut doc, bytes_opt) in items {
+            if doc.id.as_str().trim().is_empty() {
+                return Err(Dok3Error::InvalidInput(
+                    "document id must not be empty".into(),
+                ));
+            }
+            let doc_id = doc.id.clone();
+            match bytes_opt {
+                Some(content) => {
+                    let hash = sha256_hex(&content);
+                    let revision = RevisionId::new(format!("sha256:{hash}"));
+                    doc.revision_id = revision.clone();
+                    doc.content_hash = hash.clone();
+
+                    let object = self.object_path(&hash);
+                    if !atomic_write_if_absent(&object, &content)? && !object_intact(&object, &hash)
+                    {
+                        return Err(Dok3Error::Storage(format!(
+                            "existing object '{}' failed integrity check",
+                            object.display()
+                        )));
+                    }
+                    if next.get(doc.id.as_str()) == Some(&doc) {
+                        outcomes.push((doc_id, PutOutcome::Unchanged(revision)));
+                    } else {
+                        next.insert(doc.id.as_str().to_string(), doc);
+                        any_metadata_changed = true;
+                        outcomes.push((doc_id, PutOutcome::Stored(revision)));
+                    }
+                }
+                None => {
+                    let existing = next.get(doc.id.as_str()).ok_or_else(|| {
+                        Dok3Error::NotFound(format!("document '{}' not found", doc.id))
+                    })?;
+                    let hash = existing.content_hash.clone();
+                    let revision = existing.revision_id.clone();
+                    doc.content_hash = hash.clone();
+                    doc.revision_id = revision.clone();
+                    doc.body = existing.body.clone();
+                    doc.markdown = existing.markdown.clone();
+                    doc.source_uri = existing.source_uri.clone();
+
+                    if !object_intact(&self.object_path(&hash), &hash) {
+                        return Err(Dok3Error::Storage(format!(
+                            "original for '{}' failed integrity check",
+                            doc.id
+                        )));
+                    }
+                    if next.get(doc.id.as_str()) == Some(&doc) {
+                        outcomes.push((doc_id, PutOutcome::Unchanged(revision)));
+                    } else {
+                        next.insert(doc.id.as_str().to_string(), doc);
+                        any_metadata_changed = true;
+                        outcomes.push((doc_id, PutOutcome::Stored(revision)));
+                    }
+                }
+            }
+        }
+
+        if any_metadata_changed {
+            if let Err(err) = self.persist(&next) {
+                self.resync_from_disk(&mut docs);
+                return Err(err);
+            }
+            *docs = next;
+        }
+        Ok(outcomes)
+    }
+
     fn object_path(&self, hash: &str) -> PathBuf {
         self.root.join("objects").join(hash)
     }
@@ -403,6 +484,17 @@ impl DocumentStorePort for FileDocumentStore {
 
     fn document_count(&self) -> usize {
         self.docs.read().map_or(0, |d| d.len())
+    }
+
+    fn list_corpora(
+        &self,
+        principal: &Principal,
+    ) -> Result<(usize, Vec<CorpusCatalogEntry>), Dok3Error> {
+        let docs = self
+            .docs
+            .read()
+            .map_err(|_| Dok3Error::Internal("store lock poisoned".into()))?;
+        Ok(build_corpus_catalog(docs.values(), principal))
     }
 }
 

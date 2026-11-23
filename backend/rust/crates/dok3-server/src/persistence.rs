@@ -30,6 +30,7 @@ use dok3_storage::{FileChangeJournal, FileDocumentStore, PutOutcome, content_rev
 use serde::{Deserialize, Serialize};
 
 use crate::classification::{ClassificationStore, classification_from_doc};
+use crate::corpus_meta::CorpusMetadataIndex;
 use crate::local_index::{BuildReport, apply_detected_language};
 use crate::sources::{SourceRegistry, source_config_for, validate_real_directory};
 
@@ -1468,8 +1469,10 @@ fn scan_and_store_source(
         .map(|file| format!("{}: {}", file.relative_path, file.reason))
         .collect();
     let parser = MarkdownParser::new();
+    let corpus_meta = CorpusMetadataIndex::load(Path::new(&entry.path));
     let mut seen_ids = HashSet::with_capacity(report.files.len());
     let mut indexed = 0usize;
+    let mut batch_items: Vec<(Document, Option<Vec<u8>>)> = Vec::with_capacity(report.files.len());
 
     for file in report.files {
         let parsed = match parser.parse(&file.filename, &file.bytes) {
@@ -1481,33 +1484,68 @@ fn scan_and_store_source(
         };
         let mut document = build_document(connector.config(), &file, &parsed);
         apply_detected_language(&mut document, &parsed.normalized_text);
+        let corpus_override = corpus_meta.apply(&mut document, &file.relative_path);
         let rev = content_revision(&file.bytes);
         let content_hash = rev
             .as_str()
             .strip_prefix("sha256:")
             .unwrap_or(rev.as_str())
             .to_string();
+        let default_cat = corpus_override
+            .as_ref()
+            .map_or(connector.config().category.as_str(), |m| {
+                m.category.as_str()
+            });
+        let default_tag = corpus_override
+            .as_ref()
+            .and_then(|m| m.tags.first().map(String::as_str))
+            .unwrap_or(connector.config().default_tag.as_str());
+        let manual_locked = classifications.is_manual_locked(&document.id);
         classifications.apply_during_sync_with_defaults(
             &mut document,
-            connector.config().category.as_str(),
-            connector.config().default_tag.as_str(),
+            default_cat,
+            default_tag,
             &content_hash,
         )?;
+        if let Some(meta) = corpus_override
+            && !manual_locked
+        {
+            document.category = meta.category;
+            document.topic = meta.topic;
+            document.source = meta.source;
+            document.version = meta.version;
+            if let Some(summary) = meta.summary.as_deref().filter(|s| !s.trim().is_empty()) {
+                document.summary = summary.to_string();
+            }
+            for tag in &meta.tags {
+                let trimmed = tag.trim();
+                if !trimmed.is_empty()
+                    && !document
+                        .tags
+                        .iter()
+                        .any(|t| t.eq_ignore_ascii_case(trimmed))
+                {
+                    document.tags.push(trimmed.to_string());
+                }
+            }
+        }
         let doc_id = document.id.clone();
         seen_ids.insert(doc_id.as_str().to_string());
 
-        let put_outcome = if store
+        let unchanged_content = store
             .existing_content_hash(&doc_id)
             .map_err(|err| err.to_string())?
             .as_deref()
-            == Some(content_hash.as_str())
-        {
-            store.update_metadata(document)
-        } else {
-            store.put_immutable(document, &file.bytes)
-        }
-        .map_err(|err| err.to_string())?;
+            == Some(content_hash.as_str());
+        let bytes_opt = (!unchanged_content).then_some(file.bytes);
+        batch_items.push((document, bytes_opt));
+        indexed += 1;
+    }
 
+    let outcomes = store
+        .sync_scanned_batch(batch_items)
+        .map_err(|err| err.to_string())?;
+    for (doc_id, put_outcome) in outcomes {
         if let PutOutcome::Stored(rev) = put_outcome {
             journal
                 .append(ChangeEvent {
@@ -1519,7 +1557,6 @@ fn scan_and_store_source(
                 .map_err(|err| err.to_string())?;
             synced_this_pass.insert(doc_id.as_str().to_string());
         }
-        indexed += 1;
     }
 
     Ok(SourceScanOutcome::Scanned {

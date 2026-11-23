@@ -126,6 +126,7 @@ pub fn build_router_with_extra(
         // checks and the frontend dev proxy can share one endpoint.
         .route("/health", get(health_ready))
         .route("/health/ready", get(health_ready))
+        .route("/api/v1/corpora", get(list_corpora))
         .route("/api/v1/search", post(search))
         .route("/api/v1/documents/{id}", get(get_document))
         .route("/api/v1/documents/{id}/sections/{sid}", get(get_section))
@@ -259,6 +260,13 @@ async fn api_not_found() -> Response {
 
 async fn health_ready(State(state): State<ApiState>) -> impl IntoResponse {
     Json(state.search.health_ready(state.mode))
+}
+
+async fn list_corpora(State(state): State<ApiState>) -> Result<impl IntoResponse, ApiError> {
+    let response = state
+        .search
+        .list_corpora(&state.default_principal, state.mode)?;
+    Ok(Json(response))
 }
 
 async fn search(

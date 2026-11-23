@@ -20,6 +20,7 @@
 
 - `frontend/` — React + TypeScript + Vite 웹 UI (로컬 폰트·샘플 데이터 포함, 외부 CDN 미사용, 개발 프록시 `/api`·`/health`, 문서 분류 편집 및 `/admin` 운영 관리 화면 포함). Markdown의 외부 URL은 클릭 가능한 링크로 렌더하지 않고 폐쇄망에서 열 수 없는 출처로 표시한다.
 - `frontend/src/samples/{comprehensive-rust,rust-book,rust-reference,cargo-book,go-reference}/chapters/` — Rust와 Go 참고 자료 검색에 쓰는 장별 Markdown. 메인 `개발 가이드` 분류 안에서 Rust·Go 세부 분류로 나눈다. Comprehensive Rust와 `go-reference/chapters/practice/`의 Go 실무 가이드는 한국어이고 나머지는 영문이다. `go-reference/chapters/learn-go-with-tests/`에는 MIT 라이선스의 영문 실습 3편을 담는다.
+- `frontend/src/samples/{rust-std,rust-crates,rustc-error-codes}/chapters/` — 로컬 `rust-docs`(`std`·`core`·`alloc`), 워크스페이스·직접 의존 크레이트(`cargo doc`), `rustc --explain` 오류 코드 인덱스를 변환한 `code`/`rust` Markdown 코퍼스다. `scripts/import-rustdoc-and-errors.py`로 재생성한다.
 - `backend/rust/` — Cargo workspace (`crates/` 아래 13개 크레이트: `dok3-core` ~ `dok3-server`)
 - `config/` — 환경별 설정 예시 및 스키마 배치 위치
 - `contracts/` — REST·MCP·도메인 계약 정의 배치 위치
@@ -67,6 +68,11 @@ dok3search를 단일 노드 doksam Kubernetes에 재현 가능하게 배포하�
 - `GET/POST /api/v1/index/jobs`, `GET /api/v1/index/jobs/{job_id}`: 영속 색인 작업 이력 조회 및 증분/전체(또는 특정 `source_id`) 색인 트리거 (`DOK3_ENABLE_ADMIN=true` 필요).
 - `GET/PATCH /api/v1/documents/{id}/classification`: 문서 분류 조회(ACL 준수) 및 수동 수정/`reset_to_rule` 초기화 (원본 바이트·해시 불변, `PATCH`는 관리자 가드 적용).
 - `GET/POST /api/v1/sources`, `DELETE /api/v1/sources/{id}`: 로컬 디렉터리 Source 등록·목록 조회·삭제 (`local-markdown` 삭제 금지, Source 삭제 시 디스크 원본 파일 불변, 관리자 가드 적용).
+- `GET /api/v1/corpora`: 현재 접근 권한(ACL)으로 열람 가능한 코퍼스별 문서 수·툴체인·패키지 버전·라이선스·출처 카탈로그 공개 조회(관리자 권한 불필요).
+
+## 검색 섹션 매칭 (`matched_section_id`)
+
+- `dok3_analyzer::select_matched_section_id`가 빈 H1 서문(`body` 공백)을 건너뛰고 질의어와 제목·본문 점수가 가장 높은 비어 있지 않은 하위 섹션을 `matched_section_id`로 반환한다(`dok3-index`와 `dok3-search` 공통).
 
 ## 협업 및 머지 규칙
 
@@ -79,6 +85,7 @@ dok3search를 단일 노드 doksam Kubernetes에 재현 가능하게 배포하�
 - 프론트엔드 빌드: `npm --prefix frontend run build`
 - Comprehensive Rust 변환: `python3 scripts/import-comprehensive-rust.py <snapshot-dir> <output-dir>` ([준비할 입력과 라이선스](frontend/src/samples/comprehensive-rust/README.md))
 - Rust Reference·Cargo Book 변환: `python3 scripts/import-rust-official-components.py --rust-docs-root <toolchain>/share/doc/rust/html --license-root <toolchain>/share/doc/rust/licenses --output-root frontend/src/samples --version '<rustc version>'` ([출처와 라이선스](frontend/src/samples/rust-reference/README.md))
+- `rustdoc`(`std` + 사용 크레이트)·`rustc --explain` 변환: `python3 scripts/import-rustdoc-and-errors.py --output-root frontend/src/samples`
 - Rust 서버 실행: `cargo run --manifest-path backend/rust/Cargo.toml -p dok3-server`
 - CI: `.github/workflows/ci.yml` 가 PR 의 `rust-fmt`, `rust-clippy`, `rust-test`, `frontend-build` 를 필수 검사로 실행한다.
 - Rust 정적/테스트 검증:

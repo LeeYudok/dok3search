@@ -18,6 +18,9 @@ const referenceSources = [
   { prefix: referenceIdPrefix('rust', 'rust-book'), load: () => import('./rust-book').then(({ rustBook }) => rustBook) },
   { prefix: referenceIdPrefix('rust', 'rust-reference'), load: () => import('./rust-reference').then(({ rustReference }) => rustReference) },
   { prefix: referenceIdPrefix('rust', 'cargo-book'), load: () => import('./cargo-book').then(({ cargoBook }) => cargoBook) },
+  { prefix: referenceIdPrefix('rust', 'rust-std'), load: () => import('./rust-std').then(({ rustStd }) => rustStd) },
+  { prefix: referenceIdPrefix('rust', 'rust-crates'), load: () => import('./rust-crates').then(({ rustCrates }) => rustCrates) },
+  { prefix: referenceIdPrefix('rust', 'rustc-error-codes'), load: () => import('./rustc-error-codes').then(({ rustcErrorCodes }) => rustcErrorCodes) },
   { prefix: referenceIdPrefix('go', 'go-reference'), load: () => import('./go-reference').then(({ goReference }) => goReference) },
 ]
 
@@ -172,8 +175,12 @@ async function fetchSearchPage(
       }
     }
 
-    const allLocal = searchLocalDocuments(query, '', 1, pageSize, documents)
-    const local = searchLocalDocuments(query, category, page, pageSize, documents)
+    const corpora = await references.catch(() => [])
+    const fallbackDocs = category === 'code'
+      ? [...new Map(documents.concat(corpora.flatMap(({ documents }) => documents)).map((doc) => [doc.id, doc])).values()]
+      : documents
+    const allLocal = searchLocalDocuments(query, '', 1, pageSize, fallbackDocs)
+    const local = searchLocalDocuments(query, category, page, pageSize, fallbackDocs)
     return {
       result: {
         ...local,
