@@ -1,12 +1,18 @@
 //! Shared text analysis for indexing and query normalization.
 
 mod identifier;
+pub mod kodic;
 mod korean;
 mod ngram;
+mod profile;
 
 use std::collections::HashSet;
 
 pub use ngram::generate_char_ngrams;
+pub use profile::{
+    AnalyzerConfig, AnalyzerEngine, AnalyzerProfile, AnalyzerRuntimeInfo, BUILTIN_ANALYZER_VERSION,
+    active_analyzer_version, active_profile, configure_runtime,
+};
 
 /// Initializes the analyzer. Analysis requires no runtime setup.
 pub fn init() {}
@@ -44,37 +50,14 @@ pub struct AnalyzedTokens {
 /// inside forms such as `ORA-00904`, `HTTP/2` and `v1.2` are retained
 /// in whole terms. Identifier components are derived from the original casing.
 pub fn analyze_text(text: &str, options: AnalyzeOptions) -> AnalyzedTokens {
-    AnalyzedTokens {
-        terms: analyze_terms(text, options.split_identifiers),
-        char_ngrams: if options.char_ngrams {
-            generate_char_ngrams(text)
-        } else {
-            Vec::new()
-        },
-    }
+    profile::current_engine().analyze_text(text, options)
 }
 
 /// Returns unique lowercase query terms in first-occurrence order.
 ///
 /// Uses the same whole-term and component rules as default text analysis.
 pub fn normalize_query_terms(query: &str) -> Vec<String> {
-    let mut seen = HashSet::new();
-    analyze_terms(query, true)
-        .into_iter()
-        .filter(|term| seen.insert(term.clone()))
-        .collect()
-}
-
-fn analyze_terms(text: &str, split_identifiers: bool) -> Vec<String> {
-    let mut terms = Vec::new();
-    for word in identifier::words(text) {
-        terms.push(word.to_lowercase());
-        if split_identifiers {
-            terms.extend(identifier::components(word).map(str::to_lowercase));
-            terms.extend(korean::expansions(word).map(str::to_owned));
-        }
-    }
-    terms
+    profile::current_engine().normalize_query_terms(query)
 }
 
 /// Yields analyzer words and their original UTF-8 byte ranges.

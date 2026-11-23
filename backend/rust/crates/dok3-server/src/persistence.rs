@@ -34,8 +34,11 @@ use crate::corpus_meta::CorpusMetadataIndex;
 use crate::local_index::{BuildReport, apply_detected_language};
 use crate::sources::{SourceRegistry, source_config_for, validate_real_directory};
 
-const ANALYZER_VERSION: u64 = 2;
 const ACL_POLICY_VERSION: u64 = 1;
+
+fn current_analyzer_version() -> u64 {
+    dok3_analyzer::active_analyzer_version()
+}
 const DEFAULT_AVAILABLE_DISK_BYTES: u64 = 100 * 1024 * 1024 * 1024;
 const MAX_JOB_HISTORY: usize = 100;
 static JOB_TMP_SEQ: AtomicU64 = AtomicU64::new(0);
@@ -129,7 +132,7 @@ impl GenerationBackend for LocalGenerationBackend {
         let manifest = Manifest {
             generation_id: generation.to_string(),
             schema_version: u64::from(SCHEMA_VERSION),
-            analyzer_version: ANALYZER_VERSION,
+            analyzer_version: current_analyzer_version(),
             acl_policy_version: ACL_POLICY_VERSION,
             applied_change_sequence: s0,
             doc_count: index.doc_count(),
@@ -187,7 +190,7 @@ impl GenerationBackend for LocalGenerationBackend {
         let manifest = Manifest {
             generation_id: generation.to_string(),
             schema_version: u64::from(SCHEMA_VERSION),
-            analyzer_version: ANALYZER_VERSION,
+            analyzer_version: current_analyzer_version(),
             acl_policy_version: ACL_POLICY_VERSION,
             applied_change_sequence: target_seq,
             doc_count: index.doc_count(),
@@ -225,7 +228,7 @@ impl GenerationBackend for LocalGenerationBackend {
                 }
                 ValidationCheck::SchemaAnalyzerCompatibility => {
                     if manifest.schema_version != u64::from(SCHEMA_VERSION)
-                        || manifest.analyzer_version != ANALYZER_VERSION
+                        || manifest.analyzer_version != current_analyzer_version()
                     {
                         return Err(ManagerError::Invalid(format!(
                             "incompatible schema/analyzer version for {}",
@@ -1367,7 +1370,7 @@ fn ensure_active_generation(
                     && record.manifest.as_ref().is_some_and(|manifest| {
                         manifest.doc_count == expected_docs
                             && manifest.schema_version == u64::from(SCHEMA_VERSION)
-                            && manifest.analyzer_version == ANALYZER_VERSION
+                            && manifest.analyzer_version == current_analyzer_version()
                     })
             });
 
@@ -1736,7 +1739,8 @@ fn generation_incompatible(generations_dir: &Path, state: &DurableState, gen_id:
             .and_then(|record| record.manifest.as_ref())
     });
     manifest.is_some_and(|m| {
-        m.schema_version != u64::from(SCHEMA_VERSION) || m.analyzer_version != ANALYZER_VERSION
+        m.schema_version != u64::from(SCHEMA_VERSION)
+            || m.analyzer_version != current_analyzer_version()
     })
 }
 
@@ -2383,7 +2387,7 @@ mod tests {
         let old_gen = durable.active_generation.clone().unwrap();
         let old_record = durable.generations.get_mut(&old_gen).unwrap();
         let old_manifest = old_record.manifest.as_mut().unwrap();
-        old_manifest.analyzer_version = ANALYZER_VERSION - 1;
+        old_manifest.analyzer_version = current_analyzer_version() - 1;
         let old_manifest_clone = old_manifest.clone();
         old_record.manifest_checksum = Some(old_manifest_clone.checksum().unwrap());
 
@@ -2428,7 +2432,7 @@ mod tests {
                 .as_ref()
                 .unwrap()
                 .analyzer_version,
-            ANALYZER_VERSION
+            current_analyzer_version()
         );
         let search = upgraded
             .service()

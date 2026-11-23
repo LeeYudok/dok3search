@@ -14,6 +14,7 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 use std::sync::Arc;
 
+use dok3_analyzer::{AnalyzerConfig, AnalyzerProfile, configure_runtime};
 use dok3_api::ApiState;
 use dok3_core::ServerConfig;
 use dok3_domain::Principal;
@@ -34,10 +35,20 @@ async fn main() -> ExitCode {
 }
 
 async fn run() -> Result<(), String> {
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    if let Some(handled) = maybe_compile_kodic(&args)? {
+        eprintln!("{handled}");
+        return Ok(());
+    }
     // --- slice-B: mcp ---
-    let mcp_stdio = mcp::stdio_requested(std::env::args().skip(1))?;
+    let mcp_stdio = mcp::stdio_requested(args)?;
     // --- /slice-B: mcp ---
     let config = ServerConfig::from_env().map_err(|err| err.to_string())?;
+    let analyzer_info = configure_analyzer_from_config(&config)?;
+    eprintln!(
+        "dok3search analyzer ready (profile={}, dict_loaded={}, version={})",
+        analyzer_info.profile, analyzer_info.dictionary_loaded, analyzer_info.version_tag
+    );
     let design_dir = config.design_docs_dir.clone().or_else(|| {
         resolve_first_dir(&[
             "frontend/src/samples/design",
@@ -201,6 +212,51 @@ fn resolve_static_dir(candidates: &[&str]) -> Option<PathBuf> {
         .iter()
         .map(PathBuf::from)
         .find(|path| path.join("index.html").is_file())
+}
+
+fn maybe_compile_kodic(args: &[String]) -> Result<Option<String>, String> {
+    let Some(first) = args.first() else {
+        return Ok(None);
+    };
+    if first != "--compile-kodic" {
+        return Ok(None);
+    }
+    if args.len() != 3 {
+        return Err("usage: dok3-server --compile-kodic <mecab-ko-dic-src-dir> <out-bin>".into());
+    }
+    let src_dir = std::path::Path::new(&args[1]);
+    let out_bin = std::path::Path::new(&args[2]);
+    let dict = dok3_analyzer::kodic::Dictionary::compile(src_dir).map_err(|err| {
+        format!(
+            "failed to compile mecab-ko-dic from {}: {err}",
+            src_dir.display()
+        )
+    })?;
+    let bytes = dict
+        .save(out_bin)
+        .map_err(|err| format!("failed to save dictionary to {}: {err}", out_bin.display()))?;
+    let info = dict.info();
+    Ok(Some(format!(
+        "compiled mecab-ko-dic dictionary to {} ({bytes} bytes, entries={}, surfaces={})",
+        out_bin.display(),
+        info.entries,
+        info.surfaces
+    )))
+}
+
+fn configure_analyzer_from_config(
+    config: &ServerConfig,
+) -> Result<dok3_analyzer::AnalyzerRuntimeInfo, String> {
+    let profile = match config.analyzer_profile.as_deref() {
+        Some(raw) => raw.parse::<AnalyzerProfile>()?,
+        None if config.dict_path.is_some() => AnalyzerProfile::NoriMixed,
+        None => AnalyzerProfile::Builtin,
+    };
+    configure_runtime(&AnalyzerConfig {
+        profile,
+        dict_path: config.dict_path.clone(),
+        user_dict_path: config.user_dict_path.clone(),
+    })
 }
 
 async fn shutdown_signal() {
