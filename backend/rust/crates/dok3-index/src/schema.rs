@@ -107,18 +107,9 @@ pub(crate) fn to_tantivy_document(
     fields: &IndexFields,
     doc: &Document,
 ) -> Result<TantivyDocument, Dok3Error> {
-    const MAX_STORED_SECTION_CHARS: usize = 16_384;
     let body_text = effective_body(doc);
     let snippet_source = build_snippet_source(doc, body_text);
-    let sections: Vec<StoredSectionMeta> = doc
-        .sections
-        .iter()
-        .map(|s| StoredSectionMeta {
-            section_id: s.section_id.as_str().to_string(),
-            heading: s.heading.clone(),
-            body: s.body.chars().take(MAX_STORED_SECTION_CHARS).collect(),
-        })
-        .collect();
+    let sections = bounded_section_meta(&doc.sections);
     let candidates: Vec<SectionCandidate<'_>> = sections
         .iter()
         .map(|s| SectionCandidate {
@@ -177,6 +168,30 @@ pub(crate) fn to_tantivy_document(
     Ok(tv)
 }
 
+const MAX_STORED_SECTION_CHARS: usize = 8_192;
+const MAX_TOTAL_STORED_SECTION_CHARS: usize = 65_536;
+
+/// Stores every section id and heading, but bounds body text per section and per document.
+fn bounded_section_meta(sections: &[dok3_domain::DocumentSection]) -> Vec<StoredSectionMeta> {
+    let mut remaining = MAX_TOTAL_STORED_SECTION_CHARS;
+    sections
+        .iter()
+        .map(|s| {
+            let body: String = s
+                .body
+                .chars()
+                .take(MAX_STORED_SECTION_CHARS.min(remaining))
+                .collect();
+            remaining = remaining.saturating_sub(body.chars().count());
+            StoredSectionMeta {
+                section_id: s.section_id.as_str().to_string(),
+                heading: s.heading.clone(),
+                body,
+            }
+        })
+        .collect()
+}
+
 pub(crate) fn read_stored_str(doc: &TantivyDocument, field: Field) -> &str {
     doc.get_first(field)
         .and_then(|v| v.as_str())
@@ -199,5 +214,35 @@ fn build_snippet_source(doc: &Document, body_text: &str) -> String {
         (true, false) => body.to_string(),
         (false, true) => summary.to_string(),
         (false, false) => format!("{summary} {body}"),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use dok3_domain::{DocumentSection, SectionId};
+
+    #[test]
+    fn section_meta_total_body_is_bounded_but_keeps_all_headings() {
+        let sections: Vec<DocumentSection> = (0..20)
+            .map(|i| DocumentSection {
+                section_id: SectionId::new(format!("sec-{i}")),
+                heading: format!("Heading {i}"),
+                anchor: format!("sec-{i}"),
+                order: i,
+                line_start: i,
+                line_end: i + 1,
+                body: "x".repeat(10_000),
+            })
+            .collect();
+        let meta = bounded_section_meta(&sections);
+        assert_eq!(meta.len(), 20);
+        assert!(meta.iter().enumerate().all(|(i, m)| {
+            m.section_id == format!("sec-{i}") && m.heading == format!("Heading {i}")
+        }));
+        let total: usize = meta.iter().map(|m| m.body.chars().count()).sum();
+        assert_eq!(total, MAX_TOTAL_STORED_SECTION_CHARS);
+        assert!(meta[0].body.chars().count() <= MAX_STORED_SECTION_CHARS);
+        assert!(meta[19].body.is_empty());
     }
 }
