@@ -8,10 +8,13 @@ use axum::body::Bytes;
 use axum::extract::{DefaultBodyLimit, State};
 use axum::http::{HeaderMap, HeaderName, HeaderValue, StatusCode, header};
 use axum::response::{IntoResponse, Response};
-use axum::routing::post;
+use axum::routing::{get, post};
 use dok3_core::Dok3Error;
 use dok3_domain::Principal;
 use serde_json::{Value, json};
+
+use crate::a2a::{A2aServer, default_agent_card};
+use crate::llms_txt::render_llms_txt;
 
 use crate::protocol::{
     DEFAULT_PROTOCOL_VERSION, JSONRPC_HEADER_MISMATCH, JSONRPC_INVALID_PARAMS,
@@ -57,6 +60,66 @@ pub fn build_mcp_router_with_auth(
         .route("/mcp", post(handle_post_mcp).get(handle_get_mcp))
         .layer(DefaultBodyLimit::max(MAX_JSONRPC_LINE_BYTES))
         .with_state(state)
+}
+
+#[derive(Clone)]
+struct AgentDiscoveryState {
+    a2a: A2aServer,
+    doc_count: usize,
+    mode: String,
+}
+
+/// Builds the full agent router mounting `/mcp`, `/.well-known/agent.json`, `/a2a`, and `/llms.txt`.
+pub fn build_agent_router(server: Arc<McpServer>, doc_count: usize, mode: &str) -> Router {
+    let discovery = AgentDiscoveryState {
+        a2a: A2aServer::new(server.search_service()),
+        doc_count,
+        mode: mode.to_string(),
+    };
+    let a2a_routes = Router::new()
+        .route("/.well-known/agent.json", get(handle_agent_card))
+        .route("/a2a", post(handle_post_a2a))
+        .route("/llms.txt", get(handle_llms_txt))
+        .layer(DefaultBodyLimit::max(MAX_JSONRPC_LINE_BYTES))
+        .with_state(discovery);
+
+    build_mcp_router(server).merge(a2a_routes)
+}
+
+async fn handle_agent_card() -> Response {
+    let card = default_agent_card();
+    let payload = serde_json::to_vec(&card).unwrap_or_else(|_| b"{}".to_vec());
+    let mut resp = Response::new(axum::body::Body::from(payload));
+    *resp.status_mut() = StatusCode::OK;
+    resp.headers_mut().insert(
+        header::CONTENT_TYPE,
+        HeaderValue::from_static("application/json"),
+    );
+    resp
+}
+
+async fn handle_post_a2a(State(state): State<AgentDiscoveryState>, body: Bytes) -> Response {
+    let raw = std::str::from_utf8(&body).unwrap_or("");
+    let resp_json = state.a2a.handle_json(raw, &Principal::anonymous_public());
+    let payload = serde_json::to_vec(&resp_json).unwrap_or_else(|_| b"{}".to_vec());
+    let mut resp = Response::new(axum::body::Body::from(payload));
+    *resp.status_mut() = StatusCode::OK;
+    resp.headers_mut().insert(
+        header::CONTENT_TYPE,
+        HeaderValue::from_static("application/json"),
+    );
+    resp
+}
+
+async fn handle_llms_txt(State(state): State<AgentDiscoveryState>) -> Response {
+    let text = render_llms_txt(state.doc_count, &state.mode);
+    let mut resp = Response::new(axum::body::Body::from(text));
+    *resp.status_mut() = StatusCode::OK;
+    resp.headers_mut().insert(
+        header::CONTENT_TYPE,
+        HeaderValue::from_static("text/plain; charset=utf-8"),
+    );
+    resp
 }
 
 async fn handle_get_mcp(headers: HeaderMap) -> Response {

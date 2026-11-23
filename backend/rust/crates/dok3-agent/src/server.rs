@@ -51,6 +51,11 @@ impl McpServer {
         self
     }
 
+    #[must_use]
+    pub fn search_service(&self) -> Arc<SearchService> {
+        Arc::clone(&self.search)
+    }
+
     /// Processes a single JSON-RPC 2.0 line under the server's configured stdio [`Principal`].
     #[must_use]
     pub fn handle_message(&self, raw_line: &str) -> Option<JsonRpcResponse> {

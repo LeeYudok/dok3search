@@ -10,7 +10,7 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use dok3_agent::{McpServer, build_mcp_router};
+use dok3_agent::{McpServer, build_agent_router};
 use dok3_api::{ApiState, Router, build_router_with_extra};
 use dok3_domain::Principal;
 use dok3_search::SearchService;
@@ -42,10 +42,15 @@ pub fn anonymous_server(search: &Arc<SearchService>) -> McpServer {
     McpServer::new(Arc::clone(search), Principal::anonymous_public())
 }
 
-/// Builds the full HTTP app: REST API, health, optional SPA, and `/mcp`, all sharing `state.search`.
+/// Builds the full HTTP app: REST API, health, optional SPA, `/mcp`, A2A, and `/llms.txt`.
 pub fn build_app(state: ApiState, static_dir: Option<PathBuf>) -> Router {
-    let mcp = build_mcp_router(Arc::new(anonymous_server(&state.search)));
-    build_router_with_extra(state, static_dir, Some(mcp))
+    let doc_count = state.search.health_ready(&state.mode).document_count;
+    let agent = build_agent_router(
+        Arc::new(anonymous_server(&state.search)),
+        doc_count,
+        &state.mode,
+    );
+    build_router_with_extra(state, static_dir, Some(agent))
 }
 
 /// Serves MCP over stdin/stdout until EOF. Diagnostics must go to stderr only.
