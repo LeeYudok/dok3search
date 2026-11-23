@@ -1,13 +1,15 @@
 //! Axum HTTP router, security headers, API error mapping, and static SPA hosting.
 
 use std::future::Future;
+use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use axum::Json;
 use axum::body::Bytes;
 use axum::extract::rejection::{JsonRejection, QueryRejection};
-use axum::extract::{Path, Query, State};
+use axum::extract::{ConnectInfo, Path, Query, State};
 use axum::http::{HeaderMap, HeaderValue, Method, Request, StatusCode, header};
 use axum::middleware::{self, Next};
 use axum::response::{IntoResponse, Response};
@@ -15,7 +17,7 @@ use axum::routing::{any, delete, get, post};
 use dok3_core::Dok3Error;
 use dok3_domain::{
     ClassificationPort, CreateSourceRequest, DocumentId, IndexJobPort, Principal, SearchRequest,
-    SectionId, SectionReadRequest, SourceRegistryPort, TriggerIndexJobRequest,
+    SearchResponse, SectionId, SectionReadRequest, SourceRegistryPort, TriggerIndexJobRequest,
     UpdateClassificationRequest,
 };
 use dok3_search::SearchService;
@@ -28,6 +30,91 @@ pub use axum::Router;
 
 const CSP_POLICY: &str = "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'";
 
+const LATENCY_BUCKETS_NANOS: [u64; 11] = [
+    5_000_000,
+    10_000_000,
+    25_000_000,
+    50_000_000,
+    100_000_000,
+    250_000_000,
+    500_000_000,
+    1_000_000_000,
+    2_500_000_000,
+    5_000_000_000,
+    10_000_000_000,
+];
+
+/// In-process HTTP observability rendered directly as Prometheus text.
+struct HttpMetrics {
+    requests_total: AtomicU64,
+    errors_total: AtomicU64,
+    latency_count: AtomicU64,
+    latency_sum_nanos: AtomicU64,
+    latency_buckets: [AtomicU64; LATENCY_BUCKETS_NANOS.len()],
+}
+
+impl HttpMetrics {
+    fn new() -> Self {
+        Self {
+            requests_total: AtomicU64::new(0),
+            errors_total: AtomicU64::new(0),
+            latency_count: AtomicU64::new(0),
+            latency_sum_nanos: AtomicU64::new(0),
+            latency_buckets: std::array::from_fn(|_| AtomicU64::new(0)),
+        }
+    }
+
+    fn observe(&self, error: bool, elapsed: std::time::Duration) {
+        let nanos = u64::try_from(elapsed.as_nanos()).unwrap_or(u64::MAX);
+        self.requests_total.fetch_add(1, Ordering::Relaxed);
+        if error {
+            self.errors_total.fetch_add(1, Ordering::Relaxed);
+        }
+        self.latency_count.fetch_add(1, Ordering::Relaxed);
+        self.latency_sum_nanos.fetch_add(nanos, Ordering::Relaxed);
+        for (bucket, bound) in self.latency_buckets.iter().zip(LATENCY_BUCKETS_NANOS) {
+            if nanos <= bound {
+                bucket.fetch_add(1, Ordering::Relaxed);
+            }
+        }
+    }
+
+    fn render(&self) -> String {
+        let mut text = String::new();
+        let requests = self.requests_total.load(Ordering::Relaxed);
+        let errors = self.errors_total.load(Ordering::Relaxed);
+        let count = self.latency_count.load(Ordering::Relaxed);
+        let sum_nanos = self.latency_sum_nanos.load(Ordering::Relaxed);
+
+        text.push_str("# HELP dok3_http_requests_total Total HTTP requests.\n");
+        text.push_str("# TYPE dok3_http_requests_total counter\n");
+        text.push_str(&format!("dok3_http_requests_total {requests}\n"));
+        text.push_str("# HELP dok3_http_errors_total Total HTTP errors.\n");
+        text.push_str("# TYPE dok3_http_errors_total counter\n");
+        text.push_str(&format!("dok3_http_errors_total {errors}\n"));
+        text.push_str("# HELP dok3_http_request_duration_seconds HTTP request latency.\n");
+        text.push_str("# TYPE dok3_http_request_duration_seconds histogram\n");
+        text.push_str(&format!(
+            "dok3_http_request_duration_seconds_count {count}\n"
+        ));
+        text.push_str(&format!(
+            "dok3_http_request_duration_seconds_sum {}\n",
+            sum_nanos as f64 / 1_000_000_000.0
+        ));
+        for (&bound, bucket) in LATENCY_BUCKETS_NANOS.iter().zip(&self.latency_buckets) {
+            text.push_str(&format!(
+                "dok3_http_request_duration_seconds_bucket{{le=\"{}\"}} {}\n",
+                bound as f64 / 1_000_000_000.0,
+                bucket.load(Ordering::Relaxed)
+            ));
+        }
+        text.push_str(&format!(
+            "dok3_http_request_duration_seconds_bucket{{le=\"+Inf\"}} {count}\n"
+        ));
+        text
+    }
+}
+
 /// Shared application state injected into Axum route handlers.
 #[derive(Clone)]
 pub struct ApiState {
@@ -37,6 +124,7 @@ pub struct ApiState {
     pub index_jobs: Option<Arc<dyn IndexJobPort>>,
     pub classification: Option<Arc<dyn ClassificationPort>>,
     pub sources: Option<Arc<dyn SourceRegistryPort>>,
+    metrics: Arc<HttpMetrics>,
 }
 
 impl ApiState {
@@ -50,6 +138,7 @@ impl ApiState {
             index_jobs: None,
             classification: None,
             sources: None,
+            metrics: Arc::new(HttpMetrics::new()),
         }
     }
 
@@ -121,6 +210,10 @@ pub fn build_router_with_extra(
             require_admin_for_mutations_middleware,
         ));
 
+    let metrics_router = Router::new()
+        .route("/metrics", get(metrics))
+        .layer(middleware::from_fn(require_loopback_metrics));
+
     let mut router = Router::new()
         // `/health` is a thin alias of the readiness probe so liveness/readiness
         // checks and the frontend dev proxy can share one endpoint.
@@ -130,11 +223,12 @@ pub fn build_router_with_extra(
         .route("/api/v1/search", post(search))
         .route("/api/v1/documents/{id}", get(get_document))
         .route("/api/v1/documents/{id}/sections/{sid}", get(get_section))
+        .merge(metrics_router)
         .merge(admin_router)
         .merge(doc_classification_router)
         .route("/api", any(api_not_found))
         .route("/api/{*rest}", any(api_not_found))
-        .with_state(state);
+        .with_state(state.clone());
 
     if let Some(extra) = extra {
         router = router.merge(extra);
@@ -152,7 +246,9 @@ pub fn build_router_with_extra(
         _ => router,
     };
 
-    router.layer(middleware::from_fn(apply_security_headers))
+    router
+        .layer(middleware::from_fn_with_state(state, track_metrics))
+        .layer(middleware::from_fn(apply_security_headers))
 }
 
 async fn spa_fallback(dir: PathBuf, index: PathBuf, req: Request<axum::body::Body>) -> Response {
@@ -190,9 +286,53 @@ pub async fn serve_with_shutdown<F>(
 where
     F: Future<Output = ()> + Send + 'static,
 {
-    axum::serve(listener, app)
-        .with_graceful_shutdown(shutdown)
-        .await
+    axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .with_graceful_shutdown(shutdown)
+    .await
+}
+
+async fn require_loopback_metrics(request: Request<axum::body::Body>, next: Next) -> Response {
+    let loopback = request
+        .extensions()
+        .get::<ConnectInfo<SocketAddr>>()
+        .is_some_and(|ConnectInfo(addr)| addr.ip().is_loopback());
+    if !loopback {
+        return ApiError(Dok3Error::Forbidden(
+            "metrics are restricted to loopback clients".to_string(),
+        ))
+        .into_response();
+    }
+    if let Err(err) = validate_admin_origin(request.headers()) {
+        return err.into_response();
+    }
+    next.run(request).await
+}
+
+async fn track_metrics(
+    State(state): State<ApiState>,
+    request: Request<axum::body::Body>,
+    next: Next,
+) -> Response {
+    let start = std::time::Instant::now();
+    let response = next.run(request).await;
+    let status = response.status();
+    state.metrics.observe(!status.is_success(), start.elapsed());
+    response
+}
+
+async fn metrics(State(state): State<ApiState>) -> Response {
+    (
+        StatusCode::OK,
+        [(
+            header::CONTENT_TYPE,
+            HeaderValue::from_static("text/plain; version=0.0.4; charset=utf-8"),
+        )],
+        state.metrics.render(),
+    )
+        .into_response()
 }
 
 async fn apply_security_headers(request: Request<axum::body::Body>, next: Next) -> Response {
@@ -271,11 +411,70 @@ async fn list_corpora(State(state): State<ApiState>) -> Result<impl IntoResponse
 
 async fn search(
     State(state): State<ApiState>,
-    payload: Result<Json<SearchRequest>, JsonRejection>,
+    payload: Result<Json<SearchApiPayload>, JsonRejection>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let Json(req) = payload.map_err(|err| ApiError(Dok3Error::InvalidInput(err.body_text())))?;
-    let response = state.search.search(&state.default_principal, &req)?;
-    Ok(Json(response))
+    let Json(payload) =
+        payload.map_err(|err| ApiError(Dok3Error::InvalidInput(err.body_text())))?;
+    let mut request = payload.search.normalized();
+    if let Some(cursor) = payload.cursor.as_deref() {
+        request.page = decode_search_cursor(cursor, &request)?;
+    }
+    let response = state.search.search(&state.default_principal, &request)?;
+    let next_cursor = response
+        .page
+        .checked_add(1)
+        .filter(|next_page| *next_page <= response.total_pages)
+        .map(|next_page| encode_search_cursor(next_page, &request));
+    Ok(Json(SearchApiSearchResponse {
+        response,
+        next_cursor,
+    }))
+}
+
+#[derive(Debug, Deserialize)]
+struct SearchApiPayload {
+    #[serde(flatten)]
+    search: SearchRequest,
+    cursor: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+struct SearchApiSearchResponse {
+    #[serde(flatten)]
+    response: SearchResponse,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    next_cursor: Option<String>,
+}
+
+fn encode_search_cursor(page: usize, request: &SearchRequest) -> String {
+    let fingerprint = search_fingerprint(request);
+    let page = u64::try_from(page).unwrap_or(u64::MAX);
+    format!("v1:{:016x}:{fingerprint:016x}", page ^ fingerprint)
+}
+
+fn decode_search_cursor(cursor: &str, request: &SearchRequest) -> Result<usize, ApiError> {
+    let invalid = || ApiError(Dok3Error::InvalidInput("invalid search cursor".to_string()));
+    let rest = cursor.strip_prefix("v1:").ok_or_else(invalid)?;
+    let (encoded_page, fingerprint) = rest.split_once(':').ok_or_else(invalid)?;
+    let encoded_page = u64::from_str_radix(encoded_page, 16).map_err(|_| invalid())?;
+    let fingerprint = u64::from_str_radix(fingerprint, 16).map_err(|_| invalid())?;
+    let page = usize::try_from(encoded_page ^ fingerprint).map_err(|_| invalid())?;
+    if page == 0 || fingerprint != search_fingerprint(request) {
+        return Err(invalid());
+    }
+    Ok(page)
+}
+
+fn search_fingerprint(request: &SearchRequest) -> u64 {
+    let mut stable = request.clone();
+    stable.page = 1;
+    let bytes = serde_json::to_vec(&stable).unwrap_or_default();
+    let mut hash = 0xcbf2_9ce4_8422_2325;
+    for byte in bytes {
+        hash ^= u64::from(byte);
+        hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
+    }
+    hash
 }
 
 async fn get_document(

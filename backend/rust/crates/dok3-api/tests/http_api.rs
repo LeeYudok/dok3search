@@ -1,7 +1,9 @@
+use std::net::{Ipv4Addr, SocketAddr};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
 use axum::body::Body;
+use axum::extract::ConnectInfo;
 use axum::http::{Request, StatusCode, header};
 use dok3_api::{ApiState, build_router};
 use dok3_domain::{
@@ -36,6 +38,16 @@ async fn response_json<T: serde::de::DeserializeOwned>(
     let bytes = response.into_body().collect().await.unwrap().to_bytes();
     let parsed: T = serde_json::from_slice(&bytes).unwrap();
     (status, headers, parsed)
+}
+
+fn request_with_peer(method: &str, uri: &str, address: SocketAddr) -> Request<axum::body::Body> {
+    let mut request = Request::builder()
+        .method(method)
+        .uri(uri)
+        .body(axum::body::Body::empty())
+        .unwrap();
+    request.extensions_mut().insert(ConnectInfo(address));
+    request
 }
 
 #[tokio::test]
@@ -1080,4 +1092,129 @@ async fn source_routes_enforce_admin_guards_and_crud() {
         .await
         .unwrap();
     assert_eq!(delete_missing.status(), StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
+async fn search_paginates_with_opaque_cursor_and_clamps_limit() {
+    let design_dir = sample_design_dir();
+    let repo = Arc::new(InMemorySearchRepository::from_seed(Some(&design_dir)));
+    let service = Arc::new(SearchService::new(repo.clone(), repo));
+    let app = build_router(ApiState::new(service), None);
+    let search_body = |cursor: Option<&str>| {
+        let cursor = cursor
+            .map(|cursor| format!(r#","cursor":"{cursor}""#))
+            .unwrap_or_default();
+        Body::from(format!(
+            r#"{{"query":"the","limit":2,"include_snippets":false{cursor}}}"#
+        ))
+    };
+
+    let first = app
+        .clone()
+        .oneshot(
+            Request::post("/api/v1/search")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(search_body(None))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let (status, _, body): (_, _, serde_json::Value) = response_json(first).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["page"], 1);
+    assert_eq!(body["limit"], 2);
+    assert!(body["total_hits"].as_u64().unwrap() > 2);
+    let cursor = body["next_cursor"].as_str().unwrap().to_string();
+    assert!(!cursor.contains("query"));
+
+    let second = app
+        .clone()
+        .oneshot(
+            Request::post("/api/v1/search")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(search_body(Some(&cursor)))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let (status, _, body): (_, _, serde_json::Value) = response_json(second).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["page"], 2);
+    assert_eq!(body["limit"], 2);
+    assert_eq!(body["hits"].as_array().unwrap().len(), 2);
+
+    let clamped = app
+        .oneshot(
+            Request::post("/api/v1/search")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(r#"{"query":"the","limit":250}"#))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let (status, _, body): (_, _, serde_json::Value) = response_json(clamped).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["limit"], 100);
+}
+
+#[tokio::test]
+async fn invalid_search_cursor_returns_bad_request() {
+    let design_dir = sample_design_dir();
+    let repo = Arc::new(InMemorySearchRepository::from_seed(Some(&design_dir)));
+    let service = Arc::new(SearchService::new(repo.clone(), repo));
+    let app = build_router(ApiState::new(service), None);
+    let response = app
+        .oneshot(
+            Request::post("/api/v1/search")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    r#"{"query":"the","limit":2,"include_snippets":false,"cursor":"not-a-cursor"}"#,
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let (status, _, body): (_, _, serde_json::Value) = response_json(response).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_eq!(body["error"]["code"], "INVALID_INPUT");
+}
+
+#[tokio::test]
+async fn metrics_are_prometheus_text_and_loopback_only() {
+    let design_dir = sample_design_dir();
+    let repo = Arc::new(InMemorySearchRepository::from_seed(Some(&design_dir)));
+    let service = Arc::new(SearchService::new(repo.clone(), repo));
+    let app = build_router(ApiState::new(service), None);
+    let local = SocketAddr::from((Ipv4Addr::LOCALHOST, 50_001));
+    let remote = SocketAddr::from(([203, 0, 113, 10], 50_002));
+
+    let blocked = app
+        .clone()
+        .oneshot(request_with_peer("GET", "/metrics", remote))
+        .await
+        .unwrap();
+    assert_eq!(blocked.status(), StatusCode::FORBIDDEN);
+
+    app.clone()
+        .oneshot(Request::get("/health/ready").body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+    let response = app
+        .oneshot(request_with_peer("GET", "/metrics", local))
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(
+        response
+            .headers()
+            .get(header::CONTENT_TYPE)
+            .and_then(|value| value.to_str().ok()),
+        Some("text/plain; version=0.0.4; charset=utf-8")
+    );
+    let text = response.into_body().collect().await.unwrap().to_bytes();
+    let text = std::str::from_utf8(&text).unwrap();
+    assert!(text.contains("# TYPE dok3_http_requests_total counter"));
+    assert!(text.contains("# TYPE dok3_http_errors_total counter"));
+    assert!(text.contains("# TYPE dok3_http_request_duration_seconds histogram"));
+    assert!(text.contains("dok3_http_request_duration_seconds_bucket{le=\"+Inf\"}"));
 }
