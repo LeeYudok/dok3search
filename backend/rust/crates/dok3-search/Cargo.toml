@@ -6,6 +6,7 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
+dok3-analyzer.workspace = true
 dok3-core.workspace = true
 dok3-domain.workspace = true
 dok3-storage.workspace = true

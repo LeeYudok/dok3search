@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
-use dok3_domain::{CategoryCount, SearchSnapshotMeta};
+use dok3_domain::{CategoryCount, CorpusCatalogEntry, SearchSnapshotMeta};
 
 /// Latest MCP protocol revision supported alongside stateful legacy handshakes.
 pub const DEFAULT_PROTOCOL_VERSION: &str = "2026-07-28";
@@ -96,6 +96,8 @@ pub struct ToolDefinition {
 pub struct ListCategoriesResult {
     pub total_documents: usize,
     pub categories: Vec<CategoryCount>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub corpora: Vec<CorpusCatalogEntry>,
     pub snapshot: SearchSnapshotMeta,
 }
 

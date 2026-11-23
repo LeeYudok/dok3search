@@ -1,0 +1,43 @@
+title: HTML Guide
+warnings: 8
+  ! link tooltip text was dropped
+  ! discarded 1 HTML comment(s)
+  ! discarded 1 script element(s)
+  ! discarded 1 style element(s)
+  ! table cell text was retained, but table formatting was not preserved
+  ! dropped 1 presentation element(s); text was retained
+  ! presentation attributes on <p> were dropped
+  ! presentation element <font> was dropped; text was retained
+sections: 3
+
+[1] id=html-guide anchor=html-guide lines=1-10
+heading: HTML Guide
+| Read [Getting started](https://example.test/start) and run `cargo check`.
+|
+| ```rust
+| fn main() {
+|     println!("offline search");
+| }
+| ```
+
+[2] id=lists anchor=lists lines=11-20
+heading: Lists
+| - First item
+|
+| 1. Nested step
+|
+| 2. Second step
+|
+| - Second item
+
+[3] id=structured-data anchor=structured-data lines=21-31
+heading: Structured Data
+| Name
+|
+| Value
+|
+| Parser
+|
+| HTML
+|
+| Presentation only

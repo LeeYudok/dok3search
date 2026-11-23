@@ -75,6 +75,29 @@ async fn health_search_document_section_and_404_routes_work() {
     assert_eq!(headers.get(header::X_FRAME_OPTIONS).unwrap(), "DENY");
     assert!(headers.contains_key(header::CONTENT_SECURITY_POLICY));
 
+    // 1.5. GET /api/v1/corpora (public corpus catalog)
+    let (status, _, corpora): (_, _, dok3_domain::CorpusCatalogResponse) = response_json(
+        app.clone()
+            .oneshot(Request::get("/api/v1/corpora").body(Body::empty()).unwrap())
+            .await
+            .unwrap(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(corpora.total_documents > 20 && corpora.total_documents <= health.document_count);
+    assert!(
+        corpora
+            .corpora
+            .iter()
+            .any(|c| c.corpus_id == "dok3search-manual")
+    );
+    assert!(
+        corpora
+            .corpora
+            .iter()
+            .any(|c| c.corpus_id == "dok3search-design")
+    );
+
     // 2. POST /api/v1/search
     let (status, _, search): (_, _, SearchResponse) = response_json(
         app.clone()

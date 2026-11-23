@@ -1,6 +1,7 @@
 //! dok3search server binary entrypoint.
 
 mod classification;
+mod corpus_meta;
 mod local_index;
 // --- slice-B: mcp ---
 mod mcp;
@@ -110,7 +111,7 @@ fn open_runtime(
     // --- slice-C: persistent-store ---
     match (config.source_dir.as_deref(), config.data_dir.as_deref()) {
         (Some(root), Some(data_dir)) => {
-            validate_source_bind(&config.bind)?;
+            validate_source_bind(&config.bind, config.allow_non_loopback_bind)?;
             let (runtime, report) =
                 PersistentRuntime::open_with_refresh(root, data_dir, config.refresh_interval_secs)?;
             print_build_report("persistent Markdown snapshot", &report);
@@ -119,7 +120,7 @@ fn open_runtime(
             Ok((service, "tantivy-persistent", Some(runtime)))
         }
         (Some(root), None) => {
-            validate_source_bind(&config.bind)?;
+            validate_source_bind(&config.bind, config.allow_non_loopback_bind)?;
             let (service, report) = local_index::build(root)?;
             print_build_report("local Markdown snapshot", &report);
             Ok((service, "tantivy-local", None))
@@ -169,10 +170,18 @@ fn print_build_report(label: &str, report: &local_index::BuildReport) {
     }
 }
 
-fn validate_source_bind(bind: &str) -> Result<(), String> {
+fn validate_source_bind(bind: &str, allow_non_loopback: bool) -> Result<(), String> {
+    if allow_non_loopback {
+        // Direct, explicit operator opt-in: `DOK3_ALLOW_NON_LOOPBACK_BIND=true`
+        // lets `DOK3_SOURCE_DIR` run on a non-loopback bind (container behind an
+        // authenticating ingress). The loopback guard stays the default.
+        return Ok(());
+    }
     validate_loopback_bind(bind, "DOK3_SOURCE_DIR")
 }
 
+/// Rejects any non-loopback bind. Used for the admin surface, which never
+/// honors `DOK3_ALLOW_NON_LOOPBACK_BIND`.
 fn validate_loopback_bind(bind: &str, feature: &str) -> Result<(), String> {
     if bind.parse::<Ipv4Addr>().is_ok_and(|ip| ip.is_loopback()) {
         return Ok(());
@@ -219,11 +228,29 @@ mod tests {
 
     #[test]
     fn source_mode_accepts_only_ipv4_loopback_binds() {
-        assert!(validate_source_bind("127.0.0.1").is_ok());
-        assert!(validate_source_bind("127.0.0.2").is_ok());
-        assert!(validate_source_bind("0.0.0.0").is_err());
-        assert!(validate_source_bind("localhost").is_err());
-        assert!(validate_source_bind("::1").is_err());
+        assert!(validate_source_bind("127.0.0.1", false).is_ok());
+        assert!(validate_source_bind("127.0.0.2", false).is_ok());
+        assert!(validate_source_bind("0.0.0.0", false).is_err());
+        assert!(validate_source_bind("localhost", false).is_err());
+        assert!(validate_source_bind("::1", false).is_err());
+    }
+
+    #[test]
+    fn non_loopback_override_allows_source_bind_but_not_admin() {
+        // Explicit opt-in lifts the source-bind guard so a container can bind
+        // 0.0.0.0 while still indexing DOK3_SOURCE_DIR.
+        assert!(validate_source_bind("0.0.0.0", true).is_ok());
+        assert!(validate_source_bind("127.0.0.1", true).is_ok());
+
+        // The admin surface must never accept a non-loopback bind, even when
+        // DOK3_ALLOW_NON_LOOPBACK_BIND is set.
+        let admin_with_override = ServerConfig {
+            bind: "0.0.0.0".to_string(),
+            admin_enabled: true,
+            allow_non_loopback_bind: true,
+            ..ServerConfig::default()
+        };
+        assert!(open_runtime(&admin_with_override, None).is_err());
     }
 
     #[test]
@@ -368,5 +395,23 @@ mod tests {
                 .unwrap();
         let text = mcp_body["result"]["content"][0]["text"].as_str().unwrap();
         assert!(text.contains("local-markdown:guide-a.md"));
+    }
+
+    #[tokio::test]
+    async fn health_alias_and_readiness_are_ready() {
+        let config = ServerConfig::default();
+        let (service, mode, persistent) = open_runtime(&config, None).unwrap();
+        let search = Arc::new(service);
+        let state = build_api_state(&config, search, mode, persistent.as_ref());
+        let app = mcp::build_app(state, None);
+
+        for path in ["/health", "/health/ready"] {
+            let resp = app
+                .clone()
+                .oneshot(Request::get(path).body(Body::empty()).unwrap())
+                .await
+                .unwrap();
+            assert_eq!(resp.status(), StatusCode::OK, "{path} should be 200");
+        }
     }
 }
