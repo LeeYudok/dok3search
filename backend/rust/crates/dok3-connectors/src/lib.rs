@@ -1,13 +1,20 @@
 //! Source connectors for local files, Git, SVN, and relational databases.
 
 mod local_fs;
+pub mod relational;
+pub mod sql_guard;
 mod sqlite;
 
 pub use local_fs::{
     DEFAULT_MAX_FILE_BYTES, LocalFileConnector, ScanReport, ScannedFile, SkippedFile, SourceConfig,
     build_document,
 };
+pub use relational::{
+    DbDialect, DbParam, DbRow, DbRowReader, RelationalSourceAdapter, RelationalSourceBatch,
+    RelationalSourceConfig, TombstoneStrategy,
+};
+pub use sql_guard::validate_readonly_select;
 pub use sqlite::{
-    SqliteColumnMapping, SqliteCursor, SqliteCursorMode, SqliteSourceAdapter, SqliteSourceBatch,
-    SqliteSourceConfig,
+    DEFAULT_SQLITE_BATCH_LIMIT, SqliteColumnMapping, SqliteCursor, SqliteCursorMode,
+    SqliteSourceAdapter, SqliteSourceBatch, SqliteSourceConfig,
 };
