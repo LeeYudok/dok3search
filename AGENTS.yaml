@@ -8,7 +8,7 @@ meta:
   name: dok3search
   description: 'Air-gapped document and code search monorepo (React frontend + Rust Cargo workspace)'
   owner: LeeYudok
-  updated: '2026-11-23'
+  updated: '2026-11-24'
   repo_url: 'https://github.com/LeeYudok/dok3search'
   tracker: github
   issue_tracker_url: 'https://github.com/LeeYudok/dok3search/issues'
@@ -42,16 +42,16 @@ nodes:
 - {id: rust_workspace, type: cargo-workspace, label: 'Rust backend Cargo workspace', path: backend/rust/Cargo.toml}
 - {id: dok3_server, type: rust-binary, label: 'Single server binary entrypoint (dok3search)', path: backend/rust/crates/dok3-server/src/main.rs}
 - {id: dok3_api, type: rust-crate, label: 'Axum HTTP router, security headers, static SPA fallback', path: backend/rust/crates/dok3-api/src/lib.rs}
-- {id: dok3_agent, type: rust-crate, label: 'Agent protocol adapters (MCP, A2A, ACP)', path: backend/rust/crates/dok3-agent/src/lib.rs}
+- {id: dok3_agent, type: rust-crate, label: 'Agent protocol adapters (MCP, A2A, ACP, /llms.txt)', path: backend/rust/crates/dok3-agent/src/lib.rs}
 - {id: dok3_search, type: rust-crate, label: 'Search orchestration, ACL enforcement, in-memory store', path: backend/rust/crates/dok3-search/src/lib.rs}
 - {id: dok3_index_manager, type: rust-crate, label: 'Blue-green generation build, activation, recovery', path: backend/rust/crates/dok3-index-manager/src/lib.rs}
 - {id: dok3_index, type: rust-crate, label: 'Tantivy schema, writer, reader management', path: backend/rust/crates/dok3-index/src/lib.rs}
 - {id: dok3_storage, type: rust-crate, label: 'SQLite change journal, metadata, active generation state', path: backend/rust/crates/dok3-storage/src/lib.rs}
 - {id: dok3_domain, type: rust-crate, label: 'Core domain types, ACL model, and port traits', path: backend/rust/crates/dok3-domain/src/lib.rs}
 - {id: dok3_core, type: rust-crate, label: 'Shared errors, runtime config, common primitives', path: backend/rust/crates/dok3-core/src/lib.rs}
-- {id: dok3_parser, type: rust-crate, label: 'Document and code parsers', path: backend/rust/crates/dok3-parser/src/lib.rs}
+- {id: dok3_parser, type: rust-crate, label: 'Markdown, HTML, CodeSymbol (Rust/Java/Go/SQL/JSP), PlainText, ParserRegistry', path: backend/rust/crates/dok3-parser/src/lib.rs}
 - {id: dok3_analyzer, type: rust-crate, label: 'Korean (mecab-ko-dic kodic + profiles), English, n-gram, identifier analyzers', path: backend/rust/crates/dok3-analyzer/src/lib.rs}
-- {id: dok3_connectors, type: rust-crate, label: 'File, Git, SVN, DB source connectors', path: backend/rust/crates/dok3-connectors/src/lib.rs}
+- {id: dok3_connectors, type: rust-crate, label: 'File, SQLite (sql_guard + batch_limit), MySQL/MariaDB, PostgreSQL, Oracle relational adapters', path: backend/rust/crates/dok3-connectors/src/lib.rs}
 - {id: dok3_benchmark, type: rust-crate, label: 'Reproducible indexing and search load benchmarks', path: backend/rust/crates/dok3-benchmark/src/lib.rs}
 - {id: manual_doc, type: markdown-doc, label: 'Self-operating manual Knowledge Pack', path: docs/manual/dok3search-manual.md}
 - {id: deploy_dockerfile, type: dockerfile, label: 'Multi-stage linux/amd64 image build (SPA + Rust server + knowledge corpus)', path: Dockerfile}
@@ -188,3 +188,5 @@ docs:
 - {path: frontend/src/samples/go-reference/README.md, what: 'Go documentation provenance and license'}
 - {path: frontend/src/samples/doksam-blog/README.md, what: 'blog.doksam.com curated technical corpus provenance'}
 - {path: deploy/doksam/README.md, what: 'dok3search doksam k3s deployment, rollback rehearsal and verification'}
+- {path: deploy/windows/README.md, what: 'dok3search Windows Service installation, recovery and smoke check'}
+- {path: config/ax-workspace.example.yaml, what: 'Google AX Workspace and P8 Task manifest example'}
