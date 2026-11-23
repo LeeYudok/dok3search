@@ -58,10 +58,18 @@ export function isReferenceTopicFilter(topic: string): topic is ReferenceTopic {
 }
 
 function matchesTerm(text: string, term: string, category: string) {
-  return text.includes(term) || (
-    isReferenceTopic(category) &&
-    searchAliases[category].get(term)?.some((alias) => text.includes(alias))
-  )
+  if (
+    text.includes(term) || (
+      isReferenceTopic(category) &&
+      searchAliases[category].get(term)?.some((alias) => text.includes(alias))
+    )
+  ) return true
+  if (/^[가-힣]{4,}$/.test(term)) {
+    const compactText = text.replace(/\s+/g, '').replace(/및/g, '')
+    const compactTerm = term.replace(/및/g, '')
+    return compactTerm.length >= 4 && compactText.includes(compactTerm)
+  }
+  return false
 }
 
 export function titleMatches(query: string, doc: Document) {
