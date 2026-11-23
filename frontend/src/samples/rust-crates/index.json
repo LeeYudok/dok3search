@@ -1,0 +1,2138 @@
+{
+  "source": "Rust Workspace & Dependency Crates (cargo doc)",
+  "toolchain": "1.100.0 (0ef1bc386 2026-11-09)",
+  "version": "1.100.0 (0ef1bc386 2026-11-09)",
+  "category": "code",
+  "topic": "rust",
+  "packages": [
+    {
+      "name": "dok3-core",
+      "version": "0.1.0",
+      "document_count": 3
+    },
+    {
+      "name": "serde",
+      "version": "1.0.229",
+      "document_count": 4
+    },
+    {
+      "name": "thiserror",
+      "version": "2.0.21",
+      "document_count": 1
+    },
+    {
+      "name": "dok3-domain",
+      "version": "0.1.0",
+      "document_count": 8
+    },
+    {
+      "name": "serde_json",
+      "version": "1.0.154",
+      "document_count": 6
+    },
+    {
+      "name": "dok3-storage",
+      "version": "0.1.0",
+      "document_count": 1
+    },
+    {
+      "name": "sha2",
+      "version": "0.10.9",
+      "document_count": 1
+    },
+    {
+      "name": "dok3-connectors",
+      "version": "0.1.0",
+      "document_count": 1
+    },
+    {
+      "name": "rusqlite",
+      "version": "0.43.0",
+      "document_count": 4
+    },
+    {
+      "name": "dok3-parser",
+      "version": "0.1.0",
+      "document_count": 3
+    },
+    {
+      "name": "ego-tree",
+      "version": "0.11.1",
+      "document_count": 2
+    },
+    {
+      "name": "scraper",
+      "version": "0.29.0",
+      "document_count": 7
+    },
+    {
+      "name": "dok3-analyzer",
+      "version": "0.1.0",
+      "document_count": 1
+    },
+    {
+      "name": "dok3-index",
+      "version": "0.1.0",
+      "document_count": 1
+    },
+    {
+      "name": "tantivy",
+      "version": "0.27.0",
+      "document_count": 33
+    },
+    {
+      "name": "dok3-index-manager",
+      "version": "0.1.0",
+      "document_count": 1
+    },
+    {
+      "name": "dok3-search",
+      "version": "0.1.0",
+      "document_count": 4
+    },
+    {
+      "name": "dok3-agent",
+      "version": "0.1.0",
+      "document_count": 4
+    },
+    {
+      "name": "axum",
+      "version": "0.8.9",
+      "document_count": 18
+    },
+    {
+      "name": "http-body-util",
+      "version": "0.1.5",
+      "document_count": 2
+    },
+    {
+      "name": "tokio",
+      "version": "1.54.1",
+      "document_count": 27
+    },
+    {
+      "name": "tower",
+      "version": "0.5.3",
+      "document_count": 12
+    },
+    {
+      "name": "dok3-api",
+      "version": "0.1.0",
+      "document_count": 1
+    },
+    {
+      "name": "tower-http",
+      "version": "0.7.1",
+      "document_count": 6
+    },
+    {
+      "name": "dok3-benchmark",
+      "version": "0.1.0",
+      "document_count": 3
+    }
+  ],
+  "chapters": [
+    {
+      "path": "chapters/dok3-core/index.md",
+      "title": "Crate dok3-core",
+      "summary": "Shared errors, configuration, and common primitives.",
+      "source": "dok3-core 0.1.0",
+      "category": "code",
+      "package": "dok3-core",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-core/config.md",
+      "title": "Module dok3-core::config",
+      "summary": "Runtime configuration loaded from environment variables.",
+      "source": "dok3-core 0.1.0",
+      "category": "code",
+      "package": "dok3-core",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-core/error.md",
+      "title": "Module dok3-core::error",
+      "summary": "Shared error definitions for dok3search crates.",
+      "source": "dok3-core 0.1.0",
+      "category": "code",
+      "package": "dok3-core",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/serde/index.md",
+      "title": "Crate serde",
+      "summary": "**Serde**",
+      "source": "serde 1.0.229",
+      "category": "code",
+      "package": "serde",
+      "package_version": "1.0.229",
+      "tags": [
+        "serde",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/serde/de.md",
+      "title": "Module serde::de",
+      "summary": "Generic data structure deserialization framework.",
+      "source": "serde 1.0.229",
+      "category": "code",
+      "package": "serde",
+      "package_version": "1.0.229",
+      "tags": [
+        "serde",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/serde/de/value.md",
+      "title": "Module serde::de::value",
+      "summary": "Building blocks for deserializing basic values using the IntoDeserializer",
+      "source": "serde 1.0.229",
+      "category": "code",
+      "package": "serde",
+      "package_version": "1.0.229",
+      "tags": [
+        "serde",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/serde/ser.md",
+      "title": "Module serde::ser",
+      "summary": "Generic data structure serialization framework.",
+      "source": "serde 1.0.229",
+      "category": "code",
+      "package": "serde",
+      "package_version": "1.0.229",
+      "tags": [
+        "serde",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/thiserror/index.md",
+      "title": "Crate thiserror",
+      "summary": "This library provides a convenient derive macro for the standard library’s",
+      "source": "thiserror 2.0.21",
+      "category": "code",
+      "package": "thiserror",
+      "package_version": "2.0.21",
+      "tags": [
+        "thiserror",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-domain/index.md",
+      "title": "Crate dok3-domain",
+      "summary": "Core domain types and port traits (DocumentId, Revision, SectionId, GenerationId).",
+      "source": "dok3-domain 0.1.0",
+      "category": "code",
+      "package": "dok3-domain",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-domain",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-domain/acl.md",
+      "title": "Module dok3-domain::acl",
+      "summary": "Access-control scopes and principal derivation (default-deny).",
+      "source": "dok3-domain 0.1.0",
+      "category": "code",
+      "package": "dok3-domain",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-domain",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-domain/admin.md",
+      "title": "Module dok3-domain::admin",
+      "summary": "Administration DTOs for background indexing jobs, classification, and source management.",
+      "source": "dok3-domain 0.1.0",
+      "category": "code",
+      "package": "dok3-domain",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-domain",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-domain/change.md",
+      "title": "Module dok3-domain::change",
+      "summary": "Durable change journal contracts for incremental indexing and generation catch-up.",
+      "source": "dok3-domain 0.1.0",
+      "category": "code",
+      "package": "dok3-domain",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-domain",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-domain/document.md",
+      "title": "Module dok3-domain::document",
+      "summary": "Document, section, and section-reading contracts.",
+      "source": "dok3-domain 0.1.0",
+      "category": "code",
+      "package": "dok3-domain",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-domain",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-domain/ids.md",
+      "title": "Module dok3-domain::ids",
+      "summary": "Strongly typed domain identifiers and sequence numbers.",
+      "source": "dok3-domain 0.1.0",
+      "category": "code",
+      "package": "dok3-domain",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-domain",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-domain/ports.md",
+      "title": "Module dok3-domain::ports",
+      "summary": "Hexagonal port traits decoupled from concrete engines and web frameworks.",
+      "source": "dok3-domain 0.1.0",
+      "category": "code",
+      "package": "dok3-domain",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-domain",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-domain/search.md",
+      "title": "Module dok3-domain::search",
+      "summary": "Search query, response, snapshot, and health readiness contracts.",
+      "source": "dok3-domain 0.1.0",
+      "category": "code",
+      "package": "dok3-domain",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-domain",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/serde_json/index.md",
+      "title": "Crate serde_json",
+      "summary": "**Serde JSON**",
+      "source": "serde_json 1.0.154",
+      "category": "code",
+      "package": "serde_json",
+      "package_version": "1.0.154",
+      "tags": [
+        "serde_json",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/serde_json/de.md",
+      "title": "Module serde_json::de",
+      "summary": "Deserialize JSON data to a Rust data structure.",
+      "source": "serde_json 1.0.154",
+      "category": "code",
+      "package": "serde_json",
+      "package_version": "1.0.154",
+      "tags": [
+        "serde_json",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/serde_json/error.md",
+      "title": "Module serde_json::error",
+      "summary": "When serializing or deserializing JSON goes wrong.",
+      "source": "serde_json 1.0.154",
+      "category": "code",
+      "package": "serde_json",
+      "package_version": "1.0.154",
+      "tags": [
+        "serde_json",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/serde_json/map.md",
+      "title": "Module serde_json::map",
+      "summary": "A map of String to serde_json::Value.",
+      "source": "serde_json 1.0.154",
+      "category": "code",
+      "package": "serde_json",
+      "package_version": "1.0.154",
+      "tags": [
+        "serde_json",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/serde_json/ser.md",
+      "title": "Module serde_json::ser",
+      "summary": "Serialize a Rust data structure into JSON data.",
+      "source": "serde_json 1.0.154",
+      "category": "code",
+      "package": "serde_json",
+      "package_version": "1.0.154",
+      "tags": [
+        "serde_json",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/serde_json/value.md",
+      "title": "Module serde_json::value",
+      "summary": "The Value enum, a loosely typed way of representing any valid JSON value.",
+      "source": "serde_json 1.0.154",
+      "category": "code",
+      "package": "serde_json",
+      "package_version": "1.0.154",
+      "tags": [
+        "serde_json",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-storage/index.md",
+      "title": "Crate dok3-storage",
+      "summary": "File-backed original store, document metadata store, and durable change journal (P1-2).",
+      "source": "dok3-storage 0.1.0",
+      "category": "code",
+      "package": "dok3-storage",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-storage",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/sha2/index.md",
+      "title": "Crate sha2",
+      "summary": "Crate sha2 API reference",
+      "source": "sha2 0.10.9",
+      "category": "code",
+      "package": "sha2",
+      "package_version": "0.10.9",
+      "tags": [
+        "sha2",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-connectors/index.md",
+      "title": "Crate dok3-connectors",
+      "summary": "Source connectors for local files, Git, SVN, and relational databases.",
+      "source": "dok3-connectors 0.1.0",
+      "category": "code",
+      "package": "dok3-connectors",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-connectors",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/rusqlite/index.md",
+      "title": "Crate rusqlite",
+      "summary": "Rusqlite is an ergonomic wrapper for using SQLite from Rust.",
+      "source": "rusqlite 0.43.0",
+      "category": "code",
+      "package": "rusqlite",
+      "package_version": "0.43.0",
+      "tags": [
+        "rusqlite",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/rusqlite/auto_extension.md",
+      "title": "Module rusqlite::auto_extension",
+      "summary": "Automatic extension loading",
+      "source": "rusqlite 0.43.0",
+      "category": "code",
+      "package": "rusqlite",
+      "package_version": "0.43.0",
+      "tags": [
+        "rusqlite",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/rusqlite/config.md",
+      "title": "Module rusqlite::config",
+      "summary": "Configure database connections",
+      "source": "rusqlite 0.43.0",
+      "category": "code",
+      "package": "rusqlite",
+      "package_version": "0.43.0",
+      "tags": [
+        "rusqlite",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/rusqlite/types.md",
+      "title": "Module rusqlite::types",
+      "summary": "Traits dealing with SQLite data types.",
+      "source": "rusqlite 0.43.0",
+      "category": "code",
+      "package": "rusqlite",
+      "package_version": "0.43.0",
+      "tags": [
+        "rusqlite",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-parser/index.md",
+      "title": "Crate dok3-parser",
+      "summary": "Document and source code parsers (Markdown, HTML, PDF, DOCX, Tree-sitter).",
+      "source": "dok3-parser 0.1.0",
+      "category": "code",
+      "package": "dok3-parser",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-parser",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-parser/html.md",
+      "title": "Module dok3-parser::html",
+      "summary": "HTML parser implementing DocumentParserPort.",
+      "source": "dok3-parser 0.1.0",
+      "category": "code",
+      "package": "dok3-parser",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-parser",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-parser/markdown.md",
+      "title": "Module dok3-parser::markdown",
+      "summary": "Markdown parser implementing DocumentParserPort.",
+      "source": "dok3-parser 0.1.0",
+      "category": "code",
+      "package": "dok3-parser",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-parser",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/ego-tree/index.md",
+      "title": "Crate ego-tree",
+      "summary": "Vec-backed ID-tree.",
+      "source": "ego-tree 0.11.1",
+      "category": "code",
+      "package": "ego-tree",
+      "package_version": "0.11.1",
+      "tags": [
+        "ego-tree",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/ego-tree/iter.md",
+      "title": "Module ego-tree::iter",
+      "summary": "Iterators.",
+      "source": "ego-tree 0.11.1",
+      "category": "code",
+      "package": "ego-tree",
+      "package_version": "0.11.1",
+      "tags": [
+        "ego-tree",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/scraper/index.md",
+      "title": "Crate scraper",
+      "summary": "**scraper**",
+      "source": "scraper 0.29.0",
+      "category": "code",
+      "package": "scraper",
+      "package_version": "0.29.0",
+      "tags": [
+        "scraper",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/scraper/element_ref.md",
+      "title": "Module scraper::element_ref",
+      "summary": "Element references.",
+      "source": "scraper 0.29.0",
+      "category": "code",
+      "package": "scraper",
+      "package_version": "0.29.0",
+      "tags": [
+        "scraper",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/scraper/error.md",
+      "title": "Module scraper::error",
+      "summary": "Custom error types for diagnostics",
+      "source": "scraper 0.29.0",
+      "category": "code",
+      "package": "scraper",
+      "package_version": "0.29.0",
+      "tags": [
+        "scraper",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/scraper/html.md",
+      "title": "Module scraper::html",
+      "summary": "HTML documents and fragments.",
+      "source": "scraper 0.29.0",
+      "category": "code",
+      "package": "scraper",
+      "package_version": "0.29.0",
+      "tags": [
+        "scraper",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/scraper/node.md",
+      "title": "Module scraper::node",
+      "summary": "HTML nodes.",
+      "source": "scraper 0.29.0",
+      "category": "code",
+      "package": "scraper",
+      "package_version": "0.29.0",
+      "tags": [
+        "scraper",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/scraper/selectable.md",
+      "title": "Module scraper::selectable",
+      "summary": "Provides the Selectable to abstract over collections of elements",
+      "source": "scraper 0.29.0",
+      "category": "code",
+      "package": "scraper",
+      "package_version": "0.29.0",
+      "tags": [
+        "scraper",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/scraper/selector.md",
+      "title": "Module scraper::selector",
+      "summary": "CSS selectors.",
+      "source": "scraper 0.29.0",
+      "category": "code",
+      "package": "scraper",
+      "package_version": "0.29.0",
+      "tags": [
+        "scraper",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-analyzer/index.md",
+      "title": "Crate dok3-analyzer",
+      "summary": "Shared text analysis for indexing and query normalization.",
+      "source": "dok3-analyzer 0.1.0",
+      "category": "code",
+      "package": "dok3-analyzer",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-analyzer",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-index/index.md",
+      "title": "Crate dok3-index",
+      "summary": "Tantivy schema, custom tokenizers, and reader/writer index adapter (P1-3).",
+      "source": "dok3-index 0.1.0",
+      "category": "code",
+      "package": "dok3-index",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-index",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/index.md",
+      "title": "Crate tantivy",
+      "summary": "Crate tantivy API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/aggregation.md",
+      "title": "Module tantivy::aggregation",
+      "summary": "Module tantivy::aggregation API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/aggregation/agg_req.md",
+      "title": "Module tantivy::aggregation::agg_req",
+      "summary": "Module tantivy::aggregation::agg_req API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/aggregation/agg_result.md",
+      "title": "Module tantivy::aggregation::agg_result",
+      "summary": "Module tantivy::aggregation::agg_result API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/aggregation/bucket.md",
+      "title": "Module tantivy::aggregation::bucket",
+      "summary": "Module tantivy::aggregation::bucket API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/aggregation/intermediate_agg_result.md",
+      "title": "Module tantivy::aggregation::intermediate_agg_result",
+      "summary": "Module tantivy::aggregation::intermediate_agg_result API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/aggregation/metric.md",
+      "title": "Module tantivy::aggregation::metric",
+      "summary": "Module tantivy::aggregation::metric API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/collector.md",
+      "title": "Module tantivy::collector",
+      "summary": "Module tantivy::collector API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/collector/sort_key.md",
+      "title": "Module tantivy::collector::sort_key",
+      "summary": "Module tantivy::collector::sort_key API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/directory.md",
+      "title": "Module tantivy::directory",
+      "summary": "Module tantivy::directory API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/directory/error.md",
+      "title": "Module tantivy::directory::error",
+      "summary": "Module tantivy::directory::error API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/directory/footer.md",
+      "title": "Module tantivy::directory::footer",
+      "summary": "Module tantivy::directory::footer API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/error.md",
+      "title": "Module tantivy::error",
+      "summary": "Module tantivy::error API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/fastfield.md",
+      "title": "Module tantivy::fastfield",
+      "summary": "Module tantivy::fastfield API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/fastfield/plugin.md",
+      "title": "Module tantivy::fastfield::plugin",
+      "summary": "Module tantivy::fastfield::plugin API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/fieldnorm.md",
+      "title": "Module tantivy::fieldnorm",
+      "summary": "Module tantivy::fieldnorm API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/index.md",
+      "title": "Module tantivy::index",
+      "summary": "Module tantivy::index API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/indexer.md",
+      "title": "Module tantivy::indexer",
+      "summary": "Module tantivy::indexer API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/indexer/doc_id_mapping.md",
+      "title": "Module tantivy::indexer::doc_id_mapping",
+      "summary": "Module tantivy::indexer::doc_id_mapping API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/plugin.md",
+      "title": "Module tantivy::plugin",
+      "summary": "Module tantivy::plugin API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/positions.md",
+      "title": "Module tantivy::positions",
+      "summary": "Module tantivy::positions API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/postings.md",
+      "title": "Module tantivy::postings",
+      "summary": "Module tantivy::postings API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/postings/serializer.md",
+      "title": "Module tantivy::postings::serializer",
+      "summary": "Module tantivy::postings::serializer API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/query.md",
+      "title": "Module tantivy::query",
+      "summary": "Module tantivy::query API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/query/doc_predicate_query.md",
+      "title": "Module tantivy::query::doc_predicate_query",
+      "summary": "Module tantivy::query::doc_predicate_query API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/schema.md",
+      "title": "Module tantivy::schema",
+      "summary": "Module tantivy::schema API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/schema/document.md",
+      "title": "Module tantivy::schema::document",
+      "summary": "Module tantivy::schema::document API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/snippet.md",
+      "title": "Module tantivy::snippet",
+      "summary": "Module tantivy::snippet API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/space_usage.md",
+      "title": "Module tantivy::space_usage",
+      "summary": "Module tantivy::space_usage API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/store.md",
+      "title": "Module tantivy::store",
+      "summary": "Module tantivy::store API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/store/plugin.md",
+      "title": "Module tantivy::store::plugin",
+      "summary": "Module tantivy::store::plugin API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/termdict.md",
+      "title": "Module tantivy::termdict",
+      "summary": "Module tantivy::termdict API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tantivy/tokenizer.md",
+      "title": "Module tantivy::tokenizer",
+      "summary": "Module tantivy::tokenizer API reference",
+      "source": "tantivy 0.27.0",
+      "category": "code",
+      "package": "tantivy",
+      "package_version": "0.27.0",
+      "tags": [
+        "tantivy",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-index-manager/index.md",
+      "title": "Crate dok3-index-manager",
+      "summary": "Blue-green index generation control. P1 persists the pointer and manifests",
+      "source": "dok3-index-manager 0.1.0",
+      "category": "code",
+      "package": "dok3-index-manager",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-index-manager",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-search/index.md",
+      "title": "Crate dok3-search",
+      "summary": "Search orchestration, ACL enforcement, and original/section access.",
+      "source": "dok3-search 0.1.0",
+      "category": "code",
+      "package": "dok3-search",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-search",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-search/in_memory.md",
+      "title": "Module dok3-search::in_memory",
+      "summary": "In-memory SearchPort and DocumentStorePort implementation for P0-3 vertical slice.",
+      "source": "dok3-search 0.1.0",
+      "category": "code",
+      "package": "dok3-search",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-search",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-search/seed.md",
+      "title": "Module dok3-search::seed",
+      "summary": "Built-in Korean sample documents and optional dok3search-design loader.",
+      "source": "dok3-search 0.1.0",
+      "category": "code",
+      "package": "dok3-search",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-search",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-search/service.md",
+      "title": "Module dok3-search::service",
+      "summary": "Application service layer for search, document reading, and readiness checks.",
+      "source": "dok3-search 0.1.0",
+      "category": "code",
+      "package": "dok3-search",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-search",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-agent/index.md",
+      "title": "Crate dok3-agent",
+      "summary": "AI agent protocol adapters (MCP first, A2A and ACP follow-up).",
+      "source": "dok3-agent 0.1.0",
+      "category": "code",
+      "package": "dok3-agent",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-agent",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-agent/http.md",
+      "title": "Module dok3-agent::http",
+      "summary": "MCP Streamable HTTP (POST /mcp) transport adapter with version, header-body consistency,",
+      "source": "dok3-agent 0.1.0",
+      "category": "code",
+      "package": "dok3-agent",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-agent",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-agent/protocol.md",
+      "title": "Module dok3-agent::protocol",
+      "summary": "MCP JSON-RPC 2.0 wire types, protocol version constants, and SSOT tool schemas.",
+      "source": "dok3-agent 0.1.0",
+      "category": "code",
+      "package": "dok3-agent",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-agent",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-agent/server.md",
+      "title": "Module dok3-agent::server",
+      "summary": "Stateful & stateless MCP JSON-RPC 2.0 server backed by dok3_search::SearchService.",
+      "source": "dok3-agent 0.1.0",
+      "category": "code",
+      "package": "dok3-agent",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-agent",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/axum/index.md",
+      "title": "Crate axum",
+      "summary": "axum is an HTTP routing and request-handling library that focuses on ergonomics and modularity.",
+      "source": "axum 0.8.9",
+      "category": "code",
+      "package": "axum",
+      "package_version": "0.8.9",
+      "tags": [
+        "axum",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/axum/body.md",
+      "title": "Module axum::body",
+      "summary": "HTTP body utilities.",
+      "source": "axum 0.8.9",
+      "category": "code",
+      "package": "axum",
+      "package_version": "0.8.9",
+      "tags": [
+        "axum",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/axum/error_handling.md",
+      "title": "Module axum::error_handling",
+      "summary": "Error handling model and utilities",
+      "source": "axum 0.8.9",
+      "category": "code",
+      "package": "axum",
+      "package_version": "0.8.9",
+      "tags": [
+        "axum",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/axum/error_handling/future.md",
+      "title": "Module axum::error_handling::future",
+      "summary": "Future types.",
+      "source": "axum 0.8.9",
+      "category": "code",
+      "package": "axum",
+      "package_version": "0.8.9",
+      "tags": [
+        "axum",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/axum/extract.md",
+      "title": "Module axum::extract",
+      "summary": "Types and traits for extracting data from requests.",
+      "source": "axum 0.8.9",
+      "category": "code",
+      "package": "axum",
+      "package_version": "0.8.9",
+      "tags": [
+        "axum",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/axum/extract/connect_info.md",
+      "title": "Module axum::extract::connect_info",
+      "summary": "Extractor for getting connection information from a client.",
+      "source": "axum 0.8.9",
+      "category": "code",
+      "package": "axum",
+      "package_version": "0.8.9",
+      "tags": [
+        "axum",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/axum/extract/path.md",
+      "title": "Module axum::extract::path",
+      "summary": "Extractor that will get captures from the URL and parse them using",
+      "source": "axum 0.8.9",
+      "category": "code",
+      "package": "axum",
+      "package_version": "0.8.9",
+      "tags": [
+        "axum",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/axum/extract/rejection.md",
+      "title": "Module axum::extract::rejection",
+      "summary": "Rejection response types.",
+      "source": "axum 0.8.9",
+      "category": "code",
+      "package": "axum",
+      "package_version": "0.8.9",
+      "tags": [
+        "axum",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/axum/handler.md",
+      "title": "Module axum::handler",
+      "summary": "Async functions that can be used to handle requests.",
+      "source": "axum 0.8.9",
+      "category": "code",
+      "package": "axum",
+      "package_version": "0.8.9",
+      "tags": [
+        "axum",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/axum/handler/future.md",
+      "title": "Module axum::handler::future",
+      "summary": "Handler future types.",
+      "source": "axum 0.8.9",
+      "category": "code",
+      "package": "axum",
+      "package_version": "0.8.9",
+      "tags": [
+        "axum",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/axum/middleware.md",
+      "title": "Module axum::middleware",
+      "summary": "Utilities for writing middleware",
+      "source": "axum 0.8.9",
+      "category": "code",
+      "package": "axum",
+      "package_version": "0.8.9",
+      "tags": [
+        "axum",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/axum/middleware/future.md",
+      "title": "Module axum::middleware::future",
+      "summary": "Future types.",
+      "source": "axum 0.8.9",
+      "category": "code",
+      "package": "axum",
+      "package_version": "0.8.9",
+      "tags": [
+        "axum",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/axum/response.md",
+      "title": "Module axum::response",
+      "summary": "Types and traits for generating responses.",
+      "source": "axum 0.8.9",
+      "category": "code",
+      "package": "axum",
+      "package_version": "0.8.9",
+      "tags": [
+        "axum",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/axum/response/sse.md",
+      "title": "Module axum::response::sse",
+      "summary": "Server-Sent Events (SSE) responses.",
+      "source": "axum 0.8.9",
+      "category": "code",
+      "package": "axum",
+      "package_version": "0.8.9",
+      "tags": [
+        "axum",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/axum/routing.md",
+      "title": "Module axum::routing",
+      "summary": "Routing between [Service]s and handlers.",
+      "source": "axum 0.8.9",
+      "category": "code",
+      "package": "axum",
+      "package_version": "0.8.9",
+      "tags": [
+        "axum",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/axum/routing/future.md",
+      "title": "Module axum::routing::future",
+      "summary": "Future types.",
+      "source": "axum 0.8.9",
+      "category": "code",
+      "package": "axum",
+      "package_version": "0.8.9",
+      "tags": [
+        "axum",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/axum/routing/method_routing.md",
+      "title": "Module axum::routing::method_routing",
+      "summary": "Route to services and handlers based on HTTP methods.",
+      "source": "axum 0.8.9",
+      "category": "code",
+      "package": "axum",
+      "package_version": "0.8.9",
+      "tags": [
+        "axum",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/axum/serve.md",
+      "title": "Module axum::serve",
+      "summary": "Serve services.",
+      "source": "axum 0.8.9",
+      "category": "code",
+      "package": "axum",
+      "package_version": "0.8.9",
+      "tags": [
+        "axum",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/http-body-util/index.md",
+      "title": "Crate http-body-util",
+      "summary": "Utilities for [http_body::Body].",
+      "source": "http-body-util 0.1.5",
+      "category": "code",
+      "package": "http-body-util",
+      "package_version": "0.1.5",
+      "tags": [
+        "http-body-util",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/http-body-util/combinators.md",
+      "title": "Module http-body-util::combinators",
+      "summary": "Combinators for the Body trait.",
+      "source": "http-body-util 0.1.5",
+      "category": "code",
+      "package": "http-body-util",
+      "package_version": "0.1.5",
+      "tags": [
+        "http-body-util",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/index.md",
+      "title": "Crate tokio",
+      "summary": "A runtime for writing reliable network applications without compromising speed.",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/fs.md",
+      "title": "Module tokio::fs",
+      "summary": "Asynchronous file utilities.",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/io.md",
+      "title": "Module tokio::io",
+      "summary": "Traits, helpers, and type definitions for asynchronous I/O functionality.",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/io/unix.md",
+      "title": "Module tokio::io::unix",
+      "summary": "Asynchronous IO structures specific to Unix-like operating systems.",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/net.md",
+      "title": "Module tokio::net",
+      "summary": "TCP/UDP/Unix bindings for tokio.",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/net/tcp.md",
+      "title": "Module tokio::net::tcp",
+      "summary": "TCP utility types.",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/net/unix.md",
+      "title": "Module tokio::net::unix",
+      "summary": "Unix specific network types.",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/net/unix/pipe.md",
+      "title": "Module tokio::net::unix::pipe",
+      "summary": "Unix pipe types.",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/runtime.md",
+      "title": "Module tokio::runtime",
+      "summary": "The Tokio runtime.",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/signal.md",
+      "title": "Module tokio::signal",
+      "summary": "Asynchronous signal handling for Tokio.",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/signal/unix.md",
+      "title": "Module tokio::signal::unix",
+      "summary": "Unix-specific types for signal handling.",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/stream.md",
+      "title": "Module tokio::stream",
+      "summary": "Due to the Stream trait’s inclusion in std landing later than Tokio’s 1.0",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/sync.md",
+      "title": "Module tokio::sync",
+      "summary": "Synchronization primitives for use in asynchronous contexts.",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/sync/broadcast.md",
+      "title": "Module tokio::sync::broadcast",
+      "summary": "A multi-producer, multi-consumer broadcast queue. Each sent value is seen by",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/sync/broadcast/error.md",
+      "title": "Module tokio::sync::broadcast::error",
+      "summary": "Broadcast error types",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/sync/futures.md",
+      "title": "Module tokio::sync::futures",
+      "summary": "Named future types.",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/sync/mpsc.md",
+      "title": "Module tokio::sync::mpsc",
+      "summary": "A multi-producer, single-consumer queue for sending values between",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/sync/mpsc/error.md",
+      "title": "Module tokio::sync::mpsc::error",
+      "summary": "Channel error types.",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/sync/oneshot.md",
+      "title": "Module tokio::sync::oneshot",
+      "summary": "A one-shot channel is used for sending a single message between",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/sync/oneshot/error.md",
+      "title": "Module tokio::sync::oneshot::error",
+      "summary": "Oneshot error types.",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/sync/watch.md",
+      "title": "Module tokio::sync::watch",
+      "summary": "A multi-producer, multi-consumer channel that only retains the last sent",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/sync/watch/error.md",
+      "title": "Module tokio::sync::watch::error",
+      "summary": "Watch error types.",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/task.md",
+      "title": "Module tokio::task",
+      "summary": "Asynchronous green-threads.",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/task/coop.md",
+      "title": "Module tokio::task::coop",
+      "summary": "Utilities for improved cooperative scheduling.",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/task/futures.md",
+      "title": "Module tokio::task::futures",
+      "summary": "Task-related futures.",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/time.md",
+      "title": "Module tokio::time",
+      "summary": "Utilities for tracking time.",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tokio/time/error.md",
+      "title": "Module tokio::time::error",
+      "summary": "Time error types.",
+      "source": "tokio 1.54.1",
+      "category": "code",
+      "package": "tokio",
+      "package_version": "1.54.1",
+      "tags": [
+        "tokio",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tower/index.md",
+      "title": "Crate tower",
+      "summary": "async fn(Request) -> Result<Response, Error>",
+      "source": "tower 0.5.3",
+      "category": "code",
+      "package": "tower",
+      "package_version": "0.5.3",
+      "tags": [
+        "tower",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tower/builder.md",
+      "title": "Module tower::builder",
+      "summary": "Builder types to compose layers and services",
+      "source": "tower 0.5.3",
+      "category": "code",
+      "package": "tower",
+      "package_version": "0.5.3",
+      "tags": [
+        "tower",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tower/layer.md",
+      "title": "Module tower::layer",
+      "summary": "A collection of Layer based tower services",
+      "source": "tower 0.5.3",
+      "category": "code",
+      "package": "tower",
+      "package_version": "0.5.3",
+      "tags": [
+        "tower",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tower/layer/util.md",
+      "title": "Module tower::layer::util",
+      "summary": "Utilities for combining layers",
+      "source": "tower 0.5.3",
+      "category": "code",
+      "package": "tower",
+      "package_version": "0.5.3",
+      "tags": [
+        "tower",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tower/make.md",
+      "title": "Module tower::make",
+      "summary": "Trait aliases for Services that produce specific types of Responses.",
+      "source": "tower 0.5.3",
+      "category": "code",
+      "package": "tower",
+      "package_version": "0.5.3",
+      "tags": [
+        "tower",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tower/make/future.md",
+      "title": "Module tower::make::future",
+      "summary": "Future types",
+      "source": "tower 0.5.3",
+      "category": "code",
+      "package": "tower",
+      "package_version": "0.5.3",
+      "tags": [
+        "tower",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tower/util.md",
+      "title": "Module tower::util",
+      "summary": "Various utility types and functions that are generally used with Tower.",
+      "source": "tower 0.5.3",
+      "category": "code",
+      "package": "tower",
+      "package_version": "0.5.3",
+      "tags": [
+        "tower",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tower/util/error.md",
+      "title": "Module tower::util::error",
+      "summary": "Error types",
+      "source": "tower 0.5.3",
+      "category": "code",
+      "package": "tower",
+      "package_version": "0.5.3",
+      "tags": [
+        "tower",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tower/util/error/optional.md",
+      "title": "Module tower::util::error::optional",
+      "summary": "Error types for Optional.",
+      "source": "tower 0.5.3",
+      "category": "code",
+      "package": "tower",
+      "package_version": "0.5.3",
+      "tags": [
+        "tower",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tower/util/future.md",
+      "title": "Module tower::util::future",
+      "summary": "Future types",
+      "source": "tower 0.5.3",
+      "category": "code",
+      "package": "tower",
+      "package_version": "0.5.3",
+      "tags": [
+        "tower",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tower/util/future/optional.md",
+      "title": "Module tower::util::future::optional",
+      "summary": "Future types for Optional.",
+      "source": "tower 0.5.3",
+      "category": "code",
+      "package": "tower",
+      "package_version": "0.5.3",
+      "tags": [
+        "tower",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tower/util/rng.md",
+      "title": "Module tower::util::rng",
+      "summary": "PRNG utilities for tower middleware.",
+      "source": "tower 0.5.3",
+      "category": "code",
+      "package": "tower",
+      "package_version": "0.5.3",
+      "tags": [
+        "tower",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-api/index.md",
+      "title": "Crate dok3-api",
+      "summary": "Axum HTTP router, security headers, API error mapping, and static SPA hosting.",
+      "source": "dok3-api 0.1.0",
+      "category": "code",
+      "package": "dok3-api",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-api",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tower-http/index.md",
+      "title": "Crate tower-http",
+      "summary": "async fn(HttpRequest) -> Result<HttpResponse, Error>",
+      "source": "tower-http 0.7.1",
+      "category": "code",
+      "package": "tower-http",
+      "package_version": "0.7.1",
+      "tags": [
+        "tower-http",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tower-http/body.md",
+      "title": "Module tower-http::body",
+      "summary": "Body types.",
+      "source": "tower-http 0.7.1",
+      "category": "code",
+      "package": "tower-http",
+      "package_version": "0.7.1",
+      "tags": [
+        "tower-http",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tower-http/classify.md",
+      "title": "Module tower-http::classify",
+      "summary": "Tools for classifying responses as either success or failure.",
+      "source": "tower-http 0.7.1",
+      "category": "code",
+      "package": "tower-http",
+      "package_version": "0.7.1",
+      "tags": [
+        "tower-http",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tower-http/services.md",
+      "title": "Module tower-http::services",
+      "summary": "Services that return responses without wrapping other Services.",
+      "source": "tower-http 0.7.1",
+      "category": "code",
+      "package": "tower-http",
+      "package_version": "0.7.1",
+      "tags": [
+        "tower-http",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tower-http/services/fs.md",
+      "title": "Module tower-http::services::fs",
+      "summary": "File system related services.",
+      "source": "tower-http 0.7.1",
+      "category": "code",
+      "package": "tower-http",
+      "package_version": "0.7.1",
+      "tags": [
+        "tower-http",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/tower-http/set_status.md",
+      "title": "Module tower-http::set_status",
+      "summary": "Middleware to override status codes.",
+      "source": "tower-http 0.7.1",
+      "category": "code",
+      "package": "tower-http",
+      "package_version": "0.7.1",
+      "tags": [
+        "tower-http",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-benchmark/index.md",
+      "title": "Crate dok3-benchmark",
+      "summary": "Reproducible search quality and concurrent load benchmarks.",
+      "source": "dok3-benchmark 0.1.0",
+      "category": "code",
+      "package": "dok3-benchmark",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-benchmark",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-benchmark/evaluator.md",
+      "title": "Module dok3-benchmark::evaluator",
+      "summary": "Document-level recall, reciprocal rank, and forbidden-hit checks.",
+      "source": "dok3-benchmark 0.1.0",
+      "category": "code",
+      "package": "dok3-benchmark",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-benchmark",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/dok3-benchmark/load.md",
+      "title": "Module dok3-benchmark::load",
+      "summary": "Concurrent search load with per-worker warmup and nearest-rank latency percentiles.",
+      "source": "dok3-benchmark 0.1.0",
+      "category": "code",
+      "package": "dok3-benchmark",
+      "package_version": "0.1.0",
+      "tags": [
+        "dok3-benchmark",
+        "rustdoc"
+      ]
+    }
+  ]
+}

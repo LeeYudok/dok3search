@@ -2,6 +2,7 @@
 
 use std::{path::Path, sync::Arc};
 
+use crate::corpus_meta::CorpusMetadataIndex;
 use dok3_connectors::{LocalFileConnector, SourceConfig, build_document};
 use dok3_domain::{DocumentParserPort, GenerationId, SourceId};
 use dok3_index::TantivyIndex;
@@ -36,6 +37,7 @@ pub fn build(root: &Path) -> Result<(SearchService, BuildReport), String> {
             .map_err(|err| err.to_string())?,
     );
     let parser = MarkdownParser::new();
+    let corpus_meta = CorpusMetadataIndex::load(root);
     let mut documents = Vec::with_capacity(report.files.len());
     for file in report.files {
         let parsed = match parser.parse(&file.filename, &file.bytes) {
@@ -49,6 +51,7 @@ pub fn build(root: &Path) -> Result<(SearchService, BuildReport), String> {
         };
         let mut document = build_document(connector.config(), &file, &parsed);
         apply_detected_language(&mut document, &parsed.normalized_text);
+        corpus_meta.apply(&mut document, &file.relative_path);
         let revision = content_revision(&file.bytes);
         document.content_hash = revision
             .as_str()

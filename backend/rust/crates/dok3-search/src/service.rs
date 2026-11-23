@@ -4,8 +4,8 @@ use std::sync::Arc;
 
 use dok3_core::Dok3Error;
 use dok3_domain::{
-    DocumentDetail, DocumentId, DocumentStorePort, HealthReadyResponse, Principal, SearchPort,
-    SearchRequest, SearchResponse, SectionReadRequest, SectionReadResponse,
+    CorpusCatalogResponse, DocumentDetail, DocumentId, DocumentStorePort, HealthReadyResponse,
+    Principal, SearchPort, SearchRequest, SearchResponse, SectionReadRequest, SectionReadResponse,
 };
 
 const MAX_QUERY_CHARS: usize = 512;
@@ -80,5 +80,20 @@ impl SearchService {
             document_count: self.doc_store.document_count(),
             snapshot: self.search_port.snapshot(),
         }
+    }
+
+    /// Returns the public/authorized corpus and version catalog for the active snapshot.
+    pub fn list_corpora(
+        &self,
+        principal: &Principal,
+        mode: impl Into<String>,
+    ) -> Result<CorpusCatalogResponse, Dok3Error> {
+        let (total_documents, corpora) = self.doc_store.list_corpora(principal)?;
+        Ok(CorpusCatalogResponse {
+            mode: mode.into(),
+            total_documents,
+            corpora,
+            snapshot: self.search_port.snapshot(),
+        })
     }
 }

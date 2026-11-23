@@ -3,12 +3,13 @@
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
+use dok3_analyzer::{SectionCandidate, select_matched_section_id};
 use dok3_core::Dok3Error;
 use dok3_domain::{
-    AclScope, CategoryCount, Document, DocumentDetail, DocumentFormatLinks, DocumentId,
-    DocumentStorePort, GenerationId, Principal, ReaderState, SearchHit, SearchPort, SearchRequest,
-    SearchResponse, SearchSnapshotMeta, SectionCitation, SectionReadRequest, SectionReadResponse,
-    SectionSummary, Sequence,
+    AclScope, CategoryCount, CorpusCatalogEntry, Document, DocumentDetail, DocumentFormatLinks,
+    DocumentId, DocumentStorePort, GenerationId, Principal, ReaderState, SearchHit, SearchPort,
+    SearchRequest, SearchResponse, SearchSnapshotMeta, SectionCitation, SectionReadRequest,
+    SectionReadResponse, SectionSummary, Sequence, build_corpus_catalog,
 };
 
 use crate::seed::load_seed_dataset;
@@ -285,16 +286,28 @@ impl SearchPort for InMemorySearchRepository {
             .iter()
             .map(|item| {
                 let doc = item.doc;
+                let candidates: Vec<SectionCandidate<'_>> = doc
+                    .sections
+                    .iter()
+                    .map(|s| SectionCandidate {
+                        section_id: s.section_id.as_str(),
+                        heading: &s.heading,
+                        body: &s.body,
+                    })
+                    .collect();
+                let matched_id =
+                    select_matched_section_id(&query_trimmed, &candidates).map(str::to_string);
+                let snippet = if req.include_snippets {
+                    build_snippet_for_section(doc, &query_trimmed, matched_id.as_deref())
+                } else {
+                    String::new()
+                };
                 SearchHit {
                     document_id: doc.id.clone(),
                     revision_id: doc.revision_id.clone(),
                     title: doc.title.clone(),
                     summary: doc.summary.clone(),
-                    snippet: if req.include_snippets {
-                        build_snippet(doc)
-                    } else {
-                        String::new()
-                    },
+                    snippet,
                     category: doc.category.clone(),
                     topic: doc.topic.clone(),
                     source: doc.source.clone(),
@@ -304,7 +317,7 @@ impl SearchPort for InMemorySearchRepository {
                     sample_path: doc.sample_path.clone(),
                     acl_scope: doc.acl_scope.clone(),
                     has_paired_formats: self.paired_formats.contains_key(doc.id.as_str()),
-                    matched_section_id: doc.sections.first().map(|s| s.section_id.clone()),
+                    matched_section_id: matched_id.map(dok3_domain::SectionId::new),
                     score: item.score,
                 }
             })
@@ -437,6 +450,17 @@ impl DocumentStorePort for InMemorySearchRepository {
     fn document_count(&self) -> usize {
         self.documents.len()
     }
+
+    fn list_corpora(
+        &self,
+        principal: &Principal,
+    ) -> Result<(usize, Vec<CorpusCatalogEntry>), Dok3Error> {
+        let visible_docs = self
+            .documents
+            .iter()
+            .filter(|doc| !self.hidden_yaml_ids.contains(doc.id.as_str()));
+        Ok(build_corpus_catalog(visible_docs, principal))
+    }
 }
 
 fn score_variant(doc: &Document, query_lower: &str, terms: &[String]) -> Option<f32> {
@@ -481,6 +505,21 @@ fn score_variant(doc: &Document, query_lower: &str, terms: &[String]) -> Option<
         }
     }
     Some(score)
+}
+
+fn build_snippet_for_section(
+    doc: &Document,
+    query_trimmed: &str,
+    matched_section_id: Option<&str>,
+) -> String {
+    if !query_trimmed.is_empty()
+        && let Some(sid) = matched_section_id
+        && let Some(sec) = doc.sections.iter().find(|s| s.section_id.as_str() == sid)
+        && !sec.body.trim().is_empty()
+    {
+        return sec.body.trim().chars().take(280).collect();
+    }
+    build_snippet(doc)
 }
 
 fn build_snippet(doc: &Document) -> String {

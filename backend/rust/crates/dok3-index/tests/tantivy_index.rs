@@ -558,3 +558,74 @@ fn korean_stems_and_compound_components_respect_acl() {
         assert!(denied.hits.is_empty(), "{query}");
     }
 }
+
+#[test]
+fn matched_section_id_skips_empty_h1_and_selects_matching_subsection() {
+    let index = TantivyIndex::create_in_ram(GenerationId::new("gen-sec")).unwrap();
+    let public = Principal::anonymous_public();
+
+    let mut doc = sample_doc(
+        "std-vec",
+        "Module std::vec",
+        "Contiguous growable array type",
+        "Overview\n\n### struct std::vec::Vec\n\nA contiguous growable array type.\n\n### fn std::vec::Vec::push\n\nAppends an element to the back of a collection.",
+        "code",
+        "en",
+        "local-markdown",
+        "rust",
+        AclScope::Public,
+    );
+    doc.topic = Some("rust".to_string());
+    doc.sections = vec![
+        DocumentSection {
+            section_id: SectionId::new("module-stdvec"),
+            heading: "Module std::vec".to_string(),
+            anchor: "module-stdvec".to_string(),
+            order: 1,
+            line_start: 1,
+            line_end: 1,
+            body: String::new(),
+        },
+        DocumentSection {
+            section_id: SectionId::new("overview"),
+            heading: "Overview".to_string(),
+            anchor: "overview".to_string(),
+            order: 2,
+            line_start: 3,
+            line_end: 5,
+            body: "Contiguous growable array module.".to_string(),
+        },
+        DocumentSection {
+            section_id: SectionId::new("fn-stdvecvecpush"),
+            heading: "fn std::vec::Vec::push".to_string(),
+            anchor: "fn-stdvecvecpush".to_string(),
+            order: 3,
+            line_start: 7,
+            line_end: 10,
+            body: "Appends an element to the back of a collection.".to_string(),
+        },
+    ];
+
+    index.upsert_document(&doc).unwrap();
+    index.commit_and_reload(None).unwrap();
+
+    let hit_push = search(&index, &public, "Appends element");
+    assert_eq!(hit_push.total_hits, 1);
+    assert_eq!(
+        hit_push.hits[0]
+            .matched_section_id
+            .as_ref()
+            .map(SectionId::as_str),
+        Some("fn-stdvecvecpush")
+    );
+    assert_eq!(hit_push.hits[0].topic.as_deref(), Some("rust"));
+
+    let hit_empty_q = search(&index, &public, "   ");
+    assert_eq!(
+        hit_empty_q.hits[0]
+            .matched_section_id
+            .as_ref()
+            .map(SectionId::as_str),
+        Some("overview")
+    );
+}
