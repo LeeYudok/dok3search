@@ -1,6 +1,11 @@
 node_modules/
 dist/
 target/
+offline-bundles/
+.offline-cache/
+.cargo/config.toml
+backend/rust/.cargo/config.toml
+backend/rust/vendor/
 .DS_Store
 .env
 .env.*
