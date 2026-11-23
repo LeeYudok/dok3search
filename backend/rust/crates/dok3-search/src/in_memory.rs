@@ -479,13 +479,25 @@ fn score_variant(doc: &Document, query_lower: &str, terms: &[String]) -> Option<
         .join(" ")
         .to_lowercase();
 
+    let mut component_hits: Vec<(&String, Vec<String>)> = Vec::new();
     for term in terms {
         if !title_lower.contains(term)
             && !summary_lower.contains(term)
             && !meta_lower.contains(term)
             && !body_lower.contains(term)
         {
-            return None;
+            let components = analyzer_components(term);
+            let all_found = !components.is_empty()
+                && components.iter().all(|c| {
+                    title_lower.contains(c.as_str())
+                        || summary_lower.contains(c.as_str())
+                        || meta_lower.contains(c.as_str())
+                        || body_lower.contains(c.as_str())
+                });
+            if !all_found {
+                return None;
+            }
+            component_hits.push((term, components));
         }
     }
 
@@ -494,6 +506,9 @@ fn score_variant(doc: &Document, query_lower: &str, terms: &[String]) -> Option<
         score += 4.0;
     }
     for term in terms {
+        if component_hits.iter().any(|(t, _)| std::ptr::eq(*t, term)) {
+            continue;
+        }
         if title_lower.contains(term) {
             score += 2.0;
         }
@@ -504,7 +519,28 @@ fn score_variant(doc: &Document, query_lower: &str, terms: &[String]) -> Option<
             score += 0.5;
         }
     }
+    for (_, components) in &component_hits {
+        let total = components.len() as f32;
+        let in_title = components
+            .iter()
+            .filter(|c| title_lower.contains(c.as_str()))
+            .count() as f32;
+        score += 2.0 * in_title / total + 0.5;
+    }
     Some(score)
+}
+
+/// Analyzer components (after the whole term) of a term with no direct match.
+fn analyzer_components(term: &str) -> Vec<String> {
+    let options = dok3_analyzer::AnalyzeOptions {
+        split_identifiers: true,
+        char_ngrams: false,
+    };
+    dok3_analyzer::analyze_text(term, options)
+        .terms
+        .into_iter()
+        .skip(1)
+        .collect()
 }
 
 fn build_snippet_for_section(

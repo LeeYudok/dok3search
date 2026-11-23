@@ -303,7 +303,22 @@ impl TantivyIndex {
                 );
                 let mut terms = analyzed.terms.iter();
                 let exact = self.build_term_query(terms.next().expect("nonempty analyzed word"));
-                let components: Vec<_> = terms.map(|term| self.build_term_query(term)).collect();
+                // A particle-stripped compound stem (e.g. 설계검토및보완결과 from
+                // 설계검토및보완결과를) may never appear as a document token when
+                // the text is spaced; its segmented parts are required instead.
+                let rest: Vec<&String> = terms.collect();
+                let components: Vec<_> = rest
+                    .iter()
+                    .enumerate()
+                    .filter(|(i, term)| {
+                        !(*i == 0
+                            && rest.len() >= 3
+                            && term.chars().count() >= 4
+                            && word.to_lowercase().starts_with(term.as_str())
+                            && rest.len() > 1)
+                    })
+                    .map(|(_, term)| self.build_term_query(term))
+                    .collect();
                 if components.is_empty() {
                     return exact;
                 }

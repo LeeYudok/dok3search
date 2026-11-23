@@ -560,6 +560,53 @@ fn korean_stems_and_compound_components_respect_acl() {
 }
 
 #[test]
+fn unspaced_korean_compound_queries_find_spaced_titles_with_acl() {
+    let index = TantivyIndex::create_in_ram(GenerationId::new("compound")).unwrap();
+    let docs = [
+        (
+            "review-public",
+            "dok3search 설계 검토 및 보완 결과 (2026-11-20)",
+            AclScope::Public,
+        ),
+        (
+            "rollback-public",
+            "인덱스 세대 전환과 롤백",
+            AclScope::Public,
+        ),
+        (
+            "review-internal",
+            "dok3search 설계 검토 및 보완 결과 (2026-11-20)",
+            AclScope::internal("ops"),
+        ),
+    ];
+    for (id, title, scope) in docs {
+        index
+            .upsert_document(&sample_doc(
+                id, title, "", "", "manual", "ko", "design", "design", scope,
+            ))
+            .unwrap();
+    }
+    index.commit_and_reload(None).unwrap();
+    let public = Principal::anonymous_public();
+    for query in [
+        "설계검토및보완결과",
+        "설계검토보완결과",
+        "설계검토및보완결과를",
+    ] {
+        let result = search(&index, &public, query);
+        assert_eq!(result.total_hits, 1, "{query}");
+        assert_eq!(
+            result.hits[0].document_id.as_str(),
+            "review-public",
+            "{query}"
+        );
+    }
+    let result = search(&index, &public, "인덱스세대전환과롤백");
+    assert_eq!(result.total_hits, 1);
+    assert_eq!(result.hits[0].document_id.as_str(), "rollback-public");
+}
+
+#[test]
 fn matched_section_id_skips_empty_h1_and_selects_matching_subsection() {
     let index = TantivyIndex::create_in_ram(GenerationId::new("gen-sec")).unwrap();
     let public = Principal::anonymous_public();
