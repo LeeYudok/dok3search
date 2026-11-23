@@ -22,6 +22,12 @@ pub struct ServerConfig {
     /// authenticating reverse proxy). Defaults to false so the loopback guard
     /// stays in force unless it is deliberately disabled.
     pub allow_non_loopback_bind: bool,
+    /// Optional Korean analyzer profile (`builtin`, `lindera`, `nori-mixed`, `nori-discard`).
+    pub analyzer_profile: Option<String>,
+    /// Path to compiled `mecab-ko-dic` binary (`ko-dic.bin`).
+    pub dict_path: Option<PathBuf>,
+    /// Path to optional CSV user dictionary for `mecab-ko-dic`.
+    pub user_dict_path: Option<PathBuf>,
 }
 
 impl Default for ServerConfig {
@@ -36,6 +42,9 @@ impl Default for ServerConfig {
             refresh_interval_secs: None,
             admin_enabled: false,
             allow_non_loopback_bind: false,
+            analyzer_profile: None,
+            dict_path: None,
+            user_dict_path: None,
         }
     }
 }
@@ -43,7 +52,8 @@ impl Default for ServerConfig {
 impl ServerConfig {
     /// Loads server configuration from `DOK3_BIND`, `DOK3_PORT`, `DOK3_STATIC_DIR`, `DOK3_DESIGN_DIR`,
     /// `DOK3_SOURCE_DIR`, `DOK3_DATA_DIR`, `DOK3_REFRESH_INTERVAL_SECS`, `DOK3_ENABLE_ADMIN`,
-    /// and `DOK3_ALLOW_NON_LOOPBACK_BIND`.
+    /// `DOK3_ALLOW_NON_LOOPBACK_BIND`, `DOK3_ANALYZER_PROFILE`, `DOK3_DICT_PATH`,
+    /// and `DOK3_USER_DICT_PATH`.
     pub fn from_env() -> Result<Self, Dok3Error> {
         Self::from_lookup(|key| std::env::var(key).ok())
     }
@@ -107,6 +117,15 @@ impl ServerConfig {
             config.allow_non_loopback_bind =
                 parse_bool_flag("DOK3_ALLOW_NON_LOOPBACK_BIND", &allow_raw)?;
         }
+
+        if let Some(profile_raw) = lookup("DOK3_ANALYZER_PROFILE") {
+            let trimmed = profile_raw.trim();
+            if !trimmed.is_empty() {
+                config.analyzer_profile = Some(trimmed.to_string());
+            }
+        }
+        config.dict_path = non_empty_path(lookup("DOK3_DICT_PATH"));
+        config.user_dict_path = non_empty_path(lookup("DOK3_USER_DICT_PATH"));
 
         Ok(config)
     }

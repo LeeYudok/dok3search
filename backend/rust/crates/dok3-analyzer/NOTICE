@@ -1,0 +1,22 @@
+doksam-korean
+=============
+
+doksam-korean reads and compiles the mecab-ko-dic dictionary. The dictionary is not
+included in this repository: scripts/fetch-ko-dic.sh downloads it, and
+`search-server dict build` compiles it into a local file (dict/ko-dic.bin) that is never
+committed. A compiled dictionary file is a derivative of mecab-ko-dic and carries its
+license.
+
+mecab-ko-dic-2.1.1-20180720
+  Authors: Yongwoon Lee <bibreen@gmail.com>, Yungho Yu <mousegood@gmail.com>
+  Source:  https://bitbucket.org/eunjeon/mecab-ko-dic
+           (the archive used here: https://Lindera.dev/mecab-ko-dic-2.1.1-20180720.tar.gz,
+            sha256 702ced21c6167e9d9aebc674ab5ee54af58d4443975f2940d37d0567c020591a)
+  License: Apache License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0),
+           full text in the archive's COPYING file.
+
+The segmentation behavior (lattice construction, unknown-word handling, left-space penalty
+rules, tie order) follows lindera 6.2 (https://github.com/lindera/lindera, MIT License) so
+that indexes built with lindera's embedded ko-dic stay compatible. No lindera code is
+included; the implementation was written independently from its documented behavior and
+source.

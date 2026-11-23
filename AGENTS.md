@@ -14,6 +14,11 @@
 
 화면·API 계약·검색 동작을 변경할 때는 `dok3search-design`의 계약 예시(`contracts/*.example.yaml`) 및 `frontend/src/samples/design/`과의 정합성을 함께 확인한다.
 
+설계 변경 시 고정 동기화 절차:
+1. `dok3search-design`에서 설계 문서·계약을 먼저 갱신하고 PR 머지한다.
+2. `dok3search`의 `frontend/src/samples/design/` 사본과 `provenance.json`을 최신 커밋 기준으로 갱신한다.
+3. `python3 scripts/check-design-copy.py --source ../dok3search-design` 통과를 확인한 뒤 `dok3search` PR을 올린다.
+
 설계 사본의 원본 커밋과 파일별 SHA-256은 `frontend/src/samples/design/provenance.json`에 기록한다. 사본을 갱신한 뒤 `python3 scripts/check-design-copy.py --source ../dok3search-design`로 원본과 대조한다. 사본만 있는 환경에서는 `--source`를 빼고 무결성을 검사한다.
 
 ## 디렉터리 구조
@@ -47,6 +52,9 @@
 - `DOK3_REFRESH_INTERVAL_SECS`: 영속 모드(`DOK3_SOURCE_DIR` + `DOK3_DATA_DIR`)에서 주기적 증분 색인 워커 실행 간격(초, 선택). 미설정 시 백그라운드 워커는 비활성.
 - `DOK3_ENABLE_ADMIN`: `true` 설정 시 IPv4 루프백 바인드에서 관리자 API(`/api/v1/index/jobs*`, `/api/v1/sources*`, `PATCH /api/v1/documents/{id}/classification`) 및 `/admin` 관리 UI를 활성화한다(기본 `false`, 루프백 `Origin`·`Sec-Fetch-Site`·`Content-Type: application/json` 가드 강제).
 - `DOK3_ALLOW_NON_LOOPBACK_BIND`: `true`/`1` 설정 시 `DOK3_SOURCE_DIR` 모드에서 비-loopback `DOK3_BIND`(예: 컨테이너의 `0.0.0.0`)를 명시적으로 허용한다(기본 `false`, true/false/1/0만 허용). 관리자 API 바인드는 이 플래그와 무관하게 항상 loopback만 허용한다. 인증 프록시 뒤 컨테이너 배포에서만 켠다.
+- `DOK3_ANALYZER_PROFILE`: 한국어 형태소 분석 프로파일(`builtin`, `lindera`, `nori-mixed`, `nori-discard`). `DOK3_DICT_PATH`가 있으면 기본 `nori-mixed`, 없으면 `builtin`. 프로파일·사전 변경 시 영속 세대를 자동 재구축한다.
+- `DOK3_DICT_PATH`: 컴파일된 `mecab-ko-dic` 바이너리(`ko-dic.bin`) 경로(`lindera`/`nori-*` 프로파일 필수). `dok3-server --compile-kodic <src_dir> <out_bin>`으로 생성한다.
+- `DOK3_USER_DICT_PATH`: 선택적 `mecab-ko-dic` 사용자 사전 CSV 경로.
 
 - `--mcp-stdio`: MCP 서버를 표준입출력 모드로 시작한다. `POST /mcp`는 HTTP 모드의 MCP 엔드포인트다. 두 경로 모두 `Principal::anonymous_public()` 고정을 사용한다.
 
