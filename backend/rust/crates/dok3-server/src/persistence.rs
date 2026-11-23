@@ -34,7 +34,7 @@ use crate::corpus_meta::CorpusMetadataIndex;
 use crate::local_index::{BuildReport, apply_detected_language};
 use crate::sources::{SourceRegistry, source_config_for, validate_real_directory};
 
-const ANALYZER_VERSION: u64 = 1;
+const ANALYZER_VERSION: u64 = 2;
 const ACL_POLICY_VERSION: u64 = 1;
 const DEFAULT_AVAILABLE_DISK_BYTES: u64 = 100 * 1024 * 1024 * 1024;
 const MAX_JOB_HISTORY: usize = 100;
@@ -2351,6 +2351,84 @@ mod tests {
                 .unwrap()
                 .schema_version,
             u64::from(SCHEMA_VERSION)
+        );
+        let search = upgraded
+            .service()
+            .search(
+                &Principal::anonymous_public(),
+                &SearchRequest {
+                    query: "upgradealpha".to_string(),
+                    ..SearchRequest::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(search.total_hits, 1);
+    }
+
+    #[test]
+    fn rebuilds_generation_with_older_analyzer_version_on_startup() {
+        let source_root = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+
+        fs::write(
+            source_root.path().join("guide-a.md"),
+            "# Analyzer Upgrade\n\nupgradealpha body text\n",
+        )
+        .unwrap();
+
+        let (runtime, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        drop(runtime);
+
+        let mut durable = read_durable_state(data_root.path());
+        let old_gen = durable.active_generation.clone().unwrap();
+        let old_record = durable.generations.get_mut(&old_gen).unwrap();
+        let old_manifest = old_record.manifest.as_mut().unwrap();
+        old_manifest.analyzer_version = ANALYZER_VERSION - 1;
+        let old_manifest_clone = old_manifest.clone();
+        old_record.manifest_checksum = Some(old_manifest_clone.checksum().unwrap());
+
+        let old_gen_dir = data_root.path().join("generations").join(&old_gen);
+        fs::write(
+            old_gen_dir.join("manifest.json"),
+            serde_json::to_vec_pretty(&old_manifest_clone).unwrap(),
+        )
+        .unwrap();
+
+        #[derive(serde::Serialize)]
+        struct TestStateEnvelope {
+            format_version: u32,
+            state_checksum: String,
+            #[serde(flatten)]
+            state: DurableState,
+        }
+        let state_checksum = dok3_storage::content_revision(&serde_json::to_vec(&durable).unwrap())
+            .as_str()
+            .to_owned();
+        let encoded = serde_json::to_vec_pretty(&TestStateEnvelope {
+            format_version: 1,
+            state_checksum,
+            state: durable,
+        })
+        .unwrap();
+        fs::write(
+            data_root.path().join("generations/generation_state.json"),
+            encoded,
+        )
+        .unwrap();
+
+        let (upgraded, _) = PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        let after = read_durable_state(data_root.path());
+        let new_gen = after.active_generation.clone().unwrap();
+        assert_eq!(
+            after
+                .generations
+                .get(&new_gen)
+                .unwrap()
+                .manifest
+                .as_ref()
+                .unwrap()
+                .analyzer_version,
+            ANALYZER_VERSION
         );
         let search = upgraded
             .service()
