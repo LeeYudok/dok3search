@@ -39,6 +39,7 @@ cargo run --manifest-path backend/rust/Cargo.toml -p dok3-server
 ### 제공 중인 REST 엔드포인트
 
 - `GET /health/ready` — 서비스 준비 상태, 색인 문서 수, 스냅샷 메타데이터
+- `GET /api/v1/corpora` — 공개/권한 범위 안의 코퍼스별 문서 수, 툴체인·패키지 버전, 라이선스 카탈로그
 - `POST /api/v1/search` — ACL 기반 문서 검색, 카테고리별 건수, 관련 검색어, 페이징
 - `GET /api/v1/documents/{id}` — 문서 상세, 섹션 목차, Markdown/YAML 형식 연결 정보
 - `GET /api/v1/documents/{id}/sections/{sid}` — 문자 커서 기반 섹션 본문 페이징
