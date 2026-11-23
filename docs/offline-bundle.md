@@ -14,6 +14,8 @@ scripts/offline-bundle.sh
 
 ```sh
 scripts/offline-bundle.sh --output-dir /secure/transfer/dok3search
+# 한국어 형태소 사전(ko-dic.bin)까지 함께 묶을 때:
+scripts/offline-bundle.sh --dict /path/to/ko-dic.bin
 ```
 
 스크립트는 `backend/rust/Cargo.lock`을 기준으로 `cargo vendor`를 실행하고, `frontend/package-lock.json`을 기준으로 npm 캐시를 채운다. 결과는 다음 두 파일이다.
@@ -143,3 +145,9 @@ npm --prefix frontend run build
 - Rust 도구 체인(`rustc`, `cargo`, `rustfmt`, `clippy`)과 Node.js·npm 자체는 번들에 포함하지 않는다. 폐쇄망에 별도로 준비해야 한다.
 - npm 선택 의존성과 Rust 타깃별 패키지는 생성 플랫폼에 맞춰진다. 다른 OS/CPU에서 쓸 번들은 해당 환경에서 생성한다.
 - Git 저장소를 직접 가리키는 Cargo·npm 의존성은 이 절차의 검증 범위가 아니다. 잠금 파일이 레지스트리 아티팩트만 참조하는 현재 구조를 전제로 한다.
+
+## Windows 클린 설치 체크리스트 (P7-1/P7-2)
+
+1. 번들 SHA-256 검증(`certutil -hashfile ... SHA256`) 후 `cargo build --manifest-path backend\rust\Cargo.toml -p dok3-server --release --offline --frozen` 및 `npm --prefix frontend run build` 통과를 확인한다.
+2. `dict\ko-dic.bin`을 `C:\dok3search\dict\ko-dic.bin`으로 복사한다.
+3. [deploy/windows/README.md](../deploy/windows/README.md) 절차에 따라 `install-service.ps1`로 Windows Service를 등록하고 `smoke-windows.ps1`로 기동·재시작 복구를 검증한다.

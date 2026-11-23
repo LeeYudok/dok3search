@@ -4,7 +4,7 @@ set -eu
 
 usage() {
   cat <<'EOF'
-Usage: scripts/offline-bundle.sh [--output-dir DIR]
+Usage: scripts/offline-bundle.sh [--output-dir DIR] [--dict PATH]
 
 Creates DIR/dok3search-offline-<UTC timestamp>.tar.gz and a matching
 .sha256 manifest. DIR defaults to <repo>/offline-bundles.
@@ -13,6 +13,7 @@ The bundle contains:
   cargo/vendor/       cargo vendor output for backend/rust/Cargo.lock
   cargo/config.toml   receiver-side vendored-sources example
   npm/cache/          npm cache populated from frontend/package-lock.json
+  dict/ko-dic.bin     optional compiled mecab-ko-dic dictionary (--dict or DOK3_DICT_PATH)
   bundle-info.txt     creator toolchain and platform metadata
 
 Run this script on the same OS/architecture family as the receiver.
@@ -26,12 +27,18 @@ die() {
 
 REPO_ROOT=$(cd "$(dirname "$0")/.." && pwd)
 OUTPUT_DIR="${REPO_ROOT}/offline-bundles"
+DICT_PATH="${DOK3_DICT_PATH:-}"
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --output-dir)
       [ "$#" -ge 2 ] || die "--output-dir requires a value"
       OUTPUT_DIR=$2
+      shift 2
+      ;;
+    --dict)
+      [ "$#" -ge 2 ] || die "--dict requires a value"
+      DICT_PATH=$2
       shift 2
       ;;
     -h|--help)
@@ -100,6 +107,12 @@ cp "${REPO_ROOT}/frontend/package.json" "${REPO_ROOT}/frontend/package-lock.json
     --no-update-notifier \
     --loglevel=error
 )
+
+if [ -n "$DICT_PATH" ]; then
+  [ -f "$DICT_PATH" ] || die "dictionary file not found: $DICT_PATH"
+  mkdir -p "${STAGE_DIR}/dict"
+  cp "$DICT_PATH" "${STAGE_DIR}/dict/ko-dic.bin"
+fi
 
 cat >"${STAGE_DIR}/bundle-info.txt" <<EOF
 format=1
