@@ -11,6 +11,11 @@ use rusqlite::types::{Value, ValueRef};
 use rusqlite::{Connection, OpenFlags, Row, params};
 use sha2::{Digest, Sha256};
 
+use crate::sql_guard::validate_readonly_select;
+
+/// Default maximum number of rows fetched per `collect` call.
+pub const DEFAULT_SQLITE_BATCH_LIMIT: usize = 500;
+
 /// Column mapping from a configured SELECT result to a domain document.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SqliteColumnMapping {
@@ -63,6 +68,8 @@ pub struct SqliteSourceConfig {
     pub language: String,
     pub default_tag: String,
     pub acl_scope: AclScope,
+    /// Maximum number of rows returned per `collect` call (`LIMIT batch_limit + 1`).
+    pub batch_limit: usize,
 }
 
 impl SqliteSourceConfig {
@@ -87,6 +94,7 @@ impl SqliteSourceConfig {
             language: "ko".to_string(),
             default_tag: "database".to_string(),
             acl_scope: AclScope::Public,
+            batch_limit: DEFAULT_SQLITE_BATCH_LIMIT,
         }
     }
 }
@@ -151,10 +159,15 @@ impl SqliteSourceAdapter {
 
         let mut documents = Vec::new();
         let mut next_cursor = cursor.cloned();
+        let mut has_more = false;
         while let Some(row) = rows
             .next()
             .map_err(|error| sqlite_error("read SELECT row", &error))?
         {
+            if documents.len() >= self.config.batch_limit {
+                has_more = true;
+                break;
+            }
             let row_cursor = self.read_row_cursor(row)?;
             let document = self.convert_row(row)?;
             next_cursor = Some(row_cursor);
@@ -164,11 +177,12 @@ impl SqliteSourceAdapter {
         Ok(SqliteSourceBatch {
             documents,
             next_cursor,
-            has_more: false,
+            has_more,
         })
     }
 
     fn collection_sql(&self, has_cursor: bool) -> String {
+        let limit = self.config.batch_limit.saturating_add(1);
         let (filter, order_by) = match &self.config.cursor {
             SqliteCursorMode::IntegerPk { column } => {
                 let column = quote_identifier(column);
@@ -191,7 +205,7 @@ impl SqliteSourceAdapter {
             }
         };
         format!(
-            "SELECT * FROM ({}) AS dok3_source{filter} ORDER BY {order_by}",
+            "SELECT * FROM ({}\n) AS dok3_source{filter} ORDER BY {order_by} LIMIT {limit}",
             self.normalized_query
         )
     }
@@ -376,35 +390,16 @@ fn validate_config(config: &SqliteSourceConfig) -> Result<(), Dok3Error> {
             "cursor column must not be empty".to_string(),
         ));
     }
+    if config.batch_limit == 0 {
+        return Err(Dok3Error::InvalidInput(
+            "batch_limit must be at least 1".to_string(),
+        ));
+    }
     Ok(())
 }
 
 fn normalize_select_query(query: &str) -> Result<String, Dok3Error> {
-    let trimmed = query.trim();
-    if trimmed.is_empty() {
-        return Err(Dok3Error::InvalidInput(
-            "select_query must not be empty".to_string(),
-        ));
-    }
-    let without_trailing_semicolon = trimmed
-        .strip_suffix(';')
-        .map(str::trim_end)
-        .unwrap_or(trimmed);
-    if without_trailing_semicolon.contains(';') {
-        return Err(Dok3Error::InvalidInput(
-            "select_query must contain exactly one SELECT statement".to_string(),
-        ));
-    }
-    let first_keyword = without_trailing_semicolon
-        .split_whitespace()
-        .next()
-        .unwrap_or_default();
-    if !first_keyword.eq_ignore_ascii_case("SELECT") {
-        return Err(Dok3Error::InvalidInput(
-            "select_query is SELECT-only; write and DDL statements are rejected".to_string(),
-        ));
-    }
-    Ok(without_trailing_semicolon.to_string())
+    validate_readonly_select(query)
 }
 
 fn open_read_only(path: &Path) -> Result<Connection, Dok3Error> {

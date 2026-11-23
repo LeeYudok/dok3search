@@ -265,3 +265,44 @@ fn updated_at_cursor_rejects_non_text_watermarks() {
         "integer updated_at should be rejected instead of producing a mistyped cursor"
     );
 }
+
+#[test]
+fn sqlite_hardening_allows_cte_semicolons_in_literals_and_paginates_batches() {
+    let dir = TempDir::new("hardening");
+    let db_path = dir.db_path();
+    let connection = Connection::open(&db_path).unwrap();
+    connection
+        .execute_batch(
+            "
+            CREATE TABLE docs (id INTEGER PRIMARY KEY, title TEXT NOT NULL, body TEXT NOT NULL);
+            INSERT INTO docs (id, title, body) VALUES
+                (1, 'A', 'alpha;one'),
+                (2, 'B', 'beta'),
+                (3, 'C', 'gamma');
+            ",
+        )
+        .unwrap();
+
+    let mut cfg = SqliteSourceConfig::new(
+        SourceId::new("sqlite-hardened"),
+        "SQLite Hardened",
+        &db_path,
+        "WITH filtered AS (SELECT id, title, body FROM docs WHERE body != 'x;y') SELECT id, title, body FROM filtered -- ; ok\n;",
+        column_mapping(),
+        SqliteCursorMode::IntegerPk {
+            column: "id".to_string(),
+        },
+    );
+    cfg.batch_limit = 2;
+
+    let adapter = SqliteSourceAdapter::new(cfg).unwrap();
+    let first = adapter.collect(None).unwrap();
+    assert_eq!(first.documents.len(), 2);
+    assert!(first.has_more);
+    assert_eq!(first.next_cursor, Some(SqliteCursor::Integer(2)));
+
+    let second = adapter.collect(first.next_cursor.as_ref()).unwrap();
+    assert_eq!(second.documents.len(), 1);
+    assert!(!second.has_more);
+    assert_eq!(second.next_cursor, Some(SqliteCursor::Integer(3)));
+}
