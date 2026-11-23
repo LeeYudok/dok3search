@@ -65,7 +65,7 @@ function matchesTerm(text: string, term: string, category: string) {
     )
   ) return true
   if (/^[가-힣]{4,}$/.test(term)) {
-    const compactText = text.replace(/\s+/g, '').replace(/및/g, '')
+    const compactText = text.replace(/[ \t]+/g, '').replace(/및/g, '')
     const compactTerm = term.replace(/및/g, '')
     return compactTerm.length >= 4 && compactText.includes(compactTerm)
   }
@@ -344,7 +344,7 @@ export function searchDocuments(query: string, corpus: readonly Document[] = doc
 
     const variants = formats ? [formats.markdown, formats.yaml] : [doc]
     return variants.some((variant) => {
-      const searchable = [variant.title, variant.summary, variant.source, variant.tag, variant.topic, variant.body, variant.markdown, variant.samplePath].join(' ').toLowerCase()
+      const searchable = [variant.title, variant.summary, variant.source, variant.tag, variant.topic, variant.body, variant.markdown, variant.samplePath].join('\n').toLowerCase()
       return terms.every((term) => matchesTerm(searchable, term, variant.topic ?? variant.category))
     })
   })
