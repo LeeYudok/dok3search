@@ -54,12 +54,11 @@
 
 dok3search를 단일 노드 doksam Kubernetes에 재현 가능하게 배포하고 `https://www.doksam.com` Host로 서비스한다. 자세한 절차·경로·롤백 리허설은 [deploy/doksam/README.md](deploy/doksam/README.md)에 둔다.
 
-- 공개 진입점은 Ingress 전체를 Traefik basicAuth `Middleware`로 보호한다. 인증 없는 direct doksam 443/Host 요청은 401이어야 한다.
+- 공개 진입점은 인증 없이 접근 가능한 공개 서비스(`www.doksam.com`)로 운영한다.
 - 컨테이너는 `0.0.0.0:8080`에 바인드하고 ClusterIP Service로만 노출한다. jex3 등이 쓰는 host port(`192.168.113.220:8081` 계열)는 재사용하지 않는다.
 - TLS Host는 `www.doksam.com`, 기존 cert-manager ClusterIssuer `letsencrypt-dns01`(DNS-01)을 사용한다.
 - 이미지는 커밋 SHA 기반 태그(`dok3search:sha-<git-sha>`)로 빌드하고 레지스트리 push 없이 노드에 import한다(`imagePullPolicy: IfNotPresent`).
-- basicAuth 자격증명은 git에 넣지 않는다. doksam 런타임에서만 Secret(`dok3search-basic-auth`, 키 `users`)과 0600 파일(`/etc/dok3search/basic-auth.pass`, `/etc/dok3search/basic-auth.users`)로 생성하고, 문서에는 경로와 키 이름만 기록한다.
-- basicAuth 생성은 `htpasswd` 없이 doksam의 `openssl passwd -apr1 -stdin`으로만 수행한다. `SUDO_PASS`는 doksam 런타임 환경 변수나 stdin에서 읽어 `sudo -S`에만 파이프하고, `sudo`/`curl` argv에는 비밀번호를 넣지 않는다.
+- `SUDO_PASS`는 doksam 런타임 환경 변수나 stdin에서 읽어 `sudo -S`에만 파이프하고, `sudo`/`curl` argv에는 비밀번호를 넣지 않는다.
 - 롤백은 Deployment 이미지만 직전 값으로 되돌리며 Namespace/PVC 등 운영 데이터를 파괴하지 않는다. 배포·롤백은 모두 idempotent해야 한다.
 - `DOK3_SOURCE_DIR` 모드의 loopback 제한은 컨테이너에서 `DOK3_ALLOW_NON_LOOPBACK_BIND=true`로 명시 해제한다.
 
@@ -95,8 +94,7 @@ dok3search를 단일 노드 doksam Kubernetes에 재현 가능하게 배포하�
 - `AGENTS.yaml` 검증: `scripts/check-agents-yaml.sh`
 - doksam 배포·검증:
   - 이미지 빌드: `deploy/doksam/scripts/build-image.sh`
-  - basicAuth Secret 생성: `deploy/doksam/scripts/create-basic-auth-secret.sh`
   - 컨테이너 smoke: `deploy/doksam/scripts/smoke-container.sh`
   - 배포: `deploy/doksam/scripts/deploy.sh`
   - 롤백: `deploy/doksam/scripts/rollback.sh`
-  - 검증(401/200 status code): `deploy/doksam/scripts/verify.sh`
+  - 검증(status code): `deploy/doksam/scripts/verify.sh`

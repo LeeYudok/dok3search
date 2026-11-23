@@ -5,9 +5,9 @@
 #
 # Steps: build linux/amd64 image -> import into doksam containerd -> apply the
 # manifest with the commit-SHA image -> record the previous image for rollback
-# -> wait for rollout -> verify (401 unauth / 200 auth). Re-running with the
-# same commit is a no-op; a new commit produces a new immutable tag and rolls
-# the Deployment once. Operational data is never touched.
+# -> wait for rollout -> verify (200 public endpoints, 405 GET /mcp). Re-running
+# with the same commit is a no-op; a new commit produces a new immutable tag and
+# rolls the Deployment once. Operational data is never touched.
 set -euo pipefail
 
 # shellcheck source-path=SCRIPTDIR
@@ -21,20 +21,6 @@ REMOTE_TAR="/tmp/dok3search-image.$$.tar"
 echo "== ensure namespace =="
 on_doksam_args kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml \
   | on_doksam_args kubectl apply -f - >/dev/null
-
-if on_doksam_args kubectl -n "$NAMESPACE" get secret "$BASIC_AUTH_SECRET" >/dev/null 2>&1; then
-  if [ -n "$(on_doksam_args kubectl -n "$NAMESPACE" get secret "$BASIC_AUTH_SECRET" -o "jsonpath={.data.$BASIC_AUTH_KEY}" 2>/dev/null || true)" ]; then
-    echo "   basicAuth secret $BASIC_AUTH_SECRET present (key $BASIC_AUTH_KEY)"
-  else
-    echo "error: basicAuth secret $BASIC_AUTH_SECRET is missing key $BASIC_AUTH_KEY in namespace $NAMESPACE" >&2
-    echo "       run deploy/doksam/scripts/create-basic-auth-secret.sh first" >&2
-    exit 1
-  fi
-else
-  echo "error: basicAuth secret $BASIC_AUTH_SECRET is missing in namespace $NAMESPACE" >&2
-  echo "       run deploy/doksam/scripts/create-basic-auth-secret.sh first" >&2
-  exit 1
-fi
 
 echo "== image =="
 CONTAINER_ENGINE="$CONTAINER_ENGINE" bash "$DEPLOY_DIR/scripts/build-image.sh"

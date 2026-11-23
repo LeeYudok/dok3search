@@ -3,16 +3,9 @@
 # Routing: Cloudflare/DNS -> doksam public 443 -> Traefik (hostPort 80/443)
 #          -> Ingress `dok3search` (websecure) -> ClusterIP Service -> pod :8080.
 #
-# Security: the entire Ingress is wrapped by the Traefik basicAuth middleware
-# `auth`, so an unauthenticated direct request to doksam:443 with
-# `Host: www.doksam.com` returns 401. TLS uses the existing cert-manager
-# ClusterIssuer `letsencrypt-dns01` (DNS-01), so no ACME HTTP path needs to be
-# public and every path can stay authenticated.
-#
-# Secrets are NOT stored here. The basicAuth htpasswd lives only in the
-# Kubernetes Secret `dok3search-basic-auth` (key `users`) and a 0600 file on the
-# operator machine, both created by `deploy/doksam/scripts/create-basic-auth-secret.sh`.
-# See `deploy/doksam/README.md` for paths and key names.
+# TLS uses the existing cert-manager ClusterIssuer `letsencrypt-dns01` (DNS-01).
+# Public access is unauthenticated; admin routes remain disabled unless
+# DOK3_ENABLE_ADMIN=true on a loopback bind.
 #
 # Image tag: replaced by the deploy script with the build commit SHA
 # (`dok3search:sha-<git-sha>`). The literal below is only a placeholder /
@@ -90,7 +83,7 @@ spec:
             - name: DOK3_DESIGN_DIR
               value: /app/knowledge/samples/design
             # Explicit opt-in: DOK3_SOURCE_DIR may run on a non-loopback bind
-            # because Traefik basicAuth fronts the only exposed route.
+            # behind the Traefik Ingress inside the cluster.
             - name: DOK3_ALLOW_NON_LOOPBACK_BIND
               value: "true"
             # readOnlyRootFilesystem: only /data (PVC) and /tmp (emptyDir) are writable.
@@ -152,19 +145,6 @@ spec:
       targetPort: http
       protocol: TCP
 ---
-# Traefik basicAuth middleware. The referenced Secret is created out-of-band by
-# `deploy/doksam/scripts/create-basic-auth-secret.sh` and is never committed.
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
-metadata:
-  name: auth
-  namespace: dok3search
-spec:
-  basicAuth:
-    secret: dok3search-basic-auth
-    realm: dok3search
-    removeHeader: true
----
 # http -> https redirect for the public host.
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
@@ -184,7 +164,6 @@ metadata:
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-dns01
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    traefik.ingress.kubernetes.io/router.middlewares: dok3search-auth@kubernetescrd
 spec:
   ingressClassName: traefik
   tls:

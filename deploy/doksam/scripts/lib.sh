@@ -32,9 +32,6 @@ if [ "${#CONTAINER_ENGINE_CMD[@]}" -eq 0 ]; then
   exit 2
 fi
 
-BASIC_AUTH_SECRET="${BASIC_AUTH_SECRET:-dok3search-basic-auth}"
-BASIC_AUTH_KEY="${BASIC_AUTH_KEY:-users}"
-
 # Commit-SHA based, immutable image tag.
 image_tag() {
   local sha
