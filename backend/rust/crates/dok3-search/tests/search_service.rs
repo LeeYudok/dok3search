@@ -278,4 +278,37 @@ fn acl_denies_internal_docs_across_search_counts_and_readers() {
             .get_document(&authorized, &DocumentId::new("sec-1"))
             .is_ok()
     );
+
+    // Corpus catalog respects ACL: public sees only pub-1, authorized sees both.
+    let pub_corpora = service.list_corpora(&public, "in-memory-fake").unwrap();
+    assert_eq!(pub_corpora.total_documents, 1);
+    let auth_corpora = service.list_corpora(&authorized, "in-memory-fake").unwrap();
+    assert_eq!(auth_corpora.total_documents, 2);
+}
+
+#[test]
+fn unspaced_korean_compound_finds_design_review_doc() {
+    let design_dir = sample_design_dir();
+    let repo = Arc::new(InMemorySearchRepository::from_seed(Some(&design_dir)));
+    let service = SearchService::new(repo.clone(), repo);
+    let resp = service
+        .search(
+            &Principal::anonymous_public(),
+            &SearchRequest {
+                query: "설계검토및보완결과".to_string(),
+                limit: 100,
+                ..SearchRequest::default()
+            },
+        )
+        .unwrap();
+    assert!(
+        resp.hits
+            .iter()
+            .any(|h| h.document_id.as_str() == "design-DESIGN-REVIEW-AND-FIXES-md"),
+        "{:?}",
+        resp.hits
+            .iter()
+            .map(|h| h.document_id.as_str())
+            .collect::<Vec<_>>()
+    );
 }

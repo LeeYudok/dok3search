@@ -263,6 +263,7 @@ fn exposes_all_seven_ssot_tools_and_enforces_acl_on_every_tool() {
         .result
         .unwrap();
     assert_eq!(pub_cats["structuredContent"]["total_documents"], 3);
+    assert!(pub_cats["structuredContent"]["corpora"].is_array());
     let pub_policy = pub_cats["structuredContent"]["categories"]
         .as_array()
         .unwrap()

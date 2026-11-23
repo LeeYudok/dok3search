@@ -82,7 +82,8 @@ impl ApiState {
     }
 }
 
-/// Builds the Axum router with `/health/ready`, `/api/v1/*`, JSON `/api` 404 fallback, security headers, and optional static SPA hosting.
+/// Builds the Axum router with `/health` (alias of `/health/ready`), `/health/ready`,
+/// `/api/v1/*`, JSON `/api` 404 fallback, security headers, and optional static SPA hosting.
 pub fn build_router(state: ApiState, static_dir: Option<PathBuf>) -> Router {
     build_router_with_extra(state, static_dir, None)
 }
@@ -121,7 +122,11 @@ pub fn build_router_with_extra(
         ));
 
     let mut router = Router::new()
+        // `/health` is a thin alias of the readiness probe so liveness/readiness
+        // checks and the frontend dev proxy can share one endpoint.
+        .route("/health", get(health_ready))
         .route("/health/ready", get(health_ready))
+        .route("/api/v1/corpora", get(list_corpora))
         .route("/api/v1/search", post(search))
         .route("/api/v1/documents/{id}", get(get_document))
         .route("/api/v1/documents/{id}/sections/{sid}", get(get_section))
@@ -157,10 +162,15 @@ async fn spa_fallback(dir: PathBuf, index: PathBuf, req: Request<axum::body::Bod
     {
         return resp.into_response();
     }
-    if uri_path
-        .rsplit('/')
-        .next()
-        .is_some_and(|seg| seg.contains('.'))
+    // `/docs/<encoded-doc-id>` is a client-side route: ids such as
+    // `local-markdown:samples/.../rust-version.md` end in `.md` even after
+    // percent-encoding those characters, so the dotted-segment 404 rule must
+    // not fire for them — the SPA serves those paths from index.html.
+    if !uri_path.starts_with("/docs/")
+        && uri_path
+            .rsplit('/')
+            .next()
+            .is_some_and(|seg| seg.contains('.'))
     {
         return StatusCode::NOT_FOUND.into_response();
     }
@@ -250,6 +260,13 @@ async fn api_not_found() -> Response {
 
 async fn health_ready(State(state): State<ApiState>) -> impl IntoResponse {
     Json(state.search.health_ready(state.mode))
+}
+
+async fn list_corpora(State(state): State<ApiState>) -> Result<impl IntoResponse, ApiError> {
+    let response = state
+        .search
+        .list_corpora(&state.default_principal, state.mode)?;
+    Ok(Json(response))
 }
 
 async fn search(

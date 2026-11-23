@@ -1,0 +1,3 @@
+# Local deploy scratch/state; never committed.
+.last-build-image
+.state/

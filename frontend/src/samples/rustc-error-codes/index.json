@@ -1,0 +1,5190 @@
+{
+  "source": "Rust Compiler Error Index (rustc --explain)",
+  "source_url": "https://doc.rust-lang.org/error_codes/",
+  "toolchain": "1.100.0 (0ef1bc386 2026-11-09)",
+  "version": "1.100.0",
+  "category": "code",
+  "topic": "rust",
+  "chapters": [
+    {
+      "path": "chapters/E0001.md",
+      "title": "Rust Compiler Error E0001",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0001",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0002.md",
+      "title": "Rust Compiler Error E0002",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0002",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0004.md",
+      "title": "Rust Compiler Error E0004",
+      "summary": "This error indicates that the compiler cannot guarantee a matching pattern for one or more possible inputs to a match expression. Guaranteed matches are required in order to assign values to match expressions, or alterna",
+      "tags": [
+        "E0004",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0005.md",
+      "title": "Rust Compiler Error E0005",
+      "summary": "Patterns used to bind names must be irrefutable, that is, they must guarantee that a name will be extracted in all cases.",
+      "tags": [
+        "E0005",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0007.md",
+      "title": "Rust Compiler Error E0007",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0007",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0009.md",
+      "title": "Rust Compiler Error E0009",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0009",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0010.md",
+      "title": "Rust Compiler Error E0010",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0010",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0013.md",
+      "title": "Rust Compiler Error E0013",
+      "summary": "#### Note: this error code is no longer emitted by the compiler",
+      "tags": [
+        "E0013",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0014.md",
+      "title": "Rust Compiler Error E0014",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0014",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0015.md",
+      "title": "Rust Compiler Error E0015",
+      "summary": "A non-`const` function was called in a `const` context.",
+      "tags": [
+        "E0015",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0023.md",
+      "title": "Rust Compiler Error E0023",
+      "summary": "A pattern attempted to extract an incorrect number of fields from a variant.",
+      "tags": [
+        "E0023",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0025.md",
+      "title": "Rust Compiler Error E0025",
+      "summary": "Each field of a struct can only be bound once in a pattern.",
+      "tags": [
+        "E0025",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0026.md",
+      "title": "Rust Compiler Error E0026",
+      "summary": "A struct pattern attempted to extract a nonexistent field from a struct.",
+      "tags": [
+        "E0026",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0027.md",
+      "title": "Rust Compiler Error E0027",
+      "summary": "A pattern for a struct fails to specify a sub-pattern for every one of the struct's fields.",
+      "tags": [
+        "E0027",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0029.md",
+      "title": "Rust Compiler Error E0029",
+      "summary": "Something other than numbers and characters has been used for a range.",
+      "tags": [
+        "E0029",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0030.md",
+      "title": "Rust Compiler Error E0030",
+      "summary": "When matching against a range, the compiler verifies that the range is non-empty. Range patterns include both end-points, so this is equivalent to requiring the start of the range to be less than or equal to the end of t",
+      "tags": [
+        "E0030",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0033.md",
+      "title": "Rust Compiler Error E0033",
+      "summary": "A trait type has been dereferenced.",
+      "tags": [
+        "E0033",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0034.md",
+      "title": "Rust Compiler Error E0034",
+      "summary": "The compiler doesn't know what method to call because more than one method has the same prototype.",
+      "tags": [
+        "E0034",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0038.md",
+      "title": "Rust Compiler Error E0038",
+      "summary": "For any given trait `Trait` there may be a related _type_ called the _trait object type_ which is typically written as `dyn Trait`. In earlier editions of Rust, trait object types were written as plain `Trait` (just the ",
+      "tags": [
+        "E0038",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0040.md",
+      "title": "Rust Compiler Error E0040",
+      "summary": "It is not allowed to manually call destructors in Rust.",
+      "tags": [
+        "E0040",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0044.md",
+      "title": "Rust Compiler Error E0044",
+      "summary": "You cannot use type or const parameters on foreign items.",
+      "tags": [
+        "E0044",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0045.md",
+      "title": "Rust Compiler Error E0045",
+      "summary": "Variadic parameters have been used on a non-C ABI function.",
+      "tags": [
+        "E0045",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0046.md",
+      "title": "Rust Compiler Error E0046",
+      "summary": "Items are missing in a trait implementation.",
+      "tags": [
+        "E0046",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0049.md",
+      "title": "Rust Compiler Error E0049",
+      "summary": "An attempted implementation of a trait method has the wrong number of type or const parameters.",
+      "tags": [
+        "E0049",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0050.md",
+      "title": "Rust Compiler Error E0050",
+      "summary": "An attempted implementation of a trait method has the wrong number of function parameters.",
+      "tags": [
+        "E0050",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0053.md",
+      "title": "Rust Compiler Error E0053",
+      "summary": "The parameters of any trait method must match between a trait implementation and the trait definition.",
+      "tags": [
+        "E0053",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0054.md",
+      "title": "Rust Compiler Error E0054",
+      "summary": "It is not allowed to cast to a bool.",
+      "tags": [
+        "E0054",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0055.md",
+      "title": "Rust Compiler Error E0055",
+      "summary": "During a method call, a value is automatically dereferenced as many times as needed to make the value's type match the method's receiver. The catch is that the compiler will only attempt to dereference a number of times ",
+      "tags": [
+        "E0055",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0057.md",
+      "title": "Rust Compiler Error E0057",
+      "summary": "An invalid number of arguments was given when calling a closure.",
+      "tags": [
+        "E0057",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0059.md",
+      "title": "Rust Compiler Error E0059",
+      "summary": "The built-in function traits are generic over a tuple of the function arguments. If one uses angle-bracket notation (`Fn<(T,), Output=U>`) instead of parentheses (`Fn(T) -> U`) to denote the function trait, the type para",
+      "tags": [
+        "E0059",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0060.md",
+      "title": "Rust Compiler Error E0060",
+      "summary": "External C functions are allowed to be variadic. However, a variadic function takes a minimum number of arguments. For example, consider C's variadic `printf` function:",
+      "tags": [
+        "E0060",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0061.md",
+      "title": "Rust Compiler Error E0061",
+      "summary": "An invalid number of arguments was passed when calling a function.",
+      "tags": [
+        "E0061",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0062.md",
+      "title": "Rust Compiler Error E0062",
+      "summary": "A struct's or struct-like enum variant's field was specified more than once.",
+      "tags": [
+        "E0062",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0063.md",
+      "title": "Rust Compiler Error E0063",
+      "summary": "A struct's or struct-like enum variant's field was not provided.",
+      "tags": [
+        "E0063",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0067.md",
+      "title": "Rust Compiler Error E0067",
+      "summary": "An invalid left-hand side expression was used on an assignment operation.",
+      "tags": [
+        "E0067",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0069.md",
+      "title": "Rust Compiler Error E0069",
+      "summary": "The compiler found a function whose body contains a `return;` statement but whose return type is not `()`.",
+      "tags": [
+        "E0069",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0070.md",
+      "title": "Rust Compiler Error E0070",
+      "summary": "An assignment operator was used on a non-place expression.",
+      "tags": [
+        "E0070",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0071.md",
+      "title": "Rust Compiler Error E0071",
+      "summary": "A structure-literal syntax was used to create an item that is not a structure or enum variant.",
+      "tags": [
+        "E0071",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0072.md",
+      "title": "Rust Compiler Error E0072",
+      "summary": "A recursive type has infinite size because it doesn't have an indirection.",
+      "tags": [
+        "E0072",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0073.md",
+      "title": "Rust Compiler Error E0073",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0073",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0074.md",
+      "title": "Rust Compiler Error E0074",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0074",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0075.md",
+      "title": "Rust Compiler Error E0075",
+      "summary": "A `#[simd]` attribute was applied to an empty or multi-field struct.",
+      "tags": [
+        "E0075",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0076.md",
+      "title": "Rust Compiler Error E0076",
+      "summary": "The type of the field in a tuple struct isn't an array when using the `#[simd]` attribute.",
+      "tags": [
+        "E0076",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0077.md",
+      "title": "Rust Compiler Error E0077",
+      "summary": "A tuple struct's element isn't a machine type when using the `#[simd]` attribute.",
+      "tags": [
+        "E0077",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0080.md",
+      "title": "Rust Compiler Error E0080",
+      "summary": "A constant value failed to get evaluated.",
+      "tags": [
+        "E0080",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0081.md",
+      "title": "Rust Compiler Error E0081",
+      "summary": "A discriminant value is present more than once.",
+      "tags": [
+        "E0081",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0084.md",
+      "title": "Rust Compiler Error E0084",
+      "summary": "An unsupported representation was attempted on a zero-variant enum.",
+      "tags": [
+        "E0084",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0087.md",
+      "title": "Rust Compiler Error E0087",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0087",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0088.md",
+      "title": "Rust Compiler Error E0088",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0088",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0089.md",
+      "title": "Rust Compiler Error E0089",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0089",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0090.md",
+      "title": "Rust Compiler Error E0090",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0090",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0091.md",
+      "title": "Rust Compiler Error E0091",
+      "summary": "An unnecessary type parameter was given in a type alias.",
+      "tags": [
+        "E0091",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0092.md",
+      "title": "Rust Compiler Error E0092",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0092",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0093.md",
+      "title": "Rust Compiler Error E0093",
+      "summary": "An unknown intrinsic function was declared.",
+      "tags": [
+        "E0093",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0094.md",
+      "title": "Rust Compiler Error E0094",
+      "summary": "An invalid number of generic parameters was passed to an intrinsic function.",
+      "tags": [
+        "E0094",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0106.md",
+      "title": "Rust Compiler Error E0106",
+      "summary": "This error indicates that a lifetime is missing from a type. If it is an error inside a function signature, the problem may be with failing to adhere to the lifetime elision rules (see below).",
+      "tags": [
+        "E0106",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0107.md",
+      "title": "Rust Compiler Error E0107",
+      "summary": "An incorrect number of generic arguments was provided.",
+      "tags": [
+        "E0107",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0109.md",
+      "title": "Rust Compiler Error E0109",
+      "summary": "You tried to provide a generic argument to a type which doesn't need it.",
+      "tags": [
+        "E0109",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0110.md",
+      "title": "Rust Compiler Error E0110",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0110",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0116.md",
+      "title": "Rust Compiler Error E0116",
+      "summary": "An inherent implementation was defined for a type outside the current crate.",
+      "tags": [
+        "E0116",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0117.md",
+      "title": "Rust Compiler Error E0117",
+      "summary": "Only traits defined in the current crate can be implemented for arbitrary types.",
+      "tags": [
+        "E0117",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0118.md",
+      "title": "Rust Compiler Error E0118",
+      "summary": "An inherent implementation was defined for something which isn't a struct, enum, union, or trait object.",
+      "tags": [
+        "E0118",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0119.md",
+      "title": "Rust Compiler Error E0119",
+      "summary": "There are conflicting trait implementations for the same type.",
+      "tags": [
+        "E0119",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0120.md",
+      "title": "Rust Compiler Error E0120",
+      "summary": "`Drop` was implemented on a trait object or reference, which is not allowed; only structs, enums, and unions can implement Drop.",
+      "tags": [
+        "E0120",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0121.md",
+      "title": "Rust Compiler Error E0121",
+      "summary": "The type placeholder `_` was used within a type on an item's signature.",
+      "tags": [
+        "E0121",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0124.md",
+      "title": "Rust Compiler Error E0124",
+      "summary": "A struct was declared with two fields having the same name.",
+      "tags": [
+        "E0124",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0128.md",
+      "title": "Rust Compiler Error E0128",
+      "summary": "A type parameter with default value is using forward declared identifier.",
+      "tags": [
+        "E0128",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0130.md",
+      "title": "Rust Compiler Error E0130",
+      "summary": "A pattern was declared as an argument in a foreign function declaration.",
+      "tags": [
+        "E0130",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0131.md",
+      "title": "Rust Compiler Error E0131",
+      "summary": "The `main` function was defined with generic parameters.",
+      "tags": [
+        "E0131",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0132.md",
+      "title": "Rust Compiler Error E0132",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0132",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0133.md",
+      "title": "Rust Compiler Error E0133",
+      "summary": "Unsafe code was used outside of an unsafe block.",
+      "tags": [
+        "E0133",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0136.md",
+      "title": "Rust Compiler Error E0136",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0136",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0137.md",
+      "title": "Rust Compiler Error E0137",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0137",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0138.md",
+      "title": "Rust Compiler Error E0138",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0138",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0139.md",
+      "title": "Rust Compiler Error E0139",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0139",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0152.md",
+      "title": "Rust Compiler Error E0152",
+      "summary": "A lang item was redefined.",
+      "tags": [
+        "E0152",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0154.md",
+      "title": "Rust Compiler Error E0154",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0154",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0158.md",
+      "title": "Rust Compiler Error E0158",
+      "summary": "A generic parameter or `static` has been referenced in a pattern.",
+      "tags": [
+        "E0158",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0161.md",
+      "title": "Rust Compiler Error E0161",
+      "summary": "A value was moved whose size was not known at compile time.",
+      "tags": [
+        "E0161",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0162.md",
+      "title": "Rust Compiler Error E0162",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0162",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0164.md",
+      "title": "Rust Compiler Error E0164",
+      "summary": "Something which is neither a tuple struct nor a tuple variant was used as a pattern.",
+      "tags": [
+        "E0164",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0165.md",
+      "title": "Rust Compiler Error E0165",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0165",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0170.md",
+      "title": "Rust Compiler Error E0170",
+      "summary": "A pattern binding is using the same name as one of the variants of a type.",
+      "tags": [
+        "E0170",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0178.md",
+      "title": "Rust Compiler Error E0178",
+      "summary": "The `+` type operator was used in an ambiguous context.",
+      "tags": [
+        "E0178",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0183.md",
+      "title": "Rust Compiler Error E0183",
+      "summary": "Manual implementation of a `Fn*` trait.",
+      "tags": [
+        "E0183",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0184.md",
+      "title": "Rust Compiler Error E0184",
+      "summary": "The `Copy` trait was implemented on a type with a `Drop` implementation.",
+      "tags": [
+        "E0184",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0185.md",
+      "title": "Rust Compiler Error E0185",
+      "summary": "An associated function for a trait was defined to be static, but an implementation of the trait declared the same function to be a method (i.e., to take a `self` parameter).",
+      "tags": [
+        "E0185",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0186.md",
+      "title": "Rust Compiler Error E0186",
+      "summary": "An associated function for a trait was defined to be a method (i.e., to take a `self` parameter), but an implementation of the trait declared the same function to be static.",
+      "tags": [
+        "E0186",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0191.md",
+      "title": "Rust Compiler Error E0191",
+      "summary": "An associated type wasn't specified for a trait object.",
+      "tags": [
+        "E0191",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0192.md",
+      "title": "Rust Compiler Error E0192",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0192",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0193.md",
+      "title": "Rust Compiler Error E0193",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0193",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0195.md",
+      "title": "Rust Compiler Error E0195",
+      "summary": "The lifetime parameters of the method do not match the trait declaration.",
+      "tags": [
+        "E0195",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0197.md",
+      "title": "Rust Compiler Error E0197",
+      "summary": "An inherent implementation was marked unsafe.",
+      "tags": [
+        "E0197",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0198.md",
+      "title": "Rust Compiler Error E0198",
+      "summary": "A negative implementation was marked as unsafe.",
+      "tags": [
+        "E0198",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0199.md",
+      "title": "Rust Compiler Error E0199",
+      "summary": "A trait implementation was marked as unsafe while the trait is safe.",
+      "tags": [
+        "E0199",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0200.md",
+      "title": "Rust Compiler Error E0200",
+      "summary": "An unsafe trait was implemented without an unsafe implementation.",
+      "tags": [
+        "E0200",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0201.md",
+      "title": "Rust Compiler Error E0201",
+      "summary": "Two associated items (like methods, associated types, associated functions, etc.) were defined with the same identifier.",
+      "tags": [
+        "E0201",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0203.md",
+      "title": "Rust Compiler Error E0203",
+      "summary": "Having duplicate relaxed default bounds is unsupported.",
+      "tags": [
+        "E0203",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0204.md",
+      "title": "Rust Compiler Error E0204",
+      "summary": "The `Copy` trait was implemented on a type which contains a field that doesn't implement the `Copy` trait.",
+      "tags": [
+        "E0204",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0205.md",
+      "title": "Rust Compiler Error E0205",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0205",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0206.md",
+      "title": "Rust Compiler Error E0206",
+      "summary": "The `Copy` trait was implemented on a type which is neither a struct, an enum, nor a union.",
+      "tags": [
+        "E0206",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0207.md",
+      "title": "Rust Compiler Error E0207",
+      "summary": "A type, const or lifetime parameter that is specified for `impl` is not constrained.",
+      "tags": [
+        "E0207",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0208.md",
+      "title": "Rust Compiler Error E0208",
+      "summary": "#### This error code is internal to the compiler and will not be emitted with normal Rust code. #### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0208",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0210.md",
+      "title": "Rust Compiler Error E0210",
+      "summary": "This error indicates a violation of one of Rust's orphan rules for trait implementations. The rule concerns the use of type parameters in an implementation of a foreign trait (a trait defined in another crate), and state",
+      "tags": [
+        "E0210",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0211.md",
+      "title": "Rust Compiler Error E0211",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0211",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0212.md",
+      "title": "Rust Compiler Error E0212",
+      "summary": "Cannot use the associated type of a trait with uninferred generic parameters.",
+      "tags": [
+        "E0212",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0214.md",
+      "title": "Rust Compiler Error E0214",
+      "summary": "A generic type was described using parentheses rather than angle brackets.",
+      "tags": [
+        "E0214",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0220.md",
+      "title": "Rust Compiler Error E0220",
+      "summary": "The associated type used was not defined in the trait.",
+      "tags": [
+        "E0220",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0221.md",
+      "title": "Rust Compiler Error E0221",
+      "summary": "An attempt was made to retrieve an associated type, but the type was ambiguous.",
+      "tags": [
+        "E0221",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0222.md",
+      "title": "Rust Compiler Error E0222",
+      "summary": "An attempt was made to constrain an associated type.",
+      "tags": [
+        "E0222",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0223.md",
+      "title": "Rust Compiler Error E0223",
+      "summary": "An attempt was made to retrieve an associated type, but the type was ambiguous.",
+      "tags": [
+        "E0223",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0224.md",
+      "title": "Rust Compiler Error E0224",
+      "summary": "A trait object was declared with no traits.",
+      "tags": [
+        "E0224",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0225.md",
+      "title": "Rust Compiler Error E0225",
+      "summary": "Multiple types were used as bounds for a closure or trait object.",
+      "tags": [
+        "E0225",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0226.md",
+      "title": "Rust Compiler Error E0226",
+      "summary": "More than one explicit lifetime bound was used on a trait object.",
+      "tags": [
+        "E0226",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0227.md",
+      "title": "Rust Compiler Error E0227",
+      "summary": "This error indicates that the compiler is unable to determine whether there is exactly one unique region in the set of derived region bounds.",
+      "tags": [
+        "E0227",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0228.md",
+      "title": "Rust Compiler Error E0228",
+      "summary": "The lifetime bound for this object type cannot be deduced from context and must be specified.",
+      "tags": [
+        "E0228",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0229.md",
+      "title": "Rust Compiler Error E0229",
+      "summary": "An associated item constraint was written in an unexpected context.",
+      "tags": [
+        "E0229",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0230.md",
+      "title": "Rust Compiler Error E0230",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0230",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0231.md",
+      "title": "Rust Compiler Error E0231",
+      "summary": "#### Note: this error code is no longer emitted by the compiler",
+      "tags": [
+        "E0231",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0232.md",
+      "title": "Rust Compiler Error E0232",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0232",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0243.md",
+      "title": "Rust Compiler Error E0243",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0243",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0244.md",
+      "title": "Rust Compiler Error E0244",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0244",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0251.md",
+      "title": "Rust Compiler Error E0251",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0251",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0252.md",
+      "title": "Rust Compiler Error E0252",
+      "summary": "Two items of the same name cannot be imported without rebinding one of the items under a new local name.",
+      "tags": [
+        "E0252",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0253.md",
+      "title": "Rust Compiler Error E0253",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0253",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0254.md",
+      "title": "Rust Compiler Error E0254",
+      "summary": "Attempt was made to import an item whereas an extern crate with this name has already been imported.",
+      "tags": [
+        "E0254",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0255.md",
+      "title": "Rust Compiler Error E0255",
+      "summary": "You can't import a value whose name is the same as another value defined in the module.",
+      "tags": [
+        "E0255",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0256.md",
+      "title": "Rust Compiler Error E0256",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0256",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0259.md",
+      "title": "Rust Compiler Error E0259",
+      "summary": "The name chosen for an external crate conflicts with another external crate that has been imported into the current module.",
+      "tags": [
+        "E0259",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0260.md",
+      "title": "Rust Compiler Error E0260",
+      "summary": "The name for an item declaration conflicts with an external crate's name.",
+      "tags": [
+        "E0260",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0261.md",
+      "title": "Rust Compiler Error E0261",
+      "summary": "An undeclared lifetime was used.",
+      "tags": [
+        "E0261",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0262.md",
+      "title": "Rust Compiler Error E0262",
+      "summary": "An invalid name was used for a lifetime parameter.",
+      "tags": [
+        "E0262",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0263.md",
+      "title": "Rust Compiler Error E0263",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0263",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0264.md",
+      "title": "Rust Compiler Error E0264",
+      "summary": "An unknown external lang item was used.",
+      "tags": [
+        "E0264",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0267.md",
+      "title": "Rust Compiler Error E0267",
+      "summary": "A loop keyword (`break` or `continue`) was used inside a closure but outside of any loop.",
+      "tags": [
+        "E0267",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0268.md",
+      "title": "Rust Compiler Error E0268",
+      "summary": "A loop keyword (`break` or `continue`) was used outside of a loop.",
+      "tags": [
+        "E0268",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0271.md",
+      "title": "Rust Compiler Error E0271",
+      "summary": "A type mismatched an associated type of a trait.",
+      "tags": [
+        "E0271",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0275.md",
+      "title": "Rust Compiler Error E0275",
+      "summary": "An evaluation of a trait requirement overflowed.",
+      "tags": [
+        "E0275",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0276.md",
+      "title": "Rust Compiler Error E0276",
+      "summary": "A trait implementation has stricter requirements than the trait definition.",
+      "tags": [
+        "E0276",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0277.md",
+      "title": "Rust Compiler Error E0277",
+      "summary": "You tried to use a type which doesn't implement some trait in a place which expected that trait.",
+      "tags": [
+        "E0277",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0281.md",
+      "title": "Rust Compiler Error E0281",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0281",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0282.md",
+      "title": "Rust Compiler Error E0282",
+      "summary": "The compiler could not infer a type and asked for a type annotation.",
+      "tags": [
+        "E0282",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0283.md",
+      "title": "Rust Compiler Error E0283",
+      "summary": "The compiler could not infer a type and asked for a type annotation.",
+      "tags": [
+        "E0283",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0284.md",
+      "title": "Rust Compiler Error E0284",
+      "summary": "This error occurs when the compiler is unable to unambiguously infer the return type of a function or method which is generic on return type, such as the `collect` method for `Iterator`s.",
+      "tags": [
+        "E0284",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0297.md",
+      "title": "Rust Compiler Error E0297",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0297",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0301.md",
+      "title": "Rust Compiler Error E0301",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0301",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0302.md",
+      "title": "Rust Compiler Error E0302",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0302",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0303.md",
+      "title": "Rust Compiler Error E0303",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0303",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0307.md",
+      "title": "Rust Compiler Error E0307",
+      "summary": "The `self` parameter in a method has an invalid \"receiver type\".",
+      "tags": [
+        "E0307",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0308.md",
+      "title": "Rust Compiler Error E0308",
+      "summary": "Expected type did not match the received type.",
+      "tags": [
+        "E0308",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0309.md",
+      "title": "Rust Compiler Error E0309",
+      "summary": "A parameter type is missing an explicit lifetime bound and may not live long enough.",
+      "tags": [
+        "E0309",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0310.md",
+      "title": "Rust Compiler Error E0310",
+      "summary": "A parameter type is missing a lifetime constraint or has a lifetime that does not live long enough.",
+      "tags": [
+        "E0310",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0311.md",
+      "title": "Rust Compiler Error E0311",
+      "summary": "This error occurs when there is an unsatisfied outlives bound involving an elided region and a generic type parameter or associated type.",
+      "tags": [
+        "E0311",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0312.md",
+      "title": "Rust Compiler Error E0312",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0312",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0316.md",
+      "title": "Rust Compiler Error E0316",
+      "summary": "A `where` clause contains a nested quantification over lifetimes.",
+      "tags": [
+        "E0316",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0317.md",
+      "title": "Rust Compiler Error E0317",
+      "summary": "An `if` expression is missing an `else` block.",
+      "tags": [
+        "E0317",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0320.md",
+      "title": "Rust Compiler Error E0320",
+      "summary": "Recursion limit reached while creating drop-check rules.",
+      "tags": [
+        "E0320",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0321.md",
+      "title": "Rust Compiler Error E0321",
+      "summary": "A cross-crate opt-out trait was implemented on something which wasn't a struct or enum type.",
+      "tags": [
+        "E0321",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0322.md",
+      "title": "Rust Compiler Error E0322",
+      "summary": "A built-in trait was implemented explicitly. All implementations of the trait are provided automatically by the compiler.",
+      "tags": [
+        "E0322",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0323.md",
+      "title": "Rust Compiler Error E0323",
+      "summary": "An associated const was implemented when another trait item was expected.",
+      "tags": [
+        "E0323",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0324.md",
+      "title": "Rust Compiler Error E0324",
+      "summary": "A method was implemented when another trait item was expected.",
+      "tags": [
+        "E0324",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0325.md",
+      "title": "Rust Compiler Error E0325",
+      "summary": "An associated type was implemented when another trait item was expected.",
+      "tags": [
+        "E0325",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0326.md",
+      "title": "Rust Compiler Error E0326",
+      "summary": "An implementation of a trait doesn't match the type constraint.",
+      "tags": [
+        "E0326",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0328.md",
+      "title": "Rust Compiler Error E0328",
+      "summary": "The Unsize trait should not be implemented directly. All implementations of Unsize are provided automatically by the compiler.",
+      "tags": [
+        "E0328",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0329.md",
+      "title": "Rust Compiler Error E0329",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0329",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0364.md",
+      "title": "Rust Compiler Error E0364",
+      "summary": "Private items cannot be publicly re-exported. This error indicates that you attempted to `pub use` a type or value that was not itself public.",
+      "tags": [
+        "E0364",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0365.md",
+      "title": "Rust Compiler Error E0365",
+      "summary": "Private modules cannot be publicly re-exported. This error indicates that you attempted to `pub use` a module that was not itself public.",
+      "tags": [
+        "E0365",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0366.md",
+      "title": "Rust Compiler Error E0366",
+      "summary": "An attempt was made to implement `Drop` on a concrete specialization of a generic type. An example is shown below:",
+      "tags": [
+        "E0366",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0367.md",
+      "title": "Rust Compiler Error E0367",
+      "summary": "An attempt was made to implement `Drop` on a specialization of a generic type.",
+      "tags": [
+        "E0367",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0368.md",
+      "title": "Rust Compiler Error E0368",
+      "summary": "A binary assignment operator like `+=` or `^=` was applied to a type that doesn't support it.",
+      "tags": [
+        "E0368",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0369.md",
+      "title": "Rust Compiler Error E0369",
+      "summary": "A binary operation was attempted on a type which doesn't support it.",
+      "tags": [
+        "E0369",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0370.md",
+      "title": "Rust Compiler Error E0370",
+      "summary": "The maximum value of an enum was reached, so it cannot be automatically set in the next enum value.",
+      "tags": [
+        "E0370",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0371.md",
+      "title": "Rust Compiler Error E0371",
+      "summary": "A trait was implemented on another which already automatically implemented it.",
+      "tags": [
+        "E0371",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0373.md",
+      "title": "Rust Compiler Error E0373",
+      "summary": "A captured variable in a closure may not live long enough.",
+      "tags": [
+        "E0373",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0374.md",
+      "title": "Rust Compiler Error E0374",
+      "summary": "`CoerceUnsized` or `DispatchFromDyn` was implemented on a struct which does not contain a field that is being unsized.",
+      "tags": [
+        "E0374",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0375.md",
+      "title": "Rust Compiler Error E0375",
+      "summary": "`CoerceUnsized` or `DispatchFromDyn` was implemented on a struct which contains more than one field that is being unsized.",
+      "tags": [
+        "E0375",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0376.md",
+      "title": "Rust Compiler Error E0376",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0376",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0377.md",
+      "title": "Rust Compiler Error E0377",
+      "summary": "`CoerceUnsized` or `DispatchFromDyn` may only be implemented between structs of the same type.",
+      "tags": [
+        "E0377",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0378.md",
+      "title": "Rust Compiler Error E0378",
+      "summary": "The `DispatchFromDyn` trait was implemented on something which is not a pointer or a newtype wrapper around a pointer.",
+      "tags": [
+        "E0378",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0379.md",
+      "title": "Rust Compiler Error E0379",
+      "summary": "A trait method was declared const.",
+      "tags": [
+        "E0379",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0380.md",
+      "title": "Rust Compiler Error E0380",
+      "summary": "An auto trait was declared with a method or an associated item.",
+      "tags": [
+        "E0380",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0381.md",
+      "title": "Rust Compiler Error E0381",
+      "summary": "It is not allowed to use or capture an uninitialized variable.",
+      "tags": [
+        "E0381",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0382.md",
+      "title": "Rust Compiler Error E0382",
+      "summary": "A variable was used after its contents have been moved elsewhere.",
+      "tags": [
+        "E0382",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0383.md",
+      "title": "Rust Compiler Error E0383",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0383",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0384.md",
+      "title": "Rust Compiler Error E0384",
+      "summary": "An immutable variable was reassigned.",
+      "tags": [
+        "E0384",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0386.md",
+      "title": "Rust Compiler Error E0386",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0386",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0387.md",
+      "title": "Rust Compiler Error E0387",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0387",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0388.md",
+      "title": "Rust Compiler Error E0388",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0388",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0389.md",
+      "title": "Rust Compiler Error E0389",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0389",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0390.md",
+      "title": "Rust Compiler Error E0390",
+      "summary": "A method or constant was implemented on a primitive type.",
+      "tags": [
+        "E0390",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0391.md",
+      "title": "Rust Compiler Error E0391",
+      "summary": "A type dependency cycle has been encountered.",
+      "tags": [
+        "E0391",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0392.md",
+      "title": "Rust Compiler Error E0392",
+      "summary": "A type or lifetime parameter has been declared but is not actually used.",
+      "tags": [
+        "E0392",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0393.md",
+      "title": "Rust Compiler Error E0393",
+      "summary": "A type parameter which references `Self` in its default value was not specified.",
+      "tags": [
+        "E0393",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0398.md",
+      "title": "Rust Compiler Error E0398",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0398",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0399.md",
+      "title": "Rust Compiler Error E0399",
+      "summary": "#### Note: this error code is no longer emitted by the compiler",
+      "tags": [
+        "E0399",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0401.md",
+      "title": "Rust Compiler Error E0401",
+      "summary": "Inner items do not inherit the generic parameters from the items they are embedded in.",
+      "tags": [
+        "E0401",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0403.md",
+      "title": "Rust Compiler Error E0403",
+      "summary": "Some type parameters have the same name.",
+      "tags": [
+        "E0403",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0404.md",
+      "title": "Rust Compiler Error E0404",
+      "summary": "A type that is not a trait was used in a trait position, such as a bound or `impl`.",
+      "tags": [
+        "E0404",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0405.md",
+      "title": "Rust Compiler Error E0405",
+      "summary": "The code refers to a trait that is not in scope.",
+      "tags": [
+        "E0405",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0407.md",
+      "title": "Rust Compiler Error E0407",
+      "summary": "A definition of a method not in the implemented trait was given in a trait implementation.",
+      "tags": [
+        "E0407",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0408.md",
+      "title": "Rust Compiler Error E0408",
+      "summary": "An \"or\" pattern was used where the variable bindings are not consistently bound across patterns.",
+      "tags": [
+        "E0408",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0409.md",
+      "title": "Rust Compiler Error E0409",
+      "summary": "An \"or\" pattern was used where the variable bindings are not consistently bound across patterns.",
+      "tags": [
+        "E0409",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0411.md",
+      "title": "Rust Compiler Error E0411",
+      "summary": "The `Self` keyword was used outside an impl, trait, or type definition.",
+      "tags": [
+        "E0411",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0412.md",
+      "title": "Rust Compiler Error E0412",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0412",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0415.md",
+      "title": "Rust Compiler Error E0415",
+      "summary": "More than one function parameter have the same name.",
+      "tags": [
+        "E0415",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0416.md",
+      "title": "Rust Compiler Error E0416",
+      "summary": "An identifier is bound more than once in a pattern.",
+      "tags": [
+        "E0416",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0422.md",
+      "title": "Rust Compiler Error E0422",
+      "summary": "An identifier that is neither defined nor a struct was used.",
+      "tags": [
+        "E0422",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0423.md",
+      "title": "Rust Compiler Error E0423",
+      "summary": "An identifier was used like a function name or a value was expected and the identifier exists but it belongs to a different namespace.",
+      "tags": [
+        "E0423",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0424.md",
+      "title": "Rust Compiler Error E0424",
+      "summary": "The `self` keyword was used inside of an associated function without a \"`self` receiver\" parameter.",
+      "tags": [
+        "E0424",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0425.md",
+      "title": "Rust Compiler Error E0425",
+      "summary": "An unresolved name was used.",
+      "tags": [
+        "E0425",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0426.md",
+      "title": "Rust Compiler Error E0426",
+      "summary": "An undeclared label was used.",
+      "tags": [
+        "E0426",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0428.md",
+      "title": "Rust Compiler Error E0428",
+      "summary": "A type or module has been defined more than once.",
+      "tags": [
+        "E0428",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0429.md",
+      "title": "Rust Compiler Error E0429",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0429",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0430.md",
+      "title": "Rust Compiler Error E0430",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0430",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0431.md",
+      "title": "Rust Compiler Error E0431",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0431",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0432.md",
+      "title": "Rust Compiler Error E0432",
+      "summary": "An import was unresolved.",
+      "tags": [
+        "E0432",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0433.md",
+      "title": "Rust Compiler Error E0433",
+      "summary": "An undeclared crate, module, or type was used.",
+      "tags": [
+        "E0433",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0434.md",
+      "title": "Rust Compiler Error E0434",
+      "summary": "A variable used inside an inner function comes from a dynamic environment.",
+      "tags": [
+        "E0434",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0435.md",
+      "title": "Rust Compiler Error E0435",
+      "summary": "A non-constant value was used in a constant expression.",
+      "tags": [
+        "E0435",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0436.md",
+      "title": "Rust Compiler Error E0436",
+      "summary": "The functional record update syntax was used on something other than a struct.",
+      "tags": [
+        "E0436",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0437.md",
+      "title": "Rust Compiler Error E0437",
+      "summary": "An associated type whose name does not match any of the associated types in the trait was used when implementing the trait.",
+      "tags": [
+        "E0437",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0438.md",
+      "title": "Rust Compiler Error E0438",
+      "summary": "An associated constant whose name does not match any of the associated constants in the trait was used when implementing the trait.",
+      "tags": [
+        "E0438",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0439.md",
+      "title": "Rust Compiler Error E0439",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0439",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0445.md",
+      "title": "Rust Compiler Error E0445",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0445",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0446.md",
+      "title": "Rust Compiler Error E0446",
+      "summary": "A private type or trait was used in a public associated type signature.",
+      "tags": [
+        "E0446",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0447.md",
+      "title": "Rust Compiler Error E0447",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0447",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0448.md",
+      "title": "Rust Compiler Error E0448",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0448",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0449.md",
+      "title": "Rust Compiler Error E0449",
+      "summary": "A visibility qualifier was used where one is not permitted. Visibility qualifiers are not permitted on enum variants, trait items, impl blocks, and extern blocks, as they already share the visibility of the parent item.",
+      "tags": [
+        "E0449",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0451.md",
+      "title": "Rust Compiler Error E0451",
+      "summary": "A struct constructor with private fields was invoked.",
+      "tags": [
+        "E0451",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0452.md",
+      "title": "Rust Compiler Error E0452",
+      "summary": "An invalid lint attribute has been given.",
+      "tags": [
+        "E0452",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0453.md",
+      "title": "Rust Compiler Error E0453",
+      "summary": "A lint check attribute was overruled by a `forbid` directive set as an attribute on an enclosing scope, or on the command line with the `-F` option.",
+      "tags": [
+        "E0453",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0454.md",
+      "title": "Rust Compiler Error E0454",
+      "summary": "A link name was given with an empty name.",
+      "tags": [
+        "E0454",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0455.md",
+      "title": "Rust Compiler Error E0455",
+      "summary": "Some linking kinds are target-specific and not supported on all platforms.",
+      "tags": [
+        "E0455",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0457.md",
+      "title": "Rust Compiler Error E0457",
+      "summary": "#### Note: this error code is no longer emitted by the compiler",
+      "tags": [
+        "E0457",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0458.md",
+      "title": "Rust Compiler Error E0458",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0458",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0459.md",
+      "title": "Rust Compiler Error E0459",
+      "summary": "A link was used without a name parameter.",
+      "tags": [
+        "E0459",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0460.md",
+      "title": "Rust Compiler Error E0460",
+      "summary": "Found possibly newer version of crate `..` which `..` depends on.",
+      "tags": [
+        "E0460",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0461.md",
+      "title": "Rust Compiler Error E0461",
+      "summary": "Couldn't find crate `..` with expected target triple `..`.",
+      "tags": [
+        "E0461",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0462.md",
+      "title": "Rust Compiler Error E0462",
+      "summary": "Found `staticlib` `..` instead of `rlib` or `dylib`.",
+      "tags": [
+        "E0462",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0463.md",
+      "title": "Rust Compiler Error E0463",
+      "summary": "A crate was declared but cannot be found.",
+      "tags": [
+        "E0463",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0464.md",
+      "title": "Rust Compiler Error E0464",
+      "summary": "The compiler found multiple library files with the requested crate name.",
+      "tags": [
+        "E0464",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0466.md",
+      "title": "Rust Compiler Error E0466",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0466",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0468.md",
+      "title": "Rust Compiler Error E0468",
+      "summary": "A non-root module tried to import macros from another crate.",
+      "tags": [
+        "E0468",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0469.md",
+      "title": "Rust Compiler Error E0469",
+      "summary": "A macro listed for import was not found.",
+      "tags": [
+        "E0469",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0472.md",
+      "title": "Rust Compiler Error E0472",
+      "summary": "Inline assembly (`asm!`) is not supported on this target.",
+      "tags": [
+        "E0472",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0476.md",
+      "title": "Rust Compiler Error E0476",
+      "summary": "The coerced type does not outlive the value being coerced to.",
+      "tags": [
+        "E0476",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0477.md",
+      "title": "Rust Compiler Error E0477",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0477",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0478.md",
+      "title": "Rust Compiler Error E0478",
+      "summary": "A lifetime bound was not satisfied.",
+      "tags": [
+        "E0478",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0482.md",
+      "title": "Rust Compiler Error E0482",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0482",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0491.md",
+      "title": "Rust Compiler Error E0491",
+      "summary": "A reference has a longer lifetime than the data it references.",
+      "tags": [
+        "E0491",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0492.md",
+      "title": "Rust Compiler Error E0492",
+      "summary": "A borrow of a constant containing interior mutability was attempted.",
+      "tags": [
+        "E0492",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0493.md",
+      "title": "Rust Compiler Error E0493",
+      "summary": "A value with a custom `Drop` implementation may be dropped during const-eval.",
+      "tags": [
+        "E0493",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0495.md",
+      "title": "Rust Compiler Error E0495",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0495",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0496.md",
+      "title": "Rust Compiler Error E0496",
+      "summary": "A lifetime name is shadowing another lifetime name.",
+      "tags": [
+        "E0496",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0497.md",
+      "title": "Rust Compiler Error E0497",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0497",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0498.md",
+      "title": "Rust Compiler Error E0498",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0498",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0499.md",
+      "title": "Rust Compiler Error E0499",
+      "summary": "A variable was borrowed as mutable more than once.",
+      "tags": [
+        "E0499",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0500.md",
+      "title": "Rust Compiler Error E0500",
+      "summary": "A borrowed variable was used by a closure.",
+      "tags": [
+        "E0500",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0501.md",
+      "title": "Rust Compiler Error E0501",
+      "summary": "A mutable variable is used but it is already captured by a closure.",
+      "tags": [
+        "E0501",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0502.md",
+      "title": "Rust Compiler Error E0502",
+      "summary": "A variable already borrowed with a certain mutability (either mutable or immutable) was borrowed again with a different mutability.",
+      "tags": [
+        "E0502",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0503.md",
+      "title": "Rust Compiler Error E0503",
+      "summary": "A value was used after it was mutably borrowed.",
+      "tags": [
+        "E0503",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0504.md",
+      "title": "Rust Compiler Error E0504",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0504",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0505.md",
+      "title": "Rust Compiler Error E0505",
+      "summary": "A value was moved out while it was still borrowed.",
+      "tags": [
+        "E0505",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0506.md",
+      "title": "Rust Compiler Error E0506",
+      "summary": "An attempt was made to assign to a borrowed value.",
+      "tags": [
+        "E0506",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0507.md",
+      "title": "Rust Compiler Error E0507",
+      "summary": "A borrowed value was moved out.",
+      "tags": [
+        "E0507",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0508.md",
+      "title": "Rust Compiler Error E0508",
+      "summary": "A value was moved out of a non-copy fixed-size array.",
+      "tags": [
+        "E0508",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0509.md",
+      "title": "Rust Compiler Error E0509",
+      "summary": "This error occurs when an attempt is made to move out of a value whose type implements the `Drop` trait.",
+      "tags": [
+        "E0509",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0510.md",
+      "title": "Rust Compiler Error E0510",
+      "summary": "The matched value was assigned in a match guard.",
+      "tags": [
+        "E0510",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0511.md",
+      "title": "Rust Compiler Error E0511",
+      "summary": "Invalid monomorphization of an intrinsic function was used.",
+      "tags": [
+        "E0511",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0512.md",
+      "title": "Rust Compiler Error E0512",
+      "summary": "Transmute with two differently sized types was attempted.",
+      "tags": [
+        "E0512",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0514.md",
+      "title": "Rust Compiler Error E0514",
+      "summary": "Dependency compiled with different version of `rustc`.",
+      "tags": [
+        "E0514",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0515.md",
+      "title": "Rust Compiler Error E0515",
+      "summary": "A reference to a local variable was returned.",
+      "tags": [
+        "E0515",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0516.md",
+      "title": "Rust Compiler Error E0516",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0516",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0517.md",
+      "title": "Rust Compiler Error E0517",
+      "summary": "#### Note: this error code is no longer emitted by the compiler. This error code was replaced with the `attribute cannot be used on...` diagnostic that does not have an error code.",
+      "tags": [
+        "E0517",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0518.md",
+      "title": "Rust Compiler Error E0518",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0518",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0519.md",
+      "title": "Rust Compiler Error E0519",
+      "summary": "The current crate is indistinguishable from one of its dependencies, in terms of metadata.",
+      "tags": [
+        "E0519",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0520.md",
+      "title": "Rust Compiler Error E0520",
+      "summary": "A non-default implementation was already made on this type so it cannot be specialized further.",
+      "tags": [
+        "E0520",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0521.md",
+      "title": "Rust Compiler Error E0521",
+      "summary": "Borrowed data escapes outside of closure.",
+      "tags": [
+        "E0521",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0522.md",
+      "title": "Rust Compiler Error E0522",
+      "summary": "The lang attribute was used in an invalid context.",
+      "tags": [
+        "E0522",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0523.md",
+      "title": "Rust Compiler Error E0523",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0523",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0524.md",
+      "title": "Rust Compiler Error E0524",
+      "summary": "A variable which requires unique access is being used in more than one closure at the same time.",
+      "tags": [
+        "E0524",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0525.md",
+      "title": "Rust Compiler Error E0525",
+      "summary": "A closure was used but didn't implement the expected trait.",
+      "tags": [
+        "E0525",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0527.md",
+      "title": "Rust Compiler Error E0527",
+      "summary": "The number of elements in an array or slice pattern differed from the number of elements in the array being matched.",
+      "tags": [
+        "E0527",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0528.md",
+      "title": "Rust Compiler Error E0528",
+      "summary": "An array or slice pattern required more elements than were present in the matched array.",
+      "tags": [
+        "E0528",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0529.md",
+      "title": "Rust Compiler Error E0529",
+      "summary": "An array or slice pattern was matched against some other type.",
+      "tags": [
+        "E0529",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0530.md",
+      "title": "Rust Compiler Error E0530",
+      "summary": "A binding shadowed something it shouldn't.",
+      "tags": [
+        "E0530",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0531.md",
+      "title": "Rust Compiler Error E0531",
+      "summary": "An unknown tuple struct/variant has been used.",
+      "tags": [
+        "E0531",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0532.md",
+      "title": "Rust Compiler Error E0532",
+      "summary": "Pattern arm did not match expected kind.",
+      "tags": [
+        "E0532",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0533.md",
+      "title": "Rust Compiler Error E0533",
+      "summary": "An item which isn't a unit struct, a variant, nor a constant has been used as a match pattern.",
+      "tags": [
+        "E0533",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0534.md",
+      "title": "Rust Compiler Error E0534",
+      "summary": "#### Note: this error code is no longer emitted by the compiler",
+      "tags": [
+        "E0534",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0535.md",
+      "title": "Rust Compiler Error E0535",
+      "summary": "#### Note: this error code is no longer emitted by the compiler",
+      "tags": [
+        "E0535",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0536.md",
+      "title": "Rust Compiler Error E0536",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0536",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0537.md",
+      "title": "Rust Compiler Error E0537",
+      "summary": "#### Note: this error code is no longer emitted by the compiler An unknown predicate was used inside the `cfg` attribute.",
+      "tags": [
+        "E0537",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0538.md",
+      "title": "Rust Compiler Error E0538",
+      "summary": "Attribute contains same meta item more than once.",
+      "tags": [
+        "E0538",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0539.md",
+      "title": "Rust Compiler Error E0539",
+      "summary": "An invalid meta-item was used inside an attribute.",
+      "tags": [
+        "E0539",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0541.md",
+      "title": "Rust Compiler Error E0541",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0541",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0542.md",
+      "title": "Rust Compiler Error E0542",
+      "summary": "The `since` value is missing in a stability attribute.",
+      "tags": [
+        "E0542",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0543.md",
+      "title": "Rust Compiler Error E0543",
+      "summary": "The `note` value is missing in a stability attribute.",
+      "tags": [
+        "E0543",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0544.md",
+      "title": "Rust Compiler Error E0544",
+      "summary": "Multiple stability attributes were declared on the same item.",
+      "tags": [
+        "E0544",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0545.md",
+      "title": "Rust Compiler Error E0545",
+      "summary": "The `issue` value is incorrect in a stability attribute.",
+      "tags": [
+        "E0545",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0546.md",
+      "title": "Rust Compiler Error E0546",
+      "summary": "The `feature` value is missing in a stability attribute.",
+      "tags": [
+        "E0546",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0547.md",
+      "title": "Rust Compiler Error E0547",
+      "summary": "The `issue` value is missing in a stability attribute.",
+      "tags": [
+        "E0547",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0549.md",
+      "title": "Rust Compiler Error E0549",
+      "summary": "A `deprecated` attribute wasn't paired with a `stable`/`unstable` attribute with `#![feature(staged_api)]` enabled.",
+      "tags": [
+        "E0549",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0550.md",
+      "title": "Rust Compiler Error E0550",
+      "summary": "#### Note: this error code is no longer emitted by the compiler",
+      "tags": [
+        "E0550",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0551.md",
+      "title": "Rust Compiler Error E0551",
+      "summary": "#### Note: this error code is no longer emitted by the compiler",
+      "tags": [
+        "E0551",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0552.md",
+      "title": "Rust Compiler Error E0552",
+      "summary": "#### Note: this error code is no longer emitted by the compiler. This error code was replaced by `E0539`.",
+      "tags": [
+        "E0552",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0554.md",
+      "title": "Rust Compiler Error E0554",
+      "summary": "Feature attributes are only allowed on the nightly release channel. Stable or beta compilers will not comply.",
+      "tags": [
+        "E0554",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0556.md",
+      "title": "Rust Compiler Error E0556",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0556",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0557.md",
+      "title": "Rust Compiler Error E0557",
+      "summary": "A feature attribute named a feature that has been removed.",
+      "tags": [
+        "E0557",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0559.md",
+      "title": "Rust Compiler Error E0559",
+      "summary": "An unknown field was specified into an enum's structure variant.",
+      "tags": [
+        "E0559",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0560.md",
+      "title": "Rust Compiler Error E0560",
+      "summary": "An unknown field was specified into a structure.",
+      "tags": [
+        "E0560",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0561.md",
+      "title": "Rust Compiler Error E0561",
+      "summary": "A non-ident or non-wildcard pattern has been used as a parameter of a function pointer type.",
+      "tags": [
+        "E0561",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0562.md",
+      "title": "Rust Compiler Error E0562",
+      "summary": "`impl Trait` is only allowed as a function return and argument type.",
+      "tags": [
+        "E0562",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0565.md",
+      "title": "Rust Compiler Error E0565",
+      "summary": "A literal was used in a built-in attribute that doesn't support literals.",
+      "tags": [
+        "E0565",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0566.md",
+      "title": "Rust Compiler Error E0566",
+      "summary": "Conflicting representation hints have been used on a same item.",
+      "tags": [
+        "E0566",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0567.md",
+      "title": "Rust Compiler Error E0567",
+      "summary": "Generics have been used on an auto trait.",
+      "tags": [
+        "E0567",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0568.md",
+      "title": "Rust Compiler Error E0568",
+      "summary": "A super trait has been added to an auto trait.",
+      "tags": [
+        "E0568",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0569.md",
+      "title": "Rust Compiler Error E0569",
+      "summary": "If an impl has a generic parameter with the `#[may_dangle]` attribute, then that impl must be declared as an `unsafe impl`.",
+      "tags": [
+        "E0569",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0570.md",
+      "title": "Rust Compiler Error E0570",
+      "summary": "The requested ABI is unsupported by the current target.",
+      "tags": [
+        "E0570",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0571.md",
+      "title": "Rust Compiler Error E0571",
+      "summary": "A `break` statement with an argument appeared in a non-`loop` loop.",
+      "tags": [
+        "E0571",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0572.md",
+      "title": "Rust Compiler Error E0572",
+      "summary": "A return statement was found outside of a function body.",
+      "tags": [
+        "E0572",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0573.md",
+      "title": "Rust Compiler Error E0573",
+      "summary": "Something other than a type has been used when one was expected.",
+      "tags": [
+        "E0573",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0574.md",
+      "title": "Rust Compiler Error E0574",
+      "summary": "Something other than a struct, variant or union has been used when one was expected.",
+      "tags": [
+        "E0574",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0575.md",
+      "title": "Rust Compiler Error E0575",
+      "summary": "Something other than a type or an associated type was given.",
+      "tags": [
+        "E0575",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0576.md",
+      "title": "Rust Compiler Error E0576",
+      "summary": "An associated item wasn't found in the given type.",
+      "tags": [
+        "E0576",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0577.md",
+      "title": "Rust Compiler Error E0577",
+      "summary": "Something other than a module was found in visibility scope.",
+      "tags": [
+        "E0577",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0578.md",
+      "title": "Rust Compiler Error E0578",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0578",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0579.md",
+      "title": "Rust Compiler Error E0579",
+      "summary": "A lower range wasn't less than the upper range.",
+      "tags": [
+        "E0579",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0580.md",
+      "title": "Rust Compiler Error E0580",
+      "summary": "The `main` function was incorrectly declared.",
+      "tags": [
+        "E0580",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0581.md",
+      "title": "Rust Compiler Error E0581",
+      "summary": "In a `fn` type, a lifetime appears only in the return type and not in the arguments types.",
+      "tags": [
+        "E0581",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0582.md",
+      "title": "Rust Compiler Error E0582",
+      "summary": "A lifetime is only present in an associated-type binding, and not in the input types to the trait.",
+      "tags": [
+        "E0582",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0583.md",
+      "title": "Rust Compiler Error E0583",
+      "summary": "A file wasn't found for an out-of-line module.",
+      "tags": [
+        "E0583",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0584.md",
+      "title": "Rust Compiler Error E0584",
+      "summary": "A doc comment that is not attached to anything has been encountered.",
+      "tags": [
+        "E0584",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0585.md",
+      "title": "Rust Compiler Error E0585",
+      "summary": "A documentation comment that doesn't document anything was found.",
+      "tags": [
+        "E0585",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0586.md",
+      "title": "Rust Compiler Error E0586",
+      "summary": "An inclusive range was used with no end.",
+      "tags": [
+        "E0586",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0587.md",
+      "title": "Rust Compiler Error E0587",
+      "summary": "A type has both `packed` and `align` representation hints.",
+      "tags": [
+        "E0587",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0588.md",
+      "title": "Rust Compiler Error E0588",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0588",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0589.md",
+      "title": "Rust Compiler Error E0589",
+      "summary": "The value of `N` that was specified for `repr(align(N))` was not a power of two, or was greater than 2^29.",
+      "tags": [
+        "E0589",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0590.md",
+      "title": "Rust Compiler Error E0590",
+      "summary": "`break` or `continue` keywords were used in a condition of a `while` loop without a label.",
+      "tags": [
+        "E0590",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0591.md",
+      "title": "Rust Compiler Error E0591",
+      "summary": "Per [RFC 401][rfc401], if you have a function declaration `foo`:",
+      "tags": [
+        "E0591",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0592.md",
+      "title": "Rust Compiler Error E0592",
+      "summary": "This error occurs when you defined methods or associated functions with same name.",
+      "tags": [
+        "E0592",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0593.md",
+      "title": "Rust Compiler Error E0593",
+      "summary": "You tried to supply an `Fn`-based type with an incorrect number of arguments than what was expected.",
+      "tags": [
+        "E0593",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0594.md",
+      "title": "Rust Compiler Error E0594",
+      "summary": "A non-mutable value was assigned a value.",
+      "tags": [
+        "E0594",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0595.md",
+      "title": "Rust Compiler Error E0595",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0595",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0596.md",
+      "title": "Rust Compiler Error E0596",
+      "summary": "This error occurs because you tried to mutably borrow a non-mutable variable.",
+      "tags": [
+        "E0596",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0597.md",
+      "title": "Rust Compiler Error E0597",
+      "summary": "This error occurs because a value was dropped while it was still borrowed.",
+      "tags": [
+        "E0597",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0599.md",
+      "title": "Rust Compiler Error E0599",
+      "summary": "This error occurs when a method is used on a type which doesn't implement it:",
+      "tags": [
+        "E0599",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0600.md",
+      "title": "Rust Compiler Error E0600",
+      "summary": "An unary operator was used on a type which doesn't implement it.",
+      "tags": [
+        "E0600",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0601.md",
+      "title": "Rust Compiler Error E0601",
+      "summary": "No `main` function was found in a binary crate.",
+      "tags": [
+        "E0601",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0602.md",
+      "title": "Rust Compiler Error E0602",
+      "summary": "An unknown or invalid lint was used on the command line.",
+      "tags": [
+        "E0602",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0603.md",
+      "title": "Rust Compiler Error E0603",
+      "summary": "A private item was used outside its scope.",
+      "tags": [
+        "E0603",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0604.md",
+      "title": "Rust Compiler Error E0604",
+      "summary": "A cast to `char` was attempted on a type other than `u8`.",
+      "tags": [
+        "E0604",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0605.md",
+      "title": "Rust Compiler Error E0605",
+      "summary": "An invalid cast was attempted.",
+      "tags": [
+        "E0605",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0606.md",
+      "title": "Rust Compiler Error E0606",
+      "summary": "An incompatible cast was attempted.",
+      "tags": [
+        "E0606",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0607.md",
+      "title": "Rust Compiler Error E0607",
+      "summary": "A cast between a thin and a wide pointer was attempted.",
+      "tags": [
+        "E0607",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0608.md",
+      "title": "Rust Compiler Error E0608",
+      "summary": "Attempted to index a value whose type doesn't implement the `std::ops::Index` trait.",
+      "tags": [
+        "E0608",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0609.md",
+      "title": "Rust Compiler Error E0609",
+      "summary": "Attempted to access a nonexistent field in a struct.",
+      "tags": [
+        "E0609",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0610.md",
+      "title": "Rust Compiler Error E0610",
+      "summary": "Attempted to access a field on a primitive type.",
+      "tags": [
+        "E0610",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0614.md",
+      "title": "Rust Compiler Error E0614",
+      "summary": "Attempted to dereference a variable which cannot be dereferenced.",
+      "tags": [
+        "E0614",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0615.md",
+      "title": "Rust Compiler Error E0615",
+      "summary": "Attempted to access a method like a field.",
+      "tags": [
+        "E0615",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0616.md",
+      "title": "Rust Compiler Error E0616",
+      "summary": "Attempted to access a private field on a struct.",
+      "tags": [
+        "E0616",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0617.md",
+      "title": "Rust Compiler Error E0617",
+      "summary": "Attempted to pass an invalid type of variable into a variadic function.",
+      "tags": [
+        "E0617",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0618.md",
+      "title": "Rust Compiler Error E0618",
+      "summary": "Attempted to call something which isn't a function nor a method.",
+      "tags": [
+        "E0618",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0619.md",
+      "title": "Rust Compiler Error E0619",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0619",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0620.md",
+      "title": "Rust Compiler Error E0620",
+      "summary": "A cast to an unsized type was attempted.",
+      "tags": [
+        "E0620",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0621.md",
+      "title": "Rust Compiler Error E0621",
+      "summary": "This error code indicates a mismatch between the lifetimes appearing in the function signature (i.e., the parameter types and the return type) and the data-flow found in the function body.",
+      "tags": [
+        "E0621",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0622.md",
+      "title": "Rust Compiler Error E0622",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0622",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0623.md",
+      "title": "Rust Compiler Error E0623",
+      "summary": "A lifetime didn't match what was expected.",
+      "tags": [
+        "E0623",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0624.md",
+      "title": "Rust Compiler Error E0624",
+      "summary": "A private item was used outside of its scope.",
+      "tags": [
+        "E0624",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0625.md",
+      "title": "Rust Compiler Error E0625",
+      "summary": "A compile-time const variable is referring to a thread-local static variable.",
+      "tags": [
+        "E0625",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0626.md",
+      "title": "Rust Compiler Error E0626",
+      "summary": "This error occurs because a borrow in a movable coroutine persists across a yield point.",
+      "tags": [
+        "E0626",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0627.md",
+      "title": "Rust Compiler Error E0627",
+      "summary": "A yield expression was used outside of the coroutine literal.",
+      "tags": [
+        "E0627",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0628.md",
+      "title": "Rust Compiler Error E0628",
+      "summary": "More than one parameter was used for a coroutine.",
+      "tags": [
+        "E0628",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0631.md",
+      "title": "Rust Compiler Error E0631",
+      "summary": "This error indicates a type mismatch in closure arguments.",
+      "tags": [
+        "E0631",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0632.md",
+      "title": "Rust Compiler Error E0632",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0632",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0633.md",
+      "title": "Rust Compiler Error E0633",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0633",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0634.md",
+      "title": "Rust Compiler Error E0634",
+      "summary": "A type has conflicting `packed` representation hints.",
+      "tags": [
+        "E0634",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0635.md",
+      "title": "Rust Compiler Error E0635",
+      "summary": "The `#![feature]` attribute specified an unknown feature.",
+      "tags": [
+        "E0635",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0636.md",
+      "title": "Rust Compiler Error E0636",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0636",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0637.md",
+      "title": "Rust Compiler Error E0637",
+      "summary": "`'_` lifetime name or `&T` without an explicit lifetime name has been used in an illegal place.",
+      "tags": [
+        "E0637",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0638.md",
+      "title": "Rust Compiler Error E0638",
+      "summary": "This error indicates that the struct, enum or enum variant must be matched non-exhaustively as it has been marked as `non_exhaustive`.",
+      "tags": [
+        "E0638",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0639.md",
+      "title": "Rust Compiler Error E0639",
+      "summary": "This error indicates that the struct, enum or enum variant cannot be instantiated from outside of the defining crate as it has been marked as `non_exhaustive` and as such more fields/variants may be added in future that ",
+      "tags": [
+        "E0639",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0640.md",
+      "title": "Rust Compiler Error E0640",
+      "summary": "#### This error code is internal to the compiler and will not be emitted with normal Rust code. #### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0640",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0641.md",
+      "title": "Rust Compiler Error E0641",
+      "summary": "Attempted to cast to/from a pointer with an unknown kind.",
+      "tags": [
+        "E0641",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0642.md",
+      "title": "Rust Compiler Error E0642",
+      "summary": "Trait methods currently cannot take patterns as arguments.",
+      "tags": [
+        "E0642",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0643.md",
+      "title": "Rust Compiler Error E0643",
+      "summary": "This error indicates that there is a mismatch between generic parameters and impl Trait parameters in a trait declaration versus its impl.",
+      "tags": [
+        "E0643",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0644.md",
+      "title": "Rust Compiler Error E0644",
+      "summary": "A closure or generator was constructed that references its own type.",
+      "tags": [
+        "E0644",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0646.md",
+      "title": "Rust Compiler Error E0646",
+      "summary": "It is not possible to define `main` with a where clause.",
+      "tags": [
+        "E0646",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0647.md",
+      "title": "Rust Compiler Error E0647",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0647",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0648.md",
+      "title": "Rust Compiler Error E0648",
+      "summary": "An `export_name` attribute contains null characters (`\\0`).",
+      "tags": [
+        "E0648",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0657.md",
+      "title": "Rust Compiler Error E0657",
+      "summary": "An `impl Trait` captured a higher-ranked lifetime, which is not supported.",
+      "tags": [
+        "E0657",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0658.md",
+      "title": "Rust Compiler Error E0658",
+      "summary": "An unstable feature was used.",
+      "tags": [
+        "E0658",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0659.md",
+      "title": "Rust Compiler Error E0659",
+      "summary": "An item usage is ambiguous.",
+      "tags": [
+        "E0659",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0660.md",
+      "title": "Rust Compiler Error E0660",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0660",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0661.md",
+      "title": "Rust Compiler Error E0661",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0661",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0662.md",
+      "title": "Rust Compiler Error E0662",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0662",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0663.md",
+      "title": "Rust Compiler Error E0663",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0663",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0664.md",
+      "title": "Rust Compiler Error E0664",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0664",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0665.md",
+      "title": "Rust Compiler Error E0665",
+      "summary": "The `Default` trait was derived on an enum without specifying the default variant.",
+      "tags": [
+        "E0665",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0666.md",
+      "title": "Rust Compiler Error E0666",
+      "summary": "`impl Trait` types cannot appear nested in the generic arguments of other `impl Trait` types.",
+      "tags": [
+        "E0666",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0667.md",
+      "title": "Rust Compiler Error E0667",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0667",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0668.md",
+      "title": "Rust Compiler Error E0668",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0668",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0669.md",
+      "title": "Rust Compiler Error E0669",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0669",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0670.md",
+      "title": "Rust Compiler Error E0670",
+      "summary": "Rust 2015 does not permit the use of `async fn`.",
+      "tags": [
+        "E0670",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0671.md",
+      "title": "Rust Compiler Error E0671",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0671",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0687.md",
+      "title": "Rust Compiler Error E0687",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0687",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0688.md",
+      "title": "Rust Compiler Error E0688",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0688",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0689.md",
+      "title": "Rust Compiler Error E0689",
+      "summary": "A method was called on an ambiguous numeric type.",
+      "tags": [
+        "E0689",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0690.md",
+      "title": "Rust Compiler Error E0690",
+      "summary": "A struct with the representation hint `repr(transparent)` had two or more fields that were not guaranteed to be zero-sized.",
+      "tags": [
+        "E0690",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0691.md",
+      "title": "Rust Compiler Error E0691",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0691",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0692.md",
+      "title": "Rust Compiler Error E0692",
+      "summary": "A `repr(transparent)` type was also annotated with other, incompatible representation hints.",
+      "tags": [
+        "E0692",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0693.md",
+      "title": "Rust Compiler Error E0693",
+      "summary": "#### Note: this error code is no longer emitted by the compiler. This error code was replaced by `E0539`.",
+      "tags": [
+        "E0693",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0695.md",
+      "title": "Rust Compiler Error E0695",
+      "summary": "A `break` statement without a label appeared inside a labeled block.",
+      "tags": [
+        "E0695",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0696.md",
+      "title": "Rust Compiler Error E0696",
+      "summary": "A function is using `continue` keyword incorrectly.",
+      "tags": [
+        "E0696",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0697.md",
+      "title": "Rust Compiler Error E0697",
+      "summary": "A closure has been used as `static`.",
+      "tags": [
+        "E0697",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0698.md",
+      "title": "Rust Compiler Error E0698",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0698",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0699.md",
+      "title": "Rust Compiler Error E0699",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0699",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0700.md",
+      "title": "Rust Compiler Error E0700",
+      "summary": "The `impl Trait` return type captures lifetime parameters that do not appear within the `impl Trait` itself.",
+      "tags": [
+        "E0700",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0701.md",
+      "title": "Rust Compiler Error E0701",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0701",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0703.md",
+      "title": "Rust Compiler Error E0703",
+      "summary": "Invalid ABI (Application Binary Interface) used in the code.",
+      "tags": [
+        "E0703",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0704.md",
+      "title": "Rust Compiler Error E0704",
+      "summary": "An incorrect visibility restriction was specified.",
+      "tags": [
+        "E0704",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0705.md",
+      "title": "Rust Compiler Error E0705",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0705",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0706.md",
+      "title": "Rust Compiler Error E0706",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0706",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0708.md",
+      "title": "Rust Compiler Error E0708",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0708",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0710.md",
+      "title": "Rust Compiler Error E0710",
+      "summary": "An unknown tool name was found in a scoped lint.",
+      "tags": [
+        "E0710",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0711.md",
+      "title": "Rust Compiler Error E0711",
+      "summary": "#### This error code is internal to the compiler and will not be emitted with normal Rust code.",
+      "tags": [
+        "E0711",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0712.md",
+      "title": "Rust Compiler Error E0712",
+      "summary": "A borrow of a thread-local variable was made inside a function which outlived the lifetime of the function.",
+      "tags": [
+        "E0712",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0713.md",
+      "title": "Rust Compiler Error E0713",
+      "summary": "This error occurs when an attempt is made to borrow state past the end of the lifetime of a type that implements the `Drop` trait.",
+      "tags": [
+        "E0713",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0714.md",
+      "title": "Rust Compiler Error E0714",
+      "summary": "A `#[marker]` trait contained an associated item.",
+      "tags": [
+        "E0714",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0715.md",
+      "title": "Rust Compiler Error E0715",
+      "summary": "An `impl` for a `#[marker]` trait tried to override an associated item.",
+      "tags": [
+        "E0715",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0716.md",
+      "title": "Rust Compiler Error E0716",
+      "summary": "A temporary value is being dropped while a borrow is still in active use.",
+      "tags": [
+        "E0716",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0717.md",
+      "title": "Rust Compiler Error E0717",
+      "summary": "#### This error code is internal to the compiler and will not be emitted with normal Rust code.",
+      "tags": [
+        "E0717",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0718.md",
+      "title": "Rust Compiler Error E0718",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0718",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0719.md",
+      "title": "Rust Compiler Error E0719",
+      "summary": "An associated item was specified more than once in a trait object.",
+      "tags": [
+        "E0719",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0720.md",
+      "title": "Rust Compiler Error E0720",
+      "summary": "An `impl Trait` type expands to a recursive type.",
+      "tags": [
+        "E0720",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0722.md",
+      "title": "Rust Compiler Error E0722",
+      "summary": "#### Note: this error code is no longer emitted by the compiler",
+      "tags": [
+        "E0722",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0724.md",
+      "title": "Rust Compiler Error E0724",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0724",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0725.md",
+      "title": "Rust Compiler Error E0725",
+      "summary": "A feature attribute named a feature that was disallowed in the compiler command line flags.",
+      "tags": [
+        "E0725",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0726.md",
+      "title": "Rust Compiler Error E0726",
+      "summary": "An argument lifetime was elided in an async function.",
+      "tags": [
+        "E0726",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0727.md",
+      "title": "Rust Compiler Error E0727",
+      "summary": "A `yield` clause was used in an `async` context.",
+      "tags": [
+        "E0727",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0728.md",
+      "title": "Rust Compiler Error E0728",
+      "summary": "[`await`] has been used outside [`async`] function or [`async`] block.",
+      "tags": [
+        "E0728",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0729.md",
+      "title": "Rust Compiler Error E0729",
+      "summary": "#### Note: this error code is no longer emitted by the compiler",
+      "tags": [
+        "E0729",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0730.md",
+      "title": "Rust Compiler Error E0730",
+      "summary": "An array without a fixed length was pattern-matched.",
+      "tags": [
+        "E0730",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0731.md",
+      "title": "Rust Compiler Error E0731",
+      "summary": "An enum with the representation hint `repr(transparent)` had zero or more than one variants.",
+      "tags": [
+        "E0731",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0732.md",
+      "title": "Rust Compiler Error E0732",
+      "summary": "An `enum` with a discriminant must specify a `#[repr(inttype)]`.",
+      "tags": [
+        "E0732",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0733.md",
+      "title": "Rust Compiler Error E0733",
+      "summary": "An [`async`] function used recursion without boxing.",
+      "tags": [
+        "E0733",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0734.md",
+      "title": "Rust Compiler Error E0734",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0734",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0735.md",
+      "title": "Rust Compiler Error E0735",
+      "summary": "Type parameter defaults cannot use `Self` on structs, enums, or unions.",
+      "tags": [
+        "E0735",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0736.md",
+      "title": "Rust Compiler Error E0736",
+      "summary": "Functions marked with the `#[naked]` attribute are restricted in what other attributes they may be marked with.",
+      "tags": [
+        "E0736",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0737.md",
+      "title": "Rust Compiler Error E0737",
+      "summary": "`#[track_caller]` requires functions to have the `\"Rust\"` ABI for implicitly receiving caller location. See [RFC 2091] for details on this and other restrictions.",
+      "tags": [
+        "E0737",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0739.md",
+      "title": "Rust Compiler Error E0739",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0739",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0740.md",
+      "title": "Rust Compiler Error E0740",
+      "summary": "A `union` was declared with fields with destructors.",
+      "tags": [
+        "E0740",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0741.md",
+      "title": "Rust Compiler Error E0741",
+      "summary": "A non-structural-match type was used as the type of a const generic parameter.",
+      "tags": [
+        "E0741",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0742.md",
+      "title": "Rust Compiler Error E0742",
+      "summary": "Visibility is restricted to a module which isn't an ancestor of the current item.",
+      "tags": [
+        "E0742",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0743.md",
+      "title": "Rust Compiler Error E0743",
+      "summary": "The C-variadic type `...` has been nested inside another type.",
+      "tags": [
+        "E0743",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0744.md",
+      "title": "Rust Compiler Error E0744",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0744",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0745.md",
+      "title": "Rust Compiler Error E0745",
+      "summary": "The address of temporary value was taken.",
+      "tags": [
+        "E0745",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0746.md",
+      "title": "Rust Compiler Error E0746",
+      "summary": "An unboxed trait object was used as a return value.",
+      "tags": [
+        "E0746",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0747.md",
+      "title": "Rust Compiler Error E0747",
+      "summary": "Generic arguments were not provided in the same order as the corresponding generic parameters are declared, or a type was provided when a constant was expected.",
+      "tags": [
+        "E0747",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0748.md",
+      "title": "Rust Compiler Error E0748",
+      "summary": "A raw string isn't correctly terminated because the trailing `#` count doesn't match its leading `#` count.",
+      "tags": [
+        "E0748",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0749.md",
+      "title": "Rust Compiler Error E0749",
+      "summary": "An item was added on a negative impl.",
+      "tags": [
+        "E0749",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0750.md",
+      "title": "Rust Compiler Error E0750",
+      "summary": "A negative impl was made default impl.",
+      "tags": [
+        "E0750",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0751.md",
+      "title": "Rust Compiler Error E0751",
+      "summary": "There are both a positive and negative trait implementation for the same type.",
+      "tags": [
+        "E0751",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0752.md",
+      "title": "Rust Compiler Error E0752",
+      "summary": "The entry point of the program was marked as `async`.",
+      "tags": [
+        "E0752",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0753.md",
+      "title": "Rust Compiler Error E0753",
+      "summary": "An inner doc comment was used in an invalid context.",
+      "tags": [
+        "E0753",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0754.md",
+      "title": "Rust Compiler Error E0754",
+      "summary": "A non-ASCII identifier was used in an invalid context.",
+      "tags": [
+        "E0754",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0755.md",
+      "title": "Rust Compiler Error E0755",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0755",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0756.md",
+      "title": "Rust Compiler Error E0756",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0756",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0757.md",
+      "title": "Rust Compiler Error E0757",
+      "summary": "A function was given both the `ffi_const` and `ffi_pure` attributes.",
+      "tags": [
+        "E0757",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0758.md",
+      "title": "Rust Compiler Error E0758",
+      "summary": "A multi-line (doc-)comment is unterminated.",
+      "tags": [
+        "E0758",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0759.md",
+      "title": "Rust Compiler Error E0759",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0759",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0760.md",
+      "title": "Rust Compiler Error E0760",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0760",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0761.md",
+      "title": "Rust Compiler Error E0761",
+      "summary": "Multiple candidate files were found for an out-of-line module.",
+      "tags": [
+        "E0761",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0762.md",
+      "title": "Rust Compiler Error E0762",
+      "summary": "A character literal wasn't ended with a quote.",
+      "tags": [
+        "E0762",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0763.md",
+      "title": "Rust Compiler Error E0763",
+      "summary": "A byte constant wasn't correctly ended.",
+      "tags": [
+        "E0763",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0764.md",
+      "title": "Rust Compiler Error E0764",
+      "summary": "A mutable reference was used in a constant.",
+      "tags": [
+        "E0764",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0765.md",
+      "title": "Rust Compiler Error E0765",
+      "summary": "A double quote string (`\"`) was not terminated.",
+      "tags": [
+        "E0765",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0766.md",
+      "title": "Rust Compiler Error E0766",
+      "summary": "A double quote byte string (`b\"`) was not terminated.",
+      "tags": [
+        "E0766",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0767.md",
+      "title": "Rust Compiler Error E0767",
+      "summary": "An unreachable label was used.",
+      "tags": [
+        "E0767",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0768.md",
+      "title": "Rust Compiler Error E0768",
+      "summary": "A number in a non-decimal base has no digits.",
+      "tags": [
+        "E0768",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0769.md",
+      "title": "Rust Compiler Error E0769",
+      "summary": "A tuple struct or tuple variant was used in a pattern as if it were a struct or struct variant.",
+      "tags": [
+        "E0769",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0770.md",
+      "title": "Rust Compiler Error E0770",
+      "summary": "The type of a const parameter references other generic parameters.",
+      "tags": [
+        "E0770",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0771.md",
+      "title": "Rust Compiler Error E0771",
+      "summary": "#### Note: this error code is no longer emitted by the compiler",
+      "tags": [
+        "E0771",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0772.md",
+      "title": "Rust Compiler Error E0772",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0772",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0773.md",
+      "title": "Rust Compiler Error E0773",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0773",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0774.md",
+      "title": "Rust Compiler Error E0774",
+      "summary": "`derive` was applied on something which is not a struct, a union or an enum.",
+      "tags": [
+        "E0774",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0775.md",
+      "title": "Rust Compiler Error E0775",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0775",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0776.md",
+      "title": "Rust Compiler Error E0776",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0776",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0777.md",
+      "title": "Rust Compiler Error E0777",
+      "summary": "A literal value was used inside `#[derive]`.",
+      "tags": [
+        "E0777",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0778.md",
+      "title": "Rust Compiler Error E0778",
+      "summary": "#### Note: this error code is no longer emitted by the compiler The `instruction_set` attribute was malformed.",
+      "tags": [
+        "E0778",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0779.md",
+      "title": "Rust Compiler Error E0779",
+      "summary": "#### Note: this error code is no longer emitted by the compiler An unknown argument was given to the `instruction_set` attribute.",
+      "tags": [
+        "E0779",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0780.md",
+      "title": "Rust Compiler Error E0780",
+      "summary": "Cannot use `doc(inline)` with anonymous imports",
+      "tags": [
+        "E0780",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0781.md",
+      "title": "Rust Compiler Error E0781",
+      "summary": "The `cmse-nonsecure-call` ABI can only be used with function pointers.",
+      "tags": [
+        "E0781",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0782.md",
+      "title": "Rust Compiler Error E0782",
+      "summary": "Trait objects must include the `dyn` keyword.",
+      "tags": [
+        "E0782",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0783.md",
+      "title": "Rust Compiler Error E0783",
+      "summary": "The range pattern `...` is no longer allowed.",
+      "tags": [
+        "E0783",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0784.md",
+      "title": "Rust Compiler Error E0784",
+      "summary": "A union expression does not have exactly one field.",
+      "tags": [
+        "E0784",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0785.md",
+      "title": "Rust Compiler Error E0785",
+      "summary": "An inherent `impl` was written on a dyn auto trait.",
+      "tags": [
+        "E0785",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0786.md",
+      "title": "Rust Compiler Error E0786",
+      "summary": "A metadata file was invalid.",
+      "tags": [
+        "E0786",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0787.md",
+      "title": "Rust Compiler Error E0787",
+      "summary": "An unsupported naked function definition.",
+      "tags": [
+        "E0787",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0788.md",
+      "title": "Rust Compiler Error E0788",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0788",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0789.md",
+      "title": "Rust Compiler Error E0789",
+      "summary": "#### This error code is internal to the compiler and will not be emitted with normal Rust code.",
+      "tags": [
+        "E0789",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0790.md",
+      "title": "Rust Compiler Error E0790",
+      "summary": "You need to specify a specific implementation of the trait in order to call the method.",
+      "tags": [
+        "E0790",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0791.md",
+      "title": "Rust Compiler Error E0791",
+      "summary": "Static variables with the `#[linkage]` attribute within external blocks must have one of the following types, which are equivalent to a nullable pointer in C:",
+      "tags": [
+        "E0791",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0792.md",
+      "title": "Rust Compiler Error E0792",
+      "summary": "A type alias impl trait can only have its hidden type assigned when used fully generically (and within their defining scope). This means",
+      "tags": [
+        "E0792",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0793.md",
+      "title": "Rust Compiler Error E0793",
+      "summary": "An unaligned reference to a field of a [packed] `struct` or `union` was created.",
+      "tags": [
+        "E0793",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0794.md",
+      "title": "Rust Compiler Error E0794",
+      "summary": "A lifetime parameter of a function definition is called *late-bound* if it both:",
+      "tags": [
+        "E0794",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0795.md",
+      "title": "Rust Compiler Error E0795",
+      "summary": "Invalid argument for the `offset_of!` macro.",
+      "tags": [
+        "E0795",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0796.md",
+      "title": "Rust Compiler Error E0796",
+      "summary": "#### Note: this error code is no longer emitted by the compiler.",
+      "tags": [
+        "E0796",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0797.md",
+      "title": "Rust Compiler Error E0797",
+      "summary": "Struct update syntax was used without a base expression.",
+      "tags": [
+        "E0797",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0798.md",
+      "title": "Rust Compiler Error E0798",
+      "summary": "Functions marked as `cmse-nonsecure-call` place restrictions on their inputs and outputs.",
+      "tags": [
+        "E0798",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0799.md",
+      "title": "Rust Compiler Error E0799",
+      "summary": "Something other than a type or const parameter has been used when one was expected.",
+      "tags": [
+        "E0799",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0800.md",
+      "title": "Rust Compiler Error E0800",
+      "summary": "A type or const parameter of the given name is not in scope.",
+      "tags": [
+        "E0800",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0801.md",
+      "title": "Rust Compiler Error E0801",
+      "summary": "The `self` parameter in a method has an invalid generic \"receiver type\".",
+      "tags": [
+        "E0801",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0802.md",
+      "title": "Rust Compiler Error E0802",
+      "summary": "The target of `derive(CoercePointee)` macro has inadmissible specification for a meaningful use.",
+      "tags": [
+        "E0802",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0803.md",
+      "title": "Rust Compiler Error E0803",
+      "summary": "A trait implementation returns a reference without an explicit lifetime linking it to `self`. It commonly arises in generic trait implementations requiring explicit lifetime bounds.",
+      "tags": [
+        "E0803",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0804.md",
+      "title": "Rust Compiler Error E0804",
+      "summary": "An auto trait cannot be added to the bounds of a `dyn Trait` type via a pointer cast.",
+      "tags": [
+        "E0804",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0805.md",
+      "title": "Rust Compiler Error E0805",
+      "summary": "An attribute was given an invalid number of arguments",
+      "tags": [
+        "E0805",
+        "error-code",
+        "rustc"
+      ]
+    },
+    {
+      "path": "chapters/E0806.md",
+      "title": "Rust Compiler Error E0806",
+      "summary": "An externally implementable item is not compatible with its declaration.",
+      "tags": [
+        "E0806",
+        "error-code",
+        "rustc"
+      ]
+    }
+  ]
+}

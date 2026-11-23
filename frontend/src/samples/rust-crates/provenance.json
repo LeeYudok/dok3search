@@ -1,0 +1,287 @@
+{
+  "generated_sha256": {
+    "chapters/axum/body.md": "aaa77d9e25633c51b9bf660c701e61007fc69cddb21203ef600bab72bbaf1082",
+    "chapters/axum/error_handling.md": "ae7353b6df4f2d29d8b9a31d7cf5267feacd5f6881f05102b46812e541096ea2",
+    "chapters/axum/error_handling/future.md": "657f16ff321fcf7fa2d1d3f490a773ad200d47b3e42494adaa81a269055a07da",
+    "chapters/axum/extract.md": "9a97f169e47b3156955d9587b7ef45881f9e0f17c87391956c9daba5c5e593bf",
+    "chapters/axum/extract/connect_info.md": "ec05e6239c446cff9fa627921b8ac730991b27ccb1df33ec8e839466da066f91",
+    "chapters/axum/extract/path.md": "06eedf9352aa86eb2a0fda0786dc6533301eb81d0a10e81467e7c4b947f35480",
+    "chapters/axum/extract/rejection.md": "bd264ba4f8058e056b5d792072a267dc1f8f7bd8382b9aa5fc7477e3af034f04",
+    "chapters/axum/handler.md": "a458d6e530af0c2523620c4d6bdfd89db028c7b943dcd23fdb194e93368f12ea",
+    "chapters/axum/handler/future.md": "20c6b694158ebd3a123c87bb61663ef3999f176a7032b29c397ab5dae4fe167e",
+    "chapters/axum/index.md": "c0e1cd33a8198a33b365df4774fc87c17607bc1f23e46b9253ce0f048ff35512",
+    "chapters/axum/middleware.md": "ba99c3b7a6736c7897668c7b0b190f0bac1ad1d454fad65023f0cf9030536f12",
+    "chapters/axum/middleware/future.md": "f28d62e187a600ea6f1839e1c000b80daaff6d511fcf9cd542f9bf45b03dc1d6",
+    "chapters/axum/response.md": "5375793c261f81098471adfabbf8728753bea029a2ede27e9f112cc7e1e054f4",
+    "chapters/axum/response/sse.md": "c29398cbd79ad5e9eaea3feb1a6b90a736480d2601d1d17e78473db505516f75",
+    "chapters/axum/routing.md": "4af9a66fbf6e8eca6ef7803bd2f1aa3e0856ca26965b8635bba61658921afee1",
+    "chapters/axum/routing/future.md": "e8e4ac2d810691397b2c5a81af9dc4ff3699ef1a1cb7d81af73841aa18fe92bb",
+    "chapters/axum/routing/method_routing.md": "7a65e6347447cb49289858d690c5a49af767239c386e195b1bf8bbff142379bc",
+    "chapters/axum/serve.md": "b070c29b3d7f34679104eae0c6caab2b8bebdee4d0b64e68a0d4767d91f78f44",
+    "chapters/dok3-agent/http.md": "3684369398646a153c247fd7cc8815f468b5652b6572db38aa14a5564d5390c9",
+    "chapters/dok3-agent/index.md": "702ec10c09c6900cc3172190a83fe229b9a02aa77da0555c071b08ffd50c41fa",
+    "chapters/dok3-agent/protocol.md": "d9ce3ecf7ea371da01cec8e4eed7e3d203b21e4bad08e7a6a841eda60675b37c",
+    "chapters/dok3-agent/server.md": "812789f923599bca3d365568a02fbd1833c10ae347b309bfee4db1d805fc8fc9",
+    "chapters/dok3-analyzer/index.md": "71d69fa6d417b5e5c2e7d4dc74b6c1724d4f4f5317639d75848b3f7c45f82f9d",
+    "chapters/dok3-api/index.md": "cc946a01fdc080cdbd65a41cf4aa15042a812bd14266834836c2181927cd1c7c",
+    "chapters/dok3-benchmark/evaluator.md": "ee3903c49bd511963f7cdc589ab70b9d0da38853ca4956b9bbc0c39a73a82a6f",
+    "chapters/dok3-benchmark/index.md": "8852d34318287a97df23e67e0aa6157db3c20e8085bbfd6878a2dd642b05ac9a",
+    "chapters/dok3-benchmark/load.md": "e6dff3307c5162798aca137bed7a37ea3fb7f706d71ee98d918c367c728fb016",
+    "chapters/dok3-connectors/index.md": "b80b9942d50dfb01a01eb21e84e26b61f07e1b7b2aac96959a0b40ff49ed3fd5",
+    "chapters/dok3-core/config.md": "af02b31f2394dd9a52b53550edf09e17884ce2fae3a3b72f994f4fd2b2c55ddf",
+    "chapters/dok3-core/error.md": "866aa6ea0da9794efde0f9ff1cca5a72ec0a0a70b053a1ba2d62c348e695f53e",
+    "chapters/dok3-core/index.md": "701942488953c67e707a30678156cb8ee1b15d708a8240594f8bdf55367194bc",
+    "chapters/dok3-domain/acl.md": "7efc85cac97c8cf05a4fc9eb87dc4c09f9db47bb6734658fa2df4b81bde5c856",
+    "chapters/dok3-domain/admin.md": "8c54fcee9873446250b5492df8c703870b7db4269eeb60f963e7f6705069a052",
+    "chapters/dok3-domain/change.md": "4680f1a3b011be1215f800eac7b914f56e42f194e448defbe09012a4af04a120",
+    "chapters/dok3-domain/document.md": "c92b705a506615e8a9bf3722d47f76ac681e7f869daf061a3bdd55293751b8b4",
+    "chapters/dok3-domain/ids.md": "d4034d70834e58aed2e1408b6466cff22dd6b02e056324c8cb673b7d4750c365",
+    "chapters/dok3-domain/index.md": "05f06bf9c5d5c7859be2d9c953a9421394017d7c6c8238c29a521b227e7cf513",
+    "chapters/dok3-domain/ports.md": "256a12059225cdebb378c3fcc06fa1307953f23b7b7a0c6255f67170d83b4eff",
+    "chapters/dok3-domain/search.md": "67169c7eaa93b32aba7de09603d828bc7e22eab2972868aa1ef9027c45e3d4a4",
+    "chapters/dok3-index-manager/index.md": "d3d7889caa9084329706e2b989656bf9d74c4c5a14622c5e8534dc611f6c9694",
+    "chapters/dok3-index/index.md": "60fa79af2b27efb38a9c6537d6855614a0992ea823facdf0cce1b22b4caa709c",
+    "chapters/dok3-parser/html.md": "fbb77f4ed376f8f07af9f0ac70293918199b1502f2844840467f2b2c71b29444",
+    "chapters/dok3-parser/index.md": "fad225b0e69156b15ba7883b9c9f27ef66b065dead73f31d7d4d5e9ee7942081",
+    "chapters/dok3-parser/markdown.md": "32000ceb2a01fd967ad8639d54ddb663c8d7a97d45dc59ffcfa7037631a40367",
+    "chapters/dok3-search/in_memory.md": "435c7db959af4ad36d7be04061ab3fad9829f316e72a8d79cc4bd926250dcfd7",
+    "chapters/dok3-search/index.md": "df4a8b838792e6e97513b14f2548a5061f8e9c42b5c8d390d583a7ee897d15c9",
+    "chapters/dok3-search/seed.md": "0715dd914dd230c59704de8e5020852e5ac1bc82ff07930ce07a56bc9aa35ec0",
+    "chapters/dok3-search/service.md": "23ace35ffda7b0747ed416b22139d808706b026f79bbb24417edbd396150fc9b",
+    "chapters/dok3-storage/index.md": "d5852b0378d900f01e5c55e4925bf4f657de46ccce91313b5daba4b10abf219a",
+    "chapters/ego-tree/index.md": "40428a6b6d58ad17762f7f2c6fb28279ef58ce2094fd0e5ed674b3576feb6b04",
+    "chapters/ego-tree/iter.md": "fa83ec3483383cb3b0d8e45d5a8136270fc6139b410c854c8e89b43aba5ad933",
+    "chapters/http-body-util/combinators.md": "0682a629723f446be706b9c3e5ba9f2987a7b93b5992ffee955c2c3384d928af",
+    "chapters/http-body-util/index.md": "dc96fb9bceb32b656ff2f456bc7e7df30c7c668613a94338fd2c15e656002777",
+    "chapters/rusqlite/auto_extension.md": "82b260d813505be9a9005e810e73d4581ce848de602fa9f45182c967af62e6d9",
+    "chapters/rusqlite/config.md": "449375dc7c8682560f460325273855b841d36e7df9bbe58b75fc88d7705b9125",
+    "chapters/rusqlite/index.md": "7febb209c15aebe31b0ce7ab5cac1d83e57f8b530f28a7ea659976c300de15f2",
+    "chapters/rusqlite/types.md": "641aa537cefd31fc41229bbf19111f14f34f653baf26d7fcfd2a53f73a549b55",
+    "chapters/scraper/element_ref.md": "bff5b5f76d6e541f4b0a0badd39376d9a933dd16c66b44e99bb8e770b67fd3ed",
+    "chapters/scraper/error.md": "4286b99c282a6c63c77989876797a35242dcec8ebe908093ab6065cd671601df",
+    "chapters/scraper/html.md": "a7657931bfd678d6cafb35ebfc1de0a7551b6548c79be751ce5c42788dd8c856",
+    "chapters/scraper/index.md": "567d13e5238e55bf3a59b5d9a7462ec5984e2e8663456326fcd4e0241d185288",
+    "chapters/scraper/node.md": "8c07c765b339ae6904ead5ea55a4ab0ff045f823669e6e384dbecb344a45df98",
+    "chapters/scraper/selectable.md": "24e2c2f9c9b20cdba512c2f20241107f5efd9ca2cbfe3255a2e4571dc7a3b1b3",
+    "chapters/scraper/selector.md": "b312cbfdce6ce27a1992586124ffb741b891b5ab8329159eb52110567a09256b",
+    "chapters/serde/de.md": "cfa3dce764b90d01c80498605b26e15504d24473a3afed6be9a3f0a9043ed84c",
+    "chapters/serde/de/value.md": "8feb01565f0ba3c800938e6b32e7a882c8a180bd5ed88b8df4462491058673ed",
+    "chapters/serde/index.md": "4dcfd95e6d76b715f29c018bfcf2fbbf5d6d06ab809a90284e2b28d52e6556b4",
+    "chapters/serde/ser.md": "4f25ac47a3c59b6cb5a9700896341f21933531d82daa97974e35acd8033c9862",
+    "chapters/serde_json/de.md": "4993e62c811142076aadd8cb4dd1a0df048fb190751df8163e2821a93c75f46d",
+    "chapters/serde_json/error.md": "259d57889d1169e00a777846ea279c7b2d261a48a4d89e3d6f3c0e03d5ee1bb7",
+    "chapters/serde_json/index.md": "d636e9ae798fe6769aa5b157dbe14a85325c722e248c81b28ad029e039327d35",
+    "chapters/serde_json/map.md": "4455fb63b46f9c854acb5d5b18c43b8e182a4fcef54ed6e8550a5c11066eab22",
+    "chapters/serde_json/ser.md": "196529a7f52a5f531804e698bfc3672af4761f36175388351405b1705cfd2f59",
+    "chapters/serde_json/value.md": "d4451fb4fa746c5d073a0be8c4aaf34df307f67b93bb782a4f6dc0012bfe2275",
+    "chapters/sha2/index.md": "5b611f40039d089a6bb5a5b02a569853f47d148cb6fc9d7f0bd4c349c6079e12",
+    "chapters/tantivy/aggregation.md": "c8bef636a05fd54369182ce31861e45578c93d1f88b3d6da5f9f13e45298219e",
+    "chapters/tantivy/aggregation/agg_req.md": "7e6a2f44db7d2d5a818fbed511c241965ed25622e8e062e1e83cc71cef9a02f9",
+    "chapters/tantivy/aggregation/agg_result.md": "b1d075c92f5a80ea730ce95f25120b7866c470e1f3b9077a97cc15473011ea6f",
+    "chapters/tantivy/aggregation/bucket.md": "a625f5acb30d3cd21142041ae105c6321c75035dcf138695b54128a00a0724f6",
+    "chapters/tantivy/aggregation/intermediate_agg_result.md": "a4f6443e3d0c61576f732ff7a2a98ae2cae48368a4acf1167021db71981b3ed3",
+    "chapters/tantivy/aggregation/metric.md": "b94b896217548829cfa2dec0bf8250223cb993e21880597fd8a796b19e2e770c",
+    "chapters/tantivy/collector.md": "3e74d113b49e9f78ad34caef4cadb3f989947263f1b7e921df2d3f28b3c28bc3",
+    "chapters/tantivy/collector/sort_key.md": "89d1e5ec1798794c4b41f7f521498ee484d4a6d45fa43e3a170f22dbe845a52b",
+    "chapters/tantivy/directory.md": "a9f9b1fca067ca89a52516405a9a1ead9f1d5a98042a93e50f529eb8ebf7ff04",
+    "chapters/tantivy/directory/error.md": "c2f7d84d09e8beec70455a63dbd8359a2c0cdb958195cc616c535b2a2aa6d9c1",
+    "chapters/tantivy/directory/footer.md": "6f08a19307e11202822db2df58993baceafe77a309522a550e893f788a722cdd",
+    "chapters/tantivy/error.md": "b76bcf3ee6aee478647bc6e904384a2a865d092b95bbd02d6212ac2b28772a08",
+    "chapters/tantivy/fastfield.md": "cec183b69f3f6cc95ee4849dc9d84c62f3145bdcff26ede5fe253d6a3f194e40",
+    "chapters/tantivy/fastfield/plugin.md": "f3ac118928e19377ab6ad4a24fd93de6f08ff180fc1bcb0d3aced7dbddcdc6cd",
+    "chapters/tantivy/fieldnorm.md": "e0889b03c3fa8291f063e28a0940651703d582a14103d8b11b0d31ea34ecb1d5",
+    "chapters/tantivy/index.md": "fc2f98a424d6e526c987c828aeff389aa9b625b2fbe4af25ab7a0e9a7f9d2bfb",
+    "chapters/tantivy/indexer.md": "c1c31e2602fba6707c96b5b603054e1baf7ca4f3a5a2be7920e75787bcd2886e",
+    "chapters/tantivy/indexer/doc_id_mapping.md": "74c5f5655fbc3576155921d847c7ebcb5916cf705b21c5128cbf16b0938cb308",
+    "chapters/tantivy/plugin.md": "aa4734818a9b00f5685e500e9e63a022bc099ee71271934ce5a995a9417f5c72",
+    "chapters/tantivy/positions.md": "a33d5b38db7fa89d5a0fa041dd74c322ccb780d7b46c7a89e383ee1b4f2a7221",
+    "chapters/tantivy/postings.md": "d150c2517efb765fb1b5647242a39ad44030a351d0e0793937faf241ee95730d",
+    "chapters/tantivy/postings/serializer.md": "833783dc9109fa96da01e2ab1cdd261576d238ad5d968d0b1b2ebc1703f837c5",
+    "chapters/tantivy/query.md": "32c2d2cee444a755571ab84afcdc1372b3c159ab2c9e66814b7b8015d45ba2aa",
+    "chapters/tantivy/query/doc_predicate_query.md": "814af8de7435469663dec0e725ae7b95f197616dc4a700ae61159e259f97bef3",
+    "chapters/tantivy/schema.md": "3417285bc795d881fe464640f8a691311ca55310c07005e4944eebd2d91bee0d",
+    "chapters/tantivy/schema/document.md": "006c2663baa803fc6125ece558bf853df0a8963f4bc16538413445d4d1cab59a",
+    "chapters/tantivy/snippet.md": "1203cf5f91ad1928d205a73674fb81ffc3d400ece63fd79b14f6ce1a4345f3cc",
+    "chapters/tantivy/space_usage.md": "b0fad31a09d1b5c3379c55d724bec637c0ce80fa3aeb11f926591ad68e3d8dad",
+    "chapters/tantivy/store.md": "3363965fca341f3ffa22e6c001c15ddc07ad16df461184ee607f3bcddffd6d34",
+    "chapters/tantivy/store/plugin.md": "401afda87c1110a8b5f9c10a2734a82ac7e731b757c0fa994a3441ad8bf7d73e",
+    "chapters/tantivy/termdict.md": "662aa256fa2c3322a5d21f965c74f6c754cb144a028360fe31dbeb5fb4b3ab88",
+    "chapters/tantivy/tokenizer.md": "898bb643ba803cc2e19ca89f84f1fb589e916fd9bb078f78bc06c3f5adc10795",
+    "chapters/thiserror/index.md": "9f1c9af9ccdd963f4c02b68592b100f698b4b2b670ef6882f2f1242d76fcecec",
+    "chapters/tokio/fs.md": "3f73bfb3ca816a52bc6db7a65461de36c2a6cac39733ffc482846a4495f5d2fd",
+    "chapters/tokio/index.md": "f0957a830b3fe43a2559f1279c6c3aae3ef467d0d025500947fca33e48999d43",
+    "chapters/tokio/io.md": "ff36c9d61b4b23fc22af41ebf1a507df800683a4f77befbe39836f835cb57c0e",
+    "chapters/tokio/io/unix.md": "b0a7a045772d7c1bea6a63caa90887fb85ace2c0753b2ab4c11699ca40a1fde9",
+    "chapters/tokio/net.md": "bff8c3b8d2c0e4cd84e80dbd730fd7f350aa58149a3584f94d84b1ea1453d223",
+    "chapters/tokio/net/tcp.md": "222a87c8d62db97f9aac4b58cf4acdbaadec68a4380637d8ade6f2c9c8a0afce",
+    "chapters/tokio/net/unix.md": "b965d5f00cf49963ad2d2639281af4fbc82ce397f7a0be315d6a9398538d5259",
+    "chapters/tokio/net/unix/pipe.md": "5e3b8064075e8e8d17ec12ca4a47d0ef41148906c5c549d03ce734061b7e7ded",
+    "chapters/tokio/runtime.md": "20ecff07f1320206b3629a96de206578f163aeda8c75b7bf6838d092f1a6dc70",
+    "chapters/tokio/signal.md": "b5366896be2ee4c6dfc7d4fad1fed3fc8a76275f42db79b0667d866e9579f492",
+    "chapters/tokio/signal/unix.md": "da043f3981ff38b3009c1b0ce076f449c7d5f55f69165ce054661caef1e3621c",
+    "chapters/tokio/stream.md": "3e64814cb7f4ae2afd127ff25d60328e55b501d30889077aa8e22201b1fa2251",
+    "chapters/tokio/sync.md": "876b045c999ebf227cd56ece1dadf469e9fee18b72800e37383c51a5458869c3",
+    "chapters/tokio/sync/broadcast.md": "3d1a70c50f2419055ae752a126ad2284e53685a361f45383a6df295de131ba08",
+    "chapters/tokio/sync/broadcast/error.md": "5be3f72ee6a561f4ec955a6b9f86df6dbdaf267ea139f5085e75639cc04c4ea3",
+    "chapters/tokio/sync/futures.md": "c48b2cc4d748a6d79d38f08180fb231c99155390ee2bcf4643c4a5e256e8e0d7",
+    "chapters/tokio/sync/mpsc.md": "061a92ed25bacb8ce6a207426c7926e17428aeb5025b991ff9221f25785f40f8",
+    "chapters/tokio/sync/mpsc/error.md": "7a5db96080f6e65bfd58ad0895342710c0477184658f9729115988023d8220f4",
+    "chapters/tokio/sync/oneshot.md": "44cee3d6b6e9bf1439166b2146960a31599c0335711d0268147dc9a407834eff",
+    "chapters/tokio/sync/oneshot/error.md": "7923356e8d56e918db4075447bd2ce512b6ec6154eb33eb084ced711525fd559",
+    "chapters/tokio/sync/watch.md": "4048931758177d53e32d41fad1a5f722a37941d2c7d3712f4a832189268d5a0c",
+    "chapters/tokio/sync/watch/error.md": "570f80fb119a2a52a6e528a9980ba083626f87cf839721225fc97a7230a816d4",
+    "chapters/tokio/task.md": "d49a1c679e62a747f13d082a1586f988e5b563fba1b4b4af904893a915bed301",
+    "chapters/tokio/task/coop.md": "238943e42e3a8753ad5abd9f9fe9cd99ed6988243be28d166fe00fa063719fb3",
+    "chapters/tokio/task/futures.md": "68ae0fd4abefd101848b7e680394fabcbf6423c2b023c36bf0c6ce1e531f3561",
+    "chapters/tokio/time.md": "19551b5855014bf050684ae6b236b323747f7dfdb2d739279a08a9b4f795763b",
+    "chapters/tokio/time/error.md": "ea1398b6d33790ebac5d48223827a06991ef36f01892995f1b8300fa4bb71a82",
+    "chapters/tower-http/body.md": "12901f8a4159b23146b99f6db3cbfb88f07e7e7fe7a08ff3bef423c6a89687a7",
+    "chapters/tower-http/classify.md": "4ce08eeec2c60c8a0f2b6e603f5295df7013e9e221885a8bac048cf5c95deb22",
+    "chapters/tower-http/index.md": "6fdcfbdd770f92ac96e927158b5a469d90ac83881629a1f9b869827ad69ba010",
+    "chapters/tower-http/services.md": "5a0d5886cc164a9504edcbc7b9aeefb043027e45fa713a1ece17507c9b33aaad",
+    "chapters/tower-http/services/fs.md": "8d0a5d5a9d96f37b0c2ff93ff349236d3f6a625102486edbd165bda4c65c4489",
+    "chapters/tower-http/set_status.md": "6473dbbdbe443b653df29217662c95662819f8e78c21692f46e7e8645fb70341",
+    "chapters/tower/builder.md": "5a466789731bb8ae413f16b5429eafcbb1a1976e095200023bdec1d3d2abb23d",
+    "chapters/tower/index.md": "637b15fc88eae02159a5c2ce131ba63f92aa5087bf816efa92f8d8db060738fe",
+    "chapters/tower/layer.md": "ddb6e0a55dbd67b53599fcc438e648693222219cdac728765e43c4baa2a3a1f6",
+    "chapters/tower/layer/util.md": "085c1671f15403acce7001e32cf96f199c39ae18c4dc59433a02c05101af6cf4",
+    "chapters/tower/make.md": "801d3352df7fd953f95c789009348eb08ab054a09d56a731f59c9246f9e5711d",
+    "chapters/tower/make/future.md": "05568ff6404fc90890cee01c5e7c44eb7a0b007a3607ffc878162d458128b681",
+    "chapters/tower/util.md": "5eb94ff28a88187fa17d6962f0dac3942888fa956cf807ef0ba5d2e5cfbf0f2f",
+    "chapters/tower/util/error.md": "9bad1cafde9409afa7a39ef62ed1de075b7b5e3ebd18901bb48aff2360ccd711",
+    "chapters/tower/util/error/optional.md": "f24a104e7d62a4351eaf484532dc176aea2f3cd2927d86de6b46d8e8997e591e",
+    "chapters/tower/util/future.md": "3f9c71321aaa896a4ff3751bcc7e6176ec52a68bed3fd6c27eee76e3aaeacd5c",
+    "chapters/tower/util/future/optional.md": "f608e35efb24769191a108a96d51b24cc049a36353a73870d7ae2efd8e4b5d27",
+    "chapters/tower/util/rng.md": "eb169a375d5f632f49d951982141f49f53d62b467d47e4f4aa35cc15087d033d",
+    "index.json": "13828d93318ccc7f3f32c50d3e410a24ec63d048f028bf32f3b426e4b9bc9e99"
+  },
+  "packages": [
+    {
+      "document_count": 3,
+      "name": "dok3-core",
+      "version": "0.1.0"
+    },
+    {
+      "document_count": 4,
+      "name": "serde",
+      "version": "1.0.229"
+    },
+    {
+      "document_count": 1,
+      "name": "thiserror",
+      "version": "2.0.21"
+    },
+    {
+      "document_count": 8,
+      "name": "dok3-domain",
+      "version": "0.1.0"
+    },
+    {
+      "document_count": 6,
+      "name": "serde_json",
+      "version": "1.0.154"
+    },
+    {
+      "document_count": 1,
+      "name": "dok3-storage",
+      "version": "0.1.0"
+    },
+    {
+      "document_count": 1,
+      "name": "sha2",
+      "version": "0.10.9"
+    },
+    {
+      "document_count": 1,
+      "name": "dok3-connectors",
+      "version": "0.1.0"
+    },
+    {
+      "document_count": 4,
+      "name": "rusqlite",
+      "version": "0.43.0"
+    },
+    {
+      "document_count": 3,
+      "name": "dok3-parser",
+      "version": "0.1.0"
+    },
+    {
+      "document_count": 2,
+      "name": "ego-tree",
+      "version": "0.11.1"
+    },
+    {
+      "document_count": 7,
+      "name": "scraper",
+      "version": "0.29.0"
+    },
+    {
+      "document_count": 1,
+      "name": "dok3-analyzer",
+      "version": "0.1.0"
+    },
+    {
+      "document_count": 1,
+      "name": "dok3-index",
+      "version": "0.1.0"
+    },
+    {
+      "document_count": 33,
+      "name": "tantivy",
+      "version": "0.27.0"
+    },
+    {
+      "document_count": 1,
+      "name": "dok3-index-manager",
+      "version": "0.1.0"
+    },
+    {
+      "document_count": 4,
+      "name": "dok3-search",
+      "version": "0.1.0"
+    },
+    {
+      "document_count": 4,
+      "name": "dok3-agent",
+      "version": "0.1.0"
+    },
+    {
+      "document_count": 18,
+      "name": "axum",
+      "version": "0.8.9"
+    },
+    {
+      "document_count": 2,
+      "name": "http-body-util",
+      "version": "0.1.5"
+    },
+    {
+      "document_count": 27,
+      "name": "tokio",
+      "version": "1.54.1"
+    },
+    {
+      "document_count": 12,
+      "name": "tower",
+      "version": "0.5.3"
+    },
+    {
+      "document_count": 1,
+      "name": "dok3-api",
+      "version": "0.1.0"
+    },
+    {
+      "document_count": 6,
+      "name": "tower-http",
+      "version": "0.7.1"
+    },
+    {
+      "document_count": 3,
+      "name": "dok3-benchmark",
+      "version": "0.1.0"
+    }
+  ],
+  "source": "cargo doc --no-deps",
+  "toolchain": "1.100.0 (0ef1bc386 2026-11-09)"
+}

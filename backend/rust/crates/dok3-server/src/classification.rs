@@ -374,6 +374,12 @@ impl ClassificationStore {
         })
     }
 
+    pub(crate) fn is_manual_locked(&self, id: &DocumentId) -> bool {
+        self.records
+            .get(id.as_str())
+            .is_some_and(|rec| rec.manual_locked)
+    }
+
     pub(crate) fn get(&self, id: &DocumentId) -> Option<DocumentClassification> {
         self.records.get(id.as_str()).cloned()
     }

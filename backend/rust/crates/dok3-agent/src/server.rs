@@ -478,12 +478,19 @@ impl McpServer {
         req.limit = 1;
         req.include_snippets = false;
 
+        let corpora = self
+            .search
+            .list_corpora(principal, "mcp")
+            .map(|c| c.corpora)
+            .unwrap_or_default();
+
         let res = self
             .search
             .search(principal, &req)
             .map(|resp| ListCategoriesResult {
                 total_documents: resp.total_unfiltered_hits,
                 categories: resp.category_counts,
+                corpora,
                 snapshot: resp.snapshot,
             });
         tool_result(id, res)

@@ -1,0 +1,3442 @@
+{
+  "source": "Rust Standard Library (std/core/alloc)",
+  "source_url": "https://doc.rust-lang.org/std/",
+  "toolchain": "1.100.0 (0ef1bc386 2026-11-09)",
+  "version": "1.100.0",
+  "category": "code",
+  "topic": "rust",
+  "chapters": [
+    {
+      "path": "chapters/std/index.md",
+      "title": "Crate std",
+      "summary": "Crate std API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/alloc.md",
+      "title": "Module std::alloc",
+      "summary": "Module std::alloc API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/any.md",
+      "title": "Module std::any",
+      "summary": "Module std::any API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/arch.md",
+      "title": "Module std::arch",
+      "summary": "Module std::arch API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/array.md",
+      "title": "Module std::array",
+      "summary": "Module std::array API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/ascii.md",
+      "title": "Module std::ascii",
+      "summary": "Module std::ascii API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/async_iter.md",
+      "title": "Module std::async_iter",
+      "summary": "Module std::async_iter API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/backtrace.md",
+      "title": "Module std::backtrace",
+      "summary": "Module std::backtrace API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/borrow.md",
+      "title": "Module std::borrow",
+      "summary": "Module std::borrow API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/boxed.md",
+      "title": "Module std::boxed",
+      "summary": "Module std::boxed API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/bstr.md",
+      "title": "Module std::bstr",
+      "summary": "Module std::bstr API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/cell.md",
+      "title": "Module std::cell",
+      "summary": "Module std::cell API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/char.md",
+      "title": "Module std::char",
+      "summary": "Module std::char API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/clone.md",
+      "title": "Module std::clone",
+      "summary": "Module std::clone API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/cmp.md",
+      "title": "Module std::cmp",
+      "summary": "Module std::cmp API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/collections.md",
+      "title": "Module std::collections",
+      "summary": "Module std::collections API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/collections/binary_heap.md",
+      "title": "Module std::collections::binary_heap",
+      "summary": "Module std::collections::binary_heap API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/collections/btree_map.md",
+      "title": "Module std::collections::btree_map",
+      "summary": "Module std::collections::btree_map API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/collections/btree_set.md",
+      "title": "Module std::collections::btree_set",
+      "summary": "Module std::collections::btree_set API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/collections/hash_map.md",
+      "title": "Module std::collections::hash_map",
+      "summary": "Module std::collections::hash_map API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/collections/hash_set.md",
+      "title": "Module std::collections::hash_set",
+      "summary": "Module std::collections::hash_set API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/collections/linked_list.md",
+      "title": "Module std::collections::linked_list",
+      "summary": "Module std::collections::linked_list API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/collections/vec_deque.md",
+      "title": "Module std::collections::vec_deque",
+      "summary": "Module std::collections::vec_deque API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/convert.md",
+      "title": "Module std::convert",
+      "summary": "Module std::convert API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/default.md",
+      "title": "Module std::default",
+      "summary": "Module std::default API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/env.md",
+      "title": "Module std::env",
+      "summary": "Module std::env API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/env/consts.md",
+      "title": "Module std::env::consts",
+      "summary": "Module std::env::consts API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/error.md",
+      "title": "Module std::error",
+      "summary": "Module std::error API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/f128/consts.md",
+      "title": "Module std::f128::consts",
+      "summary": "Module std::f128::consts API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/f16/consts.md",
+      "title": "Module std::f16::consts",
+      "summary": "Module std::f16::consts API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/f32.md",
+      "title": "Module std::f32",
+      "summary": "Module std::f32 API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/f32/consts.md",
+      "title": "Module std::f32::consts",
+      "summary": "Module std::f32::consts API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/f64.md",
+      "title": "Module std::f64",
+      "summary": "Module std::f64 API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/f64/consts.md",
+      "title": "Module std::f64::consts",
+      "summary": "Module std::f64::consts API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/ffi.md",
+      "title": "Module std::ffi",
+      "summary": "Module std::ffi API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/ffi/c_str.md",
+      "title": "Module std::ffi::c_str",
+      "summary": "Module std::ffi::c_str API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/ffi/os_str.md",
+      "title": "Module std::ffi::os_str",
+      "summary": "Module std::ffi::os_str API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/field.md",
+      "title": "Module std::field",
+      "summary": "Module std::field API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/fmt.md",
+      "title": "Module std::fmt",
+      "summary": "Module std::fmt API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/fs.md",
+      "title": "Module std::fs",
+      "summary": "Module std::fs API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/future.md",
+      "title": "Module std::future",
+      "summary": "Module std::future API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/hash.md",
+      "title": "Module std::hash",
+      "summary": "Module std::hash API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/hint.md",
+      "title": "Module std::hint",
+      "summary": "Module std::hint API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/i128.md",
+      "title": "Module std::i128",
+      "summary": "Module std::i128 API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/i16.md",
+      "title": "Module std::i16",
+      "summary": "Module std::i16 API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/i32.md",
+      "title": "Module std::i32",
+      "summary": "Module std::i32 API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/i64.md",
+      "title": "Module std::i64",
+      "summary": "Module std::i64 API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/i8.md",
+      "title": "Module std::i8",
+      "summary": "Module std::i8 API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/intrinsics.md",
+      "title": "Module std::intrinsics",
+      "summary": "Module std::intrinsics API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/intrinsics/fallback.md",
+      "title": "Module std::intrinsics::fallback",
+      "summary": "Module std::intrinsics::fallback API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/intrinsics/mir.md",
+      "title": "Module std::intrinsics::mir",
+      "summary": "Module std::intrinsics::mir API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/intrinsics/simd.md",
+      "title": "Module std::intrinsics::simd",
+      "summary": "Module std::intrinsics::simd API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/intrinsics/simd/scalable.md",
+      "title": "Module std::intrinsics::simd::scalable",
+      "summary": "Module std::intrinsics::simd::scalable API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/io.md",
+      "title": "Module std::io",
+      "summary": "Module std::io API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/io/prelude.md",
+      "title": "Module std::io::prelude",
+      "summary": "Module std::io::prelude API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/isize.md",
+      "title": "Module std::isize",
+      "summary": "Module std::isize API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/iter.md",
+      "title": "Module std::iter",
+      "summary": "Module std::iter API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/marker.md",
+      "title": "Module std::marker",
+      "summary": "Module std::marker API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/mem.md",
+      "title": "Module std::mem",
+      "summary": "Module std::mem API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/mem/type_info.md",
+      "title": "Module std::mem::type_info",
+      "summary": "Module std::mem::type_info API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/net.md",
+      "title": "Module std::net",
+      "summary": "Module std::net API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/num.md",
+      "title": "Module std::num",
+      "summary": "Module std::num API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/offload.md",
+      "title": "Module std::offload",
+      "summary": "Module std::offload API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/offload/offload.md",
+      "title": "Module std::offload::offload",
+      "summary": "Module std::offload::offload API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/ops.md",
+      "title": "Module std::ops",
+      "summary": "Module std::ops API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/option.md",
+      "title": "Module std::option",
+      "summary": "Module std::option API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/os/darwin/fs.md",
+      "title": "Module std::os::darwin::fs",
+      "summary": "Module std::os::darwin::fs API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/os/fd.md",
+      "title": "Module std::os::fd",
+      "summary": "Module std::os::fd API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/os/linux/fs.md",
+      "title": "Module std::os::linux::fs",
+      "summary": "Module std::os::linux::fs API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/os/linux/net.md",
+      "title": "Module std::os::linux::net",
+      "summary": "Module std::os::linux::net API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/os/linux/process.md",
+      "title": "Module std::os::linux::process",
+      "summary": "Module std::os::linux::process API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/os/linux/raw.md",
+      "title": "Module std::os::linux::raw",
+      "summary": "Module std::os::linux::raw API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/os/raw.md",
+      "title": "Module std::os::raw",
+      "summary": "Module std::os::raw API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/os/unix/ffi.md",
+      "title": "Module std::os::unix::ffi",
+      "summary": "Module std::os::unix::ffi API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/os/unix/fs.md",
+      "title": "Module std::os::unix::fs",
+      "summary": "Module std::os::unix::fs API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/os/unix/io.md",
+      "title": "Module std::os::unix::io",
+      "summary": "Module std::os::unix::io API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/os/unix/net.md",
+      "title": "Module std::os::unix::net",
+      "summary": "Module std::os::unix::net API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/os/unix/process.md",
+      "title": "Module std::os::unix::process",
+      "summary": "Module std::os::unix::process API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/os/unix/raw.md",
+      "title": "Module std::os::unix::raw",
+      "summary": "Module std::os::unix::raw API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/os/unix/thread.md",
+      "title": "Module std::os::unix::thread",
+      "summary": "Module std::os::unix::thread API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/os/wasi/ffi.md",
+      "title": "Module std::os::wasi::ffi",
+      "summary": "Module std::os::wasi::ffi API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/os/wasi/fs.md",
+      "title": "Module std::os::wasi::fs",
+      "summary": "Module std::os::wasi::fs API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/os/windows/ffi.md",
+      "title": "Module std::os::windows::ffi",
+      "summary": "Module std::os::windows::ffi API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/os/windows/fs.md",
+      "title": "Module std::os::windows::fs",
+      "summary": "Module std::os::windows::fs API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/os/windows/io.md",
+      "title": "Module std::os::windows::io",
+      "summary": "Module std::os::windows::io API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/os/windows/net.md",
+      "title": "Module std::os::windows::net",
+      "summary": "Module std::os::windows::net API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/os/windows/process.md",
+      "title": "Module std::os::windows::process",
+      "summary": "Module std::os::windows::process API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/os/windows/raw.md",
+      "title": "Module std::os::windows::raw",
+      "summary": "Module std::os::windows::raw API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/panic.md",
+      "title": "Module std::panic",
+      "summary": "Module std::panic API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/pat.md",
+      "title": "Module std::pat",
+      "summary": "Module std::pat API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/path.md",
+      "title": "Module std::path",
+      "summary": "Module std::path API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/pin.md",
+      "title": "Module std::pin",
+      "summary": "Module std::pin API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/prelude/v1.md",
+      "title": "Module std::prelude::v1",
+      "summary": "Module std::prelude::v1 API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/process.md",
+      "title": "Module std::process",
+      "summary": "Module std::process API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/ptr.md",
+      "title": "Module std::ptr",
+      "summary": "Module std::ptr API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/random.md",
+      "title": "Module std::random",
+      "summary": "Module std::random API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/range.md",
+      "title": "Module std::range",
+      "summary": "Module std::range API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/range/legacy.md",
+      "title": "Module std::range::legacy",
+      "summary": "Module std::range::legacy API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/rc.md",
+      "title": "Module std::rc",
+      "summary": "Module std::rc API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/result.md",
+      "title": "Module std::result",
+      "summary": "Module std::result API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/simd.md",
+      "title": "Module std::simd",
+      "summary": "Module std::simd API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/simd/cmp.md",
+      "title": "Module std::simd::cmp",
+      "summary": "Module std::simd::cmp API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/simd/num.md",
+      "title": "Module std::simd::num",
+      "summary": "Module std::simd::num API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/simd/ptr.md",
+      "title": "Module std::simd::ptr",
+      "summary": "Module std::simd::ptr API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/slice.md",
+      "title": "Module std::slice",
+      "summary": "Module std::slice API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/str.md",
+      "title": "Module std::str",
+      "summary": "Module std::str API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/str/pattern.md",
+      "title": "Module std::str::pattern",
+      "summary": "Module std::str::pattern API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/string.md",
+      "title": "Module std::string",
+      "summary": "Module std::string API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/sync.md",
+      "title": "Module std::sync",
+      "summary": "Module std::sync API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/sync/atomic.md",
+      "title": "Module std::sync::atomic",
+      "summary": "Module std::sync::atomic API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/sync/mpmc.md",
+      "title": "Module std::sync::mpmc",
+      "summary": "Module std::sync::mpmc API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/sync/mpsc.md",
+      "title": "Module std::sync::mpsc",
+      "summary": "Module std::sync::mpsc API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/sync/nonpoison.md",
+      "title": "Module std::sync::nonpoison",
+      "summary": "Module std::sync::nonpoison API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/sync/oneshot.md",
+      "title": "Module std::sync::oneshot",
+      "summary": "Module std::sync::oneshot API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/sync/poison.md",
+      "title": "Module std::sync::poison",
+      "summary": "Module std::sync::poison API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/task.md",
+      "title": "Module std::task",
+      "summary": "Module std::task API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/thread.md",
+      "title": "Module std::thread",
+      "summary": "Module std::thread API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/time.md",
+      "title": "Module std::time",
+      "summary": "Module std::time API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/u128.md",
+      "title": "Module std::u128",
+      "summary": "Module std::u128 API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/u16.md",
+      "title": "Module std::u16",
+      "summary": "Module std::u16 API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/u32.md",
+      "title": "Module std::u32",
+      "summary": "Module std::u32 API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/u64.md",
+      "title": "Module std::u64",
+      "summary": "Module std::u64 API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/u8.md",
+      "title": "Module std::u8",
+      "summary": "Module std::u8 API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/unsafe_binder.md",
+      "title": "Module std::unsafe_binder",
+      "summary": "Module std::unsafe_binder API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/usize.md",
+      "title": "Module std::usize",
+      "summary": "Module std::usize API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/vec.md",
+      "title": "Module std::vec",
+      "summary": "Module std::vec API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/std/view.md",
+      "title": "Module std::view",
+      "summary": "Module std::view API reference",
+      "source": "Rust Standard Library (std)",
+      "category": "code",
+      "package": "std",
+      "package_version": "1.100.0",
+      "tags": [
+        "std",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/index.md",
+      "title": "Crate core",
+      "summary": "Crate core API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/alloc.md",
+      "title": "Module core::alloc",
+      "summary": "Module core::alloc API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/any.md",
+      "title": "Module core::any",
+      "summary": "Module core::any API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch.md",
+      "title": "Module core::arch",
+      "summary": "Module core::arch API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/aarch64.md",
+      "title": "Module core::arch::aarch64",
+      "summary": "Module core::arch::aarch64 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/aarch64-part2.md",
+      "title": "Module core::arch::aarch64 (Part 2)",
+      "summary": "Module core::arch::aarch64 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/amdgpu.md",
+      "title": "Module core::arch::amdgpu",
+      "summary": "Module core::arch::amdgpu API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/arm.md",
+      "title": "Module core::arch::arm",
+      "summary": "Module core::arch::arm API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/hexagon/scalar.md",
+      "title": "Module core::arch::hexagon::scalar",
+      "summary": "Module core::arch::hexagon::scalar API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/hexagon/v128.md",
+      "title": "Module core::arch::hexagon::v128",
+      "summary": "Module core::arch::hexagon::v128 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/hexagon/v64.md",
+      "title": "Module core::arch::hexagon::v64",
+      "summary": "Module core::arch::hexagon::v64 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/loongarch32.md",
+      "title": "Module core::arch::loongarch32",
+      "summary": "Module core::arch::loongarch32 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/loongarch64.md",
+      "title": "Module core::arch::loongarch64",
+      "summary": "Module core::arch::loongarch64 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/mips.md",
+      "title": "Module core::arch::mips",
+      "summary": "Module core::arch::mips API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/mips64.md",
+      "title": "Module core::arch::mips64",
+      "summary": "Module core::arch::mips64 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/nvptx.md",
+      "title": "Module core::arch::nvptx",
+      "summary": "Module core::arch::nvptx API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/powerpc.md",
+      "title": "Module core::arch::powerpc",
+      "summary": "Module core::arch::powerpc API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/powerpc64.md",
+      "title": "Module core::arch::powerpc64",
+      "summary": "Module core::arch::powerpc64 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/riscv32.md",
+      "title": "Module core::arch::riscv32",
+      "summary": "Module core::arch::riscv32 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/riscv64.md",
+      "title": "Module core::arch::riscv64",
+      "summary": "Module core::arch::riscv64 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/s390x.md",
+      "title": "Module core::arch::s390x",
+      "summary": "Module core::arch::s390x API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/wasm.md",
+      "title": "Module core::arch::wasm",
+      "summary": "Module core::arch::wasm API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/wasm32.md",
+      "title": "Module core::arch::wasm32",
+      "summary": "Module core::arch::wasm32 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/wasm64.md",
+      "title": "Module core::arch::wasm64",
+      "summary": "Module core::arch::wasm64 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/x86.md",
+      "title": "Module core::arch::x86",
+      "summary": "Module core::arch::x86 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/x86-part2.md",
+      "title": "Module core::arch::x86 (Part 2)",
+      "summary": "Module core::arch::x86 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/x86_64.md",
+      "title": "Module core::arch::x86_64",
+      "summary": "Module core::arch::x86_64 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/arch/x86_64-part2.md",
+      "title": "Module core::arch::x86_64 (Part 2)",
+      "summary": "Module core::arch::x86_64 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/array.md",
+      "title": "Module core::array",
+      "summary": "Module core::array API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/ascii.md",
+      "title": "Module core::ascii",
+      "summary": "Module core::ascii API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/async_iter.md",
+      "title": "Module core::async_iter",
+      "summary": "Module core::async_iter API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/borrow.md",
+      "title": "Module core::borrow",
+      "summary": "Module core::borrow API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/bstr.md",
+      "title": "Module core::bstr",
+      "summary": "Module core::bstr API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/cell.md",
+      "title": "Module core::cell",
+      "summary": "Module core::cell API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/char.md",
+      "title": "Module core::char",
+      "summary": "Module core::char API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/clone.md",
+      "title": "Module core::clone",
+      "summary": "Module core::clone API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/cmp.md",
+      "title": "Module core::cmp",
+      "summary": "Module core::cmp API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/contracts.md",
+      "title": "Module core::contracts",
+      "summary": "Module core::contracts API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/convert.md",
+      "title": "Module core::convert",
+      "summary": "Module core::convert API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/default.md",
+      "title": "Module core::default",
+      "summary": "Module core::default API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/error.md",
+      "title": "Module core::error",
+      "summary": "Module core::error API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/f128/consts.md",
+      "title": "Module core::f128::consts",
+      "summary": "Module core::f128::consts API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/f16/consts.md",
+      "title": "Module core::f16::consts",
+      "summary": "Module core::f16::consts API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/f32.md",
+      "title": "Module core::f32",
+      "summary": "Module core::f32 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/f32/consts.md",
+      "title": "Module core::f32::consts",
+      "summary": "Module core::f32::consts API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/f32/math.md",
+      "title": "Module core::f32::math",
+      "summary": "Module core::f32::math API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/f64.md",
+      "title": "Module core::f64",
+      "summary": "Module core::f64 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/f64/consts.md",
+      "title": "Module core::f64::consts",
+      "summary": "Module core::f64::consts API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/f64/math.md",
+      "title": "Module core::f64::math",
+      "summary": "Module core::f64::math API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/ffi.md",
+      "title": "Module core::ffi",
+      "summary": "Module core::ffi API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/ffi/c_str.md",
+      "title": "Module core::ffi::c_str",
+      "summary": "Module core::ffi::c_str API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/field.md",
+      "title": "Module core::field",
+      "summary": "Module core::field API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/fmt.md",
+      "title": "Module core::fmt",
+      "summary": "Module core::fmt API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/future.md",
+      "title": "Module core::future",
+      "summary": "Module core::future API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/hash.md",
+      "title": "Module core::hash",
+      "summary": "Module core::hash API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/hint.md",
+      "title": "Module core::hint",
+      "summary": "Module core::hint API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/i128.md",
+      "title": "Module core::i128",
+      "summary": "Module core::i128 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/i16.md",
+      "title": "Module core::i16",
+      "summary": "Module core::i16 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/i32.md",
+      "title": "Module core::i32",
+      "summary": "Module core::i32 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/i64.md",
+      "title": "Module core::i64",
+      "summary": "Module core::i64 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/i8.md",
+      "title": "Module core::i8",
+      "summary": "Module core::i8 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/index.md",
+      "title": "Module core::index",
+      "summary": "Module core::index API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/intrinsics.md",
+      "title": "Module core::intrinsics",
+      "summary": "Module core::intrinsics API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/intrinsics/fallback.md",
+      "title": "Module core::intrinsics::fallback",
+      "summary": "Module core::intrinsics::fallback API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/intrinsics/gpu.md",
+      "title": "Module core::intrinsics::gpu",
+      "summary": "Module core::intrinsics::gpu API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/intrinsics/mir.md",
+      "title": "Module core::intrinsics::mir",
+      "summary": "Module core::intrinsics::mir API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/intrinsics/simd.md",
+      "title": "Module core::intrinsics::simd",
+      "summary": "Module core::intrinsics::simd API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/intrinsics/simd/scalable.md",
+      "title": "Module core::intrinsics::simd::scalable",
+      "summary": "Module core::intrinsics::simd::scalable API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/io.md",
+      "title": "Module core::io",
+      "summary": "Module core::io API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/isize.md",
+      "title": "Module core::isize",
+      "summary": "Module core::isize API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/iter.md",
+      "title": "Module core::iter",
+      "summary": "Module core::iter API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/marker.md",
+      "title": "Module core::marker",
+      "summary": "Module core::marker API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/mem.md",
+      "title": "Module core::mem",
+      "summary": "Module core::mem API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/mem/type_info.md",
+      "title": "Module core::mem::type_info",
+      "summary": "Module core::mem::type_info API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/net.md",
+      "title": "Module core::net",
+      "summary": "Module core::net API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/num.md",
+      "title": "Module core::num",
+      "summary": "Module core::num API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/offload.md",
+      "title": "Module core::offload",
+      "summary": "Module core::offload API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/ops.md",
+      "title": "Module core::ops",
+      "summary": "Module core::ops API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/option.md",
+      "title": "Module core::option",
+      "summary": "Module core::option API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/os/darwin/objc.md",
+      "title": "Module core::os::darwin::objc",
+      "summary": "Module core::os::darwin::objc API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/panic.md",
+      "title": "Module core::panic",
+      "summary": "Module core::panic API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/panicking.md",
+      "title": "Module core::panicking",
+      "summary": "Module core::panicking API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/panicking/panic_const.md",
+      "title": "Module core::panicking::panic_const",
+      "summary": "Module core::panicking::panic_const API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/pat.md",
+      "title": "Module core::pat",
+      "summary": "Module core::pat API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/pin.md",
+      "title": "Module core::pin",
+      "summary": "Module core::pin API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/prelude/v1.md",
+      "title": "Module core::prelude::v1",
+      "summary": "Module core::prelude::v1 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/process.md",
+      "title": "Module core::process",
+      "summary": "Module core::process API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/profiling.md",
+      "title": "Module core::profiling",
+      "summary": "Module core::profiling API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/ptr.md",
+      "title": "Module core::ptr",
+      "summary": "Module core::ptr API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/random.md",
+      "title": "Module core::random",
+      "summary": "Module core::random API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/range.md",
+      "title": "Module core::range",
+      "summary": "Module core::range API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/range/legacy.md",
+      "title": "Module core::range::legacy",
+      "summary": "Module core::range::legacy API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/result.md",
+      "title": "Module core::result",
+      "summary": "Module core::result API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/simd.md",
+      "title": "Module core::simd",
+      "summary": "Module core::simd API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/simd/cmp.md",
+      "title": "Module core::simd::cmp",
+      "summary": "Module core::simd::cmp API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/simd/num.md",
+      "title": "Module core::simd::num",
+      "summary": "Module core::simd::num API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/simd/ptr.md",
+      "title": "Module core::simd::ptr",
+      "summary": "Module core::simd::ptr API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/slice.md",
+      "title": "Module core::slice",
+      "summary": "Module core::slice API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/str.md",
+      "title": "Module core::str",
+      "summary": "Module core::str API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/str/pattern.md",
+      "title": "Module core::str::pattern",
+      "summary": "Module core::str::pattern API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/sync.md",
+      "title": "Module core::sync",
+      "summary": "Module core::sync API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/sync/atomic.md",
+      "title": "Module core::sync::atomic",
+      "summary": "Module core::sync::atomic API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/task.md",
+      "title": "Module core::task",
+      "summary": "Module core::task API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/time.md",
+      "title": "Module core::time",
+      "summary": "Module core::time API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/u128.md",
+      "title": "Module core::u128",
+      "summary": "Module core::u128 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/u16.md",
+      "title": "Module core::u16",
+      "summary": "Module core::u16 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/u32.md",
+      "title": "Module core::u32",
+      "summary": "Module core::u32 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/u64.md",
+      "title": "Module core::u64",
+      "summary": "Module core::u64 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/u8.md",
+      "title": "Module core::u8",
+      "summary": "Module core::u8 API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/ub_checks.md",
+      "title": "Module core::ub_checks",
+      "summary": "Module core::ub_checks API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/unsafe_binder.md",
+      "title": "Module core::unsafe_binder",
+      "summary": "Module core::unsafe_binder API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/core/usize.md",
+      "title": "Module core::usize",
+      "summary": "Module core::usize API reference",
+      "source": "Rust Standard Library (core)",
+      "category": "code",
+      "package": "core",
+      "package_version": "1.100.0",
+      "tags": [
+        "core",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/index.md",
+      "title": "Crate alloc",
+      "summary": "Crate alloc API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/alloc.md",
+      "title": "Module alloc::alloc",
+      "summary": "Module alloc::alloc API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/borrow.md",
+      "title": "Module alloc::borrow",
+      "summary": "Module alloc::borrow API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/boxed.md",
+      "title": "Module alloc::boxed",
+      "summary": "Module alloc::boxed API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/bstr.md",
+      "title": "Module alloc::bstr",
+      "summary": "Module alloc::bstr API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/collections.md",
+      "title": "Module alloc::collections",
+      "summary": "Module alloc::collections API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/collections/binary_heap.md",
+      "title": "Module alloc::collections::binary_heap",
+      "summary": "Module alloc::collections::binary_heap API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/collections/btree_map.md",
+      "title": "Module alloc::collections::btree_map",
+      "summary": "Module alloc::collections::btree_map API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/collections/btree_set.md",
+      "title": "Module alloc::collections::btree_set",
+      "summary": "Module alloc::collections::btree_set API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/collections/linked_list.md",
+      "title": "Module alloc::collections::linked_list",
+      "summary": "Module alloc::collections::linked_list API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/collections/vec_deque.md",
+      "title": "Module alloc::collections::vec_deque",
+      "summary": "Module alloc::collections::vec_deque API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/ffi.md",
+      "title": "Module alloc::ffi",
+      "summary": "Module alloc::ffi API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/ffi/c_str.md",
+      "title": "Module alloc::ffi::c_str",
+      "summary": "Module alloc::ffi::c_str API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/fmt.md",
+      "title": "Module alloc::fmt",
+      "summary": "Module alloc::fmt API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/intrinsics.md",
+      "title": "Module alloc::intrinsics",
+      "summary": "Module alloc::intrinsics API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/io.md",
+      "title": "Module alloc::io",
+      "summary": "Module alloc::io API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/io/prelude.md",
+      "title": "Module alloc::io::prelude",
+      "summary": "Module alloc::io::prelude API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/rc.md",
+      "title": "Module alloc::rc",
+      "summary": "Module alloc::rc API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/slice.md",
+      "title": "Module alloc::slice",
+      "summary": "Module alloc::slice API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/str.md",
+      "title": "Module alloc::str",
+      "summary": "Module alloc::str API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/str/pattern.md",
+      "title": "Module alloc::str::pattern",
+      "summary": "Module alloc::str::pattern API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/string.md",
+      "title": "Module alloc::string",
+      "summary": "Module alloc::string API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/sync.md",
+      "title": "Module alloc::sync",
+      "summary": "Module alloc::sync API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/task.md",
+      "title": "Module alloc::task",
+      "summary": "Module alloc::task API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    },
+    {
+      "path": "chapters/alloc/vec.md",
+      "title": "Module alloc::vec",
+      "summary": "Module alloc::vec API reference",
+      "source": "Rust Standard Library (alloc)",
+      "category": "code",
+      "package": "alloc",
+      "package_version": "1.100.0",
+      "tags": [
+        "alloc",
+        "rustdoc"
+      ]
+    }
+  ]
+}

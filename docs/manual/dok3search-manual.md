@@ -35,6 +35,7 @@ dok3search listening on http://127.0.0.1:8080 (docs=<문서 수>, static=<정적
 | `DOK3_DESIGN_DIR` | 자동 탐색 | 설계 문서 사본(`frontend/src/samples/design`) 경로. `in-memory-fake` 모드에서만 쓴다. |
 | `DOK3_SOURCE_DIR` | 없음 | 시작할 때 색인할 Markdown 폴더. |
 | `DOK3_DATA_DIR` | 없음 | 영속 저장소와 색인 세대를 둘 폴더. `DOK3_SOURCE_DIR`과 함께 써야 한다. |
+| `DOK3_ALLOW_NON_LOOPBACK_BIND` | `false` | `true`/`1`이면 `DOK3_SOURCE_DIR` 모드에서 비-loopback `DOK3_BIND`를 허용한다. 인증 프록시 뒤 컨테이너 배포에서만 켠다. |
 
 값 앞뒤의 공백은 무시한다. 경로 변수에 빈 문자열을 주면 지정하지 않은 것으로 본다.
 
@@ -51,7 +52,7 @@ dok3search listening on http://127.0.0.1:8080 (docs=<문서 수>, static=<정적
 | 없음 | 지정 | 기동 실패 | `DOK3_DATA_DIR requires DOK3_SOURCE_DIR` 오류로 종료한다. |
 | 없음 | 없음 | `in-memory-fake` | 내장 샘플 문서, 설계 문서 사본, 이 매뉴얼을 메모리에 올려 검색한다. |
 
-`DOK3_SOURCE_DIR`을 지정하면 `DOK3_BIND`는 IPv4 루프백 주소(`127.0.0.1`, `127.0.0.2` 등)여야 한다. `0.0.0.0`, `localhost`, `::1`이면 `DOK3_SOURCE_DIR requires an IPv4 loopback DOK3_BIND` 오류로 종료한다.
+`DOK3_SOURCE_DIR`을 지정하면 `DOK3_BIND`는 기본적으로 IPv4 루프백 주소(`127.0.0.1`, `127.0.0.2` 등)여야 한다. `0.0.0.0`, `localhost`, `::1`이면 `DOK3_SOURCE_DIR requires an IPv4 loopback DOK3_BIND` 오류로 종료한다. 인증 프록시 뒤 컨테이너에서 `0.0.0.0` 바인드가 필요하면 `DOK3_ALLOW_NON_LOOPBACK_BIND=true`를 명시한다. 관리자 API 바인드는 이 플래그와 무관하게 항상 loopback만 허용한다.
 
 이 매뉴얼(`dok3search-manual`)은 `in-memory-fake` 모드의 기본 문서다. `tantivy-local`과 `tantivy-persistent` 모드는 원본 폴더의 문서만 색인한다. 두 모드에서도 매뉴얼을 검색하려면 `docs/manual/dok3search-manual.md`를 원본 폴더에 복사한다.
 
@@ -78,7 +79,7 @@ local Markdown skipped: <상대 경로>: <사유>
 
 모든 응답에는 보안 헤더 `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, `Content-Security-Policy`(`frame-ancestors 'none'` 포함)가 붙는다.
 
-### 준비 상태
+### 준비 상태와 코퍼스 카탈로그
 
 `GET /health/ready`는 다음 필드를 돌려준다.
 
@@ -88,6 +89,8 @@ local Markdown skipped: <상대 경로>: <사유>
 - `snapshot`: 검색 세대 정보(`generation_id`, `epoch`, `schema_version`, `acl_policy_version`, `applied_change_sequence`, `reader_state`)
 
 `tantivy-persistent` 모드에서 활성 세대가 없으면 `snapshot.generation_id`는 `none`, `reader_state`는 `degraded`다.
+
+`GET /api/v1/corpora`는 현재 접근 권한(ACL)으로 열람 가능한 코퍼스 목록(`corpus_id`, `label`, `category`, `topic`, `version`, `toolchain`, `license`, `document_count`, `packages`)을 돌려준다. 관리자 권한 없이 조회할 수 있다.
 
 ### 검색
 
@@ -268,7 +271,7 @@ dok3search는 외부 네트워크가 없는 환경을 전제로 한다.
 | 증상 | 원인과 조치 |
 | --- | --- |
 | `DOK3_DATA_DIR requires DOK3_SOURCE_DIR` | `DOK3_SOURCE_DIR`을 함께 지정한다. |
-| `DOK3_SOURCE_DIR requires an IPv4 loopback DOK3_BIND` | `DOK3_BIND`를 `127.0.0.1`로 바꾼다. |
+| `DOK3_SOURCE_DIR requires an IPv4 loopback DOK3_BIND` | `DOK3_BIND`를 `127.0.0.1`로 바꾸거나, 인증 프록시 뒤 컨테이너라면 `DOK3_ALLOW_NON_LOOPBACK_BIND=true`를 명시한다. |
 | `invalid DOK3_PORT value` 또는 `DOK3_PORT must be between 1 and 65535` | 1~65535 범위의 정수로 지정한다. |
 | `failed to bind <주소>` | 포트를 다른 프로세스가 쓰고 있다. 포트를 바꾸거나 기존 프로세스를 멈춘다. |
 | `unknown argument` | 지원하는 인자는 `--mcp-stdio` 하나다. |

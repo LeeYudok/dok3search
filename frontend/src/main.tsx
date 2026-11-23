@@ -18,6 +18,9 @@ const referenceSources = [
   { prefix: referenceIdPrefix('rust', 'rust-book'), load: () => import('./rust-book').then(({ rustBook }) => rustBook) },
   { prefix: referenceIdPrefix('rust', 'rust-reference'), load: () => import('./rust-reference').then(({ rustReference }) => rustReference) },
   { prefix: referenceIdPrefix('rust', 'cargo-book'), load: () => import('./cargo-book').then(({ cargoBook }) => cargoBook) },
+  { prefix: referenceIdPrefix('rust', 'rust-std'), load: () => import('./rust-std').then(({ rustStd }) => rustStd) },
+  { prefix: referenceIdPrefix('rust', 'rust-crates'), load: () => import('./rust-crates').then(({ rustCrates }) => rustCrates) },
+  { prefix: referenceIdPrefix('rust', 'rustc-error-codes'), load: () => import('./rustc-error-codes').then(({ rustcErrorCodes }) => rustcErrorCodes) },
   { prefix: referenceIdPrefix('go', 'go-reference'), load: () => import('./go-reference').then(({ goReference }) => goReference) },
 ]
 
@@ -172,8 +175,12 @@ async function fetchSearchPage(
       }
     }
 
-    const allLocal = searchLocalDocuments(query, '', 1, pageSize, documents)
-    const local = searchLocalDocuments(query, category, page, pageSize, documents)
+    const corpora = await references.catch(() => [])
+    const fallbackDocs = category === 'code'
+      ? [...new Map(documents.concat(corpora.flatMap(({ documents }) => documents)).map((doc) => [doc.id, doc])).values()]
+      : documents
+    const allLocal = searchLocalDocuments(query, '', 1, pageSize, fallbackDocs)
+    const local = searchLocalDocuments(query, category, page, pageSize, fallbackDocs)
     return {
       result: {
         ...local,
@@ -280,7 +287,10 @@ function SearchPage() {
   const browseDesign = category === 'design' && !query
 
   function documentUrl(id: string, page: number) {
-    return searchUrl(query, category, page, topic).replace('/search', '/docs/' + id)
+    // Search hits carry ids like `local-markdown:samples/.../rust-version.md`;
+    // the raw `:` and `/` must be escaped or the URL gains extra path segments
+    // and the single-segment /docs/:id route never matches.
+    return searchUrl(query, category, page, topic).replace('/search', '/docs/' + encodeURIComponent(id))
   }
 
   async function copyTitle(title: string) {
@@ -446,7 +456,10 @@ function SearchPage() {
 
 const path = window.location.pathname
 const adminMatch = /^\/admin(?:\/(sources|jobs))?\/?$/.exec(path)
-const detail = /^\/docs\/([^/]+)\/?$/.exec(path)
+// Document ids contain `:` and `/` (`local-markdown:samples/…/*.md`). Encoded
+// links keep %2F in the path, and freshly pasted raw links arrive with real
+// slashes, so the detail route must not be limited to a single segment.
+const detail = /^\/docs\/(.+)\/?$/.exec(path)
 const legacyIds: Record<string, string> = {
   'design-design-md': 'design-index-md',
   'design-design-yaml': 'design-map-yaml',
