@@ -34,9 +34,11 @@ nodes:
 - {id: rust_crates, type: markdown-corpus, label: 'Workspace and used direct dependency crates rustdoc Markdown (code/rust)', path: frontend/src/samples/rust-crates/chapters}
 - {id: rustc_error_codes, type: markdown-corpus, label: 'Rust compiler error index from rustc --explain (code/rust)', path: frontend/src/samples/rustc-error-codes/chapters}
 - {id: go_reference, type: markdown-corpus, label: 'Go official reference and Korean and English practice guides (guide/go)', path: frontend/src/samples/go-reference/chapters}
+- {id: doksam_blog, type: markdown-corpus, label: 'Curated technical posts from blog.doksam.com (Rust/Go courses, AI agent guides, airgap/dev practices)', path: frontend/src/samples/doksam-blog/chapters}
 - {id: comprehensive_rust_importer, type: script, label: 'Convert local mdBook snapshots to Markdown', path: scripts/import-comprehensive-rust.py}
 - {id: rust_official_importer, type: script, label: 'Convert installed Rust Reference and Cargo Book docs to offline Markdown', path: scripts/import-rust-official-components.py}
 - {id: rustdoc_error_importer, type: script, label: 'Convert local rustdoc (std + used crates) and rustc --explain to offline Markdown', path: scripts/import-rustdoc-and-errors.py}
+- {id: doksam_blog_importer, type: script, label: 'Convert curated blog-doksam posts into airgapped Markdown corpus', path: scripts/import-doksam-blog.py}
 - {id: rust_workspace, type: cargo-workspace, label: 'Rust backend Cargo workspace', path: backend/rust/Cargo.toml}
 - {id: dok3_server, type: rust-binary, label: 'Single server binary entrypoint (dok3search)', path: backend/rust/crates/dok3-server/src/main.rs}
 - {id: dok3_api, type: rust-crate, label: 'Axum HTTP router, security headers, static SPA fallback', path: backend/rust/crates/dok3-api/src/lib.rs}
@@ -69,6 +71,8 @@ edges:
 - {from: frontend, to: rust_crates, rel: searches_and_renders_local_corpus}
 - {from: frontend, to: rustc_error_codes, rel: searches_and_renders_local_corpus}
 - {from: frontend, to: go_reference, rel: searches_and_renders_local_corpus}
+- {from: frontend, to: doksam_blog, rel: searches_and_renders_local_corpus}
+- {from: doksam_blog_importer, to: doksam_blog, rel: generates_from_local_snapshot}
 - {from: comprehensive_rust_importer, to: comprehensive_rust, rel: generates_from_local_snapshot}
 - {from: rust_official_importer, to: rust_reference, rel: generates_from_installed_rust_docs}
 - {from: rust_official_importer, to: cargo_book, rel: generates_from_installed_rust_docs}
@@ -144,6 +148,7 @@ commands:
     import_comprehensive_rust: 'python3 scripts/import-comprehensive-rust.py <snapshot-dir> <output-dir>'
     import_official_rust: "python3 scripts/import-rust-official-components.py --rust-docs-root <toolchain>/share/doc/rust/html --license-root <toolchain>/share/doc/rust/licenses --output-root frontend/src/samples --version '<rustc version>'"
     import_rustdoc_and_errors: 'python3 scripts/import-rustdoc-and-errors.py --output-root frontend/src/samples'
+    import_doksam_blog: 'python3 scripts/import-doksam-blog.py --source <blog-doksam>/site/content/blog --output frontend/src/samples/doksam-blog'
   checks:
     agents_yaml: scripts/check-agents-yaml.sh
     design_copy: 'python3 scripts/check-design-copy.py'
@@ -181,4 +186,5 @@ docs:
 - {path: frontend/src/samples/rust-crates/README.md, what: 'Workspace and direct dependency crates rustdoc provenance and import command'}
 - {path: frontend/src/samples/rustc-error-codes/README.md, what: 'rustc --explain error index provenance, license and import command'}
 - {path: frontend/src/samples/go-reference/README.md, what: 'Go documentation provenance and license'}
+- {path: frontend/src/samples/doksam-blog/README.md, what: 'blog.doksam.com curated technical corpus provenance'}
 - {path: deploy/doksam/README.md, what: 'dok3search doksam k3s deployment, rollback rehearsal and verification'}

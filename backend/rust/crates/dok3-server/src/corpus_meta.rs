@@ -172,7 +172,14 @@ fn load_corpus_dir(root: &Path, dir: &Path, out: &mut CorpusMetadataIndex) {
                     }
                 }
             }
-            if let Some(topic) = &default_topic {
+            let topic = chapter
+                .get("topic")
+                .and_then(Value::as_str)
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+                .map(str::to_string)
+                .or_else(|| default_topic.clone());
+            if let Some(topic) = &topic {
                 tags.push(topic.clone());
             }
 
@@ -181,7 +188,7 @@ fn load_corpus_dir(root: &Path, dir: &Path, out: &mut CorpusMetadataIndex) {
                 CorpusChapterMeta {
                     source,
                     category,
-                    topic: default_topic.clone(),
+                    topic,
                     version,
                     summary,
                     tags,
