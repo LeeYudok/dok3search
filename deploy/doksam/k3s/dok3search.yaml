@@ -86,6 +86,10 @@ spec:
             # behind the Traefik Ingress inside the cluster.
             - name: DOK3_ALLOW_NON_LOOPBACK_BIND
               value: "true"
+            - name: DOK3_ANALYZER_PROFILE
+              value: "nori-mixed"
+            - name: DOK3_DICT_PATH
+              value: /data/dict/ko-dic.bin
             # readOnlyRootFilesystem: only /data (PVC) and /tmp (emptyDir) are writable.
             - name: TMPDIR
               value: /tmp
@@ -108,7 +112,7 @@ spec:
               cpu: 100m
               memory: 256Mi
             limits:
-              memory: 768Mi
+              memory: 1536Mi
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true

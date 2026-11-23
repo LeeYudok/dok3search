@@ -84,6 +84,9 @@ deploy/doksam/scripts/deploy.sh
 
 - `DOK3_DATA_DIR=/data`는 PVC `dok3search-data`(StorageClass `local-path`)에
   마운트한다. SQLite journal과 Tantivy blue-green 세대가 여기에 산다.
+- `DOK3_ANALYZER_PROFILE=nori-mixed`와 `DOK3_DICT_PATH=/data/dict/ko-dic.bin`으로
+  한국어 형태소 분석을 활성화한다. 사전 파일(`ko-dic.bin`)은 PVC `/data/dict/`에
+  배치하며, 프로파일이나 사전이 바뀌면 시작 시 영속 세대가 자동 재구축된다.
 - `DOK3_SOURCE_DIR=/app/knowledge`는 이미지에 baked된 knowledge corpus다.
 - 컨테이너는 `0.0.0.0`으로 바인드하되, `DOK3_ALLOW_NON_LOOPBACK_BIND=true`로
   loopback 제한을 명시적으로 해제한다. 이 플래그가 없으면 `DOK3_SOURCE_DIR`
