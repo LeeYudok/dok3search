@@ -26,6 +26,7 @@
 - `frontend/` — React + TypeScript + Vite 웹 UI (로컬 폰트·샘플 데이터 포함, 외부 CDN 미사용, 개발 프록시 `/api`·`/health`, 문서 분류 편집 및 `/admin` 운영 관리 화면 포함). Markdown의 외부 URL은 클릭 가능한 링크로 렌더하지 않고 폐쇄망에서 열 수 없는 출처로 표시한다.
 - `frontend/src/samples/{comprehensive-rust,rust-book,rust-reference,cargo-book,go-reference}/chapters/` — Rust와 Go 참고 자료 검색에 쓰는 장별 Markdown. 메인 `개발 가이드` 분류 안에서 Rust·Go 세부 분류로 나눈다. Comprehensive Rust와 `go-reference/chapters/practice/`의 Go 실무 가이드는 한국어이고 나머지는 영문이다. `go-reference/chapters/learn-go-with-tests/`에는 MIT 라이선스의 영문 실습 3편을 담는다.
 - `frontend/src/samples/{rust-std,rust-crates,rustc-error-codes}/chapters/` — 로컬 `rust-docs`(`std`·`core`·`alloc`), 워크스페이스·직접 의존 크레이트(`cargo doc`), `rustc --explain` 오류 코드 인덱스를 변환한 `code`/`rust` Markdown 코퍼스다. `scripts/import-rustdoc-and-errors.py`로 재생성한다.
+- `frontend/src/samples/doksam-blog/chapters/` — `blog.doksam.com`(`blog-doksam`)에서 선별한 Rust·Go 강의, AI 에이전트 가이드, 폐쇄망/개발 실무 Markdown 코퍼스다. `scripts/import-doksam-blog.py`로 재생성한다.
 - `backend/rust/` — Cargo workspace (`crates/` 아래 13개 크레이트: `dok3-core` ~ `dok3-server`)
 - `config/` — 환경별 설정 예시 및 스키마 배치 위치
 - `contracts/` — REST·MCP·도메인 계약 정의 배치 위치

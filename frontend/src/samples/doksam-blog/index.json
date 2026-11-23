@@ -1,0 +1,1317 @@
+{
+  "source": "doksam 기술 블로그",
+  "category": "guide",
+  "chapters": [
+    {
+      "path": "chapters/agent-docs-drift.md",
+      "title": "지침은 코드보다 먼저 낡는다 — 도구 개수가 네 곳에 세 가지로 적혀 있었다",
+      "summary": "에이전트가 읽는 AGENTS.md 와 스킬 문서의 숫자가 4주 만에 어긋났다. 어긋난 곳을 직접 세고, 숫자를 적지 않거나 원본에서 세어 대조하는 검사로 막는 방법을 정리했다.",
+      "source": "doksam 기술 블로그",
+      "category": "guide",
+      "tags": [
+        "ai-agent",
+        "agents-md",
+        "문서",
+        "드리프트",
+        "ci"
+      ],
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/agent-worker-gate-hook.md",
+      "title": "에이전트 세 종류에 같은 '작업자 확인 문'을 달았다 — 판정은 하나, 사고는 출력 형식에서 났다",
+      "summary": "여러 사람이 한 레포를 쓰면 에이전트는 누구의 지침으로 일하나. Claude Code·Codex·Antigravity 세 런타임에 같은 훅을 달아 세션마다 작업자를 묻게 한 방법과, 런타임마다 다른 입출력 형식에서 겪은 함정을 정리했다.",
+      "source": "doksam 기술 블로그",
+      "category": "guide",
+      "tags": [
+        "claude-code",
+        "codex",
+        "antigravity",
+        "hooks",
+        "ai-agent",
+        "협업"
+      ],
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/agents-scaffold-commit-gate.md",
+      "title": "AI 코딩 에이전트가 규칙을 못 어기게 하려면 커밋에서 막는다 — 그 게이트도 시험해야 한다",
+      "summary": "문서에 적은 규칙은 에이전트가 지나칩니다. 규칙을 git pre-commit 게이트로 옮긴 agents-scaffold 를 빈 저장소에 새로 깔아 다시 시험했습니다. 막는 것, 못 막는 것, 게이트 스스로 틀렸던 곳을 정리했습니다.",
+      "source": "doksam 기술 블로그",
+      "category": "guide",
+      "tags": [
+        "ai-agent",
+        "claude-code",
+        "git-hooks",
+        "agents-scaffold",
+        "pre-commit"
+      ],
+      "date": "2026-08-25"
+    },
+    {
+      "path": "chapters/agy-guide-01-getting-started.md",
+      "title": "agy 실전 가이드 1편 — 설치와 지침 파일(AGENTS.md·rules)",
+      "summary": "agy 를 설치하고 AGENTS.md·rules 로 지침을 넣을 때 실제로 읽히는 파일을 실측으로 정리했습니다",
+      "source": "doksam 기술 블로그 — AI 에이전트 가이드",
+      "category": "guide",
+      "tags": [
+        "agy",
+        "antigravity",
+        "ai",
+        "개발환경"
+      ],
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/agy-guide-02-modes-context.md",
+      "title": "agy 실전 가이드 2편 — 실행 모드·권한·컨텍스트",
+      "summary": "agy 의 실행 모드 네 가지와 권한 규칙, 질문 하나에도 드는 컨텍스트 비용을 실측과 함께 정리했습니다",
+      "source": "doksam 기술 블로그 — AI 에이전트 가이드",
+      "category": "guide",
+      "tags": [
+        "agy",
+        "antigravity",
+        "권한",
+        "컨텍스트"
+      ],
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/agy-guide-03-skills-plugins.md",
+      "title": "agy 실전 가이드 3편 — 스킬·서브에이전트·플러그인",
+      "summary": "Claude Code 용 스킬과 서브에이전트를 agy 에서 쓸 때 바꿔야 할 경로와 머리말을 실측으로 정리했습니다",
+      "source": "doksam 기술 블로그 — AI 에이전트 가이드",
+      "category": "guide",
+      "tags": [
+        "agy",
+        "antigravity",
+        "스킬",
+        "서브에이전트"
+      ],
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/agy-guide-04-mcp-hooks.md",
+      "title": "agy 실전 가이드 4편 — MCP 와 훅",
+      "summary": "agy 에 외부 도구를 붙이는 MCP 와 도구 호출 앞뒤에 끼어드는 훅의 함정을 실측으로 정리했습니다",
+      "source": "doksam 기술 블로그 — AI 에이전트 가이드",
+      "category": "guide",
+      "tags": [
+        "agy",
+        "antigravity",
+        "mcp",
+        "훅"
+      ],
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/agy-guide-05-headless-collab.md",
+      "title": "agy 실전 가이드 5편 — 비대화형 실행과 다른 에이전트와의 협업",
+      "summary": "agy 를 스크립트와 다른 에이전트에서 부를 때 고정할 것과 ACP 로 대화를 잇는 법을 정리했습니다",
+      "source": "doksam 기술 블로그 — AI 에이전트 가이드",
+      "category": "guide",
+      "tags": [
+        "agy",
+        "antigravity",
+        "자동화",
+        "멀티에이전트"
+      ],
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/airgap-missing-tools.md",
+      "title": "폐쇄망에서 에이전트가 없는 도구를 만나면 기록만 하고 멈춘다 — 재시도 대신 반입 목록",
+      "summary": "인터넷이 없는 PC 에서 AI 코딩 에이전트가 설치 재시도에 빠지지 않게 했다. 없는 명령은 셸이, 없는 패키지는 에이전트가 한 줄로 기록하고, 그 기록을 모아 필요한 도구만 반입한다. 효과는 아직 재지 못했다.",
+      "source": "doksam 기술 블로그",
+      "category": "guide",
+      "tags": [
+        "ai-agent",
+        "폐쇄망",
+        "air-gap",
+        "bash",
+        "pip",
+        "운영"
+      ],
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/claude-code-guide-01-getting-started.md",
+      "title": "Claude Code 실전 가이드 1편 — 시작하기와 CLAUDE.md",
+      "summary": "설치와 첫 세션, 그리고 프로젝트 규칙을 CLAUDE.md 로 주입해서 반복 지시를 없애는 법",
+      "source": "doksam 기술 블로그 — AI 에이전트 가이드",
+      "category": "guide",
+      "tags": [
+        "claude-code",
+        "ai",
+        "개발환경",
+        "생산성"
+      ],
+      "date": "2026-08-04"
+    },
+    {
+      "path": "chapters/claude-code-guide-02-context.md",
+      "title": "Claude Code 실전 가이드 2편 — 컨텍스트를 다루는 기술",
+      "summary": "컨텍스트 창은 무한하지 않다는 전제로 파일 덤프 대신 grep 과 서브에이전트 위임, 파일 경유 출력, /clear 규율을 실전에서 정리했습니다",
+      "source": "doksam 기술 블로그 — AI 에이전트 가이드",
+      "category": "guide",
+      "tags": [
+        "claude-code",
+        "ai",
+        "컨텍스트",
+        "생산성"
+      ],
+      "date": "2026-08-04"
+    },
+    {
+      "path": "chapters/claude-code-guide-03-subagents.md",
+      "title": "Claude Code 실전 가이드 3편 — 서브에이전트와 병렬 처리",
+      "summary": "언제 쪼개고 언제 순차로 둘지, 에이전트 종류와 모델 티어를 어떻게 나눠 쓸지, 그리고 worktree 로 작업 경계를 긋는 규칙까지 정리했습니다",
+      "source": "doksam 기술 블로그 — AI 에이전트 가이드",
+      "category": "guide",
+      "tags": [
+        "claude-code",
+        "ai",
+        "서브에이전트",
+        "오케스트레이션"
+      ],
+      "date": "2026-08-04"
+    },
+    {
+      "path": "chapters/claude-code-guide-04-mcp.md",
+      "title": "Claude Code 실전 가이드 4편 — MCP 로 내 인프라를 도구로 만들기",
+      "summary": "직접 만든 MCP 서버로 에이전트가 PostgreSQL·GitLab·Grafana·알림 큐를 도구처럼 쓰게 만든 실전 경험을 정리했습니다",
+      "source": "doksam 기술 블로그 — AI 에이전트 가이드",
+      "category": "guide",
+      "tags": [
+        "claude-code",
+        "mcp",
+        "인프라",
+        "자동화"
+      ],
+      "date": "2026-08-04"
+    },
+    {
+      "path": "chapters/claude-code-guide-05-autonomous.md",
+      "title": "Claude Code 실전 가이드 5편 — 이슈에서 배포까지 자율주행",
+      "summary": "이슈 등록부터 구현·MR·CI·머지·배포·검증·정리·알림까지 한 루프로 맡겨본 경험과 그 경계를 정리했습니다",
+      "source": "doksam 기술 블로그 — AI 에이전트 가이드",
+      "category": "guide",
+      "tags": [
+        "claude-code",
+        "자동화",
+        "ci-cd",
+        "워크플로"
+      ],
+      "date": "2026-08-04"
+    },
+    {
+      "path": "chapters/codex-0-171-0-changelog.md",
+      "title": "Codex CLI 0.171.0 업데이트 정리: GPT-6.2 Sol, TUI workspace, 원격 실행",
+      "summary": "Codex CLI 0.171.0(2026-11-20) 체인지로그를 새 기능·버그 수정·정비로 나눠 정리했습니다. GPT-6.2 Sol과 Astra, 기본으로 켜진 TUI workspace, 원격 실행과 statusline까지 실제로 와닿는 변화만 골랐습니다.",
+      "source": "doksam 기술 블로그 — AI 에이전트 가이드",
+      "category": "guide",
+      "tags": [
+        "codex",
+        "openai",
+        "ai-agent",
+        "cli",
+        "체인지로그",
+        "gpt-6.2-sol",
+        "tui",
+        "release-note"
+      ],
+      "date": "2026-11-23"
+    },
+    {
+      "path": "chapters/codex-guide-01-getting-started.md",
+      "title": "Codex 실전 가이드 1편 — 시작하기와 AGENTS.md",
+      "summary": "프로젝트 신뢰가 바꾸는 것, AGENTS.md 가 루트부터 이어 붙는 순서, 실제로 들어간 지침을 codex debug prompt-input 으로 확인하는 법을 정리했습니다",
+      "source": "doksam 기술 블로그 — AI 에이전트 가이드",
+      "category": "guide",
+      "tags": [
+        "codex",
+        "ai",
+        "개발환경",
+        "agents-md"
+      ],
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/codex-guide-02-sandbox-approvals.md",
+      "title": "Codex 실전 가이드 2편 — 샌드박스와 승인 정책",
+      "summary": "OS 샌드박스가 먼저 막고 승인 정책과 rules 파일이 예외를 고르는 Codex 의 두 겹 경계를 실측으로 정리했습니다",
+      "source": "doksam 기술 블로그 — AI 에이전트 가이드",
+      "category": "guide",
+      "tags": [
+        "codex",
+        "ai",
+        "보안",
+        "샌드박스"
+      ],
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/codex-guide-03-config-context.md",
+      "title": "Codex 실전 가이드 3편 — config.toml·프로필·컨텍스트",
+      "summary": "설정이 겹치는 순서와 프로필 파일, 첫 질문 전에 이미 차 있는 컨텍스트 7만 자의 내역, 세션을 줄이고 잇는 명령을 정리했습니다",
+      "source": "doksam 기술 블로그 — AI 에이전트 가이드",
+      "category": "guide",
+      "tags": [
+        "codex",
+        "ai",
+        "컨텍스트",
+        "설정"
+      ],
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/codex-guide-04-skills-subagents-hooks.md",
+      "title": "Codex 실전 가이드 4편 — 스킬·서브에이전트·훅",
+      "summary": "스킬이 어디서 읽히고 왜 조용히 빠지는지, 서브에이전트가 몇 개까지 같은 폴더에서 도는지, 훅이 언제 실행되지 않는지를 실측으로 정리했습니다",
+      "source": "doksam 기술 블로그 — AI 에이전트 가이드",
+      "category": "guide",
+      "tags": [
+        "codex",
+        "ai",
+        "서브에이전트",
+        "스킬"
+      ],
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/codex-guide-05-mcp-exec-collaboration.md",
+      "title": "Codex 실전 가이드 5편 — MCP·플러그인·exec 와 다른 에이전트와의 협업",
+      "summary": "MCP 서버와 플러그인으로 도구를 붙이고, codex exec 로 무인 실행하고, 다른 에이전트가 Codex 를 부를 때 경계를 다시 긋는 법을 정리했습니다",
+      "source": "doksam 기술 블로그 — AI 에이전트 가이드",
+      "category": "guide",
+      "tags": [
+        "codex",
+        "mcp",
+        "자동화",
+        "멀티에이전트"
+      ],
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/codex-guide-06-config-toml.md",
+      "title": "Codex 실전 가이드 6편 — config.toml 설정 매뉴얼 (0.170.0 기준)",
+      "summary": "모델·공급자, 권한, 웹 검색·MCP·훅, 지시문, 프로필, 기록과 화면까지 config.toml 의 자주 쓰는 키를 0.170.0 에서 하나씩 돌려 확인하고 정리했습니다",
+      "source": "doksam 기술 블로그 — AI 에이전트 가이드",
+      "category": "guide",
+      "tags": [
+        "codex",
+        "ai",
+        "설정",
+        "폐쇄망"
+      ],
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/dev-tools-guide-2.md",
+      "title": "요즘 공부하는 것...들 2탄 — 터미널로 옮겨 온 도구, 함정은 셸과 판 차이에서 났다",
+      "summary": "맥 터미널에서 매일 쓰는 도구를 버전, 설정, 직접 겪은 함정과 함께 적었습니다. 2026-11-18 에 버전과 dotfiles 를 다시 확인했고, 계속 쓰는 도구와 자리를 내준 도구, 새로 쓰는 도구를 표로 나눴습니다.",
+      "source": "doksam 기술 블로그",
+      "category": "guide",
+      "tags": [
+        "dev",
+        "tools",
+        "cli",
+        "claude-code",
+        "pnpm",
+        "podman",
+        "rust"
+      ],
+      "date": "2026-11-17"
+    },
+    {
+      "path": "chapters/dev-tools-guide.md",
+      "title": "요즘 공부하는 것...들 — 폐쇄망 Windows 에 들고 들어가는 도구 다섯, 여덟 달 뒤",
+      "summary": "인터넷이 안 되는 Windows PC 에서 웹 개발을 할 때 들고 들어가는 Bun, Git, VS Code, DBeaver, Beyond Compare 를 정리했습니다. 2026-11-18 에 공식 문서와 제 맥, dotfiles 로 다시 확인하고, 여덟 달 뒤 무엇이 남았는지 더했습니다.",
+      "source": "doksam 기술 블로그",
+      "category": "guide",
+      "tags": [
+        "dev",
+        "tools",
+        "vscode",
+        "dbeaver",
+        "beyond-compare",
+        "폐쇄망",
+        "windows"
+      ],
+      "date": "2026-03-21"
+    },
+    {
+      "path": "chapters/docs-as-build-kit.md",
+      "title": "설계서는 md·yaml·svg 만 고치고 docx·html 은 빌드한다 — 숫자는 한 곳에, 그림은 생성기로",
+      "summary": "문서 여섯 종류를 원본 세 가지에서 빌드하는 문서 키트를 정리했다. 숫자를 한 곳에 두는 자리표시와 엔진을 옮길 때의 바이트 비교를 다룬다. yaml 로 흐름도를 그리는 생성기와 그 한계도 적었다.",
+      "source": "doksam 기술 블로그",
+      "category": "guide",
+      "tags": [
+        "ai-agent",
+        "문서",
+        "docs-as-code",
+        "pandoc",
+        "bun",
+        "svg"
+      ],
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/git-incidents-shared-main.md",
+      "title": "세 사람과 에이전트가 한 main 을 쓰면 생기는 일 — git 사고 세 건과 막는 장치",
+      "summary": "브랜치 없이 main 하나에 세 사람과 에이전트가 바로 커밋한 레포에서 난 사고 세 건을 git log 로 다시 셌다. 서명만 빠진 채 바뀐 원격 이력, LFS 체크아웃 실패 뒤 853개 파일이 삭제로 기록된 커밋, 9종으로 흩어진 저자 이름이다.",
+      "source": "doksam 기술 블로그",
+      "category": "guide",
+      "tags": [
+        "git",
+        "git-lfs",
+        "ai-agent",
+        "협업",
+        "pre-commit"
+      ],
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-00-roadmap.md",
+      "title": "Go 강의 로드맵 — 무엇을 어떤 순서로 배우나",
+      "summary": "4단계 24편으로 가는 Go 강의의 전체 목차입니다. 편마다 목표와 선수 편, 다루는 면접 주제를 적었습니다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "강의",
+        "로드맵",
+        "면접"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-01-first-binary.md",
+      "title": "Go 강의 1편 — 모듈 하나로 시작해 실행 파일 하나로 끝난다",
+      "summary": "go.mod 로 모듈을 만들고 go run·build·test·gofmt·vet 을 돌린 뒤 리눅스·윈도우용 실행 파일까지 만든다. 빌드 캐시와 빌드 정보도 실험으로 본다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "모듈",
+        "빌드",
+        "교차 컴파일"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-02-values-and-structs.md",
+      "title": "Go 강의 2편 — 넘기면 복사되고, 함께 쓰려면 포인터를 넘긴다",
+      "summary": "Go 는 대입과 호출에서 값을 복사한다. 구조체·메서드·슬라이스·맵·문자열을 실험으로 보며 값 리시버와 포인터 리시버를 언제 고르는지 정리한다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "구조체",
+        "포인터",
+        "슬라이스",
+        "맵"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-03-interfaces-and-errors.md",
+      "title": "Go 강의 3편 — 인터페이스는 쓰는 쪽이 정하고, 에러는 감싸서 올린다",
+      "summary": "implements 없이 만족하는 인터페이스를 쓰는 쪽에 작게 정의하고, 에러를 %w 로 감싸 errors.Is·As·AsType 로 가려낸다. typed nil 함정과 인터페이스 호출 비용도 실험으로 본다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "인터페이스",
+        "에러 처리",
+        "errors"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-04-http-server.md",
+      "title": "Go 강의 4편 — 표준 라이브러리만으로 API 서버가 된다",
+      "summary": "Go 1.22 ServeMux 패턴, JSON 과 본문 상한, 환경변수 설정, go:embed 로 외부 모듈 없이 문의 접수 서버를 만든다. 패턴 충돌과 405 도 실험으로 본다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "http",
+        "json",
+        "embed"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-05-tests-and-concurrency.md",
+      "title": "Go 강의 5편 — 테스트는 라우터에 대고 돌리고, 고루틴은 멈출 방법을 정하고 띄운다",
+      "summary": "표 주도 테스트와 httptest 로 inbox 서버를 고정하고, 고루틴·채널·context·뮤텍스를 써 본다. -race 가 잡은 경쟁과 새는 고루틴을 실험으로 확인한다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "테스트",
+        "동시성",
+        "race"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-06-deploy-and-operate.md",
+      "title": "Go 강의 6편 — 운영 서버에는 실행 파일 하나와 헬스 체크만 올린다",
+      "summary": "정적 바이너리를 셸 없는 컨테이너에 담고, /healthz 와 -healthcheck 로 상태를 묻고, 종료 신호에 처리 중인 요청을 끝내고 내려가게 만든다. 배포 전 검사 주기와 의존성 원칙도 정리한다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "배포",
+        "컨테이너",
+        "헬스 체크"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-07-package-design.md",
+      "title": "Go 강의 7편 — 패키지는 import 가 아래로만 흐르게 나눈다",
+      "summary": "한 패키지로 만든 문의 서버를 cmd·도메인·저장소·HTTP 네 패키지로 나눈다. 순환 import 를 실험으로 일으켜 고치고, 인터페이스 위치, 생성자 패턴, 외부 테스트 패키지, 다시 컴파일되는 범위까지 확인한다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "패키지",
+        "프로젝트 구조",
+        "설계"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-08-modules-and-versions.md",
+      "title": "Go 강의 8편 — 버전은 요구한 최소 버전 가운데 가장 큰 것으로 정해진다",
+      "summary": "로컬 파일 프록시에 가짜 모듈을 올려 go get, go.sum, 최소 버전 선택(MVS), retract, 주 버전 경로, replace·go.work, vendor 를 인터넷 없이 실험한다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "모듈",
+        "의존성",
+        "버전"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-09-error-design.md",
+      "title": "Go 강의 9편 — 에러는 층마다 감싸고, 기록과 상태 코드는 맨 위에서 한 번 정한다",
+      "summary": "저장소·서비스·핸들러 세 층에서 에러에 맥락을 붙이고, 상태 코드와 기록은 한 곳에서 정한다. Close 에러, 취소 원인, 패닉 경계, 에러의 비용도 실험으로 본다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "에러",
+        "slog",
+        "context"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-10-http-in-production.md",
+      "title": "Go 강의 10편 — 운영 서버는 기본값 \"무한정 기다림\"을 걷어 내야 버틴다",
+      "summary": "서버 타임아웃 네 가지, 요청 context, 미들웨어 순서, 종료 순서, 클라이언트 연결 재사용, 재시도와 레이트 리미터를 실험으로 본다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "net/http",
+        "타임아웃",
+        "미들웨어",
+        "그레이스풀 종료"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-11-database-sql.md",
+      "title": "Go 강의 11편 — sql.Open 은 연결을 열지 않고, *sql.DB 는 연결 풀이다",
+      "summary": "database/sql 의 연결 풀을 db.Stats() 로 직접 본다. 풀 고갈, 닫지 않은 Rows, 취소, NULL, SQL 주입, 트랜잭션을 SQLite 로 실험하고 저장소를 만든다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "database/sql",
+        "연결 풀",
+        "트랜잭션"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-12-test-design.md",
+      "title": "Go 강의 12편 — 회귀는 테스트 개수가 아니라 테스트 종류로 막는다",
+      "summary": "병렬 서브테스트, 순서 섞기, 골든 파일, 퍼즈 테스트, synctest 의 가짜 시계, 테스트 더블, 커버리지의 한계를 실제 실행 결과로 보인다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "테스트",
+        "퍼즈",
+        "골든 파일"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-13-slice-map-internals.md",
+      "title": "Go 강의 13편 — 슬라이스는 배열을 나눠 보는 창이고, 맵은 여덟 칸 묶음의 해시 표다",
+      "summary": "슬라이스 헤더와 append 의 용량 규칙, 같은 배열을 덮어쓰는 버그와 붙잡힌 메모리, 여덟 칸 그룹으로 된 맵의 크기·삭제·동시 쓰기, 문자열 변환 비용을 Go 1.26.2 실험으로 본다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "슬라이스",
+        "맵",
+        "런타임",
+        "면접"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-14-interface-internals.md",
+      "title": "Go 강의 14편 — 인터페이스 값은 두 칸이고, 비용은 뒤 칸을 채울 때 생긴다",
+      "summary": "인터페이스 값의 두 칸을 unsafe 로 직접 읽고, 어떤 값이 any 에 들어갈 때 할당이 생기는지 벤치마크와 컴파일러 진단으로 가른다. 비교 패닉, 단언 비용, 탈가상화도 실험으로 본다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "인터페이스",
+        "런타임",
+        "면접"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-15-escape-analysis.md",
+      "title": "Go 강의 15편 — 주소가 함수 밖으로 나가는 값만 힙으로 간다",
+      "summary": "스택에 둘지 힙에 둘지는 문법이 아니라 이스케이프 분석이 정한다. -gcflags=-m 출력을 읽고, 인터페이스·클로저·make·인라인이 판정을 어떻게 바꾸는지 벤치마크로 잰다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "이스케이프 분석",
+        "스택",
+        "힙",
+        "성능"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-16-garbage-collector.md",
+      "title": "Go 강의 16편 — GC 는 힙이 목표에 닿으면 돌고, 그 목표를 GOGC 와 GOMEMLIMIT 가 정한다",
+      "summary": "gctrace 한 줄을 필드별로 읽고, GOGC·GOMEMLIMIT 를 바꿔 GC 횟수와 힙 크기가 어떻게 맞바뀌는지 잰다. 삼색 표시, Green Tea, sync.Pool, AddCleanup 도 실험과 런타임 소스로 본다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "gc",
+        "gogc",
+        "gomemlimit",
+        "성능"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-17-scheduler.md",
+      "title": "Go 강의 17편 — 고루틴은 P 개수만큼 동시에 돌고, 막히면 자리를 내준다",
+      "summary": "G·M·P 모델을 schedtrace, 스레드 수, 선점 실험으로 본다. 고루틴 10만 개의 메모리, 시스템 콜이 스레드를 늘리는 이유, 고루틴 누수를 찾는 법까지 다룬다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "스케줄러",
+        "고루틴",
+        "면접"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-18-channels-and-context.md",
+      "title": "Go 강의 18편 — 채널은 받을 자리가 없으면 막히고, 취소는 부모에서 자식으로만 내려간다",
+      "summary": "런타임 hchan 구조와 직접 돌린 실험으로 채널이 막히고 패닉 나는 경우를 정리한다. select 의 무작위 선택, 타이머 채널 변화(1.23), context 취소 전파도 확인한다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "채널",
+        "select",
+        "context",
+        "동시성"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-19-memory-model.md",
+      "title": "Go 강의 19편 — 다른 고루틴이 쓴 값은 동기화를 거쳐야 보인다",
+      "summary": "Go 메모리 모델의 '먼저 일어남'을 실험으로 본다. 일반 변수 깃발의 순서가 뒤집힌 결과와 -race 의 비용을 재고, sync·atomic 도구를 고르는 기준을 숫자로 정리한다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "메모리 모델",
+        "동시성",
+        "sync",
+        "atomic"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-20-generics.md",
+      "title": "Go 강의 20편 — 제네릭은 상자 포장을 없애 주지만 메서드 호출을 빠르게 하지는 않는다",
+      "summary": "타입 매개변수와 제약, 타입 추론, comparable, 반복자를 돌려 보고, 실행 파일의 심볼로 GC shape 구현을 확인한다. 구체 타입·제네릭·인터페이스를 벤치마크로 견준다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "제네릭",
+        "반복자",
+        "성능"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-21-profiling.md",
+      "title": "Go 강의 21편 — 느린 곳은 프로파일로 찾고, 고친 효과는 같은 벤치마크로 증명한다",
+      "summary": "결과를 버린 벤치마크의 함정, CPU·힙·뮤텍스·블록 프로파일, 루프백 전용 pprof, 실행 추적, PGO 를 글 검사기에 심은 병목 하나로 잰다. 맥에서 CPU 프로파일이 엉뚱한 함수를 가리킨 일도 근거와 함께 적는다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "pprof",
+        "벤치마크",
+        "trace",
+        "pgo",
+        "성능"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-22-code-review.md",
+      "title": "Go 강의 22편 — 기계적 실수는 도구가 잡고, 실패와 수명은 사람이 본다",
+      "summary": "일부러 냄새나게 쓴 124줄짜리 코드에 gofmt·go vet·go fix 를 돌려 도구가 잡는 11가지와 사람이 짚어야 하는 11가지를 나눈다. 두 번 지적한 규칙은 테스트로 옮긴다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "코드 리뷰",
+        "go vet",
+        "go fix",
+        "면접"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-23-system-design.md",
+      "title": "Go 강의 23편 — 설계 과제는 접수와 발송을 큐로 나누는 데서 시작한다",
+      "summary": "알림 발송 서비스를 요구사항, 용량, API, 저장소, 동시성, 장애, 관측 순서로 설계한다. 멱등 키, 백프레셔, 재시도, 데드 레터, 종료 때 비우기를 표준 라이브러리 코드와 실행 결과로 보인다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "시스템 설계",
+        "면접",
+        "큐"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/go-course-24-mock-interview.md",
+      "title": "Go 강의 24편 — 라이브 코딩은 질문으로 시작해 테스트와 -race 로 끝낸다",
+      "summary": "45분 라이브 코딩의 순서를 정하고, 동시성 안전 LRU 캐시와 취소되는 크롤러를 표 주도 테스트와 -race 로 풀었다. 일부러 틀린 판의 실제 실패, 질문 은행, 채점 기준까지 담은 연재 마지막 편이다.",
+      "source": "doksam 기술 블로그 — Go 강의",
+      "category": "guide",
+      "tags": [
+        "go",
+        "go-course",
+        "면접",
+        "라이브 코딩",
+        "동시성"
+      ],
+      "topic": "go",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/million-line-codebase-agents.md",
+      "title": "100만 줄 넘는 코드베이스에서 에이전트는 모듈 경계 안에 가둔다 — 600만 줄 저장소에서 다시 본 원칙",
+      "summary": "100만 줄부터는 에이전트에게 전체 맥락을 줄 수 없습니다. 모듈 경계로 읽을 범위를 가두고, 검색으로 조각을 주고, 검사로 안전을 확인합니다. 약 600만 줄 저장소와 에이전트 작업 저장소에서 맞은 것과 틀린 것을 정리했습니다.",
+      "source": "doksam 기술 블로그",
+      "category": "guide",
+      "tags": [
+        "ai-agent",
+        "large-codebase",
+        "codegraph",
+        "agents-md",
+        "architecture"
+      ],
+      "date": "2026-08-25"
+    },
+    {
+      "path": "chapters/orca-worktree-workflow.md",
+      "title": "Orca 사용법 — worktree 워크플로 중심으로",
+      "summary": "AI 에이전트 여러 개를 한 레포에서 충돌 없이 굴리는 방법. Orca 의 worktree 워크플로를 실제 사용 흐름대로 정리했다.",
+      "source": "doksam 기술 블로그",
+      "category": "guide",
+      "tags": [
+        "orca",
+        "git worktree",
+        "ai-agent",
+        "claude-code"
+      ],
+      "date": "2026-07-22"
+    },
+    {
+      "path": "chapters/rust-course-00-roadmap.md",
+      "title": "Rust 강의 로드맵 — 무엇을 어떤 순서로 배우나",
+      "summary": "4단계로 가는 Rust 강의의 전체 목차입니다. 편마다 목표와 선수 편, 다루는 면접 주제를 적었습니다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "강의",
+        "로드맵",
+        "면접"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-01-getting-started.md",
+      "title": "Rust 강의 1편 — 설치부터 첫 실행 파일까지",
+      "summary": "rustup 과 cargo 로 첫 도구를 만들고 테스트·fmt·clippy 로 확인한다. 디버그와 릴리스 빌드가 같은 실수를 어떻게 다르게 다루는지 돌려 본다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "cargo",
+        "rustup",
+        "clippy",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-02-ownership.md",
+      "title": "Rust 강의 2편 — 소유권, 값의 주인은 하나다",
+      "summary": "대입과 함수 호출이 왜 값을 옮기는지, 이동이 실제로 무엇을 복사하는지 실험으로 본다. Copy 와 Clone, drop 순서, String 과 &str 을 컴파일 오류와 함께 정리한다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "소유권",
+        "string",
+        "drop",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-03-borrowing.md",
+      "title": "Rust 강의 3편 — 빌림과 수명 첫걸음",
+      "summary": "& 와 &mut 가 겹칠 수 없는 이유를 버퍼 재할당 실험으로 보고, E0502·E0499·E0597·E0106 오류를 읽는 법과 수명 표기가 약속하는 것을 정리한다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "빌림",
+        "수명",
+        "borrow-checker",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-04-types.md",
+      "title": "Rust 강의 4편 — 타입으로 설계하기",
+      "summary": "문서 형식은 enum 으로, 없을 수 있는 값은 Option 으로, 실패는 Result 와 thiserror 에러 타입으로 담는다. 트레이트로 파서를 바꿔 끼우고 제네릭과 트레이트 객체의 차이를 크기로 본다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "enum",
+        "result",
+        "thiserror",
+        "trait",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-05-parser-cli.md",
+      "title": "Rust 강의 5편 — 실전: 파일을 뜯는 파서와 CLI",
+      "summary": "레코드 형식 바이너리를 패닉 없이 읽는 이터레이터를 만들고, clap 으로 명령줄을, rayon 으로 병렬 처리를 붙인다. 빌린 레코드가 복사한 레코드보다 느리게 나온 측정도 풀어 본다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "parser",
+        "iterator",
+        "clap",
+        "rayon",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-06-shipping.md",
+      "title": "Rust 강의 6편 — 밖으로 내보내기와 운영",
+      "summary": "릴리스 프로필 다섯 가지로 크기·속도·빌드 시간을 재고, Python·Node 바인딩의 구조와 C ABI 를 본다. 에이전트와 일할 때 돌리는 fmt → clippy → 좁힌 test 주기를 시간으로 정한다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "lto",
+        "pyo3",
+        "napi",
+        "빌드-시간",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-07-error-design.md",
+      "title": "Rust 강의 7편 — 에러 설계: thiserror 와 anyhow",
+      "summary": "에러를 읽는 쪽이 코드인지 사람인지로 라이브러리와 애플리케이션의 에러를 나눈다. source 사슬, Box<dyn Error> 함정, panic 이 맞는 곳, 에러 타입 크기를 실험으로 본다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "error-handling",
+        "thiserror",
+        "anyhow",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-08-collections-iterators.md",
+      "title": "Rust 강의 8편 — 컬렉션과 이터레이터, 제로 코스트를 재 보다",
+      "summary": "인덱스 반복문, for-in, 이터레이터 체인을 같은 일로 재고 기계어까지 비교한다. Vec·HashMap·BTreeMap 을 고르는 기준과 entry API, iter·iter_mut·into_iter 의 차이를 오류 메시지와 함께 정리한다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "iterator",
+        "hashmap",
+        "zero-cost",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-09-closures.md",
+      "title": "Rust 강의 9편 — 클로저: Fn, FnMut, FnOnce 와 move",
+      "summary": "클로저가 캡처한 값을 어떻게 쓰느냐로 Fn·FnMut·FnOnce 가 정해진다. 받는 쪽이 무엇을 요구해야 하는지, move 가 바꾸는 것과 바꾸지 않는 것을 컴파일 오류와 호출 비용 측정으로 본다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "closure",
+        "fn-trait",
+        "move",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-10-testing.md",
+      "title": "Rust 강의 10편 — 테스트 설계: 단위·통합·문서·프로퍼티",
+      "summary": "테스트를 놓는 자리마다 볼 수 있는 것이 다르다. 단위·통합·문서 테스트를 나눠 쓰고, proptest 로 무작위 입력을 던져 경계 버그를 찾고 가장 작은 반례로 줄이는 과정을 실제로 돌려 본다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "testing",
+        "proptest",
+        "doctest",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-11-workspace-features.md",
+      "title": "Rust 강의 11편 — 워크스페이스와 feature",
+      "summary": "라이브러리만 쓰는데 명령줄용 의존성까지 빌드되던 크레이트를 워크스페이스로 나누고, 선택 기능을 feature 로 묶는다. 크레이트 수와 빌드 시간을 전후로 재고 feature 통합(unification)이 무엇을 바꾸는지 본다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "cargo",
+        "workspace",
+        "feature",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-12-clippy-review.md",
+      "title": "Rust 강의 12편 — clippy 와 코드 리뷰 관용구",
+      "summary": "리뷰에서 자주 걸리는 모양을 한 파일에 모아 clippy 로 검사하고, --fix 가 고치는 것과 사람이 고칠 것을 나눈다. lint 그룹, [lints] 표, #[expect] 로 규칙을 저장소에 박는 법과 clippy 가 못 보는 설계 문제를 정리한다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "clippy",
+        "code-review",
+        "lint",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-13-borrowck-lifetimes.md",
+      "title": "Rust 강의 13편 — 빌림 검사기와 수명 깊게",
+      "summary": "빌림 검사기는 함수 하나씩 보고 함수 경계에서는 시그니처만 본다. 필드 단위 분리 빌림이 메서드에서 사라지는 이유, 빌린 값에서 꺼내기, 생략 규칙 3과 명시 수명, 'static 의 두 뜻, NLL 이 아직 못 푸는 모양을 컴파일 오류로 본다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "borrow-checker",
+        "lifetime",
+        "nll",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-14-smart-pointers.md",
+      "title": "Rust 강의 14편 — 스마트 포인터와 Drop",
+      "summary": "주인이 하나라는 규칙으로 표현하기 어려운 구조를 Box, Rc, Weak 로 만든다. 재귀 타입, 참조 수, 강한 순환의 메모리 누수, Weak 로 끊기, drop 순서와 패닉 중의 RAII 를 실행 결과로 본다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "box",
+        "rc",
+        "weak",
+        "drop",
+        "raii",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-15-interior-mutability.md",
+      "title": "Rust 강의 15편 — 내부 가변성: Cell, RefCell, Mutex, Atomic",
+      "summary": "& 로 받고도 고쳐야 할 때 쓰는 내부 가변성 타입을 고르는 기준을 정한다. RefCell 의 실행 중 빌림 검사와 패닉, Mutex 중독, 한 스레드와 여러 스레드의 비용을 재고 에디션에 따라 달라지는 if let 함정을 본다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "refcell",
+        "mutex",
+        "atomic",
+        "interior-mutability",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-16-traits-deep.md",
+      "title": "Rust 강의 16편 — 트레이트 깊게: 디스패치, 연관 타입, dyn 호환성",
+      "summary": "제네릭의 모노모피제이션이 실행 파일에 복사본을 몇 개 만드는지 심볼과 크기로 재고, dyn 의 vtable 과 비교한다. 연관 타입과 제네릭 인자 트레이트의 차이, dyn 호환성, 고아 규칙을 컴파일 오류로 본다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "trait",
+        "generics",
+        "dyn",
+        "monomorphization",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-17-concurrency.md",
+      "title": "Rust 강의 17편 — 동시성: Send, Sync, 스레드와 채널",
+      "summary": "Send 와 Sync 가 무엇을 약속하는지 컴파일러로 확인하고, 범위 스레드로 지역 데이터를 빌려 주고, 채널로 결과의 소유권을 넘긴다. 컴파일러가 막지 못하는 교착을 직접 재현하고 잠금 순서로 푼다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "concurrency",
+        "send",
+        "sync",
+        "channel",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-18-async.md",
+      "title": "Rust 강의 18편 — async/await: Future, tokio, Pin",
+      "summary": "tokio 1.54.1 로 Future 를 손으로 만들어 poll 횟수를 세고, 차례로 await 와 join, 블로킹 호출과 spawn_blocking, 작업 1만 개와 스레드 1천 개를 잰다. Send 가 아닌 값을 await 너머로 들고 가면 왜 막히는지, Pin 이 왜 필요한지 본다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "async",
+        "tokio",
+        "future",
+        "pin",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-19-layout-unsafe.md",
+      "title": "Rust 강의 19편 — 메모리 배치와 unsafe",
+      "summary": "size_of 와 offset_of 로 기본 repr 과 repr(C) 의 배치를 재고, 니치 최적화로 Option 이 공짜인 경우를 본다. unsafe 로 정의되지 않은 동작 네 가지를 만들어 일반 실행과 Miri 결과를 비교하고, unsafe 를 안전한 API 뒤에 가두는 법을 정리한다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "unsafe",
+        "miri",
+        "repr",
+        "memory-layout",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-20-macros.md",
+      "title": "Rust 강의 20편 — 매크로: macro_rules! 와 derive",
+      "summary": "형식 목록 하나로 enum 과 메서드를 찍어 내는 macro_rules! 와, 구조체 필드 이름을 돌려주는 derive 매크로를 직접 만든다. 펼친 코드를 nightly 로 확인하고 위생성, 오류 메시지, 빌드 비용을 본다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "macro",
+        "proc-macro",
+        "derive",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-21-performance.md",
+      "title": "Rust 강의 21편 — 성능 재기: criterion 과 프로파일러",
+      "summary": "criterion 0.8.2 로 이 연재의 손 측정 셋을 통계적으로 다시 재고, black_box 를 빼면 일을 안 한 코드가 빨라 보이는 함정을 본다. macOS sample 로 시간이 어디서 새는지 떠 보고, 돌리지 못한 flamegraph 는 개념으로 정리한다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "performance",
+        "criterion",
+        "benchmark",
+        "profiling",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-22-ffi.md",
+      "title": "Rust 강의 22편 — FFI 와 바인딩: C ABI 경계를 넘는 법",
+      "summary": "C 프로그램이 Rust cdylib 의 함수를 부르고, Rust 가 C 의 strlen 을 부른다. 문자열의 소유권을 경계 너머로 넘기고 돌려받는 법, 패닉이 extern \"C\" 경계를 넘을 때 프로세스가 abort 되는 모습을 실제로 돌려 본다. pyo3·napi 는 구조만 정리한다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "ffi",
+        "c-abi",
+        "pyo3",
+        "napi",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-23-system-design.md",
+      "title": "Rust 강의 23편 — 시스템 과제를 Rust 로 풀기",
+      "summary": "면접에 자주 나오는 레이트 리미터, LRU 캐시, 로그 집계기를 Rust 로 설계하고 테스트까지 돌린다. 요구를 묻는 순서, 자료 구조를 고르는 이유, 시간을 인자로 받아 테스트하는 법, 공유보다 합치기를 먼저 고르는 판단을 정리한다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "system-design",
+        "interview",
+        "lru",
+        "rate-limiter",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/rust-course-24-interview-map.md",
+      "title": "Rust 강의 24편 — 면접 총정리: 질문 지도와 복습 순서",
+      "summary": "연재 23편의 면접 질문을 주제별 지도로 묶고, 질문마다 근거가 된 편과 실험 숫자를 연결한다. 라이브 코딩 두 문제와 코드 리뷰 과제를 풀어 보고, 이 연재가 다루지 않은 것을 정직하게 적는다.",
+      "source": "doksam 기술 블로그 — Rust 강의",
+      "category": "guide",
+      "tags": [
+        "rust",
+        "interview",
+        "review",
+        "강의"
+      ],
+      "topic": "rust",
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/sonarqube-does-not-refactor.md",
+      "title": "SonarQube 는 이슈를 고쳐도 리팩토링은 하지 않는다 — 근거와 추측 구분하기",
+      "summary": "정적분석 도구는 문제를 찾고 머지를 막는다. 지금의 SonarQube 유료 판에는 수정을 제안하고 PR 을 여는 기능이 붙었지만 단위는 규칙 위반 한 건이다. 내 저장소의 Sonar 이슈 322건을 에이전트로 정리한 기록과, 출처를 확인한 리팩토링 방법론을 정리했다.",
+      "source": "doksam 기술 블로그",
+      "category": "guide",
+      "tags": [
+        "sonarqube",
+        "refactoring",
+        "legacy-code",
+        "static-analysis",
+        "ai-agent"
+      ],
+      "date": "2026-08-26"
+    },
+    {
+      "path": "chapters/web-tech-stack-2026-2.md",
+      "title": "2026년 웹 프론트엔드 기술스택 2탄 — 빼라던 것은 빠졌고, 온다던 것은 오지 않았다",
+      "summary": "1탄에서 '검토해볼 만하다'고 적은 열 가지를 여덟 달 뒤 채점했습니다. 근거는 지금 손대는 프로젝트 다섯 개의 package.json 과 2026-11-18 의 npm 최신 버전입니다.",
+      "source": "doksam 기술 블로그",
+      "category": "guide",
+      "tags": [
+        "frontend",
+        "react",
+        "vite",
+        "pnpm",
+        "tech-stack"
+      ],
+      "date": "2026-11-17"
+    },
+    {
+      "path": "chapters/web-tech-stack-2026.md",
+      "title": "2026년 웹 프론트엔드 기술스택 분석 — 내 프로젝트는 얼마나 최신일까?",
+      "summary": "실제 프로젝트의 package.json 을 까놓고 2026년 중반 기준 프론트엔드 트렌드와 비교 분석했다. 후반부에는 셀프호스팅 GitLab 레포 78개 전체의 언어 분포로 풀스택 전경까지.",
+      "source": "doksam 기술 블로그",
+      "category": "guide",
+      "tags": [
+        "frontend",
+        "react",
+        "vite",
+        "tailwind",
+        "tech-stack"
+      ],
+      "date": "2026-07-22"
+    },
+    {
+      "path": "chapters/why-go-and-rust.md",
+      "title": "Go 와 Rust 를 쓰면 좋은 점 — 직접 잰 숫자로 본 두 언어의 자리",
+      "summary": "에이전트가 코드를 쓰는 지금 왜 Go 와 Rust 인가. 이 사이트 서버와 문서 변환 엔진을 직접 빌드해 잰 시간·크기·의존성으로 두 언어를 어디에 쓰는지 정리했다.",
+      "source": "doksam 기술 블로그",
+      "category": "guide",
+      "tags": [
+        "go",
+        "rust",
+        "ai-agent",
+        "배포",
+        "tech-stack"
+      ],
+      "date": "2026-11-18"
+    },
+    {
+      "path": "chapters/why-llm-router-openrouter-orcarouter.md",
+      "title": "LLM 라우터는 모델을 둘 이상 쓸 때 값을 한다 — OpenRouter·OrcaRouter 7주 실측",
+      "summary": "모델을 둘 이상 쓰면 LLM 라우터가 이득입니다. OpenRouter 와 OrcaRouter 를 집 게이트웨이 뒤에 붙여 7주 쓴 기록으로 좋은 점과 주의할 점을 정리했습니다. 같은 모델 이름이어도 품질과 단가가 같지 않았습니다.",
+      "source": "doksam 기술 블로그",
+      "category": "guide",
+      "tags": [
+        "llm",
+        "openrouter",
+        "orcarouter",
+        "llm-gateway",
+        "fallback"
+      ],
+      "date": "2026-11-17"
+    },
+    {
+      "path": "chapters/windows-wsl-mac-linux-for-ai.md",
+      "title": "윈도우에서는 WSL2, AI 개발은 맥 아니면 리눅스 — 도구는 돌아도 생태계는 리눅스다",
+      "summary": "Claude Code 와 Codex 는 이제 윈도우에서도 그대로 실행된다. 그런데도 윈도우에서는 WSL2 를 쓰라고 말하는 이유를 한글 깨짐·셸·샌드박스·모델 서빙·쿠버네티스(k3s, kubeadm)로 정리했다.",
+      "source": "doksam 기술 블로그",
+      "category": "guide",
+      "tags": [
+        "wsl",
+        "windows",
+        "macos",
+        "linux",
+        "kubernetes",
+        "k3s",
+        "ai-agent",
+        "개발환경"
+      ],
+      "date": "2026-11-18"
+    }
+  ]
+}
