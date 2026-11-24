@@ -7,9 +7,10 @@ use dok3_analyzer::{SectionCandidate, select_matched_section_id};
 use dok3_core::Dok3Error;
 use dok3_domain::{
     AclScope, CategoryCount, CorpusCatalogEntry, Document, DocumentDetail, DocumentFormatLinks,
-    DocumentId, DocumentStorePort, GenerationId, Principal, ReaderState, SearchHit, SearchPort,
-    SearchRequest, SearchResponse, SearchSnapshotMeta, SectionCitation, SectionReadRequest,
-    SectionReadResponse, SectionSummary, Sequence, build_corpus_catalog,
+    DocumentId, DocumentStorePort, GenerationId, Principal, ReaderState, RecommendedTerm,
+    SearchHit, SearchPort, SearchRequest, SearchResponse, SearchSnapshotMeta, SectionCitation,
+    SectionReadRequest, SectionReadResponse, SectionSummary, Sequence, build_corpus_catalog,
+    build_recommended_terms,
 };
 
 use crate::seed::load_seed_dataset;
@@ -460,6 +461,26 @@ impl DocumentStorePort for InMemorySearchRepository {
             .iter()
             .filter(|doc| !self.hidden_yaml_ids.contains(doc.id.as_str()));
         Ok(build_corpus_catalog(visible_docs, principal))
+    }
+
+    fn recommend_terms(
+        &self,
+        principal: &Principal,
+        query: &str,
+        category: Option<&str>,
+        limit: usize,
+    ) -> Result<Vec<RecommendedTerm>, Dok3Error> {
+        let visible_docs = self
+            .documents
+            .iter()
+            .filter(|doc| !self.hidden_yaml_ids.contains(doc.id.as_str()));
+        Ok(build_recommended_terms(
+            visible_docs,
+            principal,
+            query,
+            category,
+            limit,
+        ))
     }
 }
 

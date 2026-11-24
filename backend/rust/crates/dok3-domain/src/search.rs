@@ -191,6 +191,291 @@ pub struct CorpusCatalogResponse {
     pub snapshot: SearchSnapshotMeta,
 }
 
+/// Single recommended search term derived from authorized indexed documents.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RecommendedTerm {
+    pub term: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub category: Option<String>,
+    pub document_count: usize,
+}
+
+/// Public ACL-scoped recommended search terms response (`GET /api/v1/search/recommendations`).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SearchRecommendationsResponse {
+    pub query: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub category: Option<String>,
+    pub recommendations: Vec<RecommendedTerm>,
+    pub snapshot: SearchSnapshotMeta,
+}
+
+const CURATED_RECOMMENDATION_SEEDS: &[&str] = &[
+    "kordoc",
+    "hwpx",
+    "HWP",
+    "Tantivy",
+    "폐쇄망",
+    "세대 전환",
+    "소유권",
+    "goroutine",
+    "MCP",
+    "SQLite",
+    "형태소",
+    "백업",
+    "E0382",
+    "Cargo",
+    "아키텍처",
+    "보안",
+];
+
+const SYMBOL_HEADING_PREFIXES: &[&str] = &[
+    "function ",
+    "class ",
+    "interface ",
+    "type ",
+    "enum ",
+    "const ",
+    "let ",
+    "fn ",
+    "struct ",
+    "trait ",
+    "mod ",
+    "impl ",
+    "func ",
+    "def ",
+    "method ",
+];
+
+fn is_noise_recommendation(term: &str) -> bool {
+    let char_len = term.chars().count();
+    if !(2..=32).contains(&char_len) {
+        return true;
+    }
+    if term.chars().all(|c| c.is_ascii_digit()) {
+        return true;
+    }
+    matches!(
+        term.to_ascii_lowercase().as_str(),
+        "ko" | "en"
+            | "docs"
+            | "guide"
+            | "code"
+            | "manual"
+            | "policy"
+            | "design"
+            | "v1"
+            | "markdown"
+            | "yaml"
+            | "section"
+            | "preamble"
+            | "body"
+    )
+}
+
+#[derive(Default)]
+struct RecommendationAcc {
+    display: String,
+    curated: bool,
+    document_count: usize,
+    category_counts: BTreeMap<String, usize>,
+}
+
+/// Computes ACL-scoped recommended search terms from visible documents.
+#[must_use]
+pub fn build_recommended_terms<'a, I>(
+    docs: I,
+    principal: &Principal,
+    query: &str,
+    category: Option<&str>,
+    limit: usize,
+) -> Vec<RecommendedTerm>
+where
+    I: IntoIterator<Item = &'a Document>,
+{
+    let limit = if limit == 0 { 8 } else { limit.min(20) };
+    let q_trimmed = query.trim();
+    let q_lower = q_trimmed.to_lowercase();
+    let cat_filter = category.map(str::trim).filter(|c| !c.is_empty());
+
+    let mut acc: BTreeMap<String, RecommendationAcc> = BTreeMap::new();
+
+    for doc in docs {
+        if !principal.allows(&doc.acl_scope) {
+            continue;
+        }
+        if cat_filter.is_some_and(|c| !doc.category.eq_ignore_ascii_case(c)) {
+            continue;
+        }
+
+        let mut per_doc: BTreeMap<String, (String, bool)> = BTreeMap::new();
+        let mut add_candidate = |raw: &str, curated: bool| {
+            let trimmed = raw.trim();
+            if is_noise_recommendation(trimmed) {
+                return;
+            }
+            let key = trimmed.to_lowercase();
+            per_doc
+                .entry(key)
+                .and_modify(|existing| {
+                    if curated {
+                        existing.1 = true;
+                        existing.0 = trimmed.to_string();
+                    }
+                })
+                .or_insert_with(|| (trimmed.to_string(), curated));
+        };
+
+        if !doc.tag.trim().is_empty() {
+            add_candidate(&doc.tag, false);
+        }
+        for tag in &doc.tags {
+            add_candidate(tag, false);
+        }
+        for kw in doc.keywords.iter().take(6) {
+            add_candidate(kw, false);
+        }
+
+        let title_lower = doc.title.to_lowercase();
+        let summary_lower = doc.summary.to_lowercase();
+        for &seed in CURATED_RECOMMENDATION_SEEDS {
+            let seed_lower = seed.to_lowercase();
+            if title_lower.contains(&seed_lower)
+                || summary_lower.contains(&seed_lower)
+                || doc
+                    .tags
+                    .iter()
+                    .any(|t| t.to_lowercase().contains(&seed_lower))
+            {
+                add_candidate(seed, true);
+            }
+        }
+
+        if !q_lower.is_empty() {
+            for sec in &doc.sections {
+                let mut heading = sec.heading.trim();
+                for prefix in SYMBOL_HEADING_PREFIXES {
+                    if let Some(rest) = heading.strip_prefix(prefix) {
+                        heading = rest.trim();
+                        break;
+                    }
+                }
+                if heading.to_lowercase().contains(&q_lower) {
+                    add_candidate(heading, false);
+                }
+            }
+        }
+
+        for (key, (display, curated)) in per_doc {
+            let entry = acc.entry(key).or_insert_with(|| RecommendationAcc {
+                display,
+                curated,
+                document_count: 0,
+                category_counts: BTreeMap::new(),
+            });
+            if curated {
+                entry.curated = true;
+            }
+            entry.document_count += 1;
+            *entry
+                .category_counts
+                .entry(doc.category.clone())
+                .or_insert(0) += 1;
+        }
+    }
+
+    let dominant_category = |entry: &RecommendationAcc| -> Option<String> {
+        entry
+            .category_counts
+            .iter()
+            .max_by(|(ca, na), (cb, nb)| na.cmp(nb).then_with(|| cb.cmp(ca)))
+            .map(|(c, _)| c.clone())
+    };
+
+    if !q_lower.is_empty() {
+        let mut matches: Vec<(String, RecommendationAcc)> = acc
+            .into_iter()
+            .filter(|(key, _)| {
+                key != &q_lower && (key.starts_with(&q_lower) || key.contains(&q_lower))
+            })
+            .collect();
+        matches.sort_by(|(ka, a), (kb, b)| {
+            kb.starts_with(&q_lower)
+                .cmp(&ka.starts_with(&q_lower))
+                .then_with(|| b.curated.cmp(&a.curated))
+                .then_with(|| b.document_count.cmp(&a.document_count))
+                .then_with(|| a.display.chars().count().cmp(&b.display.chars().count()))
+                .then_with(|| ka.cmp(kb))
+        });
+        return matches
+            .into_iter()
+            .take(limit)
+            .map(|(_, entry)| RecommendedTerm {
+                category: dominant_category(&entry),
+                term: entry.display,
+                document_count: entry.document_count,
+            })
+            .collect();
+    }
+
+    let mut ranked: Vec<(String, RecommendationAcc)> = acc.into_iter().collect();
+    ranked.sort_by(|(ka, a), (kb, b)| {
+        b.curated
+            .cmp(&a.curated)
+            .then_with(|| b.document_count.cmp(&a.document_count))
+            .then_with(|| ka.cmp(kb))
+    });
+
+    if cat_filter.is_none() {
+        let mut selected: Vec<RecommendedTerm> = Vec::with_capacity(limit);
+        let mut used_keys: BTreeSet<String> = BTreeSet::new();
+        let mut per_cat: BTreeMap<String, usize> = BTreeMap::new();
+
+        for (key, entry) in &ranked {
+            if selected.len() >= limit {
+                break;
+            }
+            let cat = dominant_category(entry);
+            let cat_key = cat.clone().unwrap_or_default();
+            if *per_cat.get(&cat_key).unwrap_or(&0) >= 2 {
+                continue;
+            }
+            *per_cat.entry(cat_key).or_insert(0) += 1;
+            used_keys.insert(key.clone());
+            selected.push(RecommendedTerm {
+                term: entry.display.clone(),
+                category: cat,
+                document_count: entry.document_count,
+            });
+        }
+
+        for (key, entry) in ranked {
+            if selected.len() >= limit {
+                break;
+            }
+            if used_keys.contains(&key) {
+                continue;
+            }
+            selected.push(RecommendedTerm {
+                category: dominant_category(&entry),
+                term: entry.display,
+                document_count: entry.document_count,
+            });
+        }
+        return selected;
+    }
+
+    ranked
+        .into_iter()
+        .take(limit)
+        .map(|(_, entry)| RecommendedTerm {
+            category: dominant_category(&entry),
+            term: entry.display,
+            document_count: entry.document_count,
+        })
+        .collect()
+}
+
 #[derive(Default)]
 struct CorpusAcc {
     label: String,

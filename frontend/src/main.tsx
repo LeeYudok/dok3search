@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { DotsThreeVerticalIcon as More, FileTextIcon as FileText, MagnifyingGlassIcon as Search, XIcon as X } from '@phosphor-icons/react'
 import { createRoot } from 'react-dom/client'
-import { type DataSourceMode, fetchSearch, type SearchViewResult } from './api'
+import { type DataSourceMode, fetchRecommendations, fetchSearch, type RecommendedTermItem, type SearchViewResult } from './api'
 import { categories, categoryLabels, isReferenceTopic, isReferenceTopicFilter, loadLocalSamples, searchUrl, topics } from './documents'
 import { referenceIdPrefix, type ReferenceCorpus } from './reference-corpus'
 import './style.css'
@@ -229,14 +229,137 @@ async function fetchSearchPage(
 }
 
 function SearchForm({ query = '', category = '', topic = '' }: { query?: string; category?: string; topic?: string }) {
+  const [inputValue, setInputValue] = useState(query)
+  const [focused, setFocused] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(-1)
+  const [suggestions, setSuggestions] = useState<RecommendedTermItem[]>([])
+
+  useEffect(() => {
+    setInputValue(query)
+  }, [query])
+
+  useEffect(() => {
+    if (!focused) return
+    const controller = new AbortController()
+    const timer = window.setTimeout(() => {
+      void fetchRecommendations({ query: inputValue, category, limit: 6 }, controller.signal).then(
+        (items) => {
+          if (!controller.signal.aborted) {
+            setSuggestions(items)
+            setActiveIndex(-1)
+          }
+        },
+        () => {},
+      )
+    }, 120)
+    return () => {
+      window.clearTimeout(timer)
+      controller.abort()
+    }
+  }, [focused, inputValue, category])
+
+  const showDropdown = focused && suggestions.length > 0
+
   return (
-    <form role="search" action="/search">
-      <Search size={22} aria-hidden="true" />
-      <input type="search" name="q" aria-label="문서 검색어" placeholder="제목, 키워드 또는 코드 검색" defaultValue={query} />
-      {category && <input type="hidden" name="category" value={category} />}
-      {category === 'guide' && topic && <input type="hidden" name="topic" value={topic} />}
-      <button type="submit">검색</button>
-    </form>
+    <div
+      className="search-box"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          setFocused(false)
+          setActiveIndex(-1)
+        }
+      }}
+    >
+      <form role="search" action="/search">
+        <Search size={22} aria-hidden="true" />
+        <input
+          type="search"
+          name="q"
+          aria-label="문서 검색어"
+          aria-autocomplete="list"
+          aria-expanded={showDropdown}
+          aria-controls={showDropdown ? 'search-suggestions' : undefined}
+          placeholder="제목, 키워드 또는 코드 검색"
+          value={inputValue}
+          onChange={(event) => setInputValue(event.target.value)}
+          onFocus={() => setFocused(true)}
+          onKeyDown={(event) => {
+            if (!showDropdown) return
+            if (event.key === 'ArrowDown') {
+              event.preventDefault()
+              setActiveIndex((prev) => (prev + 1) % suggestions.length)
+            } else if (event.key === 'ArrowUp') {
+              event.preventDefault()
+              setActiveIndex((prev) => (prev <= 0 ? suggestions.length - 1 : prev - 1))
+            } else if (event.key === 'Enter' && activeIndex >= 0 && suggestions[activeIndex]) {
+              event.preventDefault()
+              window.location.assign(searchUrl(suggestions[activeIndex].term, category, 1, topic))
+            } else if (event.key === 'Escape') {
+              setFocused(false)
+              setActiveIndex(-1)
+            }
+          }}
+        />
+        {category && <input type="hidden" name="category" value={category} />}
+        {category === 'guide' && topic && <input type="hidden" name="topic" value={topic} />}
+        <button type="submit">검색</button>
+      </form>
+      {showDropdown && (
+        <ul id="search-suggestions" role="listbox" className="search-suggestions" aria-label="추천 검색어">
+          {suggestions.map((item, index) => (
+            <li key={item.term} role="option" aria-selected={index === activeIndex}>
+              <a
+                href={searchUrl(item.term, category, 1, topic)}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => setFocused(false)}
+              >
+                <Search size={15} aria-hidden="true" />
+                <span className="suggestion-term">{item.term}</span>
+                {item.documentCount > 0 && <span className="suggestion-count">{item.documentCount}건</span>}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+function RecommendedChips({
+  category = '',
+  topic = '',
+  label = '추천 검색어',
+}: {
+  category?: string
+  topic?: string
+  label?: string
+}) {
+  const [items, setItems] = useState<RecommendedTermItem[]>([])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    void fetchRecommendations({ query: '', category, limit: 8 }, controller.signal).then(
+      (list) => {
+        if (!controller.signal.aborted) setItems(list)
+      },
+      () => {},
+    )
+    return () => controller.abort()
+  }, [category])
+
+  if (items.length === 0) return null
+
+  return (
+    <section className="recommended-chips" aria-label={label}>
+      <span className="recommended-label">{label}</span>
+      <div className="recommended-list">
+        {items.map((item) => (
+          <a key={item.term} href={searchUrl(item.term, category || item.category || '', 1, topic)}>
+            {item.term}
+          </a>
+        ))}
+      </div>
+    </section>
   )
 }
 
@@ -246,6 +369,7 @@ function HomePage() {
       <main id="content" className="shell home">
         <h1 className="brand home-brand"><img className="logo" src="/favicon.svg" alt="" />dok3search</h1>
         <SearchForm />
+        <RecommendedChips label="추천 검색어" />
         <nav className="category-filters" aria-label="문서 카테고리">
           <a href="/search">전체</a>
           {categories.map((item) => <a key={item.id} href={searchUrl('', item.id)}>{item.label}</a>)}
@@ -364,6 +488,7 @@ function SearchPage() {
                 {query && <a className="text-button" href={searchUrl('', category, 1, topic)}>초기화 <X size={14} /></a>}
               </div>
             ) : <h2 id="documents-heading" className="visually-hidden">검색 결과</h2>}
+            {!query && <RecommendedChips category={category} topic={topic} label="추천 검색어" />}
 
             {searchState.status === 'loading' && (
               <p className="empty" role="status">문서를 불러오는 중입니다.</p>
@@ -420,9 +545,14 @@ function SearchPage() {
                       )}
                     </div>
                   </li>
-                ))}</ul> : <p className="empty">{!category && hasReferenceMatches
-                  ? '일치하는 Rust·Go 자료는 개발 가이드의 세부 분류에서 열 수 있습니다.'
-                  : '검색 조건에 맞는 문서가 없습니다.'}</p>}
+                ))}</ul> : (
+                  <>
+                    <p className="empty">{!category && hasReferenceMatches
+                      ? '일치하는 Rust·Go 자료는 개발 가이드의 세부 분류에서 열 수 있습니다.'
+                      : '검색 조건에 맞는 문서가 없습니다.'}</p>
+                    {query && <RecommendedChips category={category} topic={topic} label="추천 검색어" />}
+                  </>
+                )}
                 {readyData.relatedSearches.length > 0 && (
                   <section className="related" aria-labelledby="related-heading">
                     <h3 id="related-heading">관련 검색어</h3>

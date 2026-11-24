@@ -41,6 +41,12 @@ export type SearchViewResult = {
   snapshot: SnapshotInfo
 }
 
+export type RecommendedTermItem = {
+  term: string
+  category?: string
+  documentCount: number
+}
+
 export type DocumentFormatPair = {
   markdownId: string
   yamlId: string
@@ -271,6 +277,64 @@ function parseApiErrorMessage(raw: unknown, fallback: string): string {
 
 function isProxyOrNetworkUnavailableStatus(status: number): boolean {
   return status === 502 || status === 503 || status === 504
+}
+
+const FALLBACK_RECOMMENDATIONS: RecommendedTermItem[] = [
+  { term: 'Tantivy', category: 'code', documentCount: 0 },
+  { term: '폐쇄망', category: 'policy', documentCount: 0 },
+  { term: '세대 전환', category: 'manual', documentCount: 0 },
+  { term: 'Rust', category: 'guide', documentCount: 0 },
+  { term: 'Go', category: 'guide', documentCount: 0 },
+  { term: '아키텍처', category: 'design', documentCount: 0 },
+  { term: '백업', category: 'manual', documentCount: 0 },
+  { term: '보안', category: 'policy', documentCount: 0 },
+]
+
+function fallbackRecommendations(query: string, category: string, limit: number): RecommendedTermItem[] {
+  const q = query.trim().toLowerCase()
+  return FALLBACK_RECOMMENDATIONS.filter((item) => {
+    if (category && item.category && item.category !== category) return false
+    if (!q) return true
+    const lower = item.term.toLowerCase()
+    return lower !== q && lower.includes(q)
+  }).slice(0, limit)
+}
+
+export async function fetchRecommendations(
+  params: { query?: string; category?: string; limit?: number },
+  signal: AbortSignal,
+): Promise<RecommendedTermItem[]> {
+  const query = params.query?.trim() ?? ''
+  const category = params.category?.trim() ?? ''
+  const limit = params.limit ?? 8
+  const searchParams = new URLSearchParams()
+  if (query) searchParams.set('q', query)
+  if (category) searchParams.set('category', category)
+  searchParams.set('limit', String(limit))
+
+  try {
+    const response = await fetch(`/api/v1/search/recommendations?${searchParams.toString()}`, { signal })
+    if (!response.ok) {
+      return fallbackRecommendations(query, category, limit)
+    }
+    const raw: unknown = await response.json()
+    if (!isRecord(raw) || !Array.isArray(raw.recommendations)) {
+      return fallbackRecommendations(query, category, limit)
+    }
+    return raw.recommendations
+      .filter((entry): entry is Record<string, unknown> => isRecord(entry) && typeof entry.term === 'string')
+      .map((entry) => ({
+        term: entry.term as string,
+        category: optionalString(entry, 'category'),
+        documentCount: typeof entry.document_count === 'number' && Number.isFinite(entry.document_count)
+          ? entry.document_count
+          : 0,
+      }))
+      .slice(0, limit)
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') throw error
+    return fallbackRecommendations(query, category, limit)
+  }
 }
 
 export async function fetchSearch(

@@ -5,7 +5,8 @@ use std::sync::Arc;
 use dok3_core::Dok3Error;
 use dok3_domain::{
     CorpusCatalogResponse, DocumentDetail, DocumentId, DocumentStorePort, HealthReadyResponse,
-    Principal, SearchPort, SearchRequest, SearchResponse, SectionReadRequest, SectionReadResponse,
+    Principal, SearchPort, SearchRecommendationsResponse, SearchRequest, SearchResponse,
+    SectionReadRequest, SectionReadResponse,
 };
 
 const MAX_QUERY_CHARS: usize = 512;
@@ -106,6 +107,38 @@ impl SearchService {
             mode: mode.into(),
             total_documents,
             corpora,
+            snapshot: self.search_port.snapshot(),
+        })
+    }
+
+    /// Returns ACL-scoped recommended search terms for the active snapshot.
+    pub fn recommend_terms(
+        &self,
+        principal: &Principal,
+        query: &str,
+        category: Option<&str>,
+        limit: usize,
+    ) -> Result<SearchRecommendationsResponse, Dok3Error> {
+        if query.chars().count() > MAX_QUERY_CHARS {
+            return Err(Dok3Error::InvalidInput(format!(
+                "query exceeds maximum length of {MAX_QUERY_CHARS} characters"
+            )));
+        }
+        let trimmed_query = query.trim().to_string();
+        let trimmed_category = category
+            .map(str::trim)
+            .filter(|c| !c.is_empty())
+            .map(str::to_string);
+        let recommendations = self.doc_store.recommend_terms(
+            principal,
+            &trimmed_query,
+            trimmed_category.as_deref(),
+            limit,
+        )?;
+        Ok(SearchRecommendationsResponse {
+            query: trimmed_query,
+            category: trimmed_category,
+            recommendations,
             snapshot: self.search_port.snapshot(),
         })
     }
