@@ -8,7 +8,7 @@ meta:
   name: dok3search
   description: 'Air-gapped document and code search monorepo (React frontend + Rust Cargo workspace)'
   owner: LeeYudok
-  updated: '2026-11-24'
+  updated: '2026-11-25'
   repo_url: 'https://github.com/LeeYudok/dok3search'
   tracker: github
   issue_tracker_url: 'https://github.com/LeeYudok/dok3search/issues'
@@ -36,6 +36,7 @@ nodes:
 - {id: go_reference, type: markdown-corpus, label: 'Go official reference and Korean and English practice guides (guide/go)', path: frontend/src/samples/go-reference/chapters}
 - {id: doksam_blog, type: markdown-corpus, label: 'Curated technical posts from blog.doksam.com (Rust/Go courses, AI agent guides, airgap/dev practices)', path: frontend/src/samples/doksam-blog/chapters}
 - {id: kordoc_corpus, type: code-corpus, label: 'LeeYudok/kordoc HWP/HWPX/PDF to Markdown TypeScript source-only corpus (code)', path: frontend/src/samples/kordoc/src}
+- {id: polyglot_samples, type: code-corpus, label: 'Polyglot Java/JSP/JS/TS/React/Next.js sample source pack (code)', path: frontend/src/samples/polyglot-samples}
 - {id: comprehensive_rust_importer, type: script, label: 'Convert local mdBook snapshots to Markdown', path: scripts/import-comprehensive-rust.py}
 - {id: rust_official_importer, type: script, label: 'Convert installed Rust Reference and Cargo Book docs to offline Markdown', path: scripts/import-rust-official-components.py}
 - {id: rustdoc_error_importer, type: script, label: 'Convert local rustdoc (std + used crates) and rustc --explain to offline Markdown', path: scripts/import-rustdoc-and-errors.py}
@@ -75,6 +76,7 @@ edges:
 - {from: frontend, to: go_reference, rel: searches_and_renders_local_corpus}
 - {from: frontend, to: doksam_blog, rel: searches_and_renders_local_corpus}
 - {from: frontend, to: kordoc_corpus, rel: searches_and_renders_local_corpus}
+- {from: frontend, to: polyglot_samples, rel: searches_and_renders_local_corpus}
 - {from: doksam_blog_importer, to: doksam_blog, rel: generates_from_local_snapshot}
 - {from: kordoc_importer, to: kordoc_corpus, rel: generates_from_local_snapshot}
 - {from: comprehensive_rust_importer, to: comprehensive_rust, rel: generates_from_local_snapshot}
@@ -195,6 +197,7 @@ docs:
 - {path: frontend/src/samples/go-reference/README.md, what: 'Go documentation provenance and license'}
 - {path: frontend/src/samples/doksam-blog/README.md, what: 'blog.doksam.com curated technical corpus provenance'}
 - {path: frontend/src/samples/kordoc/README.md, what: 'LeeYudok/kordoc TypeScript source-only corpus provenance'}
+- {path: frontend/src/samples/polyglot-samples/README.md, what: 'Polyglot Java/JSP/JS/TS/React/Next.js sample source pack'}
 - {path: deploy/doksam/README.md, what: 'dok3search doksam k3s deployment, rollback rehearsal and verification'}
 - {path: deploy/windows/README.md, what: 'dok3search Windows Service installation, recovery and smoke check'}
 - {path: config/ax-workspace.example.yaml, what: 'Google AX Workspace and P8 Task manifest example'}

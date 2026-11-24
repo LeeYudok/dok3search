@@ -2,6 +2,8 @@
 
 mod classification;
 mod corpus_meta;
+#[cfg(test)]
+mod knowledge_foundation_eval;
 mod llm_classifier;
 mod local_index;
 // --- slice-B: mcp ---

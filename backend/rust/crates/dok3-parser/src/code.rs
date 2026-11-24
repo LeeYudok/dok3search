@@ -265,17 +265,34 @@ fn detect_rust_symbol(trimmed: &str) -> Option<String> {
 
 fn detect_java_symbol(raw_line: &str, trimmed: &str) -> Option<String> {
     let mut rest = trimmed;
-    for prefix in [
-        "public ",
-        "private ",
-        "protected ",
-        "static ",
-        "final ",
-        "abstract ",
-        "synchronized ",
-    ] {
-        while let Some(after) = rest.strip_prefix(prefix) {
-            rest = after.trim_start();
+    loop {
+        let mut stripped = false;
+        for prefix in [
+            "public ",
+            "private ",
+            "protected ",
+            "static ",
+            "final ",
+            "abstract ",
+            "synchronized ",
+            "default ",
+            "sealed ",
+            "non-sealed ",
+        ] {
+            if let Some(after) = rest.strip_prefix(prefix) {
+                rest = after.trim_start();
+                stripped = true;
+                break;
+            }
+        }
+        if !stripped {
+            break;
+        }
+    }
+    if let Some(after) = rest.strip_prefix("@interface ") {
+        let ident = extract_ident(after.trim_start());
+        if !ident.is_empty() {
+            return Some(format!("interface {ident}"));
         }
     }
     for kw in ["class ", "interface ", "enum ", "record "] {
@@ -286,22 +303,28 @@ fn detect_java_symbol(raw_line: &str, trimmed: &str) -> Option<String> {
             }
         }
     }
-    // Indented method declaration heuristic: `<ReturnType> <methodName>(...) {`
+    // Indented method declaration heuristic: `<ReturnType> <methodName>(...) {` or interface `;`
     if raw_line.starts_with([' ', '\t'])
         && trimmed.contains('(')
-        && (trimmed.ends_with('{') || trimmed.ends_with(')'))
-        && !trimmed.starts_with("if ")
-        && !trimmed.starts_with("for ")
-        && !trimmed.starts_with("while ")
-        && !trimmed.starts_with("switch ")
-        && !trimmed.starts_with("catch ")
+        && (trimmed.ends_with('{') || trimmed.ends_with(')') || trimmed.ends_with(';'))
+        && ![
+            "if ", "if(", "else ", "else{", "for ", "for(", "while ", "while(", "switch ",
+            "switch(", "catch ", "catch(", "try ", "try(", "return ", "throw ", "new ", "super(",
+            "this(",
+        ]
+        .iter()
+        .any(|kw| trimmed.starts_with(kw))
         && let Some(before_paren) = trimmed.split('(').next()
+        && !before_paren.contains('=')
     {
         let parts: Vec<&str> = before_paren.split_whitespace().collect();
         if parts.len() >= 2 {
-            let method = extract_ident(parts[parts.len() - 1]);
-            if !method.is_empty() {
-                return Some(format!("method {method}"));
+            let candidate = parts[parts.len() - 1];
+            if !candidate.contains('.') && !candidate.contains("::") {
+                let method = extract_ident(candidate);
+                if !method.is_empty() {
+                    return Some(format!("method {method}"));
+                }
             }
         }
     }
@@ -359,17 +382,78 @@ fn detect_sql_symbol(trimmed: &str) -> Option<String> {
     None
 }
 
+fn extract_html_attr<'a>(tag: &'a str, attr: &str) -> Option<&'a str> {
+    for quote in ['"', '\''] {
+        let needle = format!("{attr}={quote}");
+        if let Some(idx) = tag.find(&needle) {
+            let rest = &tag[idx + needle.len()..];
+            if let Some(end) = rest.find(quote) {
+                let val = rest[..end].trim();
+                if !val.is_empty() {
+                    return Some(val);
+                }
+            }
+        }
+    }
+    None
+}
+
 fn detect_jsp_section(trimmed: &str, warnings: &mut Vec<String>, line_no: usize) -> Option<String> {
+    if trimmed.starts_with("<%--") || trimmed.starts_with("<%=") {
+        return None;
+    }
     if trimmed.starts_with("<%@") {
+        let inner = trimmed.trim_start_matches("<%@").trim_start();
+        if inner.starts_with("page") {
+            return Some("jsp page directive".to_string());
+        }
+        if inner.starts_with("taglib") {
+            if let Some(prefix) = extract_html_attr(inner, "prefix") {
+                return Some(format!("jsp taglib {prefix}"));
+            }
+            return Some("jsp taglib directive".to_string());
+        }
+        if inner.starts_with("include") {
+            if let Some(file) = extract_html_attr(inner, "file") {
+                return Some(format!("jsp include {file}"));
+            }
+            return Some("jsp include directive".to_string());
+        }
         return Some(format!("jsp directive (line {line_no})"));
     }
-    if trimmed.starts_with("<%!") || trimmed.starts_with("<%") {
+    if trimmed.starts_with("<%!") {
+        warnings.push(format!(
+            "line {line_no}: mixed JSP declaration/HTML extracted verbatim"
+        ));
+        return Some(format!("jsp declaration (line {line_no})"));
+    }
+    if trimmed.starts_with("<%") {
         warnings.push(format!(
             "line {line_no}: mixed JSP scriptlet/HTML extracted verbatim"
         ));
         return Some(format!("jsp scriptlet (line {line_no})"));
     }
-    if trimmed.starts_with("<form") || trimmed.starts_with("<section") {
+    if trimmed.starts_with("<form") {
+        if let Some(target) = extract_html_attr(trimmed, "action")
+            .or_else(|| extract_html_attr(trimmed, "id"))
+            .or_else(|| extract_html_attr(trimmed, "name"))
+        {
+            return Some(format!("form {target}"));
+        }
+        return Some(format!("html block (line {line_no})"));
+    }
+    if trimmed.starts_with("<c:forEach") {
+        if let Some(var) =
+            extract_html_attr(trimmed, "var").or_else(|| extract_html_attr(trimmed, "items"))
+        {
+            return Some(format!("jstl c:forEach {var}"));
+        }
+        return Some(format!("jstl c:forEach (line {line_no})"));
+    }
+    if trimmed.starts_with("<script") {
+        return Some(format!("script block (line {line_no})"));
+    }
+    if trimmed.starts_with("<section") {
         return Some(format!("html block (line {line_no})"));
     }
     None
@@ -378,6 +462,43 @@ fn detect_jsp_section(trimmed: &str, warnings: &mut Vec<String>, line_no: usize)
 fn detect_ts_js_symbol(raw_line: &str, trimmed: &str) -> Option<String> {
     if raw_line.starts_with([' ', '\t']) || trimmed.starts_with("/*") || trimmed.starts_with('*') {
         return None;
+    }
+    if let Some(after) = trimmed.strip_prefix("module.exports") {
+        let rhs = after.trim_start();
+        if let Some(rhs) = rhs.strip_prefix('=') {
+            let rhs = rhs.trim_start();
+            let rhs = rhs
+                .strip_prefix("async ")
+                .map(str::trim_start)
+                .unwrap_or(rhs);
+            if let Some(after_fn) = rhs.strip_prefix("function ") {
+                let ident = extract_ts_py_ident(after_fn.trim_start());
+                if !ident.is_empty() {
+                    return Some(format!("function {ident}"));
+                }
+            }
+        } else if let Some(member) = rhs.strip_prefix('.') {
+            let ident = extract_ts_py_ident(member);
+            if !ident.is_empty() && member[ident.len()..].trim_start().starts_with('=') {
+                let kind = if member.contains("function") || member.contains("=>") {
+                    "function"
+                } else {
+                    "const"
+                };
+                return Some(format!("{kind} {ident}"));
+            }
+        }
+    }
+    if let Some(member) = trimmed.strip_prefix("exports.") {
+        let ident = extract_ts_py_ident(member);
+        if !ident.is_empty() && member[ident.len()..].trim_start().starts_with('=') {
+            let kind = if member.contains("function") || member.contains("=>") {
+                "function"
+            } else {
+                "const"
+            };
+            return Some(format!("{kind} {ident}"));
+        }
     }
     let mut rest = trimmed;
     loop {
@@ -406,7 +527,16 @@ fn detect_ts_js_symbol(raw_line: &str, trimmed: &str) -> Option<String> {
         if let Some(after) = rest.strip_prefix(kw) {
             let ident = extract_ts_py_ident(after.trim_start());
             if !ident.is_empty() {
-                return Some(format!("{label} {ident}"));
+                let effective_label = if label == "const"
+                    && (after.contains("=>")
+                        || after.contains("forwardRef")
+                        || after.contains("memo("))
+                {
+                    "function"
+                } else {
+                    label
+                };
+                return Some(format!("{effective_label} {ident}"));
             }
         }
     }
@@ -575,5 +705,111 @@ export function toArrayBuffer(buf: Buffer): ArrayBuffer {
         assert!(!version_sec.body.contains("Converts Buffer"));
         assert_eq!(fn_sec.line_start, 3);
         assert!(fn_sec.body.starts_with("/**"));
+    }
+
+    #[test]
+    fn parses_java_interface_methods_records_annotations_and_rejects_calls() {
+        let src = br#"package com.doksam.orders;
+
+public @interface Audited {}
+
+public record OrderRow(String orderId, long amountKrw) {}
+
+public interface OrderReader {
+    List<OrderRow> findByStatus(String status) throws SQLException;
+}
+
+public class OrderRepository implements OrderReader {
+    public List<OrderRow> findByStatus(String status) throws SQLException {
+        if (status == null) {
+            return List.of();
+        }
+        logger.info("fetching");
+        var list = repo.query(status);
+        return list;
+    }
+}
+"#;
+        let parser = CodeSymbolParser::new();
+        let parsed = parser.parse("OrderRepository.java", src).unwrap();
+        let headings: Vec<&str> = parsed.sections.iter().map(|s| s.heading.as_str()).collect();
+        assert_eq!(
+            headings,
+            vec![
+                "OrderRepository.java",
+                "interface Audited",
+                "record OrderRow",
+                "interface OrderReader",
+                "method findByStatus",
+                "class OrderRepository",
+                "method findByStatus",
+            ]
+        );
+    }
+
+    #[test]
+    fn parses_jsp_directives_forms_jstl_scripts_and_ignores_comments_and_inline_el() {
+        let src = br#"<%@ page contentType="text/html; charset=UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%-- hidden JSP comment --%>
+<%! public String formatKrw(long v) { return v + " KRW"; } %>
+<form id="orderForm" action="/api/orders/search" method="get">
+  <input name="q" value="<%= request.getParameter("q") %>" />
+</form>
+<c:forEach items="${orders}" var="orderRow">
+  <div>${orderRow.id}</div>
+</c:forEach>
+<script>
+  console.log("ready");
+</script>
+"#;
+        let parser = CodeSymbolParser::new();
+        let parsed = parser.parse("orderList.jsp", src).unwrap();
+        let headings: Vec<&str> = parsed.sections.iter().map(|s| s.heading.as_str()).collect();
+        assert_eq!(
+            headings,
+            vec![
+                "jsp page directive",
+                "jsp taglib c",
+                "jsp declaration (line 4)",
+                "form /api/orders/search",
+                "jstl c:forEach orderRow",
+                "script block (line 11)",
+            ]
+        );
+    }
+
+    #[test]
+    fn parses_commonjs_exports_and_react_memo_forward_ref_as_functions() {
+        let cjs = br#"exports.retryWithBackoff = async (fn, attempts = 3) => fn();
+module.exports = function createClient(baseUrl) { return { baseUrl }; };
+"#;
+        let parser = CodeSymbolParser::new();
+        let parsed_cjs = parser.parse("client.cjs", cjs).unwrap();
+        let cjs_headings: Vec<&str> = parsed_cjs
+            .sections
+            .iter()
+            .map(|s| s.heading.as_str())
+            .collect();
+        assert_eq!(
+            cjs_headings,
+            vec!["function retryWithBackoff", "function createClient"]
+        );
+
+        let tsx = br#"export const DEFAULT_POLL_MS = 5000;
+export const OrderBadge = memo(forwardRef<HTMLSpanElement, Props>((props, ref) => {
+  return <span ref={ref}>{props.status}</span>;
+}));
+"#;
+        let parsed_tsx = parser.parse("OrderBadge.tsx", tsx).unwrap();
+        let tsx_headings: Vec<&str> = parsed_tsx
+            .sections
+            .iter()
+            .map(|s| s.heading.as_str())
+            .collect();
+        assert_eq!(
+            tsx_headings,
+            vec!["const DEFAULT_POLL_MS", "function OrderBadge"]
+        );
     }
 }

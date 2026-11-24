@@ -251,3 +251,71 @@ fn supported_document_defaults_scan_and_render_multi_format_sources() {
         }
     }
 }
+
+#[test]
+fn disambiguates_nextjs_app_router_and_barrel_filenames_by_relative_path() {
+    let dir = TempDir::new("nextjs-routes");
+    fs::create_dir_all(dir.0.join("app/orders")).unwrap();
+    fs::create_dir_all(dir.0.join("app/users")).unwrap();
+    fs::create_dir_all(dir.0.join("app/api/orders")).unwrap();
+    fs::create_dir_all(dir.0.join("java")).unwrap();
+
+    fs::write(
+        dir.0.join("app/orders/page.tsx"),
+        "export default function OrdersPage() { return <main>Orders</main>; }\n",
+    )
+    .unwrap();
+    fs::write(
+        dir.0.join("app/users/page.tsx"),
+        "export default function UsersPage() { return <main>Users</main>; }\n",
+    )
+    .unwrap();
+    fs::write(
+        dir.0.join("app/api/orders/route.ts"),
+        "export async function GET() { return Response.json([]); }\n",
+    )
+    .unwrap();
+    fs::write(
+        dir.0.join("java/OrderService.java"),
+        "public class OrderService {}\n",
+    )
+    .unwrap();
+
+    let cfg = SourceConfig::supported_document_defaults(SourceId::new("repo"), "Repo", &dir.0);
+    let connector = LocalFileConnector::new(cfg.clone()).unwrap();
+    let report = connector.scan().unwrap();
+    let registry = ParserRegistry::with_defaults();
+    let titles: Vec<(String, String)> = report
+        .files
+        .iter()
+        .map(|file| {
+            let parsed = registry
+                .parse_auto(&file.media_type, &file.filename, &file.bytes)
+                .unwrap();
+            let doc = build_document(&cfg, file, &parsed);
+            (file.relative_path.clone(), doc.title)
+        })
+        .collect();
+
+    assert_eq!(
+        titles,
+        vec![
+            (
+                "app/api/orders/route.ts".to_string(),
+                "app/api/orders/route.ts".to_string()
+            ),
+            (
+                "app/orders/page.tsx".to_string(),
+                "app/orders/page.tsx".to_string()
+            ),
+            (
+                "app/users/page.tsx".to_string(),
+                "app/users/page.tsx".to_string()
+            ),
+            (
+                "java/OrderService.java".to_string(),
+                "OrderService.java".to_string()
+            ),
+        ]
+    );
+}
