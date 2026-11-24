@@ -7,9 +7,9 @@ use std::sync::RwLock;
 
 use dok3_core::Dok3Error;
 use dok3_domain::{
-    CorpusCatalogEntry, Document, DocumentDetail, DocumentId, DocumentStorePort, Principal,
-    RevisionId, SectionCitation, SectionReadRequest, SectionReadResponse, SectionSummary,
-    build_corpus_catalog,
+    CorpusCatalogEntry, Document, DocumentDetail, DocumentId, DocumentStorePort,
+    OriginalDocumentPayload, Principal, RevisionId, SectionCitation, SectionReadRequest,
+    SectionReadResponse, SectionSummary, build_corpus_catalog,
 };
 use sha2::{Digest, Sha256};
 
@@ -480,6 +480,23 @@ impl DocumentStorePort for FileDocumentStore {
             next_cursor: truncated.then_some(end),
             truncated,
         })
+    }
+
+    fn get_original(
+        &self,
+        principal: &Principal,
+        id: &DocumentId,
+    ) -> Result<OriginalDocumentPayload, Dok3Error> {
+        let doc = self.authorized(principal, id)?;
+        let bytes = self.read_original(principal, id)?;
+        let filename = doc
+            .sample_path
+            .as_deref()
+            .and_then(|p| p.rsplit('/').next())
+            .filter(|s| !s.trim().is_empty())
+            .unwrap_or("document.txt")
+            .to_string();
+        Ok(OriginalDocumentPayload { filename, bytes })
     }
 
     fn document_count(&self) -> usize {

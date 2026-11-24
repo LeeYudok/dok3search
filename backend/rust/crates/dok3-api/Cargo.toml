@@ -7,6 +7,7 @@ publish.workspace = true
 
 [dependencies]
 axum.workspace = true
+dok3-analyzer.workspace = true
 dok3-core.workspace = true
 dok3-domain.workspace = true
 dok3-index-manager.workspace = true

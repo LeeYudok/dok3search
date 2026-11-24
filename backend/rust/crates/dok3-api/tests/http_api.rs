@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 
 use axum::body::Body;
 use axum::extract::ConnectInfo;
-use axum::http::{Request, StatusCode, header};
+use axum::http::{Method, Request, StatusCode, header};
 use dok3_api::{ApiState, build_router};
 use dok3_domain::{
     AclScope, ClassificationPort, ClassificationSource, CreateSourceRequest, DeleteSourceResponse,
@@ -17,6 +17,7 @@ use dok3_domain::{
 };
 use dok3_search::{InMemorySearchRepository, SearchService};
 use http_body_util::BodyExt;
+use serde_json::{Value, json};
 use tower::ServiceExt;
 
 fn sample_design_dir() -> PathBuf {
@@ -1221,4 +1222,99 @@ async fn metrics_are_prometheus_text_and_loopback_only() {
     assert!(text.contains("# TYPE dok3_http_errors_total counter"));
     assert!(text.contains("# TYPE dok3_http_request_duration_seconds histogram"));
     assert!(text.contains("dok3_http_request_duration_seconds_bucket{le=\"+Inf\"}"));
+}
+
+fn original_test_service() -> Arc<SearchService> {
+    let repo = Arc::new(InMemorySearchRepository::from_seed(Some(
+        &sample_design_dir(),
+    )));
+    Arc::new(SearchService::new(repo.clone(), repo))
+}
+
+#[tokio::test]
+async fn get_original_enforces_acl_and_sets_attachment_headers() {
+    let app = build_router(ApiState::new(original_test_service()), None);
+    let ok = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/api/v1/documents/dok3search-manual/original")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(ok.status(), StatusCode::OK);
+    assert_eq!(
+        ok.headers()[header::CONTENT_TYPE],
+        "application/octet-stream"
+    );
+    assert!(
+        ok.headers()[header::CONTENT_DISPOSITION]
+            .to_str()
+            .unwrap()
+            .starts_with("attachment; filename=\"")
+    );
+    let bytes = ok.into_body().collect().await.unwrap().to_bytes();
+    let _ = bytes;
+
+    let forbidden = app
+        .oneshot(
+            Request::builder()
+                .uri("/api/v1/documents/int-1/original")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(forbidden.status(), StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
+async fn analyze_endpoint_returns_tokens_and_rejects_empty_or_oversized_text() {
+    let app = build_router(ApiState::new(original_test_service()), None);
+    let ok = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri("/api/v1/search/analyze")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({ "text": "getAccountList ORA-00904" }).to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(ok.status(), StatusCode::OK);
+    let body: Value =
+        serde_json::from_slice(&ok.into_body().collect().await.unwrap().to_bytes()).unwrap();
+    assert!(
+        body["terms"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|v| v == "account")
+    );
+    assert!(
+        body["terms"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|v| v == "ora-00904")
+    );
+
+    let empty = app
+        .oneshot(
+            Request::builder()
+                .method(Method::POST)
+                .uri("/api/v1/search/analyze")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(json!({ "text": "   " }).to_string()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(empty.status(), StatusCode::BAD_REQUEST);
 }

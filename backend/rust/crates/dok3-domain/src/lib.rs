@@ -27,7 +27,7 @@ pub use document::{
 pub use ids::{DocumentId, GenerationId, RevisionId, SectionId, Sequence, SourceId};
 pub use ports::{
     ChangeJournalPort, ClassificationPort, DocumentParserPort, DocumentStorePort, IndexJobPort,
-    SearchPort, SourceRegistryPort,
+    OriginalDocumentPayload, SearchPort, SourceRegistryPort,
 };
 pub use search::{
     CategoryCount, CorpusCatalogEntry, CorpusCatalogResponse, CorpusPackageVersion,

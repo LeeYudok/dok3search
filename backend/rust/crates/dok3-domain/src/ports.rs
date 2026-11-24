@@ -23,6 +23,13 @@ pub trait SearchPort: Send + Sync {
     fn snapshot(&self) -> SearchSnapshotMeta;
 }
 
+/// Original document bytes and safe download filename returned by [`DocumentStorePort::get_original`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OriginalDocumentPayload {
+    pub filename: String,
+    pub bytes: Vec<u8>,
+}
+
 /// Port for retrieving authorized document details and bounded sections.
 pub trait DocumentStorePort: Send + Sync {
     fn get_document(
@@ -35,6 +42,24 @@ pub trait DocumentStorePort: Send + Sync {
         principal: &Principal,
         req: &SectionReadRequest,
     ) -> Result<SectionReadResponse, Dok3Error>;
+    fn get_original(
+        &self,
+        principal: &Principal,
+        id: &DocumentId,
+    ) -> Result<OriginalDocumentPayload, Dok3Error> {
+        let detail = self.get_document(principal, id)?;
+        let filename = detail
+            .sample_path
+            .as_deref()
+            .and_then(|p| p.rsplit('/').next())
+            .filter(|s| !s.trim().is_empty())
+            .unwrap_or("document.txt")
+            .to_string();
+        Ok(OriginalDocumentPayload {
+            filename,
+            bytes: detail.body.into_bytes(),
+        })
+    }
     fn document_count(&self) -> usize;
     fn list_corpora(
         &self,
