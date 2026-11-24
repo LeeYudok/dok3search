@@ -1,4 +1,4 @@
-import { categories, documentFormats, documents, isReferenceTopic, isReferenceTopicFilter, searchDocuments, titleMatches, topics, type Document, type ReferenceTopic } from './documents'
+import { isReferenceTopicFilter, loadLocalSamples, type ReferenceTopic } from './documents'
 
 export type DataSourceMode = 'api' | 'local-fallback' | 'local-reference'
 
@@ -378,6 +378,7 @@ export async function fetchSearch(
     })
 
     if (isProxyOrNetworkUnavailableStatus(response.status)) {
+      const { searchLocalDocuments } = await loadLocalSamples()
       return {
         result: searchLocalDocuments(params.query, params.category, params.page, params.limit),
         mode: 'local-fallback',
@@ -386,6 +387,7 @@ export async function fetchSearch(
 
     const contentType = response.headers.get('content-type') ?? ''
     if (!contentType.includes('application/json')) {
+      const { searchLocalDocuments } = await loadLocalSamples()
       return {
         result: searchLocalDocuments(params.query, params.category, params.page, params.limit),
         mode: 'local-fallback',
@@ -406,6 +408,7 @@ export async function fetchSearch(
       throw err
     }
     if (err instanceof TypeError) {
+      const { searchLocalDocuments } = await loadLocalSamples()
       return {
         result: searchLocalDocuments(params.query, params.category, params.page, params.limit),
         mode: 'local-fallback',
@@ -426,6 +429,7 @@ export async function fetchDocument(
 
     if (response.status === 404) {
       const contentType = response.headers.get('content-type') ?? ''
+      const { localFallbackDocument } = await loadLocalSamples()
       if (contentType.includes('application/json')) {
         const doc = localFallbackDocument(id)
         return doc ? { doc, mode: 'local-fallback' } : { doc: null, mode: 'api' }
@@ -434,11 +438,13 @@ export async function fetchDocument(
     }
 
     if (isProxyOrNetworkUnavailableStatus(response.status)) {
+      const { localFallbackDocument } = await loadLocalSamples()
       return { doc: localFallbackDocument(id), mode: 'local-fallback' }
     }
 
     const contentType = response.headers.get('content-type') ?? ''
     if (!contentType.includes('application/json')) {
+      const { localFallbackDocument } = await loadLocalSamples()
       return { doc: localFallbackDocument(id), mode: 'local-fallback' }
     }
 
@@ -455,6 +461,7 @@ export async function fetchDocument(
     if (err instanceof DOMException && err.name === 'AbortError') {
       throw err
     }
+    const { localFallbackDocument } = await loadLocalSamples()
     const doc = localFallbackDocument(id)
     if (doc) return { doc, mode: 'local-fallback' }
     throw err

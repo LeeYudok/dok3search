@@ -18,7 +18,6 @@ use tantivy::collector::{Count, TopDocs};
 use tantivy::directory::MmapDirectory;
 use tantivy::query::{AllQuery, BooleanQuery, BoostQuery, EmptyQuery, Occur, Query, TermQuery};
 use tantivy::schema::{IndexRecordOption, Schema};
-use tantivy::snippet::SnippetGenerator;
 use tantivy::{Index, IndexReader, IndexWriter, ReloadPolicy, Searcher, TantivyDocument, Term};
 
 use crate::schema::{
@@ -416,13 +415,8 @@ impl TantivyIndex {
         top_docs: Vec<(f32, tantivy::DocAddress)>,
         query: &str,
         include_snippets: bool,
-        snippet_query: Option<&dyn Query>,
+        snippet_terms: &[String],
     ) -> Result<Vec<SearchHit>, Dok3Error> {
-        let snippet_gen = match (include_snippets, snippet_query) {
-            (true, Some(q)) => SnippetGenerator::create(searcher, q, self.fields.body).ok(),
-            _ => None,
-        };
-
         let mut hits = Vec::with_capacity(top_docs.len());
         for (score, addr) in top_docs {
             let doc: TantivyDocument = searcher
@@ -458,18 +452,14 @@ impl TantivyIndex {
                 .filter(|b| !b.is_empty());
 
             let snippet = if include_snippets {
-                let fragment = snippet_gen
-                    .as_ref()
-                    .map(|g| g.snippet_from_doc(&doc).fragment().trim().to_string())
-                    .filter(|s| !s.is_empty());
-                match fragment {
-                    Some(text) => text.chars().take(280).collect(),
-                    None => matched_section_body
-                        .unwrap_or(&meta.snippet_source)
-                        .chars()
-                        .take(280)
-                        .collect(),
-                }
+                let body_str = read_stored_str(&doc, self.fields.body);
+                extract_fast_snippet(
+                    matched_section_body,
+                    body_str,
+                    &meta.snippet_source,
+                    snippet_terms,
+                    280,
+                )
             } else {
                 String::new()
             };
@@ -518,7 +508,7 @@ impl SearchPort for TantivyIndex {
                 .map_err(|_| Dok3Error::Internal("snapshot lock poisoned".to_string()))?;
             (self.reader.searcher(), snap_guard.clone())
         };
-        let (base_clauses, snippet_q) = self.build_base_clauses(&effective_scopes, &req);
+        let (base_clauses, _) = self.build_base_clauses(&effective_scopes, &req);
         let base_query = BooleanQuery::new(clone_clauses(&base_clauses));
 
         let total_unfiltered_hits = searcher
@@ -575,12 +565,18 @@ impl SearchPort for TantivyIndex {
                 .map_err(|e| Dok3Error::Index(format!("top-docs search failed: {e}")))?
         };
 
+        let snippet_terms = if req.include_snippets && !query_trimmed.is_empty() {
+            precompute_snippet_terms(&query_trimmed)
+        } else {
+            Vec::new()
+        };
+
         let hits = self.load_hits(
             &searcher,
             top_docs,
             &query_trimmed,
             req.include_snippets,
-            snippet_q.as_deref(),
+            &snippet_terms,
         )?;
 
         let related_searches = collect_related_tags(&query_trimmed, &hits);
@@ -665,6 +661,92 @@ fn collect_related_tags(query_trimmed: &str, hits: &[SearchHit]) -> Vec<String> 
         }
     }
     related
+}
+
+fn precompute_snippet_terms(query: &str) -> Vec<String> {
+    let mut seen = HashSet::new();
+    let mut terms = Vec::new();
+    for (_, _, word) in word_spans(query) {
+        let lower = word.to_lowercase();
+        if !lower.is_empty() && seen.insert(lower.clone()) {
+            terms.push(lower);
+        }
+    }
+    let analyzed = analyze_text(
+        query,
+        AnalyzeOptions {
+            split_identifiers: true,
+            char_ngrams: false,
+        },
+    );
+    for term in analyzed.terms {
+        if !term.is_empty() && seen.insert(term.clone()) {
+            terms.push(term);
+        }
+    }
+    terms
+}
+
+fn find_term_byte_offset(text: &str, term: &str) -> Option<usize> {
+    if term.is_empty() {
+        return None;
+    }
+    if term.is_ascii() {
+        let hay = text.as_bytes();
+        let needle = term.as_bytes();
+        hay.windows(needle.len())
+            .position(|w| w.eq_ignore_ascii_case(needle))
+            .filter(|&pos| text.is_char_boundary(pos))
+    } else {
+        text.to_lowercase().find(term)
+    }
+}
+
+fn extract_fast_snippet(
+    matched_section_body: Option<&str>,
+    body: &str,
+    fallback_source: &str,
+    terms: &[String],
+    max_chars: usize,
+) -> String {
+    let candidates = [matched_section_body, Some(body)];
+    for candidate in candidates.into_iter().flatten() {
+        let trimmed = candidate.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+        if let Some(byte_pos) = terms.iter().find_map(|t| find_term_byte_offset(trimmed, t)) {
+            let prefix_chars = trimmed[..byte_pos].chars().count();
+            let start_char = prefix_chars.saturating_sub(64);
+            let mut start_byte = trimmed
+                .char_indices()
+                .nth(start_char)
+                .map_or(0, |(idx, _)| idx);
+            if start_char > 0
+                && let Some(ws) = trimmed[start_byte..byte_pos].find(char::is_whitespace)
+            {
+                let next = start_byte
+                    + ws
+                    + trimmed[start_byte + ws..]
+                        .chars()
+                        .next()
+                        .map_or(0, char::len_utf8);
+                if next < byte_pos {
+                    start_byte = next;
+                }
+            }
+            let snippet: String = trimmed[start_byte..].chars().take(max_chars).collect();
+            return snippet.split_whitespace().collect::<Vec<_>>().join(" ");
+        }
+    }
+    matched_section_body
+        .unwrap_or(fallback_source)
+        .chars()
+        .take(max_chars)
+        .collect::<String>()
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
 }
 
 fn empty_response(
