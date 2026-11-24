@@ -1,6 +1,28 @@
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
+
+struct TempDir(PathBuf);
+impl TempDir {
+    fn new(name: &str) -> Self {
+        let nanos = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let path =
+            std::env::temp_dir().join(format!("dok3-vcs-{name}-{}-{nanos}", std::process::id()));
+        fs::create_dir_all(&path).unwrap();
+        Self(path)
+    }
+    fn path(&self) -> &Path {
+        &self.0
+    }
+}
+impl Drop for TempDir {
+    fn drop(&mut self) {
+        let _ = fs::remove_dir_all(&self.0);
+    }
+}
 
 use dok3_connectors::{
     GitRepoConnector, SourceConfig, SvnConnector, VcsCommandOutput, VcsCommandRunner,
@@ -19,7 +41,7 @@ fn git(dir: &Path, args: &[&str]) {
 
 #[test]
 fn git_connector_collects_initial_and_incremental_rename_delete() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = TempDir::new("git");
     git(dir.path(), &["init", "-q"]);
     git(dir.path(), &["config", "user.name", "test"]);
     git(dir.path(), &["config", "user.email", "test@example.com"]);
@@ -82,7 +104,7 @@ impl VcsCommandRunner for MockSvnRunner {
 
 #[test]
 fn svn_connector_parses_diff_summarize_and_deletes() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = TempDir::new("git");
     let cfg =
         SourceConfig::supported_document_defaults(SourceId::new("svn-src"), "SVN Repo", dir.path());
     let conn = SvnConnector::with_runner(cfg, MockSvnRunner);

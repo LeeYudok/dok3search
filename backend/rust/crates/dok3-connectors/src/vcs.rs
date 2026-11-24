@@ -1,6 +1,5 @@
 //! Git and Subversion (SVN) incremental source connectors.
 
-use std::path::PathBuf;
 use std::process::Command;
 
 use dok3_core::Dok3Error;
