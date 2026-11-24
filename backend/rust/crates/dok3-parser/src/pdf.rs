@@ -55,7 +55,7 @@ impl DocumentParserPort for PdfParser {
         let mut all_lines = Vec::new();
         let mut empty_pages = 0usize;
 
-        for (&page_num, _) in &pages {
+        for &page_num in pages.keys() {
             let text = doc.extract_text(&[page_num]).unwrap_or_default();
             let trimmed = text.trim();
             if trimmed.is_empty() {

@@ -150,11 +150,32 @@ fn extract_w_t_text(fragment: &str) -> String {
 }
 
 fn unescape_xml(raw: &str) -> String {
-    raw.replace("&amp;", "&")
-        .replace("&lt;", "<")
-        .replace("&gt;", ">")
-        .replace("&quot;", "\"")
-        .replace("&apos;", "'")
+    let mut out = String::with_capacity(raw.len());
+    let mut rest = raw;
+    while let Some(amp) = rest.find('&') {
+        out.push_str(&rest[..amp]);
+        let after = &rest[amp..];
+        if let Some(semi) = after.find(';') {
+            let entity = &after[..=semi];
+            let replacement = match entity {
+                "&amp;" => Some("&"),
+                "&lt;" => Some("<"),
+                "&gt;" => Some(">"),
+                "&quot;" => Some("\""),
+                "&apos;" => Some("'"),
+                _ => None,
+            };
+            if let Some(rep) = replacement {
+                out.push_str(rep);
+                rest = &after[semi + 1..];
+                continue;
+            }
+        }
+        out.push('&');
+        rest = &rest[amp + 1..];
+    }
+    out.push_str(rest);
+    out
 }
 
 fn build_sections_from_lines(

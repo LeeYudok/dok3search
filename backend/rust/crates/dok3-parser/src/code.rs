@@ -83,7 +83,7 @@ impl DocumentParserPort for CodeSymbolParser {
         let lang = CodeLanguage::from_filename(filename).unwrap_or(CodeLanguage::Rust);
         let lines: Vec<&str> = normalized.lines().collect();
         let mut warnings = Vec::new();
-        let mut raw_symbols: Vec<(usize, String)> = match lang {
+        let raw_symbols: Vec<(usize, String)> = match lang {
             CodeLanguage::Rust | CodeLanguage::Java | CodeLanguage::Go => {
                 extract_treesitter_symbols(lang, &normalized)
             }
@@ -380,8 +380,8 @@ fn extract_treesitter_symbols(lang: CodeLanguage, source: &str) -> Vec<(usize, S
     };
     let mut out = Vec::new();
     collect_ts_node(lang, tree.root_node(), source.as_bytes(), &mut out);
-    out.sort_by_key(|(line, _)| *line);
-    out.dedup_by_key(|(line, _)| *line);
+    out.sort();
+    out.dedup();
     out
 }
 
