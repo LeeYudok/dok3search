@@ -32,6 +32,14 @@ describe('HomePage, SearchForm, and SearchPage', () => {
     expect(screen.getAllByRole('option')[0]).toHaveAttribute('aria-selected', 'true')
     fireEvent.keyDown(input, { key: 'Escape' })
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+
+    expect(screen.queryByRole('button', { name: '검색어 지우기' })).not.toBeInTheDocument()
+    fireEvent.change(input, { target: { value: 'kordoc' } })
+    const clearButton = screen.getByRole('button', { name: '검색어 지우기' })
+    expect(clearButton).toBeInTheDocument()
+    fireEvent.click(clearButton)
+    expect(input).toHaveValue('')
+    expect(screen.queryByRole('button', { name: '검색어 지우기' })).not.toBeInTheDocument()
   })
 
   it('renders SearchPage hits with symbol badge, code snippet, and empty state', async () => {
