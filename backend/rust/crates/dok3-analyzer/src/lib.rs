@@ -119,26 +119,8 @@ pub fn select_matched_section_id<'a>(
     for (idx, cand) in non_empty.iter().enumerate() {
         let h_lower = cand.heading.to_lowercase();
         let b_lower = cand.body.to_lowercase();
-        let h_terms: HashSet<String> = analyze_text(
-            cand.heading,
-            AnalyzeOptions {
-                split_identifiers: true,
-                char_ngrams: false,
-            },
-        )
-        .terms
-        .into_iter()
-        .collect();
-        let b_terms: HashSet<String> = analyze_text(
-            cand.body,
-            AnalyzeOptions {
-                split_identifiers: true,
-                char_ngrams: false,
-            },
-        )
-        .terms
-        .into_iter()
-        .collect();
+        let mut h_terms: Option<HashSet<String>> = None;
+        let mut b_terms: Option<HashSet<String>> = None;
 
         let mut score = 0.0_f32;
         if h_lower == q_lower || cand.section_id.eq_ignore_ascii_case(&q_lower) {
@@ -156,10 +138,42 @@ pub fn select_matched_section_id<'a>(
                 || term.contains('_')
                 || term.contains('-')
                 || term.chars().any(|c| c.is_ascii_digit());
-            if h_terms.contains(term) || h_lower.contains(term.as_str()) {
+            let h_match = h_lower.contains(term.as_str())
+                || (!term.is_ascii()
+                    && h_terms
+                        .get_or_insert_with(|| {
+                            analyze_text(
+                                cand.heading,
+                                AnalyzeOptions {
+                                    split_identifiers: true,
+                                    char_ngrams: false,
+                                },
+                            )
+                            .terms
+                            .into_iter()
+                            .collect()
+                        })
+                        .contains(term));
+            if h_match {
                 score += if is_code_or_err { 6.0 } else { 4.0 };
             }
-            if b_terms.contains(term) || b_lower.contains(term.as_str()) {
+            let b_match = b_lower.contains(term.as_str())
+                || (!term.is_ascii()
+                    && b_terms
+                        .get_or_insert_with(|| {
+                            analyze_text(
+                                cand.body,
+                                AnalyzeOptions {
+                                    split_identifiers: true,
+                                    char_ngrams: false,
+                                },
+                            )
+                            .terms
+                            .into_iter()
+                            .collect()
+                        })
+                        .contains(term));
+            if b_match {
                 score += if is_code_or_err { 3.0 } else { 2.0 };
                 let extra_hits = b_lower
                     .matches(term.as_str())

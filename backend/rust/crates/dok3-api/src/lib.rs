@@ -23,6 +23,8 @@ use dok3_domain::{
 use dok3_search::SearchService;
 use serde::{Deserialize, Serialize};
 use tower::ServiceExt;
+use tower_http::compression::CompressionLayer;
+use tower_http::compression::predicate::{DefaultPredicate, NotForContentType, Predicate};
 use tower_http::services::{ServeDir, ServeFile};
 
 /// Re-exported so callers can compose extra routes without a direct `axum` dependency.
@@ -251,7 +253,12 @@ pub fn build_router_with_extra(
         _ => router,
     };
 
+    let compression = CompressionLayer::new().compress_when(
+        DefaultPredicate::new().and(NotForContentType::new("application/octet-stream")),
+    );
+
     router
+        .layer(compression)
         .layer(middleware::from_fn_with_state(state, track_metrics))
         .layer(middleware::from_fn(apply_security_headers))
 }
@@ -898,4 +905,75 @@ async fn delete_source(
             )))
         })??;
     Ok(Json(deleted))
+}
+
+#[cfg(test)]
+mod compression_tests {
+    use super::*;
+    use axum::body::Body;
+    use dok3_search::InMemorySearchRepository;
+
+    #[tokio::test]
+    async fn compresses_json_with_gzip_and_brotli_and_skips_octet_stream() {
+        let repo = Arc::new(InMemorySearchRepository::from_seed(None));
+        let service = Arc::new(SearchService::new(repo.clone(), repo));
+        let app = build_router(ApiState::new(service), None);
+
+        let gzip_resp = app
+            .clone()
+            .oneshot(
+                Request::post("/api/v1/search")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .header(header::ACCEPT_ENCODING, "gzip")
+                    .body(Body::from(r#"{"query":"","limit":50}"#))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(gzip_resp.status(), StatusCode::OK);
+        assert_eq!(
+            gzip_resp
+                .headers()
+                .get(header::CONTENT_ENCODING)
+                .and_then(|v| v.to_str().ok()),
+            Some("gzip")
+        );
+
+        let br_resp = app
+            .clone()
+            .oneshot(
+                Request::post("/api/v1/search")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .header(header::ACCEPT_ENCODING, "br")
+                    .body(Body::from(r#"{"query":"","limit":50}"#))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(br_resp.status(), StatusCode::OK);
+        assert_eq!(
+            br_resp
+                .headers()
+                .get(header::CONTENT_ENCODING)
+                .and_then(|v| v.to_str().ok()),
+            Some("br")
+        );
+
+        let orig_resp = app
+            .oneshot(
+                Request::get("/api/v1/documents/index-rollbacks/original")
+                    .header(header::ACCEPT_ENCODING, "gzip")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_ne!(
+            orig_resp
+                .headers()
+                .get(header::CONTENT_ENCODING)
+                .and_then(|v| v.to_str().ok()),
+            Some("gzip")
+        );
+    }
 }

@@ -436,6 +436,38 @@ fn empty_query_and_include_snippets_false() {
 }
 
 #[test]
+fn fast_snippet_extracts_window_around_late_match_in_long_body() {
+    let index = TantivyIndex::create_in_ram(GenerationId::new("gen-fast-snippet")).unwrap();
+    let public = Principal::anonymous_public();
+    let long_prefix = "fillerword ".repeat(300);
+    let body = format!("{long_prefix} Here react hooks and 상태관리 details appear.");
+
+    index
+        .upsert_document(&sample_doc(
+            "long-1",
+            "React Guide",
+            "React summary",
+            &body,
+            "guide",
+            "en",
+            "src",
+            "React",
+            AclScope::Public,
+        ))
+        .unwrap();
+    index.commit_and_reload(None).unwrap();
+
+    let res = search(&index, &public, "react");
+    assert_eq!(res.total_hits, 1);
+    assert!(
+        res.hits[0].snippet.contains("react"),
+        "expected snippet around 'react', got: {}",
+        res.hits[0].snippet
+    );
+    assert!(res.hits[0].snippet.chars().count() <= 280);
+}
+
+#[test]
 fn analyzer_matches_compound_terms_without_exposing_internal_documents() {
     let index = TantivyIndex::create_in_ram(GenerationId::new("gen-analysis")).unwrap();
     let ops = AclScope::internal("ops");

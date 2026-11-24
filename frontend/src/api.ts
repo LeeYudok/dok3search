@@ -1,4 +1,4 @@
-import { categories, documentFormats, documents, isReferenceTopic, isReferenceTopicFilter, searchDocuments, titleMatches, topics, type Document, type ReferenceTopic } from './documents'
+import { isReferenceTopicFilter, loadLocalSamples, type ReferenceTopic } from './documents'
 
 export type DataSourceMode = 'api' | 'local-fallback' | 'local-reference'
 
@@ -273,92 +273,6 @@ function isProxyOrNetworkUnavailableStatus(status: number): boolean {
   return status === 502 || status === 503 || status === 504
 }
 
-export function searchLocalDocuments(
-  query: string,
-  category: string,
-  requestedPage: number,
-  limit: number,
-  corpus: readonly Document[] = documents,
-  topic = '',
-): SearchViewResult {
-  const matches = searchDocuments(query, corpus)
-  const visible = matches.filter((doc) =>
-    (!category || doc.category === category) && (!topic || doc.topic === topic),
-  )
-  if (query && (topic || isReferenceTopic(category))) {
-    visible.sort((a, b) => Number(titleMatches(query, b)) - Number(titleMatches(query, a)))
-  }
-  const pageCount = Math.ceil(visible.length / limit)
-  const page = pageCount > 0 && Number.isSafeInteger(requestedPage)
-    ? Math.max(1, Math.min(requestedPage, pageCount))
-    : 1
-  const pageDocuments = visible.slice((page - 1) * limit, page * limit)
-
-  const relatedSearches = query && visible.length
-    ? [...new Set(visible.map((doc) => doc.tag))]
-        .filter((tag) => !query.toLowerCase().includes(tag.toLowerCase()))
-        .slice(0, 6)
-    : []
-
-  return {
-    query,
-    page,
-    limit,
-    totalHits: visible.length,
-    totalPages: pageCount,
-    totalUnfilteredHits: matches.length,
-    categoryCounts: categories.map((item) => ({
-      id: item.id,
-      label: item.label,
-      count: matches.filter((doc) => doc.category === item.id).length,
-    })),
-    topicCounts: topics.map((item) => ({
-      ...item,
-      count: matches.filter((doc) => doc.topic === item.id).length,
-    })),
-    relatedSearches,
-    hits: pageDocuments.map((doc) => ({
-      documentId: doc.id,
-      title: doc.title,
-      summary: doc.summary,
-      snippet: (doc.summary + ' ' + doc.body).trim(),
-      category: doc.category,
-      source: doc.source,
-      tag: doc.tag,
-      date: doc.date,
-      samplePath: doc.samplePath,
-      topic: doc.topic,
-      hasPairedFormats: Boolean(documentFormats(doc.id)),
-    })),
-    snapshot: {
-      generationId: 'local-samples',
-      epoch: 0,
-    },
-  }
-}
-
-function localFallbackDocument(id: string): ReaderDocument | null {
-  const doc = documents.find((item) => item.id === id)
-  if (!doc) return null
-  const formats = documentFormats(id)
-  return {
-    id: doc.id,
-    title: doc.title,
-    summary: doc.summary,
-    source: doc.source,
-    tag: doc.tag,
-    date: doc.date,
-    category: doc.category,
-    body: doc.body,
-    markdown: doc.markdown,
-    samplePath: doc.samplePath,
-    topic: doc.topic,
-    formats: formats
-      ? { markdownId: formats.markdown.id, yamlId: formats.yaml.id }
-      : undefined,
-  }
-}
-
 export async function fetchSearch(
   params: { query: string; category: string; page: number; limit: number },
   signal: AbortSignal,
@@ -378,6 +292,7 @@ export async function fetchSearch(
     })
 
     if (isProxyOrNetworkUnavailableStatus(response.status)) {
+      const { searchLocalDocuments } = await loadLocalSamples()
       return {
         result: searchLocalDocuments(params.query, params.category, params.page, params.limit),
         mode: 'local-fallback',
@@ -386,6 +301,7 @@ export async function fetchSearch(
 
     const contentType = response.headers.get('content-type') ?? ''
     if (!contentType.includes('application/json')) {
+      const { searchLocalDocuments } = await loadLocalSamples()
       return {
         result: searchLocalDocuments(params.query, params.category, params.page, params.limit),
         mode: 'local-fallback',
@@ -406,6 +322,7 @@ export async function fetchSearch(
       throw err
     }
     if (err instanceof TypeError) {
+      const { searchLocalDocuments } = await loadLocalSamples()
       return {
         result: searchLocalDocuments(params.query, params.category, params.page, params.limit),
         mode: 'local-fallback',
@@ -426,6 +343,7 @@ export async function fetchDocument(
 
     if (response.status === 404) {
       const contentType = response.headers.get('content-type') ?? ''
+      const { localFallbackDocument } = await loadLocalSamples()
       if (contentType.includes('application/json')) {
         const doc = localFallbackDocument(id)
         return doc ? { doc, mode: 'local-fallback' } : { doc: null, mode: 'api' }
@@ -434,11 +352,13 @@ export async function fetchDocument(
     }
 
     if (isProxyOrNetworkUnavailableStatus(response.status)) {
+      const { localFallbackDocument } = await loadLocalSamples()
       return { doc: localFallbackDocument(id), mode: 'local-fallback' }
     }
 
     const contentType = response.headers.get('content-type') ?? ''
     if (!contentType.includes('application/json')) {
+      const { localFallbackDocument } = await loadLocalSamples()
       return { doc: localFallbackDocument(id), mode: 'local-fallback' }
     }
 
@@ -455,6 +375,7 @@ export async function fetchDocument(
     if (err instanceof DOMException && err.name === 'AbortError') {
       throw err
     }
+    const { localFallbackDocument } = await loadLocalSamples()
     const doc = localFallbackDocument(id)
     if (doc) return { doc, mode: 'local-fallback' }
     throw err

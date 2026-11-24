@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { DotsThreeVerticalIcon as More, FileTextIcon as FileText, MagnifyingGlassIcon as Search, XIcon as X } from '@phosphor-icons/react'
 import { createRoot } from 'react-dom/client'
-import { type DataSourceMode, fetchSearch, searchLocalDocuments, type SearchViewResult } from './api'
-import { categories, categoryLabels, documents, isReferenceTopic, isReferenceTopicFilter, searchUrl, topics } from './documents'
+import { type DataSourceMode, fetchSearch, type SearchViewResult } from './api'
+import { categories, categoryLabels, isReferenceTopic, isReferenceTopicFilter, loadLocalSamples, searchUrl, topics } from './documents'
 import { referenceIdPrefix, type ReferenceCorpus } from './reference-corpus'
 import './style.css'
 
@@ -58,9 +58,13 @@ function mergeSearchHits(...groups: ReadonlyArray<SearchViewResult['hits']>): Se
 async function fetchSearchPage(
   query: string, category: string, topic: string, page: number, signal: AbortSignal,
 ): Promise<{ result: SearchViewResult; mode: DataSourceMode }> {
-  const references = loadReferenceCorpora()
+  let refPromise: Promise<ReferenceCorpus[]> | undefined
+  const getReferences = () => (refPromise ??= loadReferenceCorpora())
   async function searchAllLocal(): Promise<{ result: SearchViewResult; mode: DataSourceMode }> {
-    const corpora = await references.catch(() => [])
+    const [{ documents, searchLocalDocuments }, corpora] = await Promise.all([
+      loadLocalSamples(),
+      getReferences().catch(() => []),
+    ])
     const allDocuments = [...new Map(documents.concat(corpora.flatMap(({ documents }) => documents)).map((doc) => [doc.id, doc])).values()]
     const allLocal = searchLocalDocuments(query, '', 1, pageSize, allDocuments)
     const local = searchLocalDocuments(query, '', page, pageSize, allDocuments)
@@ -74,7 +78,10 @@ async function fetchSearchPage(
     }
   }
   async function searchGuideMerged(topicFilter = ''): Promise<{ result: SearchViewResult; mode: DataSourceMode }> {
-    const corpora = await references
+    const [{ documents, searchLocalDocuments }, corpora] = await Promise.all([
+      loadLocalSamples(),
+      getReferences(),
+    ])
     const allDocuments = [...new Map(documents.concat(corpora.flatMap(({ documents }) => documents)).map((doc) => [doc.id, doc])).values()]
     const allLocal = searchLocalDocuments(query, '', 1, pageSize, allDocuments)
     const guideDocuments = allDocuments.filter((doc) => doc.category === 'guide')
@@ -155,7 +162,7 @@ async function fetchSearchPage(
     return searchGuideMerged()
   }
 
-  if (category && documents.some((doc) => doc.category === category)) {
+  if (category && categories.some((item) => item.id === category)) {
     let search: Awaited<ReturnType<typeof fetchSearch>> | undefined
     try {
       search = await fetchSearch({ query, category, page, limit: pageSize }, signal)
@@ -164,18 +171,20 @@ async function fetchSearchPage(
     }
     if (search?.mode === 'api') {
       const categoryCounts = search.result.categoryCounts.filter(({ id }) => categories.some((item) => item.id === id))
-      const local = searchLocalDocuments(query, '', 1, pageSize, documents)
       return {
         result: {
           ...search.result,
           categoryCounts,
-          topicCounts: local.topicCounts,
+          topicCounts: [],
         },
         mode: 'api',
       }
     }
 
-    const corpora = await references.catch(() => [])
+    const [{ documents, searchLocalDocuments }, corpora] = await Promise.all([
+      loadLocalSamples(),
+      getReferences().catch(() => []),
+    ])
     const fallbackDocs = category === 'code'
       ? [...new Map(documents.concat(corpora.flatMap(({ documents }) => documents)).map((doc) => [doc.id, doc])).values()]
       : documents
@@ -192,26 +201,29 @@ async function fetchSearchPage(
   }
 
   let search: Awaited<ReturnType<typeof fetchSearch>>
-  let corpora: ReferenceCorpus[]
   try {
-    [search, corpora] = await Promise.all([
-      fetchSearch({ query, category, page, limit: pageSize }, signal),
-      references.catch(() => []),
-    ])
+    search = await fetchSearch({ query, category, page, limit: pageSize }, signal)
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') throw error
     return searchAllLocal()
   }
   if (search.mode !== 'api') return searchAllLocal()
-  const referenceDocuments = documents.filter((doc) => doc.topic).concat(corpora.flatMap(({ documents }) => documents))
   const categoryCounts = search.result.categoryCounts.filter(({ id }) => categories.some((item) => item.id === id))
-  const local = searchLocalDocuments(query, '', 1, pageSize, referenceDocuments)
+  let topicCounts: SearchViewResult['topicCounts'] = []
+  if (search.result.hits.length === 0 && query) {
+    const [{ documents, searchLocalDocuments }, corpora] = await Promise.all([
+      loadLocalSamples(),
+      getReferences().catch(() => []),
+    ])
+    const referenceDocuments = documents.filter((doc) => doc.topic).concat(corpora.flatMap(({ documents }) => documents))
+    topicCounts = searchLocalDocuments(query, '', 1, pageSize, referenceDocuments).topicCounts
+  }
   return {
     mode: search.mode,
     result: {
       ...search.result,
       categoryCounts,
-      topicCounts: local.topicCounts,
+      topicCounts,
     },
   }
 }
@@ -472,10 +484,7 @@ if (detail) {
     detailId = detail[1]
   }
   const legacyId = legacyIds[detailId]
-  const canonicalDesignId = detailId.startsWith('design-')
-    ? documents.find((doc) => doc.category === 'design' && doc.id.toLowerCase() === detailId!.toLowerCase())?.id
-    : undefined
-  detailId = legacyId ?? canonicalDesignId ?? detailId
+  detailId = legacyId ?? detailId
 }
 
 const rootElement = document.getElementById('root')
@@ -492,8 +501,15 @@ if (rootElement) {
       () => root.render(<main className="shell reader"><p role="alert">관리 화면을 불러올 수 없습니다.</p></main>),
     )
   } else if (detailId) {
-    void Promise.all([import('./document-reader'), loadReferenceCorpora(detailId)]).then(
-      ([{ DocumentPage }, corpora]) => root.render(<DocumentPage id={detailId} corpora={corpora} />),
+    const resolvedIdPromise = detailId.startsWith('design-')
+      ? loadLocalSamples().then(
+          ({ documents }) =>
+            documents.find((doc) => doc.category === 'design' && doc.id.toLowerCase() === detailId!.toLowerCase())?.id ?? detailId!,
+          () => detailId!,
+        )
+      : Promise.resolve(detailId)
+    void Promise.all([import('./document-reader'), loadReferenceCorpora(detailId), resolvedIdPromise]).then(
+      ([{ DocumentPage }, corpora, resolvedId]) => root.render(<DocumentPage id={resolvedId} corpora={corpora} />),
       () => root.render(<main className="shell reader"><p role="alert">문서를 불러올 수 없습니다.</p></main>),
     )
   } else {

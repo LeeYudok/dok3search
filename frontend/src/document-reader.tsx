@@ -13,7 +13,7 @@ import {
   type ReaderDocument,
   updateClassification,
 } from './api'
-import { categories, categoryLabels, designDocuments, documentHeadingId, isReferenceTopic, searchUrl, topics, type Document } from './documents'
+import { categories, categoryLabels, documentHeadingId, isReferenceTopic, loadLocalSamples, searchUrl, topics, type Document } from './documents'
 import type { ReferenceCorpus } from './reference-corpus'
 
 const designParser = unified().use(remarkParse).use(remarkGfm)
@@ -115,12 +115,13 @@ function sectionIdForHash(
   })?.id
 }
 
-function MarkdownBody({ markdown, sections, samplePath, corpus, corpora }: {
+function MarkdownBody({ markdown, sections, samplePath, corpus, corpora, designDocs = [] }: {
   markdown: string
   sections: DocumentSection[]
   samplePath?: string
   corpus?: ReferenceCorpus
   corpora?: readonly ReferenceCorpus[]
+  designDocs?: readonly Document[]
 }) {
   function headingId(line?: number) {
     return sections.find((entry) => entry.line === line)?.id
@@ -172,7 +173,7 @@ function MarkdownBody({ markdown, sections, samplePath, corpus, corpora }: {
             '/samples/' + item.folder + '/' + doc.samplePath === target.pathname,
           )
           const linkedDoc: Document | undefined = referenceMatch?.doc ??
-            designDocuments.find((entry) => '/' + entry.samplePath === target.pathname)
+            designDocs.find((entry) => '/' + entry.samplePath === target.pathname)
           if (!linkedDoc) return ''
           const linkedCorpus = referenceMatch?.corpus ?? corpus
           const sectionId = target.hash && linkedDoc.markdown
@@ -230,6 +231,16 @@ export function DocumentPage({ id, corpora }: { id: string; corpora?: readonly R
   const [clsSaving, setClsSaving] = useState(false)
   const [clsError, setClsError] = useState<string | null>(null)
   const [clsNotice, setClsNotice] = useState<string | null>(null)
+  const [designDocs, setDesignDocs] = useState<readonly Document[]>([])
+
+  useEffect(() => {
+    if (corpora?.length) return
+    let active = true
+    void loadLocalSamples().then(({ designDocuments }) => {
+      if (active) setDesignDocs(designDocuments)
+    }, () => {})
+    return () => { active = false }
+  }, [corpora])
 
   function syncDraftFromClassification(next: DocumentClassification) {
     setClsCategory(next.category)
@@ -612,7 +623,7 @@ export function DocumentPage({ id, corpora }: { id: string; corpora?: readonly R
                 {doc.markdown ? (
                   <section>
                     {fallbackBody && <h2 id="body">본문</h2>}
-                    <MarkdownBody markdown={doc.markdown} sections={sections} samplePath={doc.samplePath} corpus={corpus} corpora={corpora} />
+                    <MarkdownBody markdown={doc.markdown} sections={sections} samplePath={doc.samplePath} corpus={corpus} corpora={corpora} designDocs={designDocs} />
                   </section>
                 ) : (
                   <section aria-labelledby="body">
