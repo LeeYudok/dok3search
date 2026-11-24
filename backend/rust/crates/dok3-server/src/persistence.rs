@@ -1618,6 +1618,7 @@ fn scan_and_store_sqlite_source(
     };
     let mut seen_ids = HashSet::new();
     let mut indexed = 0usize;
+    let mut completed = false;
 
     for _ in 0..MAX_SQLITE_PAGES_PER_PASS {
         let batch = match adapter.collect(cursor.as_ref()) {
@@ -1675,6 +1676,7 @@ fn scan_and_store_sqlite_source(
         let next = batch.next_cursor;
         if !batch.has_more {
             cursor = next;
+            completed = true;
             break;
         }
         if next == cursor {
@@ -1689,6 +1691,11 @@ fn scan_and_store_sqlite_source(
     // Persist the cursor only after documents and journal entries are durable.
     if let Some(cursor) = cursor.as_ref() {
         cursors.set(&entry.source_id, cursor)?;
+    }
+    if !completed {
+        return Ok(SourceScanOutcome::ScanFailed(format!(
+            "sqlite scan exceeded page limit ({MAX_SQLITE_PAGES_PER_PASS} pages) with more rows remaining"
+        )));
     }
     Ok(SourceScanOutcome::Scanned {
         indexed,
