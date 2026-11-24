@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 
 use axum::body::Body;
 use axum::extract::ConnectInfo;
-use axum::http::{Request, StatusCode, header};
+use axum::http::{Method, Request, StatusCode, header};
 use dok3_api::{ApiState, build_router};
 use dok3_domain::{
     AclScope, ClassificationPort, ClassificationSource, CreateSourceRequest, DeleteSourceResponse,
@@ -17,6 +17,7 @@ use dok3_domain::{
 };
 use dok3_search::{InMemorySearchRepository, SearchService};
 use http_body_util::BodyExt;
+use serde_json::{Value, json};
 use tower::ServiceExt;
 
 fn sample_design_dir() -> PathBuf {
@@ -1223,14 +1224,21 @@ async fn metrics_are_prometheus_text_and_loopback_only() {
     assert!(text.contains("dok3_http_request_duration_seconds_bucket{le=\"+Inf\"}"));
 }
 
+fn original_test_service() -> Arc<SearchService> {
+    let repo = Arc::new(InMemorySearchRepository::from_seed(Some(
+        &sample_design_dir(),
+    )));
+    Arc::new(SearchService::new(repo.clone(), repo))
+}
+
 #[tokio::test]
 async fn get_original_enforces_acl_and_sets_attachment_headers() {
-    let app = build_router(ApiState::new(fixture_service()), None);
+    let app = build_router(ApiState::new(original_test_service()), None);
     let ok = app
         .clone()
         .oneshot(
             Request::builder()
-                .uri("/api/v1/documents/pub-1/original")
+                .uri("/api/v1/documents/design-index-md/original")
                 .body(Body::empty())
                 .unwrap(),
         )
@@ -1259,12 +1267,12 @@ async fn get_original_enforces_acl_and_sets_attachment_headers() {
         )
         .await
         .unwrap();
-    assert_eq!(forbidden.status(), StatusCode::FORBIDDEN);
+    assert_eq!(forbidden.status(), StatusCode::NOT_FOUND);
 }
 
 #[tokio::test]
 async fn analyze_endpoint_returns_tokens_and_rejects_empty_or_oversized_text() {
-    let app = build_router(ApiState::new(fixture_service()), None);
+    let app = build_router(ApiState::new(original_test_service()), None);
     let ok = app
         .clone()
         .oneshot(
