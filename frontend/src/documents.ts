@@ -49,6 +49,11 @@ export function isReferenceTopic(category: string): category is keyof typeof sea
   return category === 'rust' || category === 'go'
 }
 
+export function expandSearchAliases(term: string, topicOrCategory?: string): readonly string[] {
+  if (!topicOrCategory || !isReferenceTopic(topicOrCategory)) return []
+  return searchAliases[topicOrCategory].get(term) ?? []
+}
+
 export function isReferenceTopicFilter(topic: string): topic is ReferenceTopic {
   return topics.some((item) => item.id === topic)
 }

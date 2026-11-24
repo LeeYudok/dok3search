@@ -3,6 +3,7 @@ import { DotsThreeVerticalIcon as More, FileTextIcon as FileText, MagnifyingGlas
 import { createRoot } from 'react-dom/client'
 import { type DataSourceMode, fetchRecommendations, fetchSearch, isSourceCodePath, type RecommendedTermItem, type SearchViewResult } from './api'
 import { categories, categoryLabels, isReferenceTopic, isReferenceTopicFilter, loadLocalSamples, searchUrl, topics } from './documents'
+import { highlightText } from './highlight'
 import { referenceIdPrefix, type ReferenceCorpus } from './reference-corpus'
 import './style.css'
 
@@ -314,7 +315,7 @@ export function SearchForm({ query = '', category = '', topic = '' }: { query?: 
                 onClick={() => setFocused(false)}
               >
                 <Search size={15} aria-hidden="true" />
-                <span className="suggestion-term">{item.term}</span>
+                <span className="suggestion-term">{highlightText(item.term, inputValue)}</span>
                 {item.documentCount > 0 && <span className="suggestion-count">{item.documentCount}건</span>}
               </a>
             </li>
@@ -514,13 +515,13 @@ export function SearchPage() {
                           {hit.hasPairedFormats && ' · Markdown · YAML'}
                           {hit.matchedSectionHeading && (
                             <span className="hit-symbol">
-                              {hit.matchedSectionHeading}
+                              {highlightText(hit.matchedSectionHeading, query, hit.topic ?? hit.category)}
                               {hit.matchedLineStart ? ` · L${hit.matchedLineStart}` : ''}
                             </span>
                           )}
                         </small>
-                        <strong>{hit.title}</strong>
-                        <span className={isSourceCodePath(hit.samplePath) ? 'snippet snippet-code' : 'snippet'}>{hit.snippet}</span>
+                        <strong>{highlightText(hit.title, query, hit.topic ?? hit.category)}</strong>
+                        <span className={isSourceCodePath(hit.samplePath) ? 'snippet snippet-code' : 'snippet'}>{highlightText(hit.snippet, query, hit.topic ?? hit.category)}</span>
                       </span>
                     </a>
                     {hit.date && <time dateTime={hit.date}>{hit.date}</time>}

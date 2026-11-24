@@ -11,6 +11,7 @@ import {
   type ReferenceTopic,
 } from './documents'
 import type { ReaderDocument, SearchViewResult } from './api'
+import { buildContextSnippet } from './highlight'
 
 const designFiles = import.meta.glob<string>('./samples/design/**/*.{md,yaml,yml}', {
   eager: true,
@@ -422,7 +423,7 @@ export function searchLocalDocuments(
       documentId: doc.id,
       title: doc.title,
       summary: doc.summary,
-      snippet: doc.summary || doc.body.slice(0, 200),
+      snippet: buildContextSnippet(doc.summary, doc.body, query, doc.topic ?? doc.category),
       category: doc.category,
       source: doc.source,
       tag: doc.tag,
