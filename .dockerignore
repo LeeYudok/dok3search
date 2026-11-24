@@ -9,6 +9,7 @@ Dockerfile
 # Build outputs
 **/node_modules
 frontend/dist
+frontend/coverage
 backend/rust/target
 **/target
 

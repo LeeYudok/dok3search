@@ -708,3 +708,91 @@ fn matched_section_id_skips_empty_h1_and_selects_matching_subsection() {
         Some("overview")
     );
 }
+
+#[test]
+fn symbol_and_path_boosting_and_inline_operators() {
+    let index = TantivyIndex::create_in_ram(GenerationId::new("gen-sym")).unwrap();
+    let def_doc = Document {
+        id: DocumentId::new("def-doc"),
+        revision_id: RevisionId::new("rev-1"),
+        source_id: SourceId::new("s1"),
+        source: "kordoc".into(),
+        title: "kordoc — src/utils.ts".into(),
+        summary: "utils".into(),
+        category: "code".into(),
+        topic: None,
+        tag: "typescript".into(),
+        tags: vec!["kordoc".into(), "typescript".into()],
+        keywords: vec!["toArrayBuffer".into()],
+        language: "en".into(),
+        version: "4.18.8".into(),
+        date: None,
+        source_uri: "file:///samples/kordoc/src/utils.ts".into(),
+        sample_path: Some("samples/kordoc/src/utils.ts".into()),
+        acl_scope: AclScope::Public,
+        content_hash: "h1".into(),
+        body: "export function toArrayBuffer(buf: Buffer) {\n  return buf.buffer\n}".into(),
+        markdown: None,
+        sections: vec![DocumentSection {
+            section_id: SectionId::new("function-toarraybuffer"),
+            heading: "function toArrayBuffer".into(),
+            anchor: "function-toarraybuffer".into(),
+            order: 1,
+            line_start: 9,
+            line_end: 11,
+            body: "export function toArrayBuffer(buf: Buffer) {\n  return buf.buffer\n}".into(),
+        }],
+    };
+    let caller_doc = Document {
+        id: DocumentId::new("caller-doc"),
+        revision_id: RevisionId::new("rev-2"),
+        source_id: SourceId::new("s1"),
+        source: "other".into(),
+        title: "caller.ts".into(),
+        summary: "calls helpers".into(),
+        category: "code".into(),
+        topic: None,
+        tag: "typescript".into(),
+        tags: vec!["typescript".into()],
+        keywords: vec![],
+        language: "en".into(),
+        version: "1.0".into(),
+        date: None,
+        source_uri: "file:///samples/other/caller.ts".into(),
+        sample_path: Some("samples/other/caller.ts".into()),
+        acl_scope: AclScope::Public,
+        content_hash: "h2".into(),
+        body: "toArrayBuffer(a); toArrayBuffer(b); toArrayBuffer(c);".into(),
+        markdown: None,
+        sections: vec![DocumentSection {
+            section_id: SectionId::new("body"),
+            heading: "caller.ts".into(),
+            anchor: "body".into(),
+            order: 1,
+            line_start: 1,
+            line_end: 1,
+            body: "toArrayBuffer(a); toArrayBuffer(b); toArrayBuffer(c);".into(),
+        }],
+    };
+    index.upsert_document(&def_doc).unwrap();
+    index.upsert_document(&caller_doc).unwrap();
+    index.commit_and_reload(None).unwrap();
+
+    let public = Principal::anonymous_public();
+    let res = search(&index, &public, "toArrayBuffer");
+    assert_eq!(res.hits[0].document_id.as_str(), "def-doc");
+    assert_eq!(
+        res.hits[0].matched_section_heading.as_deref(),
+        Some("function toArrayBuffer")
+    );
+    assert_eq!(res.hits[0].matched_line_start, Some(9));
+    assert!(res.hits[0].snippet.contains('\n'));
+
+    let op_path = search(&index, &public, "path:kordoc ext:ts");
+    assert_eq!(op_path.total_hits, 1);
+    assert_eq!(op_path.hits[0].document_id.as_str(), "def-doc");
+
+    let op_sym = search(&index, &public, "sym:toArrayBuffer");
+    assert_eq!(op_sym.total_hits, 1);
+    assert_eq!(op_sym.hits[0].document_id.as_str(), "def-doc");
+}
