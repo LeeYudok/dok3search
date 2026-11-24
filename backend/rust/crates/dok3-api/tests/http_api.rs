@@ -1238,7 +1238,7 @@ async fn get_original_enforces_acl_and_sets_attachment_headers() {
         .clone()
         .oneshot(
             Request::builder()
-                .uri("/api/v1/documents/design-index-md/original")
+                .uri("/api/v1/documents/dok3search-manual/original")
                 .body(Body::empty())
                 .unwrap(),
         )
