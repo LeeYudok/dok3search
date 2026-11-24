@@ -860,6 +860,7 @@ impl StubSources {
                 default_category: "guide".to_string(),
                 kind: Default::default(),
                 sqlite: None,
+                relational: None,
                 default_tag: "docs".to_string(),
                 managed_by_env: true,
                 created_at_ms: 100,
@@ -905,6 +906,7 @@ impl SourceRegistryPort for StubSources {
             path: req.path.trim().to_string(),
             kind: req.kind,
             sqlite: req.sqlite.clone(),
+            relational: req.relational.clone(),
             default_category,
             default_tag: req
                 .default_tag

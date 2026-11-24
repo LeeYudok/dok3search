@@ -5,13 +5,14 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use dok3_connectors::{
-    DEFAULT_SQLITE_BATCH_LIMIT, LocalFileConnector, SourceConfig, SqliteColumnMapping,
-    SqliteCursor, SqliteCursorMode, SqliteSourceAdapter, SqliteSourceConfig,
+    DEFAULT_SQLITE_BATCH_LIMIT, DbDialect, LocalFileConnector, RelationalSourceAdapter,
+    RelationalSourceConfig, SourceConfig, SqliteColumnMapping, SqliteCursor, SqliteCursorMode,
+    SqliteSourceAdapter, SqliteSourceConfig, TombstoneStrategy,
 };
 use dok3_core::Dok3Error;
 use dok3_domain::{
-    CreateSourceRequest, RegisteredSource, SourceId, SourceKind, SqliteCursorKind,
-    validate_classification_category, validate_source_id_slug,
+    CreateSourceRequest, RegisteredSource, RelationalSourceOptions, SourceId, SourceKind,
+    SqliteCursorKind, TombstoneMode, validate_classification_category, validate_source_id_slug,
 };
 use serde::{Deserialize, Serialize};
 
@@ -172,6 +173,7 @@ impl SourceRegistry {
                     default_category: "guide".to_string(),
                     kind: dok3_domain::SourceKind::LocalDir,
                     sqlite: None,
+                    relational: None,
                     default_tag: "docs".to_string(),
                     managed_by_env: true,
                     created_at_ms: now_ms(),
@@ -273,6 +275,8 @@ impl SourceRegistry {
         let fallback_tag = match req.kind {
             SourceKind::LocalDir => "docs",
             SourceKind::Sqlite => "sqlite",
+            SourceKind::Postgres => "postgres",
+            SourceKind::Mysql => "mysql",
         };
         let default_tag = match req.default_tag.as_deref() {
             Some(raw) if !raw.trim().is_empty() => {
@@ -286,6 +290,16 @@ impl SourceRegistry {
             }
             _ => fallback_tag.to_string(),
         };
+
+        if matches!(req.kind, SourceKind::Postgres | SourceKind::Mysql) {
+            return self.validate_new_relational_source(
+                req,
+                source_id,
+                label,
+                default_category,
+                default_tag,
+            );
+        }
 
         let raw_path = req.path.trim();
         if raw_path.is_empty() {
@@ -305,7 +319,7 @@ impl SourceRegistry {
                 default_tag,
             );
         }
-        if req.sqlite.is_some() {
+        if req.sqlite.is_some() || req.relational.is_some() {
             return Err(Dok3Error::InvalidInput(
                 "sqlite options are only allowed for kind 'sqlite'".to_string(),
             ));
@@ -342,6 +356,7 @@ impl SourceRegistry {
             path: canonical.to_string_lossy().into_owned(),
             kind: SourceKind::LocalDir,
             sqlite: None,
+            relational: None,
             default_category,
             default_tag,
             managed_by_env: false,
@@ -397,6 +412,7 @@ impl SourceRegistry {
             path: canonical_str,
             kind: SourceKind::Sqlite,
             sqlite: Some(options),
+            relational: None,
             default_category,
             default_tag,
             managed_by_env: false,
@@ -691,6 +707,189 @@ fn persist_state(
     atomic_write_bytes(path, &bytes)
 }
 
+fn validate_dsn_env_name(raw: &str) -> Result<String, Dok3Error> {
+    let trimmed = raw.trim();
+    if trimmed.len() < 2 || trimmed.len() > 64 {
+        return Err(Dok3Error::InvalidInput(
+            "dsn_env must be a 2..=64 char env var name matching ^[A-Z][A-Z0-9_]{1,63}$".into(),
+        ));
+    }
+    let bytes = trimmed.as_bytes();
+    if !bytes[0].is_ascii_uppercase()
+        || !bytes[1..]
+            .iter()
+            .all(|b| b.is_ascii_uppercase() || b.is_ascii_digit() || *b == b'_')
+    {
+        return Err(Dok3Error::InvalidInput(
+            "dsn_env must match ^[A-Z][A-Z0-9_]{1,63}$ (never pass a raw DSN URL)".into(),
+        ));
+    }
+    Ok(trimmed.to_string())
+}
+
+pub(crate) fn relational_source_config_for(
+    entry: &RegisteredSource,
+) -> Result<(RelationalSourceConfig, String), Dok3Error> {
+    let opts = entry.relational.as_ref().ok_or_else(|| {
+        Dok3Error::InvalidInput(format!(
+            "relational source '{}' missing options",
+            entry.source_id
+        ))
+    })?;
+    let dsn_env = validate_dsn_env_name(&opts.dsn_env)?;
+    let dsn = std::env::var(&dsn_env).map_err(|_| {
+        Dok3Error::Storage(format!(
+            "environment variable '{dsn_env}' for source '{}' is not set",
+            entry.source_id
+        ))
+    })?;
+    let dialect = match entry.kind {
+        SourceKind::Postgres => DbDialect::PostgreSql,
+        SourceKind::Mysql => DbDialect::MySql,
+        _ => {
+            return Err(Dok3Error::InvalidInput(format!(
+                "source '{}' is not a relational source",
+                entry.source_id
+            )));
+        }
+    };
+    let cursor = match opts.cursor_mode {
+        SqliteCursorKind::IntegerPk => SqliteCursorMode::IntegerPk {
+            column: opts.cursor_column.clone(),
+        },
+        SqliteCursorKind::UpdatedAt => SqliteCursorMode::UpdatedAt {
+            column: opts.cursor_column.clone(),
+        },
+    };
+    let tombstone = match (opts.tombstone_mode, opts.tombstone_column.as_deref()) {
+        (Some(TombstoneMode::DeletedAt), Some(col)) if !col.trim().is_empty() => {
+            Some(TombstoneStrategy::DeletedAtColumn(col.trim().to_string()))
+        }
+        (Some(TombstoneMode::BooleanFlag), Some(col)) if !col.trim().is_empty() => {
+            Some(TombstoneStrategy::BooleanFlagColumn(col.trim().to_string()))
+        }
+        (Some(_), _) => {
+            return Err(Dok3Error::InvalidInput(
+                "tombstone_column is required when tombstone_mode is set".into(),
+            ));
+        }
+        (None, Some(col)) if !col.trim().is_empty() => {
+            return Err(Dok3Error::InvalidInput(
+                "tombstone_mode is required when tombstone_column is set".into(),
+            ));
+        }
+        (None, _) => None,
+    };
+    let cfg = RelationalSourceConfig {
+        dialect,
+        source_id: SourceId::new(entry.source_id.clone()),
+        source_label: entry.label.clone(),
+        connection_label: opts.connection_label.clone(),
+        select_query: opts.select_query.clone(),
+        columns: SqliteColumnMapping {
+            document_id: opts.id_column.clone(),
+            title: opts.title_column.clone(),
+            body: opts.body_column.clone(),
+            summary: opts.summary_column.clone(),
+        },
+        cursor,
+        tombstone,
+        category: entry.default_category.clone(),
+        language: "ko".to_string(),
+        default_tag: entry.default_tag.clone(),
+        acl_scope: dok3_domain::AclScope::Public,
+        batch_limit: opts
+            .batch_limit
+            .unwrap_or(DEFAULT_SQLITE_BATCH_LIMIT)
+            .max(1),
+    };
+    Ok((cfg, dsn))
+}
+
+impl SourceRegistry {
+    fn validate_new_relational_source(
+        &self,
+        req: &CreateSourceRequest,
+        source_id: String,
+        label: &str,
+        default_category: String,
+        default_tag: String,
+    ) -> Result<RegisteredSource, Dok3Error> {
+        if req.sqlite.is_some() {
+            return Err(Dok3Error::InvalidInput(
+                "sqlite options are not allowed for relational sources".into(),
+            ));
+        }
+        let Some(opts) = req.relational.as_ref() else {
+            return Err(Dok3Error::InvalidInput(
+                "relational options are required for postgres/mysql sources".into(),
+            ));
+        };
+        let dsn_env = validate_dsn_env_name(&opts.dsn_env)?;
+        let normalized_query = opts
+            .select_query
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ");
+        for existing in self.active_sources() {
+            if existing.kind == req.kind
+                && let Some(ext) = existing.relational.as_ref()
+            {
+                let ext_query = ext
+                    .select_query
+                    .split_whitespace()
+                    .collect::<Vec<_>>()
+                    .join(" ");
+                if ext.dsn_env == dsn_env && ext_query == normalized_query {
+                    return Err(Dok3Error::InvalidInput(format!(
+                        "relational source '{dsn_env}' with this query is already registered as '{}'",
+                        existing.source_id
+                    )));
+                }
+            }
+        }
+        let conn_label = if opts.connection_label.trim().is_empty() {
+            dsn_env.clone()
+        } else {
+            opts.connection_label.trim().to_string()
+        };
+        let normalized_opts = RelationalSourceOptions {
+            dsn_env: dsn_env.clone(),
+            connection_label: conn_label.clone(),
+            ..opts.clone()
+        };
+        let candidate = RegisteredSource {
+            source_id,
+            label: label.to_string(),
+            path: format!("env:{dsn_env} ({conn_label})"),
+            kind: req.kind,
+            sqlite: None,
+            relational: Some(normalized_opts),
+            default_category,
+            default_tag,
+            managed_by_env: false,
+            created_at_ms: now_ms(),
+            last_synced_at_ms: None,
+            document_count: 0,
+            last_error: None,
+        };
+        let (mut probe_cfg, dsn) = relational_source_config_for(&candidate)?;
+        probe_cfg.batch_limit = 1;
+        match req.kind {
+            SourceKind::Postgres => {
+                let adapter = RelationalSourceAdapter::new_postgres(probe_cfg, &dsn)?;
+                let _ = adapter.collect(None)?;
+            }
+            SourceKind::Mysql => {
+                let adapter = RelationalSourceAdapter::new_mysql(probe_cfg, &dsn)?;
+                let _ = adapter.collect(None)?;
+            }
+            _ => unreachable!(),
+        }
+        Ok(candidate)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -722,6 +921,7 @@ mod tests {
                 default_tag: None,
                 kind: dok3_domain::SourceKind::LocalDir,
                 sqlite: None,
+                relational: None,
             }),
             Err(Dok3Error::InvalidInput(_))
         ));
@@ -740,6 +940,7 @@ mod tests {
                 default_tag: None,
                 kind: dok3_domain::SourceKind::LocalDir,
                 sqlite: None,
+                relational: None,
             }),
             Err(Dok3Error::InvalidInput(_))
         ));
@@ -765,6 +966,7 @@ mod tests {
                             default_tag: None,
                             kind: dok3_domain::SourceKind::LocalDir,
                             sqlite: None,
+                            relational: None,
                         }),
                         Err(Dok3Error::InvalidInput(_))
                     ),
@@ -782,6 +984,7 @@ mod tests {
                 default_tag: Some("ops".to_string()),
                 kind: dok3_domain::SourceKind::LocalDir,
                 sqlite: None,
+                relational: None,
             })
             .unwrap();
         reg.insert_source(validated).unwrap();

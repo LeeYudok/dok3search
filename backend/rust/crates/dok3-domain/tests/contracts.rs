@@ -377,6 +377,7 @@ fn contract_dtos_round_trip_json() {
         default_category: "guide".to_string(),
         kind: dok3_domain::SourceKind::LocalDir,
         sqlite: None,
+        relational: None,
         default_tag: "docs".to_string(),
         managed_by_env: false,
         created_at_ms: 1_700_000_000_000,

@@ -21,6 +21,7 @@ import {
   type IndexJobMode,
   type RegisteredSource,
   type SourceKind,
+  type TombstoneMode,
   type SqliteCursorMode,
   analyzeSearchText,
   type AnalyzeSearchResponse,
@@ -514,6 +515,12 @@ export function AdminPage({ initialTab = 'sources' }: { initialTab?: AdminTab })
                           <span className="admin-badge">
                             <Database size={12} aria-hidden="true" />
                             SQLite
+                          </span>
+                        )}
+                        {(src.kind === 'postgres' || src.kind === 'mysql') && (
+                          <span className="admin-badge">
+                            <Database size={12} aria-hidden="true" />
+                            {src.kind === 'postgres' ? 'PostgreSQL' : 'MySQL'}
                           </span>
                         )}
                         {src.managedByEnv && (

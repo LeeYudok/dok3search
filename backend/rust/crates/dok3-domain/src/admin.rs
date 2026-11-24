@@ -167,6 +167,39 @@ pub enum SourceKind {
     LocalDir,
     /// Read-only SQLite database indexed through a configured SELECT.
     Sqlite,
+    /// Read-only PostgreSQL database indexed through `dsn_env`.
+    Postgres,
+    /// Read-only MySQL/MariaDB database indexed through `dsn_env`.
+    Mysql,
+}
+
+/// Tombstone soft-delete strategy for relational database sources.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TombstoneMode {
+    DeletedAt,
+    BooleanFlag,
+}
+
+/// Connection and query options for `SourceKind::Postgres` and `SourceKind::Mysql`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RelationalSourceOptions {
+    pub dsn_env: String,
+    pub connection_label: String,
+    pub select_query: String,
+    pub id_column: String,
+    pub title_column: String,
+    pub body_column: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub summary_column: Option<String>,
+    pub cursor_mode: SqliteCursorKind,
+    pub cursor_column: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tombstone_mode: Option<TombstoneMode>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tombstone_column: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub batch_limit: Option<usize>,
 }
 
 /// Incremental cursor strategy for SQLite sources.
@@ -202,6 +235,8 @@ pub struct RegisteredSource {
     pub kind: SourceKind,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub sqlite: Option<SqliteSourceOptions>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub relational: Option<RelationalSourceOptions>,
     pub default_category: String,
     pub default_tag: String,
     pub managed_by_env: bool,
@@ -216,11 +251,14 @@ pub struct RegisteredSource {
 pub struct CreateSourceRequest {
     pub source_id: String,
     pub label: String,
+    #[serde(default)]
     pub path: String,
     #[serde(default)]
     pub kind: SourceKind,
     #[serde(default)]
     pub sqlite: Option<SqliteSourceOptions>,
+    #[serde(default)]
+    pub relational: Option<RelationalSourceOptions>,
     #[serde(default)]
     pub default_category: Option<String>,
     #[serde(default)]
