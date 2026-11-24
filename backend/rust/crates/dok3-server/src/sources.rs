@@ -707,121 +707,6 @@ fn persist_state(
     atomic_write_bytes(path, &bytes)
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn opens_env_source_validates_new_sources_and_protects_env_from_delete() {
-        let env_dir = tempfile::tempdir().unwrap();
-        let data_dir = tempfile::tempdir().unwrap();
-        let extra_dir = tempfile::tempdir().unwrap();
-        fs::write(extra_dir.path().join("note.md"), "# Note\n\nhello\n").unwrap();
-
-        let mut reg = SourceRegistry::open(data_dir.path(), env_dir.path()).unwrap();
-        assert_eq!(reg.list().len(), 1);
-        assert_eq!(reg.list()[0].source_id, ENV_SOURCE_ID);
-        assert!(reg.list()[0].managed_by_env);
-
-        assert!(matches!(
-            reg.mark_pending_delete(ENV_SOURCE_ID),
-            Err(Dok3Error::InvalidInput(_))
-        ));
-
-        // Reject duplicate canonical path matching env_dir.
-        assert!(matches!(
-            reg.validate_new_source(&CreateSourceRequest {
-                source_id: "dup-env".to_string(),
-                label: "Dup".to_string(),
-                path: env_dir.path().to_string_lossy().into_owned(),
-                default_category: None,
-                default_tag: None,
-                kind: dok3_domain::SourceKind::LocalDir,
-                sqlite: None,
-                relational: None,
-            }),
-            Err(Dok3Error::InvalidInput(_))
-        ));
-
-        // Reject symlink directory (including trailing `/` and trailing `/.`) plus `..` components.
-        assert!(matches!(
-            reg.validate_new_source(&CreateSourceRequest {
-                source_id: "parent-rel".to_string(),
-                label: "Parent".to_string(),
-                path: format!(
-                    "{}/../{}",
-                    extra_dir.path().display(),
-                    extra_dir.path().file_name().unwrap().to_string_lossy()
-                ),
-                default_category: None,
-                default_tag: None,
-                kind: dok3_domain::SourceKind::LocalDir,
-                sqlite: None,
-                relational: None,
-            }),
-            Err(Dok3Error::InvalidInput(_))
-        ));
-        #[cfg(unix)]
-        {
-            fs::create_dir_all(extra_dir.path().join("sub")).unwrap();
-            let link_parent = tempfile::tempdir().unwrap();
-            let link_path = link_parent.path().join("sym");
-            std::os::unix::fs::symlink(extra_dir.path(), &link_path).unwrap();
-            for candidate in [
-                link_path.to_string_lossy().into_owned(),
-                format!("{}/", link_path.display()),
-                format!("{}/.", link_path.display()),
-                format!("{}/sub", link_path.display()),
-            ] {
-                assert!(
-                    matches!(
-                        reg.validate_new_source(&CreateSourceRequest {
-                            source_id: "sym-src".to_string(),
-                            label: "Sym".to_string(),
-                            path: candidate.clone(),
-                            default_category: None,
-                            default_tag: None,
-                            kind: dok3_domain::SourceKind::LocalDir,
-                            sqlite: None,
-                            relational: None,
-                        }),
-                        Err(Dok3Error::InvalidInput(_))
-                    ),
-                    "expected symlink path '{candidate}' to be rejected"
-                );
-            }
-        }
-
-        let validated = reg
-            .validate_new_source(&CreateSourceRequest {
-                source_id: "team-notes".to_string(),
-                label: "Team Notes".to_string(),
-                path: extra_dir.path().to_string_lossy().into_owned(),
-                default_category: Some("manual".to_string()),
-                default_tag: Some("ops".to_string()),
-                kind: dok3_domain::SourceKind::LocalDir,
-                sqlite: None,
-                relational: None,
-            })
-            .unwrap();
-        reg.insert_source(validated).unwrap();
-        assert_eq!(
-            reg.defaults_for("team-notes"),
-            ("manual".to_string(), "ops".to_string())
-        );
-
-        drop(reg);
-        let mut reopened = SourceRegistry::open(data_dir.path(), env_dir.path()).unwrap();
-        assert_eq!(reopened.list().len(), 2);
-        let marked = reopened.mark_pending_delete("team-notes").unwrap();
-        assert_eq!(marked.source_id, "team-notes");
-        assert!(!reopened.contains_active("team-notes"));
-        reopened.finalize_delete("team-notes").unwrap();
-        assert_eq!(reopened.list().len(), 1);
-        assert!(extra_dir.path().join("note.md").is_file());
-    }
-}
-
 fn validate_dsn_env_name(raw: &str) -> Result<String, Dok3Error> {
     let trimmed = raw.trim();
     if trimmed.len() < 2 || trimmed.len() > 64 {
@@ -1002,5 +887,120 @@ impl SourceRegistry {
             _ => unreachable!(),
         }
         Ok(candidate)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn opens_env_source_validates_new_sources_and_protects_env_from_delete() {
+        let env_dir = tempfile::tempdir().unwrap();
+        let data_dir = tempfile::tempdir().unwrap();
+        let extra_dir = tempfile::tempdir().unwrap();
+        fs::write(extra_dir.path().join("note.md"), "# Note\n\nhello\n").unwrap();
+
+        let mut reg = SourceRegistry::open(data_dir.path(), env_dir.path()).unwrap();
+        assert_eq!(reg.list().len(), 1);
+        assert_eq!(reg.list()[0].source_id, ENV_SOURCE_ID);
+        assert!(reg.list()[0].managed_by_env);
+
+        assert!(matches!(
+            reg.mark_pending_delete(ENV_SOURCE_ID),
+            Err(Dok3Error::InvalidInput(_))
+        ));
+
+        // Reject duplicate canonical path matching env_dir.
+        assert!(matches!(
+            reg.validate_new_source(&CreateSourceRequest {
+                source_id: "dup-env".to_string(),
+                label: "Dup".to_string(),
+                path: env_dir.path().to_string_lossy().into_owned(),
+                default_category: None,
+                default_tag: None,
+                kind: dok3_domain::SourceKind::LocalDir,
+                sqlite: None,
+                relational: None,
+            }),
+            Err(Dok3Error::InvalidInput(_))
+        ));
+
+        // Reject symlink directory (including trailing `/` and trailing `/.`) plus `..` components.
+        assert!(matches!(
+            reg.validate_new_source(&CreateSourceRequest {
+                source_id: "parent-rel".to_string(),
+                label: "Parent".to_string(),
+                path: format!(
+                    "{}/../{}",
+                    extra_dir.path().display(),
+                    extra_dir.path().file_name().unwrap().to_string_lossy()
+                ),
+                default_category: None,
+                default_tag: None,
+                kind: dok3_domain::SourceKind::LocalDir,
+                sqlite: None,
+                relational: None,
+            }),
+            Err(Dok3Error::InvalidInput(_))
+        ));
+        #[cfg(unix)]
+        {
+            fs::create_dir_all(extra_dir.path().join("sub")).unwrap();
+            let link_parent = tempfile::tempdir().unwrap();
+            let link_path = link_parent.path().join("sym");
+            std::os::unix::fs::symlink(extra_dir.path(), &link_path).unwrap();
+            for candidate in [
+                link_path.to_string_lossy().into_owned(),
+                format!("{}/", link_path.display()),
+                format!("{}/.", link_path.display()),
+                format!("{}/sub", link_path.display()),
+            ] {
+                assert!(
+                    matches!(
+                        reg.validate_new_source(&CreateSourceRequest {
+                            source_id: "sym-src".to_string(),
+                            label: "Sym".to_string(),
+                            path: candidate.clone(),
+                            default_category: None,
+                            default_tag: None,
+                            kind: dok3_domain::SourceKind::LocalDir,
+                            sqlite: None,
+                            relational: None,
+                        }),
+                        Err(Dok3Error::InvalidInput(_))
+                    ),
+                    "expected symlink path '{candidate}' to be rejected"
+                );
+            }
+        }
+
+        let validated = reg
+            .validate_new_source(&CreateSourceRequest {
+                source_id: "team-notes".to_string(),
+                label: "Team Notes".to_string(),
+                path: extra_dir.path().to_string_lossy().into_owned(),
+                default_category: Some("manual".to_string()),
+                default_tag: Some("ops".to_string()),
+                kind: dok3_domain::SourceKind::LocalDir,
+                sqlite: None,
+                relational: None,
+            })
+            .unwrap();
+        reg.insert_source(validated).unwrap();
+        assert_eq!(
+            reg.defaults_for("team-notes"),
+            ("manual".to_string(), "ops".to_string())
+        );
+
+        drop(reg);
+        let mut reopened = SourceRegistry::open(data_dir.path(), env_dir.path()).unwrap();
+        assert_eq!(reopened.list().len(), 2);
+        let marked = reopened.mark_pending_delete("team-notes").unwrap();
+        assert_eq!(marked.source_id, "team-notes");
+        assert!(!reopened.contains_active("team-notes"));
+        reopened.finalize_delete("team-notes").unwrap();
+        assert_eq!(reopened.list().len(), 1);
+        assert!(extra_dir.path().join("note.md").is_file());
     }
 }
