@@ -12,13 +12,14 @@ pub const DEFAULT_MAX_FILE_BYTES: u64 = 4 * 1024 * 1024;
 
 /// File extensions scanned by [`SourceConfig::supported_document_defaults`].
 ///
-/// Markdown, HTML, source code (`rs`, `java`, `go`, `sql`, `jsp`) and plain text (`txt`, `log`)
+/// Markdown, HTML, source code (`rs`, `java`, `go`, `sql`, `jsp`, `ts`, `tsx`, `mts`, `cts`, `js`, `jsx`, `mjs`, `cjs`, `py`) and plain text (`txt`, `log`)
 /// match the parsers registered in `dok3_parser::ParserRegistry`. Structured data extensions
 /// (`json`, `yaml`, `yml`, `toml`, `xml`, `csv`) are intentionally excluded: knowledge trees such as
 /// `frontend/src/samples` carry corpus manifests (`index.json`, `provenance.json`) and design
 /// YAML that must not be indexed as standalone documents.
 pub const DEFAULT_DOCUMENT_EXTENSIONS: &[&str] = &[
-    "md", "markdown", "mdown", "mkd", "html", "htm", "rs", "java", "go", "sql", "jsp", "txt", "log",
+    "md", "markdown", "mdown", "mkd", "html", "htm", "rs", "java", "go", "sql", "jsp", "ts", "tsx",
+    "mts", "cts", "js", "jsx", "mjs", "cjs", "py", "txt", "log",
 ];
 
 /// Configuration describing a local filesystem knowledge source.
@@ -372,6 +373,9 @@ fn fence_language(media_type: &str) -> &'static str {
         "text/x-go" => "go",
         "application/sql" => "sql",
         "application/jsp" => "jsp",
+        "text/typescript" => "ts",
+        "text/javascript" => "js",
+        "text/x-python" => "python",
         "application/json" => "json",
         "application/yaml" => "yaml",
         "application/toml" => "toml",
@@ -427,6 +431,9 @@ fn media_type_for_ext(ext: &str) -> &'static str {
         "go" => "text/x-go",
         "sql" => "application/sql",
         "jsp" => "application/jsp",
+        "ts" | "tsx" | "mts" | "cts" => "text/typescript",
+        "js" | "jsx" | "mjs" | "cjs" => "text/javascript",
+        "py" => "text/x-python",
         "json" => "application/json",
         "yaml" | "yml" => "application/yaml",
         "toml" => "application/toml",

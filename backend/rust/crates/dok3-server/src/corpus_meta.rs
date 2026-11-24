@@ -13,6 +13,7 @@ pub(crate) struct CorpusChapterMeta {
     pub category: String,
     pub topic: Option<String>,
     pub version: String,
+    pub display_title: Option<String>,
     pub summary: Option<String>,
     pub tags: Vec<String>,
 }
@@ -48,6 +49,13 @@ impl CorpusMetadataIndex {
         doc.category = meta.category.clone();
         doc.topic = meta.topic.clone();
         doc.version = meta.version.clone();
+        if let Some(title) = meta
+            .display_title
+            .as_deref()
+            .filter(|s| !s.trim().is_empty())
+        {
+            doc.title = title.to_string();
+        }
         if let Some(summary) = meta.summary.as_deref().filter(|s| !s.trim().is_empty()) {
             doc.summary = summary.to_string();
         }
@@ -106,6 +114,7 @@ fn load_corpus_dir(root: &Path, dir: &Path, out: &mut CorpusMetadataIndex) {
 
     let (default_category, default_topic) = match slug {
         "rust-std" | "rust-crates" | "rustc-error-codes" => ("code", Some("rust".to_string())),
+        "kordoc" => ("code", None),
         "rust-reference" | "cargo-book" | "rust-book" | "comprehensive-rust" => {
             ("guide", Some("rust".to_string()))
         }
@@ -154,6 +163,12 @@ fn load_corpus_dir(root: &Path, dir: &Path, out: &mut CorpusMetadataIndex) {
                 .or_else(|| chapter.get("version").and_then(Value::as_str))
                 .unwrap_or(&corpus_version)
                 .to_string();
+            let display_title = chapter
+                .get("display_title")
+                .and_then(Value::as_str)
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+                .map(str::to_string);
             let summary = chapter
                 .get("summary")
                 .and_then(Value::as_str)
@@ -190,6 +205,7 @@ fn load_corpus_dir(root: &Path, dir: &Path, out: &mut CorpusMetadataIndex) {
                     category,
                     topic,
                     version,
+                    display_title,
                     summary,
                     tags,
                 },
@@ -216,6 +232,7 @@ fn load_corpus_dir(root: &Path, dir: &Path, out: &mut CorpusMetadataIndex) {
                             category: "design".to_string(),
                             topic: None,
                             version: corpus_version.clone(),
+                            display_title: None,
                             summary: None,
                             tags: vec!["dok3search-design".to_string()],
                         },

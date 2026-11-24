@@ -13,6 +13,16 @@ REPO_ROOT="$(cd "$DEPLOY_DIR/../.." && pwd)"
 
 NAMESPACE="${NAMESPACE:-dok3search}"
 DEPLOYMENT="${DEPLOYMENT:-dok3search}"
+HOST="${HOST:-doksam}"
+SSH_OPTS=(
+  -o ControlMaster=auto
+  -o "ControlPath=$HOME/.ssh/cm-dok3search-%C"
+  -o ControlPersist=600
+)
+
+PUBLIC_HOST="${PUBLIC_HOST:-www.doksam.com}"
+NODE_IP="${NODE_IP:-192.168.113.220}"
+HTTPS_PORT="${HTTPS_PORT:-443}"
 # Container engine used by build-image.sh (podman or docker).
 CONTAINER_ENGINE="${CONTAINER_ENGINE:-podman}"
 IFS=' ' read -r -a CONTAINER_ENGINE_CMD <<< "$CONTAINER_ENGINE"

@@ -1,0 +1,3443 @@
+{
+  "source": "kordoc",
+  "category": "code",
+  "version": "4.18.8",
+  "chapters": [
+    {
+      "path": "README.md",
+      "display_title": "kordoc 소스 코퍼스 안내 (HWP·HWPX·PDF → Markdown)",
+      "summary": "LeeYudok/kordoc TypeScript 파서 소스 코퍼스의 출처, 라이선스 및 재생성 방법입니다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwp",
+        "hwpx",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/canvas.d.ts",
+      "display_title": "kordoc — src/canvas.d.ts",
+      "summary": "kordoc TypeScript 소스 모듈 (src/canvas.d.ts)",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/chunks.ts",
+      "display_title": "kordoc — src/chunks.ts",
+      "summary": "RAG용 구조 보존 청킹 — IRBlock[] → DocChunk[].",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/cli/batch.ts",
+      "display_title": "kordoc — src/cli/batch.ts",
+      "summary": "Bounded, persistent process pool: CPU-heavy parsers get separate JS runtimes.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "cli"
+      ]
+    },
+    {
+      "path": "src/cli/commands-docs.ts",
+      "display_title": "kordoc — src/cli/commands-docs.ts",
+      "summary": "kordoc CLI 명령 — 문서 처리 — watch·fill·seal·patch·validate",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "cli"
+      ]
+    },
+    {
+      "path": "src/cli/commands-generate.ts",
+      "display_title": "kordoc — src/cli/commands-generate.ts",
+      "summary": "kordoc CLI 명령 — 생성·검수 — generate·profile·lint·redact",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "cli"
+      ]
+    },
+    {
+      "path": "src/cli/commands-render.ts",
+      "display_title": "kordoc — src/cli/commands-render.ts",
+      "summary": "kordoc CLI 명령 — 렌더 — render·crop·tables·render-worker",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "cli"
+      ]
+    },
+    {
+      "path": "src/cli/commands-system.ts",
+      "display_title": "kordoc — src/cli/commands-system.ts",
+      "summary": "kordoc CLI 명령 — 서버·설정·모델 — mcp·setup·check-formula-models·check-ocr-models·models",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "cli"
+      ]
+    },
+    {
+      "path": "src/cli/commands-worker.ts",
+      "display_title": "kordoc — src/cli/commands-worker.ts",
+      "summary": "kordoc CLI 명령: 상주 파싱 워커 (parse-worker)",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "cli"
+      ]
+    },
+    {
+      "path": "src/cli/convert.ts",
+      "display_title": "kordoc — src/cli/convert.ts",
+      "summary": "Shared sequential conversion path for the CLI and batch workers.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "cli"
+      ]
+    },
+    {
+      "path": "src/cli/output-path.ts",
+      "display_title": "kordoc — src/cli/output-path.ts",
+      "summary": "Protect every batch input, including symlink and hardlink aliases, before writing output.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "cli"
+      ]
+    },
+    {
+      "path": "src/cli.ts",
+      "display_title": "kordoc — src/cli.ts",
+      "summary": "kordoc CLI — 모두 파싱해버리겠다 (하위 명령은 cli/ 아래 명령군 모듈)",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/detect.ts",
+      "display_title": "kordoc — src/detect.ts",
+      "summary": "매직 바이트 기반 파일 포맷 감지",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/diff/compare.ts",
+      "display_title": "kordoc — src/diff/compare.ts",
+      "summary": "문서 비교 엔진 — IR 레벨 블록 비교로 신구대조표 생성",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "diff"
+      ]
+    },
+    {
+      "path": "src/diff/text-diff.ts",
+      "display_title": "kordoc — src/diff/text-diff.ts",
+      "summary": "텍스트 유사도 및 diff 유틸리티 — 외부 의존성 없음",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "diff"
+      ]
+    },
+    {
+      "path": "src/docx/equation.ts",
+      "display_title": "kordoc — src/docx/equation.ts",
+      "summary": "DOCX OMML (Office Math ML) → LaTeX",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "docx"
+      ]
+    },
+    {
+      "path": "src/docx/numbering.ts",
+      "display_title": "kordoc — src/docx/numbering.ts",
+      "summary": "DOCX 번호 매기기 라벨 — w:lvlText(\"%1.\"·\"%1.%2\"·\"[%1]\"·\"보기\") 와 수준별 카운터로 실제 번호를 만든다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "docx"
+      ]
+    },
+    {
+      "path": "src/docx/parser.ts",
+      "display_title": "kordoc — src/docx/parser.ts",
+      "summary": "DOCX (Office Open XML Document) 파서",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "docx"
+      ]
+    },
+    {
+      "path": "src/docx/symbol-font.ts",
+      "display_title": "kordoc — src/docx/symbol-font.ts",
+      "summary": "DOCX `w:sym` (Word \"기호 삽입\") → 유니코드 (#105)",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "docx"
+      ]
+    },
+    {
+      "path": "src/form/click-here.ts",
+      "display_title": "kordoc — src/form/click-here.ts",
+      "summary": "누름틀(CLICK_HERE fieldBegin) 인식·채우기 — 정부 표준 서식(기안문) 지원",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "form"
+      ]
+    },
+    {
+      "path": "src/form/filler-hwpx.ts",
+      "display_title": "kordoc — src/form/filler-hwpx.ts",
+      "summary": "HWPX 원본 서식 유지 채우기 — section XML 오프셋 splice (v3.1, 바이트 보존)",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "form"
+      ]
+    },
+    {
+      "path": "src/form/filler.ts",
+      "display_title": "kordoc — src/form/filler.ts",
+      "summary": "양식 서식 필드 값 채우기 — IRBlock[] 기반 in-place 교체",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "form"
+      ]
+    },
+    {
+      "path": "src/form/match.ts",
+      "display_title": "kordoc — src/form/match.ts",
+      "summary": "양식 필드 매칭 공용 유틸 — filler.ts, filler-hwpx.ts에서 공유",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "form"
+      ]
+    },
+    {
+      "path": "src/form/recognize.ts",
+      "display_title": "kordoc — src/form/recognize.ts",
+      "summary": "양식(서식) 필드 인식 — 테이블 기반 label-value 패턴 매칭",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "form"
+      ]
+    },
+    {
+      "path": "src/form/seal.ts",
+      "display_title": "kordoc — src/form/seal.ts",
+      "summary": "place_seal — 도장/서명 이미지를 앵커 문구(\"(인)\"·\"서명 또는 인\" 등) 위에",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "form"
+      ]
+    },
+    {
+      "path": "src/form/templates.ts",
+      "display_title": "kordoc — src/form/templates.ts",
+      "summary": "내장 표준 서식 템플릿 — 정부 표준 기안문 (rhwp tools/forms 자산, MIT)",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "form"
+      ]
+    },
+    {
+      "path": "src/html-tables.ts",
+      "display_title": "kordoc — src/html-tables.ts",
+      "summary": "`htmlTables` 옵션 — 모든 표를 HTML 로, 태그마다 한 줄씩 들여써 낸다(BeautifulSoup prettify 와 같은 모양).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/hwp3/crypto.ts",
+      "display_title": "kordoc — src/hwp3/crypto.ts",
+      "summary": "비밀번호로 보호된 HWP3 문서 복호화.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwp3"
+      ]
+    },
+    {
+      "path": "src/hwp3/drawing.ts",
+      "display_title": "kordoc — src/hwp3/drawing.ts",
+      "summary": "HWP3 그리기 개체 트리 — **글상자 텍스트 회수 전용** 워커.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwp3"
+      ]
+    },
+    {
+      "path": "src/hwp3/johab-symbols.ts",
+      "display_title": "kordoc — src/hwp3/johab-symbols.ts",
+      "summary": "Auto-generated from rhwp/src/parser/hwp3/johab_map.rs — DO NOT EDIT.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwp3"
+      ]
+    },
+    {
+      "path": "src/hwp3/johab.ts",
+      "display_title": "kordoc — src/hwp3/johab.ts",
+      "summary": "HWP 3.0 상용 조합형 → 유니코드 디코더.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwp3"
+      ]
+    },
+    {
+      "path": "src/hwp3/parser.ts",
+      "display_title": "kordoc — src/hwp3/parser.ts",
+      "summary": "HWP 3.0 (한글 워드프로세서 3.x) 파서.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwp3"
+      ]
+    },
+    {
+      "path": "src/hwp3/reader.ts",
+      "display_title": "kordoc — src/hwp3/reader.ts",
+      "summary": "HWP3 binary stream reader.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwp3"
+      ]
+    },
+    {
+      "path": "src/hwp3/records.ts",
+      "display_title": "kordoc — src/hwp3/records.ts",
+      "summary": "HWP3 fixed-size record definitions.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwp3"
+      ]
+    },
+    {
+      "path": "src/hwp3/table.ts",
+      "display_title": "kordoc — src/hwp3/table.ts",
+      "summary": "HWP3 표 격자 복원 — 셀 정보(27바이트)의 기하로 행·열 좌표와 병합을 만든다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwp3"
+      ]
+    },
+    {
+      "path": "src/hwp5/aes.ts",
+      "display_title": "kordoc — src/hwp5/aes.ts",
+      "summary": "AES-128 ECB 순수 JS 구현 — 배포용 HWP 복호화 전용.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwp5"
+      ]
+    },
+    {
+      "path": "src/hwp5/body.ts",
+      "display_title": "kordoc — src/hwp5/body.ts",
+      "summary": "HWP 5.x 본문 파서 — 섹션 레코드 → 문단 리스트·컨트롤 디스패치(표·그리기 개체·수식·각주·머리말·필드) → IRBlock",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwp5"
+      ]
+    },
+    {
+      "path": "src/hwp5/cfb-lenient.ts",
+      "display_title": "kordoc — src/hwp5/cfb-lenient.ts",
+      "summary": "Lenient CFB (Compound File Binary / OLE2) 파서.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwp5"
+      ]
+    },
+    {
+      "path": "src/hwp5/crypto.ts",
+      "display_title": "kordoc — src/hwp5/crypto.ts",
+      "summary": "HWP 배포용(distribution) 문서 복호화.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwp5"
+      ]
+    },
+    {
+      "path": "src/hwp5/equation.ts",
+      "display_title": "kordoc — src/hwp5/equation.ts",
+      "summary": "HWP5 수식 레코드(EQEDIT) 스크립트 → LaTeX.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwp5"
+      ]
+    },
+    {
+      "path": "src/hwp5/images.ts",
+      "display_title": "kordoc — src/hwp5/images.ts",
+      "summary": "HWP5 BinData 이미지 추출.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwp5"
+      ]
+    },
+    {
+      "path": "src/hwp5/ir-assemble.ts",
+      "display_title": "kordoc — src/hwp5/ir-assemble.ts",
+      "summary": "문단·셀 IR 조립 — HWP5(body.ts)·HWP3(hwp3/parser.ts) 공용.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwp5"
+      ]
+    },
+    {
+      "path": "src/hwp5/numbering.ts",
+      "display_title": "kordoc — src/hwp5/numbering.ts",
+      "summary": "HWP5 문단번호/글머리표 — 7수준 카운터 상태기계 + ^N 형식 치환 + 번호 포맷터.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwp5"
+      ]
+    },
+    {
+      "path": "src/hwp5/page-boundary.ts",
+      "display_title": "kordoc — src/hwp5/page-boundary.ts",
+      "summary": "HWP 5.x 실제 페이지 경계 복원 (#66) — PARA_LINE_SEG(0x45) 조판 캐시로",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwp5"
+      ]
+    },
+    {
+      "path": "src/hwp5/parser.ts",
+      "display_title": "kordoc — src/hwp5/parser.ts",
+      "summary": "HWP 5.x 바이너리 파서 — OLE2 컨테이너 → 섹션 → Markdown",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwp5"
+      ]
+    },
+    {
+      "path": "src/hwp5/pw-crypto.ts",
+      "display_title": "kordoc — src/hwp5/pw-crypto.ts",
+      "summary": "비밀번호로 보호된 HWP5 문서 복호화 (EncryptVersion 4).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwp5"
+      ]
+    },
+    {
+      "path": "src/hwp5/record.ts",
+      "display_title": "kordoc — src/hwp5/record.ts",
+      "summary": "HWP 5.x 레코드 리더, UTF-16LE 텍스트 추출, 스트림 압축해제",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwp5"
+      ]
+    },
+    {
+      "path": "src/hwp5/sentinel.ts",
+      "display_title": "kordoc — src/hwp5/sentinel.ts",
+      "summary": "HWP 5.x 배포용 문서 \"상위 버전\" 경고 플레이스홀더 감지.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwp5"
+      ]
+    },
+    {
+      "path": "src/hwp5/table-ids.ts",
+      "display_title": "kordoc — src/hwp5/table-ids.ts",
+      "summary": "HWP5 표 순번 (#75 Task 7 · #76 조인 키) — 섹션 레코드에서 표 컨트롤(CTRL_HEADER 'tbl ')을 문서(레코드) 순서로",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwp5"
+      ]
+    },
+    {
+      "path": "src/hwpml/parser.ts",
+      "display_title": "kordoc — src/hwpml/parser.ts",
+      "summary": "HWPML 2.x 파서 — XML 기반 한컴 문서 (.hwp with XML content)",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpml"
+      ]
+    },
+    {
+      "path": "src/hwpx/chart-gen.ts",
+      "display_title": "kordoc — src/hwpx/chart-gen.ts",
+      "summary": "차트 생성 (P5) — ```chart 펜스 → OOXML chartSpace 파트 + <hp:chart> 참조",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/com-fallback.ts",
+      "display_title": "kordoc — src/hwpx/com-fallback.ts",
+      "summary": "HWPX DRM 문서 COM fallback — 한컴 오피스 COM API (GetPageText) 활용",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/crypto.ts",
+      "display_title": "kordoc — src/hwpx/crypto.ts",
+      "summary": "비밀번호로 보호된 HWPX 문서 복호화.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/equation-generate.ts",
+      "display_title": "kordoc — src/hwpx/equation-generate.ts",
+      "summary": "Markdown display math (LaTeX-like subset) → Hancom EqEdit script + <hp:equation> XML.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/equation.ts",
+      "display_title": "kordoc — src/hwpx/equation.ts",
+      "summary": "HWPX/HWP equation script → LaTeX",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/extract-profile.ts",
+      "display_title": "kordoc — src/hwpx/extract-profile.ts",
+      "summary": "서식 프로필 추출 (hwpx → FormatProfile) — 이슈 #41 / PR #42 Part B.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/fit-line.ts",
+      "display_title": "kordoc — src/hwpx/fit-line.ts",
+      "summary": "한 줄 강제·문단 압축 (v5) — 한컴 조판을 재현(실글꼴 폭·어절 줄바꿈)해 판정한다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/font-catalog.ts",
+      "display_title": "kordoc — src/hwpx/font-catalog.ts",
+      "summary": "폰트 카탈로그 — fonts 오버라이드 오타·미설치 경고용 (A2).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/font-metrics.ts",
+      "display_title": "kordoc — src/hwpx/font-metrics.ts",
+      "summary": "생성용 실글꼴 advance 폭표 (em×1000) — 공문서 v5 엔진이 쓰는 글꼴의 hmtx 실측값.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gaejosik.ts",
+      "display_title": "kordoc — src/hwpx/gaejosik.ts",
+      "summary": "개조식(정부 표준 개조식 보고서) 프리셋 — 순수 로직 + 실측 스타일 상수",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gen-docframe.ts",
+      "display_title": "kordoc — src/hwpx/gen-docframe.ts",
+      "summary": "공문서 부속 골격(docframe) — 기안문 두문·결문, 보고정보 행, 공고문 두문·결문,",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gen-frame-ministry.ts",
+      "display_title": "kordoc — src/hwpx/gen-frame-ministry.ts",
+      "summary": "중앙부처 업무보고 골격(v5, preset `ministry`) — 표지·목차·장 띠·절 띠·소제목 박스·항목 띠·요약박스·별첨 띠.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gen-frame-seoul-front.ts",
+      "display_title": "kordoc — src/hwpx/gen-frame-seoul-front.ts",
+      "summary": "서울 방침서 앞장 — 사전 검토항목 점검표·목차 (표지는 gen-frame-seoul buildReportCover).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gen-frame-seoul.ts",
+      "display_title": "kordoc — src/hwpx/gen-frame-seoul.ts",
+      "summary": "서울 실결재 골격 표(v5) — 기안문 두문표·결문표, 보고서 제목표·요약박스·결재선표·표지.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gen-gaejosik.ts",
+      "display_title": "kordoc — src/hwpx/gen-gaejosik.ts",
+      "summary": "개조식 보고서 전용 XML 조립 — 표지·목차·장 헤더 표 (gen-section에서 사용).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gen-gongmun-extra.ts",
+      "display_title": "kordoc — src/hwpx/gen-gongmun-extra.ts",
+      "summary": "공문서 부속 요소 XML 조립 — 결재란·\"끝.\" 표시·1페이지형 제목박스.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gen-gongmun-fit.ts",
+      "display_title": "kordoc — src/hwpx/gen-gongmun-fit.ts",
+      "summary": "공문서 모드 선계산 (generator.ts에서 분리).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gen-gongmun.ts",
+      "display_title": "kordoc — src/hwpx/gen-gongmun.ts",
+      "summary": "공문서 생성 엔진 v5 — 아웃라인(outline.ts) + 위계 스킴(gongmun-scheme.ts) → section0.xml.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gen-header.ts",
+      "display_title": "kordoc — src/hwpx/gen-header.ts",
+      "summary": "HWPX 패키지 구조 파일(container/manifest)과 head.xml 생성 (generator.ts에서 분리).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gen-ids.ts",
+      "display_title": "kordoc — src/hwpx/gen-ids.ts",
+      "summary": "HWPX 생성 공유 상수·테마·XML 원자 (generator.ts에서 분리).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gen-image.ts",
+      "display_title": "kordoc — src/hwpx/gen-image.ts",
+      "summary": "이미지 placeholder 방출 (v4.0.5) — 마크다운 `![alt](url)`·HTML `<img>` 참조를",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gen-levels.ts",
+      "display_title": "kordoc — src/hwpx/gen-levels.ts",
+      "summary": "항목부호 단계별 위계 타이포(levels 옵션, v4.12.3) — 단계 전용 charPr·fontface 계획.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gen-marker.ts",
+      "display_title": "kordoc — src/hwpx/gen-marker.ts",
+      "summary": "항목부호 + 탭 — v5 공문서의 \"첫 줄 내용 = 둘째 줄\" 정렬 원자 (gen-gongmun 항목·참고 문단, 업무보고 요약박스).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gen-page.ts",
+      "display_title": "kordoc — src/hwpx/gen-page.ts",
+      "summary": "페이지 옵션 (v4.5.0) — 용지 크기·방향, 다단, 머리말/꼬리말 생성.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gen-profile.ts",
+      "display_title": "kordoc — src/hwpx/gen-profile.ts",
+      "summary": "서식 프로필(Format Profile) — generate 시각 서식 재현 (이슈 #41 / PR #42).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gen-section.ts",
+      "display_title": "kordoc — src/hwpx/gen-section.ts",
+      "summary": "HWPX 섹션 XML 조립 (generator.ts에서 분리).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gen-table-bf.ts",
+      "display_title": "kordoc — src/hwpx/gen-table-bf.ts",
+      "summary": "표 셀 위치별 borderFill 동적 레지스트리 — 정부 실무 표 테두리 위계 재현.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gen-table.ts",
+      "display_title": "kordoc — src/hwpx/gen-table.ts",
+      "summary": "HWPX 표 XML 생성 (generator.ts에서 분리) — GFM 그리드 표와",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/generator.ts",
+      "display_title": "kordoc — src/hwpx/generator.ts",
+      "summary": "Markdown → HWPX 역변환",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/geometry.ts",
+      "display_title": "kordoc — src/hwpx/geometry.ts",
+      "summary": "HWPX 생성 지오메트리·단위 상수 SSOT (v4.0.5 P0-3).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gongmun-lint.ts",
+      "display_title": "kordoc — src/hwpx/gongmun-lint.ts",
+      "summary": "공문서 표기법 검수기 — 「행정업무의 운영 및 혁신에 관한 규정」 시행규칙 및",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gongmun-scheme.ts",
+      "display_title": "kordoc — src/hwpx/gongmun-scheme.ts",
+      "summary": "공문서 위계 스킴 SSOT (v5, 2026-09-06) — 항목 단계별 부호·글꼴·크기·굵기·선행 타·줄간격.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gongmun-surface.ts",
+      "display_title": "kordoc — src/hwpx/gongmun-surface.ts",
+      "summary": "공문서 옵션 표면 SSOT (v4.0.4, 인벤토리 영역1-1) — CLI(commander)와 MCP(zod)가",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gongmun-typo.ts",
+      "display_title": "kordoc — src/hwpx/gongmun-typo.ts",
+      "summary": "공문서 v5 문자 다듬기 — 조판(폭 계산) 전에 본문 문자열에 적용한다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/gongmun.ts",
+      "display_title": "kordoc — src/hwpx/gongmun.ts",
+      "summary": "공문서(公文書) 모드 — 한국 행정 공문서 표준 서식 렌더링 로직",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/images.ts",
+      "display_title": "kordoc — src/hwpx/images.ts",
+      "summary": "HWPX 이미지 추출 (parser.ts에서 분리).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/md-runs.ts",
+      "display_title": "kordoc — src/hwpx/md-runs.ts",
+      "summary": "마크다운 파싱 + hwpx run/문단 XML 생성 (generator.ts에서 분리).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/metadata.ts",
+      "display_title": "kordoc — src/hwpx/metadata.ts",
+      "summary": "HWPX 메타데이터 추출 (parser.ts에서 분리) — content.hpf(OPF)·Dublin Core best-effort.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/munche-lint.ts",
+      "display_title": "kordoc — src/hwpx/munche-lint.ts",
+      "summary": "개조식 보고서 문체 검수기 — 서식이 맞아도 문체가 다르면 그 부서 문서로 읽히지 않는다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/notes.ts",
+      "display_title": "kordoc — src/hwpx/notes.ts",
+      "summary": "각주·미주 번호 표기 (v4.14.3) — 본문 참조 부호(\"1)\"·\"문1）\"·\"*\")와 주석 본문 머리 번호.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/outline.ts",
+      "display_title": "kordoc — src/hwpx/outline.ts",
+      "summary": "마크다운 블록 → 공문서 의미 아웃라인 (v5).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/page-boundary.ts",
+      "display_title": "kordoc — src/hwpx/page-boundary.ts",
+      "summary": "HWPX 실제 페이지 경계 복원 (#66) — 한컴 저장본의 조판 캐시(linesegarray)로",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/para-heading.ts",
+      "display_title": "kordoc — src/hwpx/para-heading.ts",
+      "summary": "항목부호 자동번호 포맷 해석 (parser.ts에서 분리).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/parser-shared.ts",
+      "display_title": "kordoc — src/hwpx/parser-shared.ts",
+      "summary": "HWPX 파서 공유 상수/타입/유틸 (parser.ts에서 분리).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/parser.ts",
+      "display_title": "kordoc — src/hwpx/parser.ts",
+      "summary": "HWPX 파서 — manifest 멀티섹션, colSpan/rowSpan, 중첩테이블",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/profile-io.ts",
+      "display_title": "kordoc — src/hwpx/profile-io.ts",
+      "summary": "FormatProfile JSON 경계 검증 — CLI(--profile)와 MCP(profile_path)가 공유하는 1벌",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/run-spans.ts",
+      "display_title": "kordoc — src/hwpx/run-spans.ts",
+      "summary": "왕복 채널 run-span 판독 (section-walker.ts에서 분리) — 인라인 강조 span·인용 paraPr·gongmun",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/section-shape.ts",
+      "display_title": "kordoc — src/hwpx/section-shape.ts",
+      "summary": "HWPX 도형의 이미지 참조·설명·자손 탐색 — 구조를 변경하지 않는 DOM 조회.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/section-walker.ts",
+      "display_title": "kordoc — src/hwpx/section-walker.ts",
+      "summary": "HWPX 섹션 XML 워커 (parser.ts에서 분리).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/style-registry.ts",
+      "display_title": "kordoc — src/hwpx/style-registry.ts",
+      "summary": "생성용 charPr/paraPr/글꼴 동적 레지스트리 (v5).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/styles.ts",
+      "display_title": "kordoc — src/hwpx/styles.ts",
+      "summary": "HWPX 스타일 정보 파싱 + 스타일 기반 헤딩 감지 (parser.ts에서 분리).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/table-build.ts",
+      "display_title": "kordoc — src/hwpx/table-build.ts",
+      "summary": "HWPX 표 구성 (parser.ts에서 분리).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/text-metrics.ts",
+      "display_title": "kordoc — src/hwpx/text-metrics.ts",
+      "summary": "한글 조판 텍스트 폭 계산 — 함초롬바탕(HCR Batang) 실측 advance 테이블",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/hwpx/zip-sections.ts",
+      "display_title": "kordoc — src/hwpx/zip-sections.ts",
+      "summary": "HWPX 손상 ZIP 복구 + Manifest 섹션 경로 해석 (parser.ts에서 분리).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "hwpx"
+      ]
+    },
+    {
+      "path": "src/image/transcode.ts",
+      "display_title": "kordoc — src/image/transcode.ts",
+      "summary": "순수 JS BMP → PNG 트랜스코더 + 마크다운 이미지 인라이너.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "image"
+      ]
+    },
+    {
+      "path": "src/index.ts",
+      "display_title": "kordoc — src/index.ts",
+      "summary": "kordoc — 모두 파싱해버리겠다",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/mcp/shared.ts",
+      "display_title": "kordoc — src/mcp/shared.ts",
+      "summary": "kordoc MCP 공용 — 경로·확장자 검증, 파일 읽기, 오류 문구, 응답 상한 (도구 모듈 공유)",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "mcp"
+      ]
+    },
+    {
+      "path": "src/mcp/tools-form.ts",
+      "display_title": "kordoc — src/mcp/tools-form.ts",
+      "summary": "kordoc MCP 도구 — 서식·편집 — parse_form·fill_form·place_seal·patch_document·redact_document",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "mcp"
+      ]
+    },
+    {
+      "path": "src/mcp/tools-generate.ts",
+      "display_title": "kordoc — src/mcp/tools-generate.ts",
+      "summary": "kordoc MCP 도구 — 생성 — extract_profile·generate_document",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "mcp"
+      ]
+    },
+    {
+      "path": "src/mcp/tools-parse.ts",
+      "display_title": "kordoc — src/mcp/tools-parse.ts",
+      "summary": "kordoc MCP 도구 — 문서 읽기 — parse_document·detect_format·parse_metadata·parse_pages·parse_table·compare_documents·parse_chunks",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "mcp"
+      ]
+    },
+    {
+      "path": "src/mcp/tools-render.ts",
+      "display_title": "kordoc — src/mcp/tools-render.ts",
+      "summary": "kordoc MCP 도구 — 렌더 — render_document·crop_regions·extract_tables",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "mcp"
+      ]
+    },
+    {
+      "path": "src/mcp.ts",
+      "display_title": "kordoc — src/mcp.ts",
+      "summary": "kordoc MCP 서버 — Claude/Cursor에서 문서 파싱 도구로 사용. 도구 정의는 mcp/ 아래 도구군 모듈",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/ocr/crop.ts",
+      "display_title": "kordoc — src/ocr/crop.ts",
+      "summary": "인식 입력 준비 — 밴드 서브 박스 좌표, 라인 crop 리사이즈(회전 포함).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "ocr"
+      ]
+    },
+    {
+      "path": "src/ocr/deskew.ts",
+      "display_title": "kordoc — src/ocr/deskew.ts",
+      "summary": "스캔 기울기 보정 — 투영 프로파일 방식.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "ocr"
+      ]
+    },
+    {
+      "path": "src/ocr/engine.ts",
+      "display_title": "kordoc — src/ocr/engine.ts",
+      "summary": "내장 텍스트 OCR 엔진 — PP-OCRv5 korean (det DBNet + rec SVTR/CTC) ONNX 추론.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "ocr"
+      ]
+    },
+    {
+      "path": "src/ocr/glyph-restore.ts",
+      "display_title": "kordoc — src/ocr/glyph-restore.ts",
+      "summary": "인식 결과 글리프 되살리기 — CTC 글자 자리(steps × stepPx, 박스 로컬 x)를 박스 픽셀로 옮겨 그 자리 잉크 조각 모양으로, 사전 밖이거나",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "ocr"
+      ]
+    },
+    {
+      "path": "src/ocr/image-ocr.ts",
+      "display_title": "kordoc — src/ocr/image-ocr.ts",
+      "summary": "이미지 직접 입력 OCR — PNG/JPEG/WebP 를 PDF 래핑 없이 바로 파싱한다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "ocr"
+      ]
+    },
+    {
+      "path": "src/ocr/line-split.ts",
+      "display_title": "kordoc — src/ocr/line-split.ts",
+      "summary": "검출 박스 픽셀 분석 — 행 밴드 분할 + 잉크 대비.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "ocr"
+      ]
+    },
+    {
+      "path": "src/ocr/models.ts",
+      "display_title": "kordoc — src/ocr/models.ts",
+      "summary": "내장 텍스트 OCR 모델 (PP-OCRv5 korean) 스펙 + 다운로드/검증.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "ocr"
+      ]
+    },
+    {
+      "path": "src/ocr/pdf-ocr.ts",
+      "display_title": "kordoc — src/ocr/pdf-ocr.ts",
+      "summary": "PDF OCR 브릿지 — 대상 페이지를 pdfium 으로 래스터해 내장 엔진 또는",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "ocr"
+      ]
+    },
+    {
+      "path": "src/ocr/postprocess.ts",
+      "display_title": "kordoc — src/ocr/postprocess.ts",
+      "summary": "OCR 인식 문자열 후처리 — 한국 공문서 표기 관행 복원.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "ocr"
+      ]
+    },
+    {
+      "path": "src/ocr/ruling-lines.ts",
+      "display_title": "kordoc — src/ocr/ruling-lines.ts",
+      "summary": "래스터 괘선 감지 — 스캔/이미지 페이지의 픽셀에서 표 괘선(수평/수직 선)을",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "ocr"
+      ]
+    },
+    {
+      "path": "src/ocr/runtime-env.ts",
+      "display_title": "kordoc — src/ocr/runtime-env.ts",
+      "summary": "ORT 1.29 POSIX telemetry must be disabled before native environment creation.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "ocr"
+      ]
+    },
+    {
+      "path": "src/page-markdown.ts",
+      "display_title": "kordoc — src/page-markdown.ts",
+      "summary": "페이지별 마크다운 사영 (#68)",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/page-range.ts",
+      "display_title": "kordoc — src/page-range.ts",
+      "summary": "페이지/섹션 범위 파싱 유틸리티",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/pdf/blank-fills.ts",
+      "display_title": "kordoc — src/pdf/blank-fills.ts",
+      "summary": "밑줄 빈칸 — 서식 채움 \"翻译成 ______ （语言）\"·\"성명 ______ (인)\" 의 빈칸은 글이 없고 기준선에 밑줄만 긋는다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/block-detect.ts",
+      "display_title": "kordoc — src/pdf/block-detect.ts",
+      "summary": "IRBlock[] 후처리 감지/변환.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/cell-continuation.ts",
+      "display_title": "kordoc — src/pdf/cell-continuation.ts",
+      "summary": "쪽을 넘는 칸 잇기 (mergeContinuedCells) — 앞 쪽 칸의 이어짐으로 판정된 1칸 조각(CONT_PARTS, clip-cells)을 앞 쪽 표의 그 칸에 붙인다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/cell-edges.ts",
+      "display_title": "kordoc — src/pdf/cell-edges.ts",
+      "summary": "한컴 칸 클립 격자 표의 보이는 변 — 보이지 않는 틀 표 풀기(table/layout-frames, v4.17.0)의 PDF 쪽 곁정보.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/cell-extract.ts",
+      "display_title": "kordoc — src/pdf/cell-extract.ts",
+      "summary": "테이블 그리드에서 병합 셀 구조 추출 (line-detector.ts에서 분리).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/cell-text.ts",
+      "display_title": "kordoc — src/pdf/cell-text.ts",
+      "summary": "셀 텍스트 매핑/조립 (line-detector.ts에서 분리).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/clip-cells.ts",
+      "display_title": "kordoc — src/pdf/clip-cells.ts",
+      "summary": "셀 클립 사각형 → 표 그리드 (테두리 없는 표 복원).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/cluster-detector.ts",
+      "display_title": "kordoc — src/pdf/cluster-detector.ts",
+      "summary": "클러스터 기반 테이블 감지 — 선이 없는 PDF에서 텍스트 정렬 패턴으로 테이블 구조 추론.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/columns.ts",
+      "display_title": "kordoc — src/pdf/columns.ts",
+      "summary": "열 경계 감지 + 열 기반 텍스트/테이블 추출 (선 없는 PDF fallback 경로).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/contact-table.ts",
+      "display_title": "kordoc — src/pdf/contact-table.ts",
+      "summary": "보도자료 연락처 표 — \"담당 부서 | 부서 | 책임자·담당자 | 직위 | 이름 | 연락처\". HWPX 원본은 코퍼스 470여 개가 모두 이 6열이지만,",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/endnotes.ts",
+      "display_title": "kordoc — src/pdf/endnotes.ts",
+      "summary": "미주를 참조 자리로 — 한컴 미주는 본문에 참조 표시(\"문1）\")를 찍고 문서 끝에 같은 표시로 시작하는 미주 본문을 모아 찍는다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/equation-runs.ts",
+      "display_title": "kordoc — src/pdf/equation-runs.ts",
+      "summary": "한컴 수식 글꼴(HyhwpEQ) 글 → `$…$` 수식 스팬.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/flow-boxes.ts",
+      "display_title": "kordoc — src/pdf/flow-boxes.ts",
+      "summary": "Keep connected closed boxes together when sorting a horizontal procedure band.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/footnotes.ts",
+      "display_title": "kordoc — src/pdf/footnotes.ts",
+      "summary": "각주를 참조 문단으로 — HWPX·HWP5 파서는 각주를 참조가 있는 문단 끝에 \" (주: 6) …)\" 로 끼운다(notes.ts, footnoteText).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/formula/detector.ts",
+      "display_title": "kordoc — src/pdf/formula/detector.ts",
+      "summary": "MFD (Mathematical Formula Detection) — YOLOv8 기반 수식 영역 검출",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/formula/index.ts",
+      "display_title": "kordoc — src/pdf/formula/index.ts",
+      "summary": "kordoc TypeScript 소스 모듈 (src/pdf/formula/index.ts)",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/formula/model-partials.ts",
+      "display_title": "kordoc — src/pdf/formula/model-partials.ts",
+      "summary": "Process-owned temporary model downloads. Never infer abandonment from age alone.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/formula/models.ts",
+      "display_title": "kordoc — src/pdf/formula/models.ts",
+      "summary": "수식 OCR 모델 자동 다운로드 + SHA-256 검증",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/formula/pipeline.ts",
+      "display_title": "kordoc — src/pdf/formula/pipeline.ts",
+      "summary": "수식 OCR 파이프라인 — PDFium 렌더 + MFD + MFR 통합",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/formula/postprocess.ts",
+      "display_title": "kordoc — src/pdf/formula/postprocess.ts",
+      "summary": "LaTeX 후처리 — Pix2Text `latex_ocr.py` 의 post_process 간소화 + 자체 필터",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/formula/recognizer.ts",
+      "display_title": "kordoc — src/pdf/formula/recognizer.ts",
+      "summary": "MFR (Mathematical Formula Recognition) — DeiT encoder + TrOCR decoder",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/formula/types.ts",
+      "display_title": "kordoc — src/pdf/formula/types.ts",
+      "summary": "PDF 수식 OCR 공통 타입",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/formula-ocr.ts",
+      "display_title": "kordoc — src/pdf/formula-ocr.ts",
+      "summary": "수식 OCR 통합 (optional)",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/frame-cell-blocks.ts",
+      "display_title": "kordoc — src/pdf/frame-cell-blocks.ts",
+      "summary": "Native frame bounds survive paragraph reflow and later OCR-region insertion.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/glyph-names.ts",
+      "display_title": "kordoc — src/pdf/glyph-names.ts",
+      "summary": "글리프 이름으로 글자 복원 — ToUnicode 없이 Custom 인코딩 /Differences 에 글리프 이름만 둔 글꼴.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/grid-header-line.ts",
+      "display_title": "kordoc — src/pdf/grid-header-line.ts",
+      "summary": "선 격자 바로 위 무괘선 머리행.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/header-box-rows.ts",
+      "display_title": "kordoc — src/pdf/header-box-rows.ts",
+      "summary": "머리 상자 아래 무괘선 행 (line-detector.ts 계열 전처리).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/heading-demote.ts",
+      "display_title": "kordoc — src/pdf/heading-demote.ts",
+      "summary": "PDF 헤딩 강등 — 승격 패스들이 끝난 뒤, 제목이 될 수 없는 역할의 줄을 본문으로 되돌린다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/image-bullets.ts",
+      "display_title": "kordoc — src/pdf/image-bullets.ts",
+      "summary": "Repeated hollow-circle raster markers are list text, not a trailing image placeholder.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/image-extract.ts",
+      "display_title": "kordoc — src/pdf/image-extract.ts",
+      "summary": "PDF 이미지 XObject 바이트 추출 — 페이지 operatorList의 paint 이미지를",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/image-panels.ts",
+      "display_title": "kordoc — src/pdf/image-panels.ts",
+      "summary": "그림으로 단이 드러나는 3단 리플릿 — 클러스터 표 감지 전에 독립 패널을 나눈다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/image-regions.ts",
+      "display_title": "kordoc — src/pdf/image-regions.ts",
+      "summary": "페이지 내 이미지 XObject 영역 추출 (정보손실 가시화용) — line-detector.ts에서 분리.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/line-detector.ts",
+      "display_title": "kordoc — src/pdf/line-detector.ts",
+      "summary": "PDF 그래픽 명령에서 수평/수직 선을 추출하고,",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/line-extract.ts",
+      "display_title": "kordoc — src/pdf/line-extract.ts",
+      "summary": "PDF 그래픽 명령에서 수평/수직 선을 추출하는 모듈 (line-detector.ts에서 분리).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/line-types.ts",
+      "display_title": "kordoc — src/pdf/line-types.ts",
+      "summary": "선 기반 테이블 감지 공유 타입/상수.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/line-wrap.ts",
+      "display_title": "kordoc — src/pdf/line-wrap.ts",
+      "summary": "PDF 줄 꺾임 이음 — 오른끝까지 찬 줄이 다음 줄로 넘어간 자리(자동 꺾임)를 원문 띄어쓰기대로 잇는다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/links.ts",
+      "display_title": "kordoc — src/pdf/links.ts",
+      "summary": "PDF 링크 어노테이션 → 마크다운 링크.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/local-regions.ts",
+      "display_title": "kordoc — src/pdf/local-regions.ts",
+      "summary": "Attach an oversized initial to the first body line it visually starts.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/nested-shaded-headers.ts",
+      "display_title": "kordoc — src/pdf/nested-shaded-headers.ts",
+      "summary": "A shaded heading inside a one-cell frame cannot consume an independently",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/occluded-text.ts",
+      "display_title": "kordoc — src/pdf/occluded-text.ts",
+      "summary": "가려진 글 — 먼저 찍은 글 위에 불투명 사각형을 칠하면 그 글은 보이지 않는다. InDesign 계열 보고서는 쪽 머리글·쪽 번호를",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/ocr-region-merge.ts",
+      "display_title": "kordoc — src/pdf/ocr-region-merge.ts",
+      "summary": "Add OCR evidence only inside image regions with no PDF text layer.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/open-table-ends.ts",
+      "display_title": "kordoc — src/pdf/open-table-ends.ts",
+      "summary": "열린 위·아래 변 표 닫기 (line-detector.ts 계열 전처리, closeOpenTableEdges 의 짝).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/page-blocks.ts",
+      "display_title": "kordoc — src/pdf/page-blocks.ts",
+      "summary": "페이지 콘텐츠 추출 → IRBlock[] (v2: 바운딩 박스 + 페이지 번호)",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/page-frame.ts",
+      "display_title": "kordoc — src/pdf/page-frame.ts",
+      "summary": "쪽 틀 — 쪽 테두리 상자(시험지·교재 바탕쪽)는 표가 아니다. 쪽 대부분을 덮는 선 격자가 큰 칸(쪽 면적 15% 이상) 몇 개로",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/page-regions.ts",
+      "display_title": "kordoc — src/pdf/page-regions.ts",
+      "summary": "쪽 지면 영역 분리 (page-blocks.ts에서 분리) — 두 단 본문 밴드, 두 단 위 표 밴드, 3단 머리 표,",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/paragraph-lines.ts",
+      "display_title": "kordoc — src/pdf/paragraph-lines.ts",
+      "summary": "문단 블록의 서체별 글자 수 — 앞머리만 굵은 문장(\"Definition 1. A universe…\")은 서체 차이로 제목이 아니다",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/parser.ts",
+      "display_title": "kordoc — src/pdf/parser.ts",
+      "summary": "PDF 텍스트 추출 (pdfjs-dist static import 기반)",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/polyfill.ts",
+      "display_title": "kordoc — src/pdf/polyfill.ts",
+      "summary": "서버리스/Node.js 환경에서 pdfjs-dist가 요구하는 브라우저 API polyfill.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/quality.ts",
+      "display_title": "kordoc — src/pdf/quality.ts",
+      "summary": "PDF 페이지별 텍스트 품질 신호 수집.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/ruled-band-tables.ts",
+      "display_title": "kordoc — src/pdf/ruled-band-tables.ts",
+      "summary": "가로 괘선만 있는 표 (booktabs).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/ruled-columns.ts",
+      "display_title": "kordoc — src/pdf/ruled-columns.ts",
+      "summary": "A long physical divider can separate columns whose prose is mostly inside tables.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/script-items.ts",
+      "display_title": "kordoc — src/pdf/script-items.ts",
+      "summary": "PDF 위·아래첨자 — 한 시각 줄에서 본문보다 작은 글자 조각이 왼쪽 글자에 붙어(간격 0.35em 안) 기준선이 올라가면 위첨자,",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/selection-context.ts",
+      "display_title": "kordoc — src/pdf/selection-context.ts",
+      "summary": "Selected-page conversion still needs nearby repetition proof for page margins.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/shaded-open-table.ts",
+      "display_title": "kordoc — src/pdf/shaded-open-table.ts",
+      "summary": "Shaded cell clips supply the omitted outer edges of an otherwise ruled table.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/side-tab-blocks.ts",
+      "display_title": "kordoc — src/pdf/side-tab-blocks.ts",
+      "summary": "새로 분리한 탭만 기준선 글을 묶어 원본 머리 표지 뒤에 둔다. 기존 탭 앞배치는 유지한다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/side-tabs.ts",
+      "display_title": "kordoc — src/pdf/side-tabs.ts",
+      "summary": "쪽 옆 색인 탭 — 책자형 문서는 장·절 이름을 쪽 바깥 좌우 띠에 작게, 세로로 한 자씩 찍어 쪽마다 되풀이한다(행정업무운영 편람",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/symbol-fonts.ts",
+      "display_title": "kordoc — src/pdf/symbol-fonts.ts",
+      "summary": "심볼 폰트(Wingdings 등) 글리프 코드 → 유니코드 복원.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/tab-leaders.ts",
+      "display_title": "kordoc — src/pdf/tab-leaders.ts",
+      "summary": "탭 채움 리더 — 목차 탭의 점선 채움은 가운뎃점으로 찍힌다. 제작기·판에 따라 점마다 따로(SO-SUEOP \"I.소설의 이해 ······ 3\", 점마다",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/table-grid.ts",
+      "display_title": "kordoc — src/pdf/table-grid.ts",
+      "summary": "선 교차점(Vertex) 기반 테이블 그리드 구성 (line-detector.ts에서 분리).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/table-meta.ts",
+      "display_title": "kordoc — src/pdf/table-meta.ts",
+      "summary": "PDF 표 IR 곁정보 — 블록 조립 뒤 단계(같은 쪽 인접 병합·쪽 넘김 병합)가 쓰는 기하 사실.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/table-parts.ts",
+      "display_title": "kordoc — src/pdf/table-parts.ts",
+      "summary": "쪽 넘김으로 갈라진 표 잇기 (mergeCrossPageTables) — 클립 표 조각은 열 경계 합집합 격자에 두 조각을 다시 놓는다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/table-roles.ts",
+      "display_title": "kordoc — src/pdf/table-roles.ts",
+      "summary": "괘선 없는 표 후보의 역할 판정 — 목차와 산문은 열이 맞아 보여도 데이터 표가 아니다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/table-trim.ts",
+      "display_title": "kordoc — src/pdf/table-trim.ts",
+      "summary": "PDF 표 후행 빈 열 정리 — HWPX·HWP5 표 빌더(`table/builder.ts` trimAndReturn)와 같은 규칙.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/table-unit-row.ts",
+      "display_title": "kordoc — src/pdf/table-unit-row.ts",
+      "summary": "표 위 무괘선 단위 줄 — 원 구조에서는 합성 행, 보이는 표에서는 자기 테두리 없는 문단이다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/text-box-table.ts",
+      "display_title": "kordoc — src/pdf/text-box-table.ts",
+      "summary": "보이지 않는 글상자 표 (슬라이드 PDF).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/text-clean.ts",
+      "display_title": "kordoc — src/pdf/text-clean.ts",
+      "summary": "PDF 마크다운 최종 정리.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/text-line.ts",
+      "display_title": "kordoc — src/pdf/text-line.ts",
+      "summary": "PDF 텍스트 아이템/줄 수준 유틸.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/tracked-text.ts",
+      "display_title": "kordoc — src/pdf/tracked-text.ts",
+      "summary": "자간 벌린 글 — 글자 간격(Tc)을 넓힌 줄은 pdfjs 가 글자마다 공백을 넣어 \"E M A I L R E B E C C A\" 가 되고 진짜 낱말 사이 공백과",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/two-column.ts",
+      "display_title": "kordoc — src/pdf/two-column.ts",
+      "summary": "기하 전용 2단 레이아웃 검출 + 밴드 읽기순 정렬 (#64)",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/two-up.ts",
+      "display_title": "kordoc — src/pdf/two-up.ts",
+      "summary": "가로 쪽 두 쪽 모아찍기(2-up) — 서식 두 쪽을 가로 한 면에 나란히 찍은 쪽(행정업무운영 편람 부록 별지 서식)은 왼쪽 쪽을 다 읽고",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/underline.ts",
+      "display_title": "kordoc — src/pdf/underline.ts",
+      "summary": "밑줄 감지 — baseline 바로 아래에 밀착한 얇은 수평선을 텍스트 아이템과 상관.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/undersegmented.ts",
+      "display_title": "kordoc — src/pdf/undersegmented.ts",
+      "summary": "과소분할 표 재구성 (line-detector.ts에서 분리).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/vector-glyphs.ts",
+      "display_title": "kordoc — src/pdf/vector-glyphs.ts",
+      "summary": "벡터 글자 감지 — 글자를 글꼴이 아니라 채운 곡선 경로로 그린 쪽 (needsOcr 사유 vector_text).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/vertical-bridge.ts",
+      "display_title": "kordoc — src/pdf/vertical-bridge.ts",
+      "summary": "열 수직선 브리지 (line-detector.ts 계열 전처리).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/vertical-text.ts",
+      "display_title": "kordoc — src/pdf/vertical-text.ts",
+      "summary": "세로쓰기 글상자 — 한글 글자를 한 자씩 위에서 아래로 쌓은 기둥이 오른쪽에서 왼쪽으로 늘어선 영역(rhwp tbox-v-flow-01).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/pdf/xy-cut.ts",
+      "display_title": "kordoc — src/pdf/xy-cut.ts",
+      "summary": "XY-Cut++ 읽기 순서 알고리즘 (arXiv:2504.10258)",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pdf"
+      ]
+    },
+    {
+      "path": "src/plain-markdown.ts",
+      "display_title": "kordoc — src/plain-markdown.ts",
+      "summary": "평문 Markdown(`plain` 옵션) — 글만 필요한 색인·RAG 용. 구조(제목·목록·표)는 두고 글이 아닌 표기만 걷는다:",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/pptx/parser.ts",
+      "display_title": "kordoc — src/pptx/parser.ts",
+      "summary": "PPTX (Office Open XML Presentation) 파서",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "pptx"
+      ]
+    },
+    {
+      "path": "src/print/index.ts",
+      "display_title": "kordoc — src/print/index.ts",
+      "summary": "Print Renderer 공개 API.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "print"
+      ]
+    },
+    {
+      "path": "src/print/renderer.ts",
+      "display_title": "kordoc — src/print/renderer.ts",
+      "summary": "Print Renderer — Markdown / IRBlock[] → PDF (puppeteer-core 기반).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "print"
+      ]
+    },
+    {
+      "path": "src/redact-doc.ts",
+      "display_title": "kordoc — src/redact-doc.ts",
+      "summary": "문서 파일 단위 PII 마스킹 — 본문 마크다운만이 아니라 파일 안 모든 글자 저장소를 가린다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/redact-hwp5.ts",
+      "display_title": "kordoc — src/redact-hwp5.ts",
+      "summary": "HWP 5.x(OLE2) 컨테이너 PII 수술 — 모든 스트림의 글자를 같은 길이 UTF-16 코드 단위 치환으로 가린다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/redact-hwpx.ts",
+      "display_title": "kordoc — src/redact-hwpx.ts",
+      "summary": "HWPX 컨테이너 PII 수술 — ZIP 안 모든 글자 저장소를 같은 길이 글자 치환으로 가린다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/redact-name-address.ts",
+      "display_title": "kordoc — src/redact-name-address.ts",
+      "summary": "redact 인명·주소 룰 (opt-in) — 사전(성씨·행정구역)과 문맥 게이트. 엔진·번호형 룰은 redact.ts·redact-rules.ts.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/redact-rules.ts",
+      "display_title": "kordoc — src/redact-rules.ts",
+      "summary": "redact 룰 정의 — 룰별 정규식 변형·검증기(생년월일 세기·Luhn·사업자/법인 체크섬·전화 국번)·라벨 사전.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/redact-scrub.ts",
+      "display_title": "kordoc — src/redact-scrub.ts",
+      "summary": "문서 파일 마스킹 공용 도구 — 텍스트 단위 탐지(룰 + 리터럴), 바이너리 안 문자열 조각 훑기,",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/redact.ts",
+      "display_title": "kordoc — src/redact.ts",
+      "summary": "한국 공문서 PII(개인정보) 탐지·마스킹 순수 로직.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/render/document.ts",
+      "display_title": "kordoc — src/render/document.ts",
+      "summary": "통합 문서 렌더 API (#75 Task 3·8) — 입력(경로/버퍼) → 포맷 감지 → 어댑터 → RenderScene + 페이지 SVG",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "render"
+      ]
+    },
+    {
+      "path": "src/render/head-styles.ts",
+      "display_title": "kordoc — src/render/head-styles.ts",
+      "summary": "레이아웃 보존 렌더 — header.xml 스타일 테이블 (charPr/paraPr/borderFill).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "render"
+      ]
+    },
+    {
+      "path": "src/render/html.ts",
+      "display_title": "kordoc — src/render/html.ts",
+      "summary": "레이아웃 보존 HTML — 페이지별 standalone SVG 를 `.kordoc-page[data-page]` 로 감싼 자급자족 문서 (#75 Task 4).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "render"
+      ]
+    },
+    {
+      "path": "src/render/hwp5-scene.ts",
+      "display_title": "kordoc — src/render/hwp5-scene.ts",
+      "summary": "HWP5 렌더 어댑터 (#75 Task 7) — BodyText 레코드(PARA_LINE_SEG·CTRL_HEADER/TABLE/LIST_HEADER·SHAPE_COMPONENT(_PICTURE))를",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "render"
+      ]
+    },
+    {
+      "path": "src/render/index.ts",
+      "display_title": "kordoc — src/render/index.ts",
+      "summary": "kordoc TypeScript 소스 모듈 (src/render/index.ts)",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "render"
+      ]
+    },
+    {
+      "path": "src/render/layout.ts",
+      "display_title": "kordoc — src/render/layout.ts",
+      "summary": "레이아웃 보존 렌더 — 순수 계산 유틸 (XML 무접촉).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "render"
+      ]
+    },
+    {
+      "path": "src/render/page-stories.ts",
+      "display_title": "kordoc — src/render/page-stories.ts",
+      "summary": "Page decorations are separate stories: their line positions never split body pages.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "render"
+      ]
+    },
+    {
+      "path": "src/render/para-model.ts",
+      "display_title": "kordoc — src/render/para-model.ts",
+      "summary": "렌더 문단 모델·표 높이 측정 — HWPX 문단을 슬롯 스트림(글자·필러·탭)과 개체 목록으로 만들고, 표 실효 높이를 잰다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "render"
+      ]
+    },
+    {
+      "path": "src/render/pdf.ts",
+      "display_title": "kordoc — src/render/pdf.ts",
+      "summary": "레이아웃 HTML → PDF (#75 Task 6). 그리기를 다시 구현하지 않고 페이지 SVG 를 담은 HTML 을 Chromium 이 인쇄한다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "render"
+      ]
+    },
+    {
+      "path": "src/render/rasterize.ts",
+      "display_title": "kordoc — src/render/rasterize.ts",
+      "summary": "SVG → PNG/JPEG 래스터 — sharp optional 의존 (미설치 시 KordocError, SVG 경로는 sharp 불필요)",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "render"
+      ]
+    },
+    {
+      "path": "src/render/reflow.ts",
+      "display_title": "kordoc — src/render/reflow.ts",
+      "summary": "Tier-2 reflow — 조판 캐시(linesegarray)가 없는 문단에 좌표를 합성 주입한다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "render"
+      ]
+    },
+    {
+      "path": "src/render/regions.ts",
+      "display_title": "kordoc — src/render/regions.ts",
+      "summary": "region crop (#75 Task 5) — RenderScene 의 페이지 로컬 bbox 를 래스터 실배율로 픽셀 환산해 잘라낸다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "render"
+      ]
+    },
+    {
+      "path": "src/render/scene.ts",
+      "display_title": "kordoc — src/render/scene.ts",
+      "summary": "공유 렌더 장면(RenderScene) 계약 — HWPX/HWP5 어댑터가 채우고 SVG·HTML·래스터·PDF·crop 이 소비한다 (#75).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "render"
+      ]
+    },
+    {
+      "path": "src/render/shape-geometry.ts",
+      "display_title": "kordoc — src/render/shape-geometry.ts",
+      "summary": "HWPX drawing geometry and paints, shared by the page renderer's shape regions.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "render"
+      ]
+    },
+    {
+      "path": "src/render/svg-render.ts",
+      "display_title": "kordoc — src/render/svg-render.ts",
+      "summary": "레이아웃 보존 렌더 — HWPX 조판 캐시(lineseg·cellAddr·hp:pos)를 SVG 절대배치로 그린다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "render"
+      ]
+    },
+    {
+      "path": "src/roundtrip/embedded-line-patch.ts",
+      "display_title": "kordoc — src/roundtrip/embedded-line-patch.ts",
+      "summary": "단일 문단의 실제 줄바꿈은 보존하고 각 줄의 변경 범위만 치환한다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "roundtrip"
+      ]
+    },
+    {
+      "path": "src/roundtrip/hwp5-patch.ts",
+      "display_title": "kordoc — src/roundtrip/hwp5-patch.ts",
+      "summary": "HWP 5.x 바이너리 서식 보존 무손실 라운드트립 패치 — patchHwpx의 HWP5 대응.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "roundtrip"
+      ]
+    },
+    {
+      "path": "src/roundtrip/hwpx-entries.ts",
+      "display_title": "kordoc — src/roundtrip/hwpx-entries.ts",
+      "summary": "HWPX ZIP 섹션 엔트리 해석 — patcher/session/filler 공용.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "roundtrip"
+      ]
+    },
+    {
+      "path": "src/roundtrip/markdown-units.ts",
+      "display_title": "kordoc — src/roundtrip/markdown-units.ts",
+      "summary": "라운드트립 마크다운 유닛 — blocksToMarkdown 출력과 호환되는 블록 단위 분할.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "roundtrip"
+      ]
+    },
+    {
+      "path": "src/roundtrip/ole-surgeon.ts",
+      "display_title": "kordoc — src/roundtrip/ole-surgeon.ts",
+      "summary": "OLE2/CFB 섹터 레벨 스트림 교체 — 컨테이너 전체 재조립 없이 in-place 수술.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "roundtrip"
+      ]
+    },
+    {
+      "path": "src/roundtrip/patcher.ts",
+      "display_title": "kordoc — src/roundtrip/patcher.ts",
+      "summary": "HWPX 서식 보존 무손실 라운드트립 패치 — v3.0 킬러기능.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "roundtrip"
+      ]
+    },
+    {
+      "path": "src/roundtrip/session.ts",
+      "display_title": "kordoc — src/roundtrip/session.ts",
+      "summary": "HWPX 문서 세션 — 에디터 통합용 블록 단위 증분 패치 API (v3.1).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "roundtrip"
+      ]
+    },
+    {
+      "path": "src/roundtrip/source-map.ts",
+      "display_title": "kordoc — src/roundtrip/source-map.ts",
+      "summary": "HWPX 라운드트립 소스맵 — section XML 문자열에서 문단/표 셀의 문자 범위를 추적.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "roundtrip"
+      ]
+    },
+    {
+      "path": "src/roundtrip/table-insert.ts",
+      "display_title": "kordoc — src/roundtrip/table-insert.ts",
+      "summary": "라운드트립 표 삽입 — 문단(텍스트)을 표로 인플레이스 변환할 때 쓰는 표 XML 빌더.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "roundtrip"
+      ]
+    },
+    {
+      "path": "src/roundtrip/table-patch.ts",
+      "display_title": "kordoc — src/roundtrip/table-patch.ts",
+      "summary": "라운드트립 표 패치 — GFM/HTML/1x1/1열 표의 셀 단위 텍스트 치환",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "roundtrip"
+      ]
+    },
+    {
+      "path": "src/roundtrip/table-rows.ts",
+      "display_title": "kordoc — src/roundtrip/table-rows.ts",
+      "summary": "라운드트립 표 행 추가/삭제 (HWPX 전용, v3.7).",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "roundtrip"
+      ]
+    },
+    {
+      "path": "src/roundtrip/zip-patch.ts",
+      "display_title": "kordoc — src/roundtrip/zip-patch.ts",
+      "summary": "ZIP in-place 패치 — 지정 엔트리만 교체하고 나머지는 원본 바이트 그대로 보존.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "roundtrip"
+      ]
+    },
+    {
+      "path": "src/script-tags.ts",
+      "display_title": "kordoc — src/script-tags.ts",
+      "summary": "위·아래첨자 표지 — 파서가 첨자 글을 인라인 HTML `<sup>`·`<sub>` 로 감싸 IR 글에 넣는다(밑줄 `<u>` 와 같은 방식,",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/setup.ts",
+      "display_title": "kordoc — src/setup.ts",
+      "summary": "대화형 설치 마법사 — kordoc MCP",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/shared/generate-images.ts",
+      "display_title": "kordoc — src/shared/generate-images.ts",
+      "summary": "CLI/MCP image references share Unicode handling and filesystem confinement.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "shared"
+      ]
+    },
+    {
+      "path": "src/shared/model-bundle.ts",
+      "display_title": "kordoc — src/shared/model-bundle.ts",
+      "summary": "OCR/수식 모델 오프라인 사이드로드 — 폐쇄망 배포용.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "shared"
+      ]
+    },
+    {
+      "path": "src/shared/numbering.ts",
+      "display_title": "kordoc — src/shared/numbering.ts",
+      "summary": "번호 시퀀스 포맷터 공용 엔진 — hwpx(gongmun/para-heading)와 hwp5(numbering)가 공유.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "shared"
+      ]
+    },
+    {
+      "path": "src/shared/offline.ts",
+      "display_title": "kordoc — src/shared/offline.ts",
+      "summary": "폐쇄망(내부망) 배포용 아웃바운드 통신 킬스위치 + 파일 접근 루트 제한.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "shared"
+      ]
+    },
+    {
+      "path": "src/shared/pua.ts",
+      "display_title": "kordoc — src/shared/pua.ts",
+      "summary": "한컴 PUA(Private Use Area) 문자 → 유니코드 표준 문자 매핑.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "shared"
+      ]
+    },
+    {
+      "path": "src/shared/symbol-fonts.ts",
+      "display_title": "kordoc — src/shared/symbol-fonts.ts",
+      "summary": "Wingdings 심볼 폰트 코드표 — PDF(폰트 실명이 Wingdings 인 글리프)와 HWP/HWPX(한컴 심볼 PUA",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "shared"
+      ]
+    },
+    {
+      "path": "src/shared/xml.ts",
+      "display_title": "kordoc — src/shared/xml.ts",
+      "summary": "XML DOM 공용 헬퍼 — hwpx(parser-shared)·hwpml(parser)·docx(equation)가 공유.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "shared"
+      ]
+    },
+    {
+      "path": "src/table/analyze.ts",
+      "display_title": "kordoc — src/table/analyze.ts",
+      "summary": "표 분류 배선 (#76 Task 3·5) — 파싱이 끝난 IRBlock 트리를 재귀하며 `IRTable.classification` 을 붙인다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "table"
+      ]
+    },
+    {
+      "path": "src/table/builder.ts",
+      "display_title": "kordoc — src/table/builder.ts",
+      "summary": "2-pass colSpan/rowSpan 테이블 빌더 및 Markdown 변환",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "table"
+      ]
+    },
+    {
+      "path": "src/table/classifier.ts",
+      "display_title": "kordoc — src/table/classifier.ts",
+      "summary": "표 분류기 (#76) — IRTable 이 \"데이터 표\"인지 \"표를 레이아웃 캔버스로 쓴 것\"(조직도·비상연락망·체계도)인지 휴리스틱 판정.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "table"
+      ]
+    },
+    {
+      "path": "src/table/layout-frames.ts",
+      "display_title": "kordoc — src/table/layout-frames.ts",
+      "summary": "보이지 않는 틀 표 풀기 — 한글 문서는 테두리를 없앤 표로 쪽을 짜는 일이 흔하다. 법령 별표 272건 중 103건이 본문 전체를",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "table"
+      ]
+    },
+    {
+      "path": "src/table/visual.ts",
+      "display_title": "kordoc — src/table/visual.ts",
+      "summary": "분류된 표 ↔ 렌더 region 조인 (#76 Task 6·7). bbox 는 여기서 계산하지 않는다 — #75 의 RenderRegion.sourceId 로 IRTable.sourceId 를 잇는다",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "table"
+      ]
+    },
+    {
+      "path": "src/toc-entry.ts",
+      "display_title": "kordoc — src/toc-entry.ts",
+      "summary": "HWPX·HWP5 목차 항목 — 줄마다 \"글 + 채움 탭 + 쪽 번호\"뿐인 문단. 채움 탭 뒤 글을 남기면서(4.17.0) 쪽 번호가 제목 글에 붙어",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/types.ts",
+      "display_title": "kordoc — src/types.ts",
+      "summary": "kordoc 공통 타입 정의",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/utils.ts",
+      "display_title": "kordoc — src/utils.ts",
+      "summary": "kordoc 공용 유틸리티",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/validate.ts",
+      "display_title": "kordoc — src/validate.ts",
+      "summary": "HWPX 구조 검증 — 한컴오피스/한컴독스가 열기를 거부하는 컨테이너 결함을 사전에 잡는다.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/watch.ts",
+      "display_title": "kordoc — src/watch.ts",
+      "summary": "디렉토리 감시 모드 — 새 문서 자동 변환 + Webhook 알림",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript"
+      ]
+    },
+    {
+      "path": "src/xls/cell.ts",
+      "display_title": "kordoc — src/xls/cell.ts",
+      "summary": "BIFF8 Worksheet 서브스트림의 셀 레코드 → RawCell 변환.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "xls"
+      ]
+    },
+    {
+      "path": "src/xls/encoding.ts",
+      "display_title": "kordoc — src/xls/encoding.ts",
+      "summary": "XLS 문자열 인코딩 디코더.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "xls"
+      ]
+    },
+    {
+      "path": "src/xls/index.ts",
+      "display_title": "kordoc — src/xls/index.ts",
+      "summary": "XLS (BIFF8 / Excel 97-2003) 공개 API.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "xls"
+      ]
+    },
+    {
+      "path": "src/xls/parser.ts",
+      "display_title": "kordoc — src/xls/parser.ts",
+      "summary": "XLS (BIFF8) 파서 — Workbook 스트림 → IRBlock[].",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "xls"
+      ]
+    },
+    {
+      "path": "src/xls/record.ts",
+      "display_title": "kordoc — src/xls/record.ts",
+      "summary": "BIFF8 (Excel 97-2003) 레코드 리더.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "xls"
+      ]
+    },
+    {
+      "path": "src/xls/sst.ts",
+      "display_title": "kordoc — src/xls/sst.ts",
+      "summary": "BIFF8 Shared String Table 디코더.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "xls"
+      ]
+    },
+    {
+      "path": "src/xlsx/parser.ts",
+      "display_title": "kordoc — src/xlsx/parser.ts",
+      "summary": "XLSX (Office Open XML Spreadsheet) 파서",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "xlsx"
+      ]
+    },
+    {
+      "path": "src/xlsx/sheet-blocks.ts",
+      "display_title": "kordoc — src/xlsx/sheet-blocks.ts",
+      "summary": "시트 → heading(시트명) + IRTable 블록 — XLSX·XLS 공용.",
+      "source": "kordoc",
+      "category": "code",
+      "version": "4.18.8",
+      "tags": [
+        "kordoc",
+        "typescript",
+        "xlsx"
+      ]
+    }
+  ]
+}
