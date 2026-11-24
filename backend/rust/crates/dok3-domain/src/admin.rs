@@ -158,12 +158,50 @@ pub fn normalize_classification_terms(
     Ok(normalized)
 }
 
-/// Durable registered local filesystem source definition and sync status.
+/// Kind of registered source backend.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum SourceKind {
+    /// Local directory of supported documents.
+    #[default]
+    LocalDir,
+    /// Read-only SQLite database indexed through a configured SELECT.
+    Sqlite,
+}
+
+/// Incremental cursor strategy for SQLite sources.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum SqliteCursorKind {
+    IntegerPk,
+    UpdatedAt,
+}
+
+/// SQLite-specific source options (query and column mapping).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SqliteSourceOptions {
+    pub select_query: String,
+    pub id_column: String,
+    pub title_column: String,
+    pub body_column: String,
+    #[serde(default)]
+    pub summary_column: Option<String>,
+    pub cursor_mode: SqliteCursorKind,
+    pub cursor_column: String,
+    #[serde(default)]
+    pub batch_limit: Option<usize>,
+}
+
+/// Durable registered source definition (local directory or SQLite database) and sync status.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RegisteredSource {
     pub source_id: String,
     pub label: String,
     pub path: String,
+    #[serde(default)]
+    pub kind: SourceKind,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sqlite: Option<SqliteSourceOptions>,
     pub default_category: String,
     pub default_tag: String,
     pub managed_by_env: bool,
@@ -179,6 +217,10 @@ pub struct CreateSourceRequest {
     pub source_id: String,
     pub label: String,
     pub path: String,
+    #[serde(default)]
+    pub kind: SourceKind,
+    #[serde(default)]
+    pub sqlite: Option<SqliteSourceOptions>,
     #[serde(default)]
     pub default_category: Option<String>,
     #[serde(default)]

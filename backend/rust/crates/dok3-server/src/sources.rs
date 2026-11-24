@@ -4,11 +4,14 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use dok3_connectors::{LocalFileConnector, SourceConfig};
+use dok3_connectors::{
+    DEFAULT_SQLITE_BATCH_LIMIT, LocalFileConnector, SourceConfig, SqliteColumnMapping,
+    SqliteCursor, SqliteCursorMode, SqliteSourceAdapter, SqliteSourceConfig,
+};
 use dok3_core::Dok3Error;
 use dok3_domain::{
-    CreateSourceRequest, RegisteredSource, SourceId, validate_classification_category,
-    validate_source_id_slug,
+    CreateSourceRequest, RegisteredSource, SourceId, SourceKind, SqliteCursorKind,
+    validate_classification_category, validate_source_id_slug,
 };
 use serde::{Deserialize, Serialize};
 
@@ -24,9 +27,92 @@ struct SourcesDisk {
     pending_deletes: BTreeSet<String>,
 }
 
-/// Persistent registry of local Markdown directories indexed by [`crate::persistence::PersistentRuntime`].
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+enum StoredCursor {
+    Integer { value: i64 },
+    UpdatedAt { value: String },
+}
+
+impl From<&SqliteCursor> for StoredCursor {
+    fn from(cursor: &SqliteCursor) -> Self {
+        match cursor {
+            SqliteCursor::Integer(value) => Self::Integer { value: *value },
+            SqliteCursor::UpdatedAt { updated_at } => Self::UpdatedAt {
+                value: updated_at.clone(),
+            },
+        }
+    }
+}
+
+impl From<&StoredCursor> for SqliteCursor {
+    fn from(cursor: &StoredCursor) -> Self {
+        match cursor {
+            StoredCursor::Integer { value } => Self::Integer(*value),
+            StoredCursor::UpdatedAt { value } => Self::UpdatedAt {
+                updated_at: value.clone(),
+            },
+        }
+    }
+}
+
+/// Per-source SQLite cursors persisted at `storage/source_cursors.json`.
+pub(crate) struct SourceCursorStore {
+    path: PathBuf,
+    cursors: BTreeMap<String, StoredCursor>,
+}
+
+impl SourceCursorStore {
+    fn open(storage_dir: &Path) -> Result<Self, String> {
+        let path = storage_dir.join("source_cursors.json");
+        let cursors = match fs::read(&path) {
+            Ok(raw) => serde_json::from_slice(&raw)
+                .map_err(|err| format!("failed to decode {}: {err}", path.display()))?,
+            Err(err) if err.kind() == std::io::ErrorKind::NotFound => BTreeMap::new(),
+            Err(err) => return Err(format!("failed to read {}: {err}", path.display())),
+        };
+        Ok(Self { path, cursors })
+    }
+
+    pub(crate) fn get(&self, source_id: &str) -> Option<SqliteCursor> {
+        self.cursors.get(source_id).map(SqliteCursor::from)
+    }
+
+    pub(crate) fn set(&mut self, source_id: &str, cursor: &SqliteCursor) -> Result<(), String> {
+        let stored = StoredCursor::from(cursor);
+        if self.cursors.get(source_id) == Some(&stored) {
+            return Ok(());
+        }
+        let mut next = self.cursors.clone();
+        next.insert(source_id.to_string(), stored);
+        self.persist(&next)?;
+        self.cursors = next;
+        Ok(())
+    }
+
+    fn remove(&mut self, source_id: &str) -> Result<(), String> {
+        if !self.cursors.contains_key(source_id) {
+            return Ok(());
+        }
+        let mut next = self.cursors.clone();
+        next.remove(source_id);
+        self.persist(&next)?;
+        self.cursors = next;
+        Ok(())
+    }
+
+    fn persist(&self, cursors: &BTreeMap<String, StoredCursor>) -> Result<(), String> {
+        let bytes = serde_json::to_vec_pretty(cursors)
+            .map_err(|err| format!("failed to serialize source cursors: {err}"))?;
+        atomic_write_bytes(&self.path, &bytes)
+    }
+}
+
+/// Persistent registry of local Markdown directories and SQLite databases indexed by
+/// [`crate::persistence::PersistentRuntime`].
 pub(crate) struct SourceRegistry {
     path: PathBuf,
+    cursors: SourceCursorStore,
     sources: Vec<RegisteredSource>,
     pending_deletes: BTreeSet<String>,
 }
@@ -84,6 +170,8 @@ impl SourceRegistry {
                     label: ENV_SOURCE_LABEL.to_string(),
                     path: env_path_str,
                     default_category: "guide".to_string(),
+                    kind: dok3_domain::SourceKind::LocalDir,
+                    sqlite: None,
                     default_tag: "docs".to_string(),
                     managed_by_env: true,
                     created_at_ms: now_ms(),
@@ -99,11 +187,17 @@ impl SourceRegistry {
             persist_state(&path, &disk.sources, &disk.pending_deletes)?;
         }
 
+        let cursors = SourceCursorStore::open(storage_dir)?;
         Ok(Self {
             path,
+            cursors,
             sources: disk.sources,
             pending_deletes: disk.pending_deletes,
         })
+    }
+
+    pub(crate) fn cursors_mut(&mut self) -> &mut SourceCursorStore {
+        &mut self.cursors
     }
 
     pub(crate) fn list(&self) -> Vec<RegisteredSource> {
@@ -176,6 +270,10 @@ impl SourceRegistry {
             Some(raw) if !raw.trim().is_empty() => validate_classification_category(raw)?,
             _ => "guide".to_string(),
         };
+        let fallback_tag = match req.kind {
+            SourceKind::LocalDir => "docs",
+            SourceKind::Sqlite => "sqlite",
+        };
         let default_tag = match req.default_tag.as_deref() {
             Some(raw) if !raw.trim().is_empty() => {
                 let trimmed = raw.trim();
@@ -186,7 +284,7 @@ impl SourceRegistry {
                 }
                 trimmed.to_string()
             }
-            _ => "docs".to_string(),
+            _ => fallback_tag.to_string(),
         };
 
         let raw_path = req.path.trim();
@@ -196,6 +294,22 @@ impl SourceRegistry {
             ));
         }
         let candidate = Path::new(raw_path);
+
+        if req.kind == SourceKind::Sqlite {
+            return self.validate_new_sqlite_source(
+                req,
+                source_id,
+                label,
+                candidate,
+                default_category,
+                default_tag,
+            );
+        }
+        if req.sqlite.is_some() {
+            return Err(Dok3Error::InvalidInput(
+                "sqlite options are only allowed for kind 'sqlite'".to_string(),
+            ));
+        }
         let normalized = validate_real_directory(candidate)?;
         let canonical = fs::canonicalize(&normalized).map_err(|err| {
             Dok3Error::InvalidInput(format!("failed to canonicalize path '{raw_path}': {err}"))
@@ -226,6 +340,8 @@ impl SourceRegistry {
             source_id,
             label: label.to_string(),
             path: canonical.to_string_lossy().into_owned(),
+            kind: SourceKind::LocalDir,
+            sqlite: None,
             default_category,
             default_tag,
             managed_by_env: false,
@@ -234,6 +350,64 @@ impl SourceRegistry {
             document_count: 0,
             last_error: None,
         })
+    }
+
+    fn validate_new_sqlite_source(
+        &self,
+        req: &CreateSourceRequest,
+        source_id: String,
+        label: &str,
+        candidate: &Path,
+        default_category: String,
+        default_tag: String,
+    ) -> Result<RegisteredSource, Dok3Error> {
+        let options = req.sqlite.clone().ok_or_else(|| {
+            Dok3Error::InvalidInput("sqlite options are required for kind 'sqlite'".to_string())
+        })?;
+        let normalized = validate_real_sqlite_file(candidate)?;
+        let canonical = fs::canonicalize(&normalized).map_err(|err| {
+            Dok3Error::InvalidInput(format!(
+                "failed to canonicalize path '{}': {err}",
+                candidate.display()
+            ))
+        })?;
+        let canonical_str = canonical.to_string_lossy().into_owned();
+        for existing in &self.sources {
+            if existing.kind != SourceKind::Sqlite {
+                continue;
+            }
+            let same_query = existing
+                .sqlite
+                .as_ref()
+                .is_some_and(|opts| opts.select_query.trim() == options.select_query.trim());
+            let existing_canon =
+                fs::canonicalize(&existing.path).unwrap_or_else(|_| PathBuf::from(&existing.path));
+            if same_query && existing_canon == canonical {
+                return Err(Dok3Error::InvalidInput(format!(
+                    "sqlite source '{}' with the same query is already registered as '{}'",
+                    canonical.display(),
+                    existing.source_id
+                )));
+            }
+        }
+
+        let entry = RegisteredSource {
+            source_id,
+            label: label.to_string(),
+            path: canonical_str,
+            kind: SourceKind::Sqlite,
+            sqlite: Some(options),
+            default_category,
+            default_tag,
+            managed_by_env: false,
+            created_at_ms: now_ms(),
+            last_synced_at_ms: None,
+            document_count: 0,
+            last_error: None,
+        };
+        let probe = sqlite_adapter_for(&entry, Some(1))?;
+        probe.collect(None)?;
+        Ok(entry)
     }
 
     pub(crate) fn insert_source(&mut self, source: RegisteredSource) -> Result<(), String> {
@@ -284,6 +458,7 @@ impl SourceRegistry {
         persist_state(&self.path, &next_sources, &next_pending)?;
         self.sources = next_sources;
         self.pending_deletes = next_pending;
+        self.cursors.remove(source_id)?;
         Ok(())
     }
 
@@ -295,8 +470,12 @@ impl SourceRegistry {
         next_sources.retain(|src| !self.pending_deletes.contains(&src.source_id));
         let next_pending = BTreeSet::new();
         persist_state(&self.path, &next_sources, &next_pending)?;
+        let removed: Vec<String> = self.pending_deletes.iter().cloned().collect();
         self.sources = next_sources;
         self.pending_deletes = next_pending;
+        for id in removed {
+            self.cursors.remove(&id)?;
+        }
         Ok(())
     }
 
@@ -389,6 +568,97 @@ pub(crate) fn validate_real_directory(path: &Path) -> Result<PathBuf, Dok3Error>
     Ok(normalized)
 }
 
+pub(crate) fn validate_real_sqlite_file(path: &Path) -> Result<PathBuf, Dok3Error> {
+    let mut normalized = PathBuf::new();
+    for comp in path.components() {
+        match comp {
+            std::path::Component::CurDir => {}
+            std::path::Component::ParentDir => {
+                return Err(Dok3Error::InvalidInput(format!(
+                    "sqlite path '{}' must not contain '..' components",
+                    path.display()
+                )));
+            }
+            std::path::Component::Normal(part) => {
+                normalized.push(part);
+                let is_macos_root_link = cfg!(target_os = "macos")
+                    && matches!(normalized.to_str(), Some("/tmp" | "/var" | "/etc"));
+                if !is_macos_root_link {
+                    let meta = fs::symlink_metadata(&normalized).map_err(|err| {
+                        Dok3Error::InvalidInput(format!(
+                            "sqlite file '{}' is inaccessible: {err}",
+                            path.display()
+                        ))
+                    })?;
+                    if meta.file_type().is_symlink() {
+                        return Err(Dok3Error::InvalidInput(format!(
+                            "sqlite file '{}' must not be or traverse a symbolic link",
+                            path.display()
+                        )));
+                    }
+                }
+            }
+            other => normalized.push(other),
+        }
+    }
+    let meta = fs::symlink_metadata(&normalized).map_err(|err| {
+        Dok3Error::InvalidInput(format!(
+            "sqlite file '{}' is inaccessible: {err}",
+            path.display()
+        ))
+    })?;
+    if !meta.is_file() {
+        return Err(Dok3Error::InvalidInput(format!(
+            "sqlite path '{}' is not a regular file",
+            path.display()
+        )));
+    }
+    Ok(normalized)
+}
+
+/// Builds the SQLite adapter for a registered `Sqlite` source (optionally overriding batch size).
+pub(crate) fn sqlite_adapter_for(
+    entry: &RegisteredSource,
+    batch_limit_override: Option<usize>,
+) -> Result<SqliteSourceAdapter, Dok3Error> {
+    let options = entry.sqlite.as_ref().ok_or_else(|| {
+        Dok3Error::InvalidInput(format!(
+            "source '{}' is missing sqlite options",
+            entry.source_id
+        ))
+    })?;
+    let columns = SqliteColumnMapping {
+        document_id: options.id_column.clone(),
+        title: options.title_column.clone(),
+        body: options.body_column.clone(),
+        summary: options
+            .summary_column
+            .clone()
+            .filter(|col| !col.trim().is_empty()),
+    };
+    let cursor = match options.cursor_mode {
+        SqliteCursorKind::IntegerPk => SqliteCursorMode::IntegerPk {
+            column: options.cursor_column.clone(),
+        },
+        SqliteCursorKind::UpdatedAt => SqliteCursorMode::UpdatedAt {
+            column: options.cursor_column.clone(),
+        },
+    };
+    let mut cfg = SqliteSourceConfig::new(
+        SourceId::new(entry.source_id.clone()),
+        entry.label.clone(),
+        PathBuf::from(&entry.path),
+        options.select_query.clone(),
+        columns,
+        cursor,
+    );
+    cfg.category = entry.default_category.clone();
+    cfg.default_tag = entry.default_tag.clone();
+    cfg.batch_limit = batch_limit_override
+        .unwrap_or_else(|| options.batch_limit.unwrap_or(DEFAULT_SQLITE_BATCH_LIMIT));
+    SqliteSourceAdapter::new(cfg)
+}
+
 pub(crate) fn source_config_for(entry: &RegisteredSource) -> SourceConfig {
     let mut cfg = SourceConfig::supported_document_defaults(
         SourceId::new(entry.source_id.clone()),
@@ -450,6 +720,8 @@ mod tests {
                 path: env_dir.path().to_string_lossy().into_owned(),
                 default_category: None,
                 default_tag: None,
+                kind: dok3_domain::SourceKind::LocalDir,
+                sqlite: None,
             }),
             Err(Dok3Error::InvalidInput(_))
         ));
@@ -466,6 +738,8 @@ mod tests {
                 ),
                 default_category: None,
                 default_tag: None,
+                kind: dok3_domain::SourceKind::LocalDir,
+                sqlite: None,
             }),
             Err(Dok3Error::InvalidInput(_))
         ));
@@ -489,6 +763,8 @@ mod tests {
                             path: candidate.clone(),
                             default_category: None,
                             default_tag: None,
+                            kind: dok3_domain::SourceKind::LocalDir,
+                            sqlite: None,
                         }),
                         Err(Dok3Error::InvalidInput(_))
                     ),
@@ -504,6 +780,8 @@ mod tests {
                 path: extra_dir.path().to_string_lossy().into_owned(),
                 default_category: Some("manual".to_string()),
                 default_tag: Some("ops".to_string()),
+                kind: dok3_domain::SourceKind::LocalDir,
+                sqlite: None,
             })
             .unwrap();
         reg.insert_source(validated).unwrap();

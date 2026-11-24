@@ -350,12 +350,33 @@ fn contract_dtos_round_trip_json() {
             .unwrap();
     assert_eq!(create_src.default_category, None);
     assert_eq!(create_src.default_tag, None);
+    assert_eq!(create_src.kind, dok3_domain::SourceKind::LocalDir);
+    assert!(create_src.sqlite.is_none());
+
+    let legacy: RegisteredSource = serde_json::from_str(
+        r#"{"source_id":"a","label":"A","path":"/x","default_category":"guide","default_tag":"docs","managed_by_env":false,"created_at_ms":1,"last_synced_at_ms":null,"document_count":0,"last_error":null}"#,
+    )
+    .unwrap();
+    assert_eq!(legacy.kind, dok3_domain::SourceKind::LocalDir);
+    assert!(legacy.sqlite.is_none());
+    assert!(!serde_json::to_string(&legacy).unwrap().contains("sqlite"));
+
+    let sqlite_req: CreateSourceRequest = serde_json::from_str(
+        r#"{"source_id":"s","label":"S","path":"/x.db","kind":"sqlite","sqlite":{"select_query":"SELECT 1","id_column":"id","title_column":"t","body_column":"b","cursor_mode":"updated_at","cursor_column":"u"}}"#,
+    )
+    .unwrap();
+    assert_eq!(sqlite_req.kind, dok3_domain::SourceKind::Sqlite);
+    let opts = sqlite_req.sqlite.unwrap();
+    assert_eq!(opts.cursor_mode, dok3_domain::SqliteCursorKind::UpdatedAt);
+    assert!(opts.summary_column.is_none() && opts.batch_limit.is_none());
 
     let reg_src = RegisteredSource {
         source_id: "team-docs".to_string(),
         label: "Team Docs".to_string(),
         path: "/tmp/docs".to_string(),
         default_category: "guide".to_string(),
+        kind: dok3_domain::SourceKind::LocalDir,
+        sqlite: None,
         default_tag: "docs".to_string(),
         managed_by_env: false,
         created_at_ms: 1_700_000_000_000,
