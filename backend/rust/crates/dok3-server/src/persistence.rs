@@ -1545,6 +1545,9 @@ fn scan_and_store_source(
         )?;
         if let Some(meta) = corpus_override
             && !manual_locked
+            && !classifications
+                .get(&document.id)
+                .is_some_and(|c| c.source == dok3_domain::ClassificationSource::Agent)
         {
             document.category = meta.category;
             document.topic = meta.topic;
