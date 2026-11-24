@@ -83,14 +83,21 @@ impl DocumentParserPort for CodeSymbolParser {
         let lang = CodeLanguage::from_filename(filename).unwrap_or(CodeLanguage::Rust);
         let lines: Vec<&str> = normalized.lines().collect();
         let mut warnings = Vec::new();
-        let mut raw_symbols: Vec<(usize, String)> = Vec::new();
-
-        for (idx, line) in lines.iter().enumerate() {
-            let line_no = idx + 1;
-            if let Some(heading) = detect_symbol(lang, line, &mut warnings, line_no) {
-                raw_symbols.push((line_no, heading));
+        let mut raw_symbols: Vec<(usize, String)> = match lang {
+            CodeLanguage::Rust | CodeLanguage::Java | CodeLanguage::Go => {
+                extract_treesitter_symbols(lang, &normalized)
             }
-        }
+            CodeLanguage::Sql | CodeLanguage::Jsp => {
+                let mut syms = Vec::new();
+                for (idx, line) in lines.iter().enumerate() {
+                    let line_no = idx + 1;
+                    if let Some(heading) = detect_symbol(lang, line, &mut warnings, line_no) {
+                        syms.push((line_no, heading));
+                    }
+                }
+                syms
+            }
+        };
 
         let title = Path::new(filename)
             .file_name()
@@ -355,4 +362,88 @@ fn extract_ident(input: &str) -> &str {
         .find(|c: char| !c.is_alphanumeric() && c != '_' && c != ':')
         .unwrap_or(input.len());
     input[..end].trim_end_matches(':')
+}
+
+fn extract_treesitter_symbols(lang: CodeLanguage, source: &str) -> Vec<(usize, String)> {
+    let mut parser = tree_sitter::Parser::new();
+    let ts_lang = match lang {
+        CodeLanguage::Rust => tree_sitter_rust::LANGUAGE.into(),
+        CodeLanguage::Java => tree_sitter_java::LANGUAGE.into(),
+        CodeLanguage::Go => tree_sitter_go::LANGUAGE.into(),
+        _ => return Vec::new(),
+    };
+    if parser.set_language(&ts_lang).is_err() {
+        return Vec::new();
+    }
+    let Some(tree) = parser.parse(source, None) else {
+        return Vec::new();
+    };
+    let mut out = Vec::new();
+    collect_ts_node(lang, tree.root_node(), source.as_bytes(), &mut out);
+    out.sort_by_key(|(line, _)| *line);
+    out.dedup_by_key(|(line, _)| *line);
+    out
+}
+
+fn collect_ts_node(
+    lang: CodeLanguage,
+    node: tree_sitter::Node<'_>,
+    src: &[u8],
+    out: &mut Vec<(usize, String)>,
+) {
+    let kind = node.kind();
+    let line = node.start_position().row + 1;
+    let name_text = |field: &str| -> Option<String> {
+        node.child_by_field_name(field)
+            .and_then(|n| n.utf8_text(src).ok())
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .map(str::to_string)
+    };
+    match lang {
+        CodeLanguage::Rust => {
+            let label = match kind {
+                "function_item" => name_text("name").map(|n| format!("fn {n}")),
+                "struct_item" => name_text("name").map(|n| format!("struct {n}")),
+                "enum_item" => name_text("name").map(|n| format!("enum {n}")),
+                "trait_item" => name_text("name").map(|n| format!("trait {n}")),
+                "mod_item" => name_text("name").map(|n| format!("mod {n}")),
+                "impl_item" => name_text("type").map(|n| format!("impl {n}")),
+                _ => None,
+            };
+            if let Some(h) = label {
+                out.push((line, h));
+            }
+        }
+        CodeLanguage::Java => {
+            let label = match kind {
+                "class_declaration" => name_text("name").map(|n| format!("class {n}")),
+                "interface_declaration" => name_text("name").map(|n| format!("interface {n}")),
+                "enum_declaration" => name_text("name").map(|n| format!("enum {n}")),
+                "record_declaration" => name_text("name").map(|n| format!("record {n}")),
+                "method_declaration" => name_text("name").map(|n| format!("method {n}")),
+                _ => None,
+            };
+            if let Some(h) = label {
+                out.push((line, h));
+            }
+        }
+        CodeLanguage::Go => {
+            let label = match kind {
+                "function_declaration" | "method_declaration" => {
+                    name_text("name").map(|n| format!("func {n}"))
+                }
+                "type_spec" => name_text("name").map(|n| format!("type {n}")),
+                _ => None,
+            };
+            if let Some(h) = label {
+                out.push((line, h));
+            }
+        }
+        _ => {}
+    }
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        collect_ts_node(lang, child, src, out);
+    }
 }
