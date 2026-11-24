@@ -6,8 +6,8 @@ pub mod sql_guard;
 mod sqlite;
 
 pub use local_fs::{
-    DEFAULT_MAX_FILE_BYTES, LocalFileConnector, ScanReport, ScannedFile, SkippedFile, SourceConfig,
-    build_document,
+    DEFAULT_DOCUMENT_EXTENSIONS, DEFAULT_MAX_FILE_BYTES, LocalFileConnector, ScanReport,
+    ScannedFile, SkippedFile, SourceConfig, build_document,
 };
 pub use relational::{
     DbDialect, DbParam, DbRow, DbRowReader, RelationalSourceAdapter, RelationalSourceBatch,

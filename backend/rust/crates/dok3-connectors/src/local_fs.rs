@@ -10,6 +10,17 @@ use dok3_domain::{AclScope, Document, DocumentId, ParsedDocument, RevisionId, So
 /// Default per-file upper bound (4 MiB) before a file is skipped during scanning.
 pub const DEFAULT_MAX_FILE_BYTES: u64 = 4 * 1024 * 1024;
 
+/// File extensions scanned by [`SourceConfig::supported_document_defaults`].
+///
+/// Markdown, HTML, source code (`rs`, `java`, `go`, `sql`, `jsp`) and plain text (`txt`, `log`)
+/// match the parsers registered in `dok3_parser::ParserRegistry`. Structured data extensions
+/// (`json`, `yaml`, `yml`, `toml`, `xml`, `csv`) are intentionally excluded: knowledge trees such as
+/// `frontend/src/samples` carry corpus manifests (`index.json`, `provenance.json`) and design
+/// YAML that must not be indexed as standalone documents.
+pub const DEFAULT_DOCUMENT_EXTENSIONS: &[&str] = &[
+    "md", "markdown", "mdown", "mkd", "html", "htm", "rs", "java", "go", "sql", "jsp", "txt", "log",
+];
+
 /// Configuration describing a local filesystem knowledge source.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SourceConfig {
@@ -48,6 +59,24 @@ impl SourceConfig {
             ],
             max_file_bytes: DEFAULT_MAX_FILE_BYTES,
         }
+    }
+}
+
+impl SourceConfig {
+    /// Creates a `SourceConfig` for every format handled by the default parser registry
+    /// (see [`DEFAULT_DOCUMENT_EXTENSIONS`]).
+    #[must_use]
+    pub fn supported_document_defaults(
+        source_id: SourceId,
+        source_label: impl Into<String>,
+        root_dir: impl Into<PathBuf>,
+    ) -> Self {
+        let mut cfg = Self::markdown_defaults(source_id, source_label, root_dir);
+        cfg.allowed_extensions = DEFAULT_DOCUMENT_EXTENSIONS
+            .iter()
+            .map(|ext| (*ext).to_string())
+            .collect();
+        cfg
     }
 }
 
@@ -279,8 +308,76 @@ pub fn build_document(
         acl_scope: config.acl_scope.clone(),
         content_hash: String::new(),
         body: parsed.normalized_text.clone(),
-        markdown: Some(parsed.normalized_text.clone()),
+        markdown: Some(render_reader_markdown(scanned, parsed)),
         sections: parsed.sections.clone(),
+    }
+}
+
+/// Builds the Markdown shown by the reader. Markdown and HTML parsers already emit
+/// Markdown-shaped text; code and plain text are wrapped in fenced blocks so generics,
+/// JSP scriptlets and HTML-like snippets render as text instead of being dropped.
+fn render_reader_markdown(scanned: &ScannedFile, parsed: &ParsedDocument) -> String {
+    if matches!(scanned.media_type.as_str(), "text/markdown" | "text/html") {
+        return parsed.normalized_text.clone();
+    }
+    let lang = fence_language(&scanned.media_type);
+    let single_body =
+        parsed.sections.len() == 1 && parsed.sections[0].section_id.as_str() == "body";
+    if single_body {
+        let text = parsed.normalized_text.trim_end_matches('\n');
+        let fence = fence_for(text);
+        return format!("{fence}{lang}\n{text}\n{fence}");
+    }
+    let mut blocks = Vec::with_capacity(parsed.sections.len());
+    for section in &parsed.sections {
+        let heading: String = section
+            .heading
+            .lines()
+            .next()
+            .unwrap_or("")
+            .trim()
+            .trim_start_matches('#')
+            .trim()
+            .to_string();
+        let heading = if heading.is_empty() {
+            "section".to_string()
+        } else {
+            heading
+        };
+        let body = section.body.trim_end_matches('\n');
+        let fence = fence_for(body);
+        blocks.push(format!("## {heading}\n\n{fence}{lang}\n{body}\n{fence}"));
+    }
+    blocks.join("\n\n")
+}
+
+fn fence_for(text: &str) -> String {
+    let mut longest = 0usize;
+    let mut run = 0usize;
+    for ch in text.chars() {
+        if ch == '`' {
+            run += 1;
+            longest = longest.max(run);
+        } else {
+            run = 0;
+        }
+    }
+    "`".repeat(longest.saturating_add(1).max(3))
+}
+
+fn fence_language(media_type: &str) -> &'static str {
+    match media_type {
+        "text/x-rust" => "rust",
+        "text/x-java-source" => "java",
+        "text/x-go" => "go",
+        "application/sql" => "sql",
+        "application/jsp" => "jsp",
+        "application/json" => "json",
+        "application/yaml" => "yaml",
+        "application/toml" => "toml",
+        "application/xml" => "xml",
+        "text/csv" => "csv",
+        _ => "text",
     }
 }
 
@@ -324,7 +421,19 @@ fn normalize_relative(root: &Path, path: &Path) -> Result<String, Dok3Error> {
 fn media_type_for_ext(ext: &str) -> &'static str {
     match ext {
         "md" | "markdown" | "mdown" | "mkd" => "text/markdown",
-        _ => "text/plain",
+        "html" | "htm" => "text/html",
+        "rs" => "text/x-rust",
+        "java" => "text/x-java-source",
+        "go" => "text/x-go",
+        "sql" => "application/sql",
+        "jsp" => "application/jsp",
+        "json" => "application/json",
+        "yaml" | "yml" => "application/yaml",
+        "toml" => "application/toml",
+        "xml" => "application/xml",
+        "csv" => "text/csv",
+        "txt" | "log" => "text/plain",
+        _ => "application/octet-stream",
     }
 }
 

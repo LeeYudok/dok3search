@@ -212,8 +212,11 @@ impl SourceRegistry {
             }
         }
 
-        let mut cfg =
-            SourceConfig::markdown_defaults(SourceId::new(source_id.clone()), label, &canonical);
+        let mut cfg = SourceConfig::supported_document_defaults(
+            SourceId::new(source_id.clone()),
+            label,
+            &canonical,
+        );
         cfg.category = default_category.clone();
         cfg.default_tag = default_tag.clone();
         let connector = LocalFileConnector::new(cfg)?;
@@ -387,7 +390,7 @@ pub(crate) fn validate_real_directory(path: &Path) -> Result<PathBuf, Dok3Error>
 }
 
 pub(crate) fn source_config_for(entry: &RegisteredSource) -> SourceConfig {
-    let mut cfg = SourceConfig::markdown_defaults(
+    let mut cfg = SourceConfig::supported_document_defaults(
         SourceId::new(entry.source_id.clone()),
         entry.label.clone(),
         PathBuf::from(&entry.path),
