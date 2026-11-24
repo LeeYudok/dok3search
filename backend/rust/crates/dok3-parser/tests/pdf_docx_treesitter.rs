@@ -3,7 +3,7 @@ use std::io::{Cursor, Write};
 use dok3_domain::DocumentParserPort;
 use dok3_parser::{CodeSymbolParser, DocxParser, ParserRegistry, PdfParser};
 use lopdf::content::{Content, Operation};
-use lopdf::{Dictionary, Object, Stream, dictionary};
+use lopdf::{Object, Stream, dictionary};
 use zip::ZipWriter;
 use zip::write::SimpleFileOptions;
 
