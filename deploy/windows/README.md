@@ -24,6 +24,12 @@
 - `sc.exe failure`로 장애 시 5초/15초/30초 자동 재시작 복구 정책이 등록됩니다.
 - NSSM을 사용하는 경우 `-NssmPath "C:\tools\nssm.exe"`를 지정하면 stdout/stderr 파일 로그(`%DataDir%\logs\`)도 함께 연결됩니다.
 
+## 네이티브 SCM 모드와 NSSM 대안
+
+- **네이티브 SCM(기본)**: `install-service.ps1`은 `sc.exe create ... binPath= "\"<exe>\" --windows-service"`로 등록합니다. `--windows-service` 없이 일반 콘솔 바이너리를 `sc.exe`로 등록하면 SCM 응답이 없어 `Error 1053`으로 기동에 실패합니다. 이 플래그가 있으면 바이너리가 SCM 핸들러를 등록해 즉시 `START_PENDING`(대기 30초)을 보고하고, 포트 바인드 직후 `RUNNING`, 중지·시스템 종료 요청 시 `STOP_PENDING` 후 주기 워커를 멈추고 `STOPPED`를 보고합니다. 환경 변수(`DOK3_*`)는 머신 수준으로 저장됩니다.
+- `--windows-service`는 `--mcp-stdio`와 함께 쓸 수 없습니다. Windows가 아닌 대상에서는 오류로 종료합니다.
+- **NSSM 대안**: `-NssmPath`를 주면 NSSM이 콘솔 바이너리를 감싸므로 `--windows-service`를 붙이지 않습니다.
+
 ## 기동·재시작 복구 Smoke 테스트
 
 ```powershell

@@ -8,6 +8,7 @@ mod mcp;
 // --- /slice-B: mcp ---
 mod persistence;
 mod sources;
+mod win_service;
 
 use std::net::Ipv4Addr;
 use std::path::PathBuf;
@@ -23,9 +24,20 @@ use tokio::net::TcpListener;
 
 use crate::persistence::{PersistentRuntime, WorkerHandle};
 
-#[tokio::main]
-async fn main() -> ExitCode {
-    match run().await {
+fn main() -> ExitCode {
+    // The SCM dispatcher blocks the calling thread and builds its own runtime, so it must run
+    // before (and outside of) the default tokio runtime. Other modes fall through to `run`.
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    let result = if mcp::parse_cli_args(args) == Ok(mcp::CliMode::WindowsService) {
+        win_service::run_as_service()
+    } else {
+        tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .map_err(|err| format!("failed to build tokio runtime: {err}"))
+            .and_then(|runtime| runtime.block_on(run()))
+    };
+    match result {
         Ok(()) => ExitCode::SUCCESS,
         Err(err) => {
             eprintln!("dok3search server error: {err}");
@@ -41,8 +53,26 @@ async fn run() -> Result<(), String> {
         return Ok(());
     }
     // --- slice-B: mcp ---
-    let mcp_stdio = mcp::stdio_requested(args)?;
+    let mode = mcp::parse_cli_args(args)?;
     // --- /slice-B: mcp ---
+    match mode {
+        mcp::CliMode::WindowsService => win_service::run_as_service(),
+        mcp::CliMode::McpStdio => run_server(true, shutdown_signal(), || {}).await,
+        mcp::CliMode::Http => run_server(false, shutdown_signal(), || {}).await,
+    }
+}
+
+/// Runs the server until `shutdown` resolves. `on_ready` is invoked right after the HTTP listener
+/// is bound (never in stdio MCP mode, which has no listener).
+pub(crate) async fn run_server<F, R>(
+    mcp_stdio: bool,
+    shutdown: F,
+    on_ready: R,
+) -> Result<(), String>
+where
+    F: std::future::Future<Output = ()> + Send + 'static,
+    R: FnOnce(),
+{
     let config = ServerConfig::from_env().map_err(|err| err.to_string())?;
     let analyzer_info = configure_analyzer_from_config(&config)?;
     eprintln!(
@@ -94,8 +124,9 @@ async fn run() -> Result<(), String> {
         .as_ref()
         .map_or_else(|| "disabled".to_string(), |p| p.display().to_string());
     println!("dok3search listening on http://{addr} (docs={doc_count}, static={static_label})");
+    on_ready();
 
-    let serve_result = dok3_api::serve_with_shutdown(listener, app, shutdown_signal())
+    let serve_result = dok3_api::serve_with_shutdown(listener, app, shutdown)
         .await
         .map_err(|err| format!("server runtime error: {err}"));
     if let Some(handle) = worker {

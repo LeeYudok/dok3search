@@ -49,3 +49,4 @@ ego-tree = "0.11.1"
 scraper = { version = "0.29", default-features = false, features = ["errors", "main"] }
 postgres = "0.19"
 mysql = { version = "28.0", default-features = false, features = ["minimal-rust", "buffer-pool"] }
+windows-service = "0.8"

@@ -57,9 +57,11 @@ if ($NssmPath -and (Test-Path -LiteralPath $NssmPath -PathType Leaf)) {
     & $NssmPath set $ServiceName AppEnvironmentExtra ($envLines -join "`n") | Out-Null
     & $NssmPath set $ServiceName Start SERVICE_AUTO_START | Out-Null
 } else {
+    # Native SCM mode: --windows-service makes the binary answer the Service Control Manager
+    # (a plain console binary fails to start with Error 1053). NSSM branch above must NOT use it.
     $existing = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
     if (-not $existing) {
-        sc.exe create $ServiceName binPath= "`"$BinaryPath`"" start= auto DisplayName= "dok3search Knowledge Server" | Out-Null
+        sc.exe create $ServiceName binPath= "`"$BinaryPath`" --windows-service" start= auto DisplayName= "dok3search Knowledge Server" | Out-Null
     }
     sc.exe description $ServiceName "Air-gapped document and code search platform (dok3search)" | Out-Null
     # Restart after 5s / 15s / 30s on failure; reset counter after 1 day (86400s).
