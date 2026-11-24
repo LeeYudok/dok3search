@@ -1245,7 +1245,7 @@ async fn get_original_enforces_acl_and_sets_attachment_headers() {
         ok.headers()[header::CONTENT_DISPOSITION]
             .to_str()
             .unwrap()
-            .starts_with("attachment; filename="")
+            .starts_with("attachment; filename=\"")
     );
     let bytes = ok.into_body().collect().await.unwrap().to_bytes();
     assert!(!bytes.is_empty());
@@ -1280,9 +1280,22 @@ async fn analyze_endpoint_returns_tokens_and_rejects_empty_or_oversized_text() {
         .await
         .unwrap();
     assert_eq!(ok.status(), StatusCode::OK);
-    let body: Value = serde_json::from_slice(&ok.into_body().collect().await.unwrap().to_bytes()).unwrap();
-    assert!(body["terms"].as_array().unwrap().iter().any(|v| v == "account"));
-    assert!(body["terms"].as_array().unwrap().iter().any(|v| v == "ora-00904"));
+    let body: Value =
+        serde_json::from_slice(&ok.into_body().collect().await.unwrap().to_bytes()).unwrap();
+    assert!(
+        body["terms"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|v| v == "account")
+    );
+    assert!(
+        body["terms"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|v| v == "ora-00904")
+    );
 
     let empty = app
         .oneshot(
