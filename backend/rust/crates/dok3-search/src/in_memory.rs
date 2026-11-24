@@ -303,6 +303,16 @@ impl SearchPort for InMemorySearchRepository {
                 } else {
                     String::new()
                 };
+                let matched_sec = matched_id
+                    .as_deref()
+                    .and_then(|sid| doc.sections.iter().find(|s| s.section_id.as_str() == sid));
+                let matched_section_heading = matched_sec
+                    .filter(|s| {
+                        s.section_id.as_str() != "body" && s.section_id.as_str() != "preamble"
+                    })
+                    .map(|s| s.heading.clone());
+                let matched_line_start =
+                    matched_sec.and_then(|s| (s.line_start > 0).then_some(s.line_start));
                 SearchHit {
                     document_id: doc.id.clone(),
                     revision_id: doc.revision_id.clone(),
@@ -319,6 +329,8 @@ impl SearchPort for InMemorySearchRepository {
                     acl_scope: doc.acl_scope.clone(),
                     has_paired_formats: self.paired_formats.contains_key(doc.id.as_str()),
                     matched_section_id: matched_id.map(dok3_domain::SectionId::new),
+                    matched_section_heading,
+                    matched_line_start,
                     score: item.score,
                 }
             })

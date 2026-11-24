@@ -113,7 +113,17 @@ impl DocumentParserPort for CodeSymbolParser {
         let mut sections = Vec::new();
         let mut anchor_counts: HashMap<String, usize> = HashMap::new();
 
-        if raw_symbols.is_empty() {
+        let effective_symbols: Vec<(usize, String)> = raw_symbols
+            .iter()
+            .enumerate()
+            .map(|(i, (decl_line, heading))| {
+                let min_line = if i == 0 { 1 } else { raw_symbols[i - 1].0 + 1 };
+                let start_line = rewind_leading_doc_start(&lines, *decl_line, min_line);
+                (start_line, heading.clone())
+            })
+            .collect();
+
+        if effective_symbols.is_empty() {
             let body = normalized.trim().to_string();
             sections.push(DocumentSection {
                 section_id: SectionId::new("body"),
@@ -125,7 +135,7 @@ impl DocumentParserPort for CodeSymbolParser {
                 body,
             });
         } else {
-            let first_start = raw_symbols[0].0;
+            let first_start = effective_symbols[0].0;
             if first_start > 1 {
                 let preamble = lines[..first_start - 1].join("\n");
                 if !preamble.trim().is_empty() {
@@ -142,8 +152,8 @@ impl DocumentParserPort for CodeSymbolParser {
                 }
             }
 
-            for (i, (start_line, heading)) in raw_symbols.iter().enumerate() {
-                let end_line = raw_symbols
+            for (i, (start_line, heading)) in effective_symbols.iter().enumerate() {
+                let end_line = effective_symbols
                     .get(i + 1)
                     .map_or(lines.len(), |(next_start, _)| next_start - 1);
                 let body = lines[*start_line - 1..end_line].join("\n");
@@ -422,6 +432,49 @@ fn detect_python_symbol(trimmed: &str) -> Option<String> {
     None
 }
 
+fn rewind_leading_doc_start(lines: &[&str], decl_line: usize, min_line: usize) -> usize {
+    let mut cur = decl_line;
+    while cur > min_line {
+        let prev = lines[cur - 2].trim();
+        if prev.is_empty() {
+            break;
+        }
+        if prev.starts_with("//")
+            || prev.starts_with("#[")
+            || prev.starts_with('@')
+            || prev.starts_with("--")
+            || (prev.starts_with('#') && !prev.starts_with("# "))
+        {
+            cur -= 1;
+            continue;
+        }
+        if prev.ends_with("*/") {
+            let mut k = cur - 1;
+            let mut found_open = false;
+            while k >= min_line {
+                let t = lines[k - 1].trim();
+                if t.starts_with("/*") {
+                    cur = k;
+                    found_open = true;
+                    break;
+                }
+                if t.is_empty() || (!t.starts_with('*') && !t.contains("/*")) {
+                    break;
+                }
+                if k == min_line {
+                    break;
+                }
+                k -= 1;
+            }
+            if found_open {
+                continue;
+            }
+        }
+        break;
+    }
+    cur
+}
+
 fn extract_ts_py_ident(input: &str) -> &str {
     let end = input
         .find(|c: char| !c.is_alphanumeric() && c != '_' && c != '$')
@@ -467,7 +520,6 @@ export const DEFAULT_VERSION: string = "4.18.8";
         assert_eq!(
             headings,
             vec![
-                "reader.ts",
                 "interface HwpxOptions",
                 "function parseHwpx",
                 "class HwpxReader",
@@ -493,5 +545,35 @@ async def parse_async(data):
             headings,
             vec!["parser.py", "class Parser", "def parse_async"]
         );
+    }
+
+    #[test]
+    fn attaches_leading_jsdoc_to_following_symbol_section() {
+        let src = br#"export const VERSION = "1.0";
+
+/**
+ * Converts Buffer to ArrayBuffer.
+ */
+export function toArrayBuffer(buf: Buffer): ArrayBuffer {
+  return buf.buffer;
+}
+"#;
+        let parser = CodeSymbolParser::new();
+        let parsed = parser.parse("utils.ts", src).unwrap();
+        let version_sec = parsed
+            .sections
+            .iter()
+            .find(|s| s.heading == "const VERSION")
+            .unwrap();
+        let fn_sec = parsed
+            .sections
+            .iter()
+            .find(|s| s.heading == "function toArrayBuffer")
+            .unwrap();
+        assert_eq!(version_sec.line_start, 1);
+        assert_eq!(version_sec.line_end, 2);
+        assert!(!version_sec.body.contains("Converts Buffer"));
+        assert_eq!(fn_sec.line_start, 3);
+        assert!(fn_sec.body.starts_with("/**"));
     }
 }

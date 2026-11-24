@@ -235,6 +235,8 @@ fn contract_dtos_round_trip_json() {
             acl_scope: AclScope::Public,
             has_paired_formats: false,
             matched_section_id: Some(SectionId::new("ownership")),
+            matched_section_heading: None,
+            matched_line_start: None,
             score: 1.5,
         }],
         snapshot,

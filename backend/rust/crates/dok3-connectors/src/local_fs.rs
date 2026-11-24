@@ -345,9 +345,15 @@ fn render_reader_markdown(scanned: &ScannedFile, parsed: &ParsedDocument) -> Str
         } else {
             heading
         };
+        let safe_heading = heading
+            .replace('\\', "\\\\")
+            .replace('_', "\\_")
+            .replace('*', "\\*");
         let body = section.body.trim_end_matches('\n');
         let fence = fence_for(body);
-        blocks.push(format!("## {heading}\n\n{fence}{lang}\n{body}\n{fence}"));
+        blocks.push(format!(
+            "## {safe_heading}\n\n{fence}{lang}\n{body}\n{fence}"
+        ));
     }
     blocks.join("\n\n")
 }

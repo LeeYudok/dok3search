@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { DotsThreeVerticalIcon as More, FileTextIcon as FileText, MagnifyingGlassIcon as Search, XIcon as X } from '@phosphor-icons/react'
 import { createRoot } from 'react-dom/client'
-import { type DataSourceMode, fetchRecommendations, fetchSearch, type RecommendedTermItem, type SearchViewResult } from './api'
+import { type DataSourceMode, fetchRecommendations, fetchSearch, isSourceCodePath, type RecommendedTermItem, type SearchViewResult } from './api'
 import { categories, categoryLabels, isReferenceTopic, isReferenceTopicFilter, loadLocalSamples, searchUrl, topics } from './documents'
 import { referenceIdPrefix, type ReferenceCorpus } from './reference-corpus'
 import './style.css'
@@ -279,7 +279,7 @@ function SearchForm({ query = '', category = '', topic = '' }: { query?: string;
           aria-autocomplete="list"
           aria-expanded={showDropdown}
           aria-controls={showDropdown ? 'search-suggestions' : undefined}
-          placeholder="제목, 키워드 또는 코드 검색"
+          placeholder="제목, 키워드, 심볼 또는 path:hwpx ext:ts 검색"
           value={inputValue}
           onChange={(event) => setInputValue(event.target.value)}
           onFocus={() => setFocused(true)}
@@ -422,11 +422,12 @@ function SearchPage() {
 
   const browseDesign = category === 'design' && !query
 
-  function documentUrl(id: string, page: number) {
+  function documentUrl(hit: SearchViewResult['hits'][number], page: number) {
     // Search hits carry ids like `local-markdown:samples/.../rust-version.md`;
     // the raw `:` and `/` must be escaped or the URL gains extra path segments
     // and the single-segment /docs/:id route never matches.
-    return searchUrl(query, category, page, topic).replace('/search', '/docs/' + encodeURIComponent(id))
+    const base = searchUrl(query, category, page, topic).replace('/search', '/docs/' + encodeURIComponent(hit.documentId))
+    return hit.matchedSectionId ? base + '#' + encodeURIComponent(hit.matchedSectionId) : base
   }
 
   async function copyTitle(title: string) {
@@ -505,15 +506,21 @@ function SearchPage() {
                 </span>
                 {readyData.hits.length > 0 ? <ul className="document-list">{readyData.hits.map((hit) => (
                   <li className="result-row" key={hit.documentId}>
-                    <a className="document" href={documentUrl(hit.documentId, page)}>
+                    <a className="document" href={documentUrl(hit, page)}>
                       <span className="file-icon"><FileText size={18} aria-hidden="true" /></span>
                       <span className="doc-copy">
                         <small>
                           {hit.topic ? `${topics.find((item) => item.id === hit.topic)?.label} · ${hit.source} · ${hit.tag}` : categoryLabels.get(hit.category as typeof categories[number]['id']) ?? hit.source}
                           {hit.hasPairedFormats && ' · Markdown · YAML'}
+                          {hit.matchedSectionHeading && (
+                            <span className="hit-symbol">
+                              {hit.matchedSectionHeading}
+                              {hit.matchedLineStart ? ` · L${hit.matchedLineStart}` : ''}
+                            </span>
+                          )}
                         </small>
                         <strong>{hit.title}</strong>
-                        <span className="snippet">{hit.snippet}</span>
+                        <span className={isSourceCodePath(hit.samplePath) ? 'snippet snippet-code' : 'snippet'}>{hit.snippet}</span>
                       </span>
                     </a>
                     {hit.date && <time dateTime={hit.date}>{hit.date}</time>}
@@ -539,7 +546,7 @@ function SearchPage() {
                       ><More size={20} weight="bold" aria-hidden="true" /></button>
                       {openMenu === hit.documentId && (
                         <div className="document-options" onPointerDown={(event) => event.preventDefault()}>
-                          <a href={documentUrl(hit.documentId, page)}>문서 열기</a>
+                          <a href={documentUrl(hit, page)}>문서 열기</a>
                           <button type="button" onClick={() => void copyTitle(hit.title)}>제목 복사</button>
                         </div>
                       )}

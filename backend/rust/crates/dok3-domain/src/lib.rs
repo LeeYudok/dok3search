@@ -31,7 +31,7 @@ pub use ports::{
 };
 pub use search::{
     CategoryCount, CorpusCatalogEntry, CorpusCatalogResponse, CorpusPackageVersion,
-    HealthReadyResponse, ReaderState, RecommendedTerm, SearchFilters, SearchHit,
-    SearchRecommendationsResponse, SearchRequest, SearchResponse, SearchSnapshotMeta,
-    build_corpus_catalog, build_recommended_terms,
+    HealthReadyResponse, ParsedQueryOperators, ReaderState, RecommendedTerm, SearchFilters,
+    SearchHit, SearchRecommendationsResponse, SearchRequest, SearchResponse, SearchSnapshotMeta,
+    build_corpus_catalog, build_recommended_terms, parse_query_operators,
 };

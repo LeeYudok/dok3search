@@ -266,13 +266,57 @@ impl TantivyIndex {
             }
         }
 
-        let trimmed_query = req.query.trim();
-        if trimmed_query.is_empty() {
-            clauses.push((Occur::Must, Box::new(AllQuery)));
+        let ops = dok3_domain::parse_query_operators(req.query.trim());
+        let mut has_operator = false;
+
+        for term_raw in ops.path_terms.iter().chain(ops.ext_terms.iter()) {
+            let analyzed = analyze_text(
+                term_raw,
+                AnalyzeOptions {
+                    split_identifiers: true,
+                    char_ngrams: false,
+                },
+            );
+            for t in analyzed.terms {
+                has_operator = true;
+                clauses.push((
+                    Occur::Must,
+                    Box::new(TermQuery::new(
+                        Term::from_field_text(self.fields.path_text, &t),
+                        IndexRecordOption::WithFreqs,
+                    )),
+                ));
+            }
+        }
+
+        for sym_raw in &ops.symbol_terms {
+            let analyzed = analyze_text(
+                sym_raw,
+                AnalyzeOptions {
+                    split_identifiers: true,
+                    char_ngrams: false,
+                },
+            );
+            for t in analyzed.terms {
+                has_operator = true;
+                clauses.push((
+                    Occur::Must,
+                    Box::new(TermQuery::new(
+                        Term::from_field_text(self.fields.symbols, &t),
+                        IndexRecordOption::WithFreqs,
+                    )),
+                ));
+            }
+        }
+
+        if ops.free_query.is_empty() {
+            if !has_operator {
+                clauses.push((Occur::Must, Box::new(AllQuery)));
+            }
             return (clauses, None);
         }
 
-        let (combined_q, snippet_q) = self.build_text_query(trimmed_query);
+        let (combined_q, snippet_q) = self.build_text_query(&ops.free_query);
         clauses.push((Occur::Must, combined_q));
         (clauses, Some(snippet_q))
     }
@@ -361,7 +405,9 @@ impl TantivyIndex {
 
     fn build_term_query(&self, term: &str) -> Box<dyn Query> {
         let fields = [
+            (self.fields.symbols, 3.5),
             (self.fields.title, 3.0),
+            (self.fields.path_text, 2.5),
             (self.fields.tags_text, 2.0),
             (self.fields.summary, 1.5),
             (self.fields.body, 1.0),
@@ -445,11 +491,27 @@ impl TantivyIndex {
                     .or_else(|| meta.matched_section_id.clone())
             };
 
-            let matched_section_body = matched_id
+            let matched_section = matched_id
                 .as_deref()
-                .and_then(|sid| meta.sections.iter().find(|s| s.section_id == sid))
+                .and_then(|sid| meta.sections.iter().find(|s| s.section_id == sid));
+            let matched_section_heading = matched_section
+                .filter(|s| s.section_id != "body" && s.section_id != "preamble")
+                .map(|s| s.heading.clone());
+            let matched_line_start =
+                matched_section.and_then(|s| (s.line_start > 0).then_some(s.line_start));
+            let matched_section_body = matched_section
                 .map(|s| s.body.trim())
                 .filter(|b| !b.is_empty());
+
+            let preserve_lines = meta.sample_path.as_deref().is_some_and(|p| {
+                let lower = p.to_ascii_lowercase();
+                [
+                    ".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs", ".rs", ".go",
+                    ".py", ".java", ".sql", ".jsp",
+                ]
+                .iter()
+                .any(|ext| lower.ends_with(ext))
+            });
 
             let snippet = if include_snippets {
                 let body_str = read_stored_str(&doc, self.fields.body);
@@ -459,6 +521,7 @@ impl TantivyIndex {
                     &meta.snippet_source,
                     snippet_terms,
                     280,
+                    preserve_lines,
                 )
             } else {
                 String::new()
@@ -480,6 +543,8 @@ impl TantivyIndex {
                 acl_scope,
                 has_paired_formats: false,
                 matched_section_id: matched_id.map(SectionId::new),
+                matched_section_heading,
+                matched_line_start,
                 score,
             });
         }
@@ -628,6 +693,8 @@ fn reconcile_fields(schema: &Schema, fallback: IndexFields) -> Result<IndexField
         title: field("title")?,
         summary: field("summary")?,
         tags_text: field("tags_text")?,
+        symbols: field("symbols")?,
+        path_text: field("path_text")?,
         body: field("body")?,
         body_ngram: field("body_ngram")?,
         hit_payload: field("hit_payload")?,
@@ -711,7 +778,23 @@ fn extract_fast_snippet(
     fallback_source: &str,
     terms: &[String],
     max_chars: usize,
+    preserve_lines: bool,
 ) -> String {
+    let format_out = |raw: &str| -> String {
+        if preserve_lines {
+            raw.lines()
+                .map(str::trim_end)
+                .filter(|l| !l.trim().is_empty())
+                .take(3)
+                .collect::<Vec<_>>()
+                .join("\n")
+                .chars()
+                .take(max_chars)
+                .collect()
+        } else {
+            raw.split_whitespace().collect::<Vec<_>>().join(" ")
+        }
+    };
     let candidates = [matched_section_body, Some(body)];
     for candidate in candidates.into_iter().flatten() {
         let trimmed = candidate.trim();
@@ -739,17 +822,15 @@ fn extract_fast_snippet(
                 }
             }
             let snippet: String = trimmed[start_byte..].chars().take(max_chars).collect();
-            return snippet.split_whitespace().collect::<Vec<_>>().join(" ");
+            return format_out(&snippet);
         }
     }
-    matched_section_body
+    let fallback: String = matched_section_body
         .unwrap_or(fallback_source)
         .chars()
         .take(max_chars)
-        .collect::<String>()
-        .split_whitespace()
-        .collect::<Vec<_>>()
-        .join(" ")
+        .collect();
+    format_out(&fallback)
 }
 
 fn empty_response(

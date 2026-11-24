@@ -13,7 +13,7 @@ use tantivy::{Index, TantivyDocument};
 use crate::tokenizer::{GramTokenizer, TextTokenizer};
 
 /// Increment when index field definitions or tokenizers change incompatibly.
-pub const SCHEMA_VERSION: u32 = 2;
+pub const SCHEMA_VERSION: u32 = 3;
 /// Tokenizer name for general words and code identifier segments.
 pub const TOKENIZER_TEXT: &str = "dok3_text_v2";
 /// Tokenizer name for 2-3 character n-gram partial matching.
@@ -32,6 +32,8 @@ pub struct IndexFields {
     pub title: Field,
     pub summary: Field,
     pub tags_text: Field,
+    pub symbols: Field,
+    pub path_text: Field,
     pub body: Field,
     pub body_ngram: Field,
     pub hit_payload: Field,
@@ -41,6 +43,8 @@ pub struct IndexFields {
 pub(crate) struct StoredSectionMeta {
     pub section_id: String,
     pub heading: String,
+    #[serde(default)]
+    pub line_start: usize,
     pub body: String,
 }
 
@@ -86,6 +90,8 @@ pub fn build_schema() -> (Schema, IndexFields) {
         title: builder.add_text_field("title", text_indexed.clone().set_stored()),
         summary: builder.add_text_field("summary", text_indexed.clone().set_stored()),
         tags_text: builder.add_text_field("tags_text", text_indexed.clone()),
+        symbols: builder.add_text_field("symbols", text_indexed.clone()),
+        path_text: builder.add_text_field("path_text", text_indexed.clone()),
         body: builder.add_text_field("body", text_indexed.set_stored()),
         body_ngram: builder.add_text_field("body_ngram", ngram_indexed),
         hit_payload: builder.add_text_field("hit_payload", STORED),
@@ -161,6 +167,26 @@ pub(crate) fn to_tantivy_document(
         tv.add_text(fields.tags_text, &tags_combined);
     }
 
+    let symbols_combined = doc
+        .sections
+        .iter()
+        .map(|s| s.heading.as_str())
+        .collect::<Vec<_>>()
+        .join(" ");
+    if !symbols_combined.trim().is_empty() {
+        tv.add_text(fields.symbols, &symbols_combined);
+    }
+
+    let raw_path = doc
+        .sample_path
+        .as_deref()
+        .unwrap_or(doc.source_uri.as_str());
+    let spaced_path = raw_path.replace(['/', '.', '-', '_'], " ");
+    let path_combined = format!("{raw_path} {spaced_path}");
+    if !path_combined.trim().is_empty() {
+        tv.add_text(fields.path_text, &path_combined);
+    }
+
     tv.add_text(fields.body, body_text);
     let ngram_input = format!("{} {} {}", doc.title, doc.summary, body_text);
     tv.add_text(fields.body_ngram, &ngram_input);
@@ -186,6 +212,7 @@ fn bounded_section_meta(sections: &[dok3_domain::DocumentSection]) -> Vec<Stored
             StoredSectionMeta {
                 section_id: s.section_id.as_str().to_string(),
                 heading: s.heading.clone(),
+                line_start: s.line_start,
                 body,
             }
         })
