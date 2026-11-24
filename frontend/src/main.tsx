@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { DotsThreeVerticalIcon as More, FileTextIcon as FileText, MagnifyingGlassIcon as Search, XIcon as X } from '@phosphor-icons/react'
 import { createRoot } from 'react-dom/client'
 import { type DataSourceMode, fetchRecommendations, fetchSearch, isSourceCodePath, type RecommendedTermItem, type SearchViewResult } from './api'
@@ -214,6 +214,7 @@ export function SearchForm({ query = '', category = '', topic = '' }: { query?: 
   const [inputValue, setInputValue] = useState(query)
   const [focused, setFocused] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
+  const inputRef = useRef<HTMLInputElement>(null)
   const [suggestions, setSuggestions] = useState<RecommendedTermItem[]>([])
 
   useEffect(() => {
@@ -252,9 +253,10 @@ export function SearchForm({ query = '', category = '', topic = '' }: { query?: 
         }
       }}
     >
-      <form role="search" action="/search">
-        <Search size={22} aria-hidden="true" />
+      <form role="search" action="/search" className={showDropdown ? 'search-form is-open' : 'search-form'}>
+        <Search size={19} className="search-icon" aria-hidden="true" />
         <input
+          ref={inputRef}
           type="search"
           name="q"
           aria-label="문서 검색어"
@@ -282,6 +284,21 @@ export function SearchForm({ query = '', category = '', topic = '' }: { query?: 
             }
           }}
         />
+        {inputValue.length > 0 && (
+          <button
+            type="button"
+            className="search-clear"
+            aria-label="검색어 지우기"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => {
+              setInputValue('')
+              setActiveIndex(-1)
+              inputRef.current?.focus()
+            }}
+          >
+            <X size={15} aria-hidden="true" />
+          </button>
+        )}
         {category && <input type="hidden" name="category" value={category} />}
         {category === 'guide' && topic && <input type="hidden" name="topic" value={topic} />}
         <button type="submit">검색</button>
