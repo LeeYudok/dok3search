@@ -383,17 +383,28 @@ fn detect_sql_symbol(trimmed: &str) -> Option<String> {
 }
 
 fn extract_html_attr<'a>(tag: &'a str, attr: &str) -> Option<&'a str> {
-    for quote in ['"', '\''] {
-        let needle = format!("{attr}={quote}");
-        if let Some(idx) = tag.find(&needle) {
-            let rest = &tag[idx + needle.len()..];
-            if let Some(end) = rest.find(quote) {
-                let val = rest[..end].trim();
-                if !val.is_empty() {
-                    return Some(val);
+    let mut rest = tag;
+    while let Some(idx) = rest.find(attr) {
+        let prev_ok = idx == 0
+            || rest.as_bytes()[idx - 1].is_ascii_whitespace()
+            || matches!(rest.as_bytes()[idx - 1], b'<' | b'"' | b'\'');
+        let after = &rest[idx + attr.len()..];
+        if prev_ok {
+            let trimmed = after.trim_start();
+            if let Some(after_eq) = trimmed.strip_prefix('=') {
+                let val_start = after_eq.trim_start();
+                if let Some(quote) = val_start.chars().next().filter(|&c| c == '"' || c == '\'') {
+                    let inner = &val_start[1..];
+                    if let Some(end) = inner.find(quote) {
+                        let val = inner[..end].trim();
+                        if !val.is_empty() {
+                            return Some(val);
+                        }
+                    }
                 }
             }
         }
+        rest = after;
     }
     None
 }
