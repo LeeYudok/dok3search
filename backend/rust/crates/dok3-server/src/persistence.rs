@@ -3638,6 +3638,7 @@ mod tests {
                     &public,
                     &SearchRequest {
                         query: "pendingdela".to_string(),
+                        fuzzy: false,
                         ..SearchRequest::default()
                     },
                 )

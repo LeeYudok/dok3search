@@ -32,6 +32,8 @@ pub struct ServerConfig {
     pub classifier_endpoint: Option<String>,
     /// Optional model name for offline classification.
     pub classifier_model: Option<String>,
+    /// Optional path to custom comma-separated synonyms file (`DOK3_SYNONYMS_PATH`).
+    pub synonyms_path: Option<PathBuf>,
 }
 
 impl Default for ServerConfig {
@@ -51,6 +53,7 @@ impl Default for ServerConfig {
             user_dict_path: None,
             classifier_endpoint: None,
             classifier_model: None,
+            synonyms_path: None,
         }
     }
 }
@@ -138,6 +141,7 @@ impl ServerConfig {
         config.classifier_model = lookup("DOK3_CLASSIFIER_MODEL")
             .map(|v| v.trim().to_string())
             .filter(|v| !v.is_empty());
+        config.synonyms_path = non_empty_path(lookup("DOK3_SYNONYMS_PATH"));
 
         Ok(config)
     }

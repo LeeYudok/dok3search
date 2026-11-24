@@ -363,11 +363,13 @@ fn disk_index_persists_across_reopen_and_filters_paginate() {
             language: Some("rust".to_string()),
             source_id: Some(SourceId::new("rust-book")),
             tags: vec!["ownership".to_string()],
+            ..SearchFilters::default()
         },
         page: 2,
         limit: 2,
         include_snippets: true,
         requested_scope: None,
+        ..SearchRequest::default()
     };
     let res = reopened.search(&public, &req).unwrap();
     assert_eq!(res.total_hits, 3);
@@ -795,4 +797,140 @@ fn symbol_and_path_boosting_and_inline_operators() {
     let op_sym = search(&index, &public, "sym:toArrayBuffer");
     assert_eq!(op_sym.total_hits, 1);
     assert_eq!(op_sym.hits[0].document_id.as_str(), "def-doc");
+}
+
+#[test]
+fn supports_chosung_synonym_fuzzy_hybrid_topic_date_and_sort() {
+    let index = TantivyIndex::create_in_ram(GenerationId::new("gen-v4-features")).unwrap();
+    let doc_rust = Document {
+        id: DocumentId::new("guide-rust-1"),
+        revision_id: RevisionId::new("rev-r1"),
+        source_id: SourceId::new("s1"),
+        source: "Rust Book".into(),
+        title: "러스트 소유권과 폐쇄망 빌드".into(),
+        summary: "ownership and offline build".into(),
+        category: "guide".into(),
+        topic: Some("rust".into()),
+        tag: "rust".into(),
+        tags: vec!["rust".into(), "ownership".into()],
+        keywords: vec![],
+        language: "ko".into(),
+        version: "1.0".into(),
+        date: Some("2026-11-20".into()),
+        source_uri: "file:///guide/rust.md".into(),
+        sample_path: None,
+        acl_scope: AclScope::Public,
+        content_hash: "hr1".into(),
+        body: "러스트 소유권 모델과 tantivy 색인 구조 설명".into(),
+        markdown: None,
+        sections: vec![],
+    };
+    let doc_go = Document {
+        id: DocumentId::new("guide-go-1"),
+        revision_id: RevisionId::new("rev-g1"),
+        source_id: SourceId::new("s1"),
+        source: "Go Ref".into(),
+        title: "고랭 동시성 패턴".into(),
+        summary: "goroutine channels".into(),
+        category: "guide".into(),
+        topic: Some("go".into()),
+        tag: "go".into(),
+        tags: vec!["go".into()],
+        keywords: vec![],
+        language: "ko".into(),
+        version: "1.0".into(),
+        date: Some("2026-11-24".into()),
+        source_uri: "file:///guide/go.md".into(),
+        sample_path: None,
+        acl_scope: AclScope::Public,
+        content_hash: "hg1".into(),
+        body: "고랭 채널과 context 취소 처리".into(),
+        markdown: None,
+        sections: vec![],
+    };
+    index.upsert_document(&doc_rust).unwrap();
+    index.upsert_document(&doc_go).unwrap();
+    index.commit_and_reload(None).unwrap();
+
+    let public = Principal::anonymous_public();
+
+    // 1. Chosung query
+    let chosung_res = search(&index, &public, "ㄹㅅㅌ");
+    assert_eq!(chosung_res.total_hits, 1);
+    assert_eq!(chosung_res.hits[0].document_id.as_str(), "guide-rust-1");
+
+    // 2. Synonym expansion (에어갭 -> 폐쇄망)
+    let syn_res = search(&index, &public, "에어갭");
+    assert_eq!(syn_res.total_hits, 1);
+    assert_eq!(syn_res.hits[0].document_id.as_str(), "guide-rust-1");
+
+    // 3. Fuzzy typo tolerance (tantity -> tantivy)
+    let fuzzy_res = search(&index, &public, "tantity");
+    assert_eq!(fuzzy_res.total_hits, 1);
+    assert_eq!(fuzzy_res.hits[0].document_id.as_str(), "guide-rust-1");
+
+    // 4. Hybrid RRF mode
+    let hybrid_res = index
+        .search(
+            &public,
+            &SearchRequest {
+                query: "에어갭".into(),
+                search_mode: dok3_domain::SearchMode::Hybrid,
+                ..SearchRequest::default()
+            },
+        )
+        .unwrap();
+    assert!(
+        hybrid_res
+            .hits
+            .iter()
+            .any(|h| h.document_id.as_str() == "guide-rust-1")
+    );
+
+    // 5. Server topic filter + topic_counts
+    let topic_res = index
+        .search(
+            &public,
+            &SearchRequest {
+                filters: SearchFilters {
+                    category: Some("guide".into()),
+                    topic: Some("rust".into()),
+                    ..SearchFilters::default()
+                },
+                ..SearchRequest::default()
+            },
+        )
+        .unwrap();
+    assert_eq!(topic_res.total_hits, 1);
+    assert_eq!(topic_res.hits[0].document_id.as_str(), "guide-rust-1");
+    assert!(
+        topic_res
+            .topic_counts
+            .iter()
+            .any(|t| t.id == "rust" && t.count == 1)
+    );
+    assert!(
+        topic_res
+            .topic_counts
+            .iter()
+            .any(|t| t.id == "go" && t.count == 1)
+    );
+
+    // 6. Date range + DateDesc sort
+    let date_res = index
+        .search(
+            &public,
+            &SearchRequest {
+                filters: SearchFilters {
+                    category: Some("guide".into()),
+                    date_from: Some("2026-11-22".into()),
+                    ..SearchFilters::default()
+                },
+                sort: dok3_domain::SearchSort::DateDesc,
+                ..SearchRequest::default()
+            },
+        )
+        .unwrap();
+    assert_eq!(date_res.total_hits, 1);
+    assert_eq!(date_res.hits[0].document_id.as_str(), "guide-go-1");
 }

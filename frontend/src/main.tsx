@@ -102,45 +102,33 @@ export async function fetchSearchPage(
       }
     }
 
-    let apiFirst: SearchViewResult | undefined
-    const serverHits: SearchViewResult['hits'] = []
+    let apiResult: SearchViewResult | undefined
     try {
-      const first = await fetchSearch({ query, category: 'guide', page: 1, limit: 100 }, signal)
-      if (first.mode !== 'api') return localFallback()
-      apiFirst = first.result
-      serverHits.push(...first.result.hits)
-      for (let serverPage = 2; serverPage <= first.result.totalPages; serverPage++) {
-        const next = await fetchSearch({ query, category: 'guide', page: serverPage, limit: 100 }, signal)
-        if (next.mode !== 'api') return localFallback()
-        serverHits.push(...next.result.hits)
-      }
+      const response = await fetchSearch(
+        { query, category: 'guide', topic: topicFilter || undefined, page, limit: pageSize },
+        signal,
+      )
+      if (response.mode !== 'api') return localFallback()
+      apiResult = response.result
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') throw error
       return localFallback()
     }
 
-    const allGuideHits = mergeSearchHits(serverHits)
-    const visibleHits = topicFilter ? allGuideHits.filter((hit) => hit.topic === topicFilter) : allGuideHits
-    const pageCount = Math.ceil(visibleHits.length / pageSize)
-    const currentPage = pageCount > 0 ? Math.max(1, Math.min(page, pageCount)) : 1
-    const categoryCounts = apiFirst.categoryCounts.filter(({ id }) => categories.some((item) => item.id === id))
+    const categoryCounts = apiResult.categoryCounts.filter(({ id }) => categories.some((item) => item.id === id))
+    const topicCounts = apiResult.topicCounts.length > 0
+      ? apiResult.topicCounts
+      : topics.map((item) => ({
+          ...item,
+          count: apiResult.hits.filter((hit) => (hit.topic ?? inferGuideTopic(hit)) === item.id).length,
+        }))
 
     return {
       result: {
-        query,
-        page: currentPage,
-        limit: pageSize,
-        totalHits: visibleHits.length,
-        totalPages: pageCount,
-        totalUnfilteredHits: apiFirst.totalUnfilteredHits,
+        ...apiResult,
         categoryCounts,
-        topicCounts: topics.map((item) => ({
-          ...item,
-          count: allGuideHits.filter((hit) => hit.topic === item.id).length,
-        })),
-        relatedSearches: apiFirst.relatedSearches,
-        hits: visibleHits.slice((currentPage - 1) * pageSize, currentPage * pageSize),
-        snapshot: apiFirst.snapshot,
+        topicCounts,
+        hits: mergeSearchHits(apiResult.hits),
       },
       mode: 'api',
     }

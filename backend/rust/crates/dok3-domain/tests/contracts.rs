@@ -91,6 +91,7 @@ fn search_request_defaults_and_normalization() {
         limit: 0,
         include_snippets: false,
         requested_scope: Some(AclScope::Public),
+        ..SearchRequest::default()
     }
     .normalized();
     assert_eq!(clamped.page, 1);
@@ -218,6 +219,9 @@ fn contract_dtos_round_trip_json() {
             label: "개발 가이드".to_string(),
             count: 1,
         }],
+        topic_counts: vec![],
+        tag_facets: vec![],
+        source_facets: vec![],
         related_searches: vec!["Rust".to_string()],
         hits: vec![SearchHit {
             document_id: doc.id.clone(),

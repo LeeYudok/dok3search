@@ -102,12 +102,15 @@ describe('HomePage, SearchForm, and SearchPage', () => {
       result: {
         query: '',
         page: 1,
-        limit: 100,
-        totalHits: 2,
+        limit: 15,
+        totalHits: 1,
         totalPages: 1,
         totalUnfilteredHits: 2,
         categoryCounts: [{ id: 'guide', label: '개발 가이드', count: 2 }],
-        topicCounts: [],
+        topicCounts: [
+          { id: 'rust', label: 'Rust', count: 1 },
+          { id: 'go', label: 'Go', count: 1 },
+        ],
         relatedSearches: ['rust'],
         hits: [
           {
@@ -121,17 +124,6 @@ describe('HomePage, SearchForm, and SearchPage', () => {
             tag: 'rust',
             hasPairedFormats: false,
           },
-          {
-            documentId: 'local-markdown:samples/go-reference/ch01.md',
-            title: 'Go Spec',
-            summary: 'go ref',
-            snippet: 'Go intro',
-            category: 'guide',
-            topic: 'go',
-            source: 'The Go Programming Language Specification',
-            tag: 'go',
-            hasPairedFormats: false,
-          },
         ],
         snapshot: { generationId: 'gen-1', epoch: 1 },
       },
@@ -141,9 +133,9 @@ describe('HomePage, SearchForm, and SearchPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Getting Started')).toBeInTheDocument()
     })
-    expect(screen.queryByText('Go Spec')).not.toBeInTheDocument()
+    expect(fetchSearchSpy).toHaveBeenCalledTimes(1)
     expect(fetchSearchSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ query: '', category: 'guide', page: 1, limit: 100 }),
+      expect.objectContaining({ query: '', category: 'guide', topic: 'rust', page: 1, limit: 15 }),
       expect.any(AbortSignal),
     )
     expect(loadLocalSpy).not.toHaveBeenCalled()

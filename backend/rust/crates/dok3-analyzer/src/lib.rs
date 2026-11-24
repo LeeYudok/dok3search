@@ -1,18 +1,24 @@
 //! Shared text analysis for indexing and query normalization.
 
+pub mod chosung;
+pub mod embedding;
 mod identifier;
 pub mod kodic;
 mod korean;
 mod ngram;
 mod profile;
+pub mod synonyms;
 
 use std::collections::HashSet;
 
+pub use chosung::{extract_chosung, is_chosung_query};
+pub use embedding::{EMBEDDING_DIM, cosine_similarity, embed_text};
 pub use ngram::generate_char_ngrams;
 pub use profile::{
     AnalyzerConfig, AnalyzerEngine, AnalyzerProfile, AnalyzerRuntimeInfo, BUILTIN_ANALYZER_VERSION,
     active_analyzer_version, active_profile, configure_runtime,
 };
+pub use synonyms::{canonical_synonym, configure_synonyms, expand_synonyms, load_synonyms_file};
 
 /// Initializes the analyzer. Analysis requires no runtime setup.
 pub fn init() {}

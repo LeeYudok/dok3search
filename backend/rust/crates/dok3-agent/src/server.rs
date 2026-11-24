@@ -673,11 +673,13 @@ fn build_search_request(
             language,
             source_id,
             tags,
+            ..SearchFilters::default()
         },
         page,
         limit,
         include_snippets,
         requested_scope,
+        ..SearchRequest::default()
     })
 }
 

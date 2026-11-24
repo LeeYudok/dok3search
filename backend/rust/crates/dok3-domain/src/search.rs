@@ -20,6 +20,10 @@ const fn default_include_snippets() -> bool {
     true
 }
 
+const fn default_true() -> bool {
+    true
+}
+
 /// Lifecycle state of the search reader associated with a snapshot.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -40,17 +44,44 @@ pub struct SearchSnapshotMeta {
     pub reader_state: ReaderState,
 }
 
+/// Sort order for search results.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum SearchSort {
+    #[default]
+    Relevance,
+    DateDesc,
+    DateAsc,
+    TitleAsc,
+}
+
+/// Retrieval mode for search queries.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum SearchMode {
+    #[default]
+    Keyword,
+    Hybrid,
+    Semantic,
+}
+
 /// Structured query filters applied alongside ACL scope enforcement.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SearchFilters {
     #[serde(default)]
     pub category: Option<String>,
     #[serde(default)]
+    pub topic: Option<String>,
+    #[serde(default)]
     pub language: Option<String>,
     #[serde(default)]
     pub source_id: Option<SourceId>,
     #[serde(default)]
     pub tags: Vec<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
 }
 
 /// Search request contract. `requested_scope` is advisory only and cannot escalate ACLs.
@@ -68,6 +99,12 @@ pub struct SearchRequest {
     pub include_snippets: bool,
     #[serde(default)]
     pub requested_scope: Option<AclScope>,
+    #[serde(default)]
+    pub sort: SearchSort,
+    #[serde(default)]
+    pub search_mode: SearchMode,
+    #[serde(default = "default_true")]
+    pub fuzzy: bool,
 }
 
 impl Default for SearchRequest {
@@ -79,6 +116,9 @@ impl Default for SearchRequest {
             limit: default_limit(),
             include_snippets: default_include_snippets(),
             requested_scope: None,
+            sort: SearchSort::Relevance,
+            search_mode: SearchMode::Keyword,
+            fuzzy: true,
         }
     }
 }
@@ -174,6 +214,21 @@ pub struct CategoryCount {
     pub count: usize,
 }
 
+/// Aggregated hit count for a single guide topic computed under the caller's effective ACL.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TopicCount {
+    pub id: String,
+    pub label: String,
+    pub count: usize,
+}
+
+/// Generic facet value count (tags, sources).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct FacetCount {
+    pub value: String,
+    pub count: usize,
+}
+
 /// Search response payload containing paginated hits, category facets, and snapshot metadata.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SearchResponse {
@@ -184,6 +239,12 @@ pub struct SearchResponse {
     pub total_pages: usize,
     pub total_unfiltered_hits: usize,
     pub category_counts: Vec<CategoryCount>,
+    #[serde(default)]
+    pub topic_counts: Vec<TopicCount>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tag_facets: Vec<FacetCount>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub source_facets: Vec<FacetCount>,
     pub related_searches: Vec<String>,
     pub hits: Vec<SearchHit>,
     pub snapshot: SearchSnapshotMeta,

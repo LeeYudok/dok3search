@@ -322,6 +322,7 @@ fn maybe_compile_kodic(args: &[String]) -> Result<Option<String>, String> {
 fn configure_analyzer_from_config(
     config: &ServerConfig,
 ) -> Result<dok3_analyzer::AnalyzerRuntimeInfo, String> {
+    dok3_analyzer::configure_synonyms(config.synonyms_path.as_deref())?;
     let profile = match config.analyzer_profile.as_deref() {
         Some(raw) => raw.parse::<AnalyzerProfile>()?,
         None if config.dict_path.is_some() => AnalyzerProfile::NoriMixed,
