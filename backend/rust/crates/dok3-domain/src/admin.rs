@@ -243,6 +243,35 @@ pub struct DeleteSourceResponse {
     pub active_epoch: u64,
 }
 
+fn default_manual_category() -> String {
+    "manual".to_string()
+}
+
+/// Request payload for real-time single-document upsert (`PUT /api/v1/documents/{id}`).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct UpsertDocumentRequest {
+    pub title: String,
+    pub body: String,
+    #[serde(default = "default_manual_category")]
+    pub category: String,
+    #[serde(default)]
+    pub topic: Option<String>,
+    #[serde(default)]
+    pub source: Option<String>,
+    #[serde(default)]
+    pub tag: Option<String>,
+    #[serde(default)]
+    pub tags: Vec<String>,
+    #[serde(default)]
+    pub keywords: Vec<String>,
+    #[serde(default)]
+    pub language: Option<String>,
+    #[serde(default)]
+    pub date: Option<String>,
+    #[serde(default)]
+    pub acl_scope: Option<crate::acl::AclScope>,
+}
+
 /// Validates and normalizes a source identifier slug against `^[a-z0-9][a-z0-9_-]{0,63}$`.
 pub fn validate_source_id_slug(raw: &str) -> Result<String, Dok3Error> {
     let trimmed = raw.trim();

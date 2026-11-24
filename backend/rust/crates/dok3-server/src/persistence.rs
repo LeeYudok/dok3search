@@ -12,12 +12,13 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use dok3_connectors::{LocalFileConnector, build_document};
 use dok3_core::Dok3Error;
 use dok3_domain::{
-    ChangeEvent, ChangeJournalPort, ChangeKind, ClassificationPort, CreateSourceRequest,
-    DeleteSourceResponse, Document, DocumentClassification, DocumentId, DocumentStorePort,
-    GenerationId, IndexJobListResponse, IndexJobMode, IndexJobPort, IndexJobRecord, IndexJobState,
-    Principal, ReaderState, RegisteredSource, RevisionId, SearchPort, SearchRequest,
-    SearchResponse, SearchSnapshotMeta, Sequence, SourceKind, SourceListResponse,
-    SourceRegistryPort, TriggerIndexJobRequest, UpdateClassificationRequest,
+    AclScope, ChangeEvent, ChangeJournalPort, ChangeKind, ClassificationPort, CreateSourceRequest,
+    DeleteSourceResponse, Document, DocumentClassification, DocumentId, DocumentMutationPort,
+    DocumentSection, DocumentStorePort, GenerationId, IndexJobListResponse, IndexJobMode,
+    IndexJobPort, IndexJobRecord, IndexJobState, Principal, ReaderState, RegisteredSource,
+    RevisionId, SearchPort, SearchRequest, SearchResponse, SearchSnapshotMeta, SectionId, Sequence,
+    SourceId, SourceKind, SourceListResponse, SourceRegistryPort, TriggerIndexJobRequest,
+    UpdateClassificationRequest, UpsertDocumentRequest,
 };
 use dok3_index::{SCHEMA_VERSION, TantivyIndex};
 use dok3_index_manager::{
@@ -656,6 +657,75 @@ impl PersistentRuntime {
         Self::open_with_options(source_dir, data_dir, refresh_interval_secs, None)
     }
 
+    /// Fast startup: if a compatible active generation with documents already exists on disk,
+    /// return immediately so HTTP can serve while an incremental refresh runs in the background.
+    pub(crate) fn open_fast_startup(
+        source_dir: &Path,
+        data_dir: &Path,
+        refresh_interval_secs: Option<u64>,
+        classifier: Option<Arc<crate::llm_classifier::OfflineLlmClassifier>>,
+    ) -> Result<(Self, BuildReport, bool), String> {
+        let storage_dir = data_dir.join("storage");
+        let generations_dir = data_dir.join("generations");
+        if generations_dir.is_dir() {
+            quarantine_incompatible_generations(&generations_dir)?;
+            let store =
+                Arc::new(FileDocumentStore::open(&storage_dir).map_err(|err| err.to_string())?);
+            let journal =
+                Arc::new(FileChangeJournal::open(&storage_dir).map_err(|err| err.to_string())?);
+            let source_registry = SourceRegistry::open(&storage_dir, source_dir)?;
+            let classification_store =
+                ClassificationStore::open(&storage_dir)?.with_llm_classifier(classifier.clone());
+            let backend = LocalGenerationBackend::new(
+                generations_dir.clone(),
+                Arc::clone(&store),
+                Arc::clone(&journal),
+            );
+            let mut manager =
+                IndexManager::open(&generations_dir, backend, 0).map_err(|err| err.to_string())?;
+            manager
+                .reconcile_on_startup()
+                .map_err(|err| err.to_string())?;
+            let access = manager.reader_access();
+            if let Some(lease) = access.acquire() {
+                let doc_count = usize::try_from(lease.reader.doc_count()).unwrap_or(0);
+                if doc_count > 0 {
+                    let job_store = JobHistoryStore::open(
+                        storage_dir.join("index_jobs.json"),
+                        manager.state().active_generation.clone(),
+                        manager.state().active_epoch,
+                        refresh_interval_secs,
+                    )?;
+                    let manager = Arc::new(Mutex::new(manager));
+                    let search_port = Arc::new(ManagedSearchPort {
+                        access: access.clone(),
+                        _manager: Arc::clone(&manager),
+                    });
+                    let service = SearchService::new(search_port, Arc::clone(&store) as _);
+                    let runtime = Self {
+                        sources: Arc::new(Mutex::new(source_registry)),
+                        store,
+                        journal,
+                        manager,
+                        access,
+                        service,
+                        job_exec_lock: Mutex::new(()),
+                        jobs: Arc::new(Mutex::new(job_store)),
+                        classifications: Arc::new(Mutex::new(classification_store)),
+                    };
+                    let report = BuildReport {
+                        indexed: doc_count,
+                        skipped: Vec::new(),
+                    };
+                    return Ok((runtime, report, true));
+                }
+            }
+        }
+        let (runtime, report) =
+            Self::open_with_options(source_dir, data_dir, refresh_interval_secs, classifier)?;
+        Ok((runtime, report, false))
+    }
+
     pub(crate) fn open_with_options(
         source_dir: &Path,
         data_dir: &Path,
@@ -933,6 +1003,130 @@ impl PersistentRuntime {
             .lock()
             .map_err(|_| "persistent index manager mutex poisoned".to_string())?;
         manager.gc_retired().map_err(|err| err.to_string())
+    }
+}
+
+impl DocumentMutationPort for PersistentRuntime {
+    fn upsert_document(
+        &self,
+        id: &DocumentId,
+        req: &UpsertDocumentRequest,
+    ) -> Result<Document, Dok3Error> {
+        let doc_id_str = id.as_str().trim();
+        if doc_id_str.is_empty() {
+            return Err(Dok3Error::InvalidInput(
+                "document_id must not be empty".to_string(),
+            ));
+        }
+        if req.title.trim().is_empty() {
+            return Err(Dok3Error::InvalidInput(
+                "document title must not be empty".to_string(),
+            ));
+        }
+        let doc_id = DocumentId::new(doc_id_str.to_string());
+        let rev_id = content_revision(req.body.as_bytes());
+        let content_hash = rev_id.as_str().to_string();
+        let summary: String = req
+            .body
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ")
+            .chars()
+            .take(180)
+            .collect();
+        let tag = req
+            .tag
+            .as_deref()
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .map(str::to_string)
+            .or_else(|| req.tags.first().cloned())
+            .unwrap_or_else(|| req.category.clone());
+        let doc = Document {
+            id: doc_id.clone(),
+            revision_id: rev_id.clone(),
+            source_id: SourceId::new("api-nrt"),
+            source: req
+                .source
+                .as_deref()
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+                .unwrap_or("api-nrt")
+                .to_string(),
+            title: req.title.trim().to_string(),
+            summary,
+            category: req.category.trim().to_string(),
+            topic: req
+                .topic
+                .as_deref()
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+                .map(str::to_string),
+            tag,
+            tags: req.tags.clone(),
+            keywords: req.keywords.clone(),
+            language: req
+                .language
+                .as_deref()
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+                .unwrap_or("ko")
+                .to_string(),
+            version: "1.0".to_string(),
+            date: req.date.clone(),
+            source_uri: format!("api://documents/{doc_id_str}"),
+            sample_path: None,
+            acl_scope: req.acl_scope.clone().unwrap_or(AclScope::Public),
+            content_hash,
+            body: req.body.clone(),
+            markdown: Some(req.body.clone()),
+            sections: vec![DocumentSection {
+                section_id: SectionId::new("body"),
+                heading: req.title.trim().to_string(),
+                anchor: "body".to_string(),
+                order: 0,
+                line_start: 1,
+                line_end: req.body.lines().count().max(1),
+                body: req.body.clone(),
+            }],
+        };
+
+        let _ = self.store.put(doc.clone(), req.body.as_bytes())?;
+        let seq = self.journal.append(ChangeEvent {
+            sequence: Sequence::new(0),
+            document_id: doc_id,
+            revision_id: rev_id,
+            kind: ChangeKind::Upsert,
+        })?;
+        if let Some(lease) = self.access.acquire() {
+            lease.reader.upsert_document(&doc)?;
+            lease.reader.commit_and_reload(Some(seq))?;
+        }
+        Ok(doc)
+    }
+
+    fn delete_document(&self, id: &DocumentId) -> Result<bool, Dok3Error> {
+        let doc_id_str = id.as_str().trim();
+        if doc_id_str.is_empty() {
+            return Err(Dok3Error::InvalidInput(
+                "document_id must not be empty".to_string(),
+            ));
+        }
+        let doc_id = DocumentId::new(doc_id_str.to_string());
+        let existed = self.store.delete(&doc_id)?;
+        if existed {
+            let seq = self.journal.append(ChangeEvent {
+                sequence: Sequence::new(0),
+                document_id: doc_id.clone(),
+                revision_id: RevisionId::new("deleted"),
+                kind: ChangeKind::Delete,
+            })?;
+            if let Some(lease) = self.access.acquire() {
+                lease.reader.delete_document(&doc_id)?;
+                lease.reader.commit_and_reload(Some(seq))?;
+            }
+        }
+        Ok(existed)
     }
 }
 
@@ -4141,5 +4335,87 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    }
+
+    #[test]
+    fn nrt_upsert_delete_and_fast_startup_work() {
+        let src = tempfile::tempdir().unwrap();
+        let data = tempfile::tempdir().unwrap();
+        fs::write(src.path().join("init.md"), "# Init\n\nInitial document.\n").unwrap();
+
+        let (runtime, report) = PersistentRuntime::open(src.path(), data.path()).unwrap();
+        assert_eq!(report.indexed, 1);
+
+        // NRT upsert without full generation rebuild
+        let upserted = runtime
+            .upsert_document(
+                &DocumentId::new("nrt-doc-1"),
+                &UpsertDocumentRequest {
+                    title: "실시간 NRT 문서".into(),
+                    body: "실시간으로 즉시 색인되는 본문".into(),
+                    category: "manual".into(),
+                    topic: None,
+                    source: Some("nrt".into()),
+                    tag: Some("nrt".into()),
+                    tags: vec!["nrt".into()],
+                    keywords: vec![],
+                    language: Some("ko".into()),
+                    date: Some("2026-11-25".into()),
+                    acl_scope: None,
+                },
+            )
+            .unwrap();
+        assert_eq!(upserted.id.as_str(), "nrt-doc-1");
+
+        let public = Principal::anonymous_public();
+        let found = runtime
+            .service()
+            .search(
+                &public,
+                &SearchRequest {
+                    query: "즉시 색인되는".into(),
+                    ..SearchRequest::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(found.total_hits, 1);
+        assert_eq!(found.hits[0].document_id.as_str(), "nrt-doc-1");
+
+        // NRT delete
+        assert!(
+            runtime
+                .delete_document(&DocumentId::new("nrt-doc-1"))
+                .unwrap()
+        );
+        let after_del = runtime
+            .service()
+            .search(
+                &public,
+                &SearchRequest {
+                    query: "즉시 색인되는".into(),
+                    fuzzy: false,
+                    ..SearchRequest::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(after_del.total_hits, 0);
+        drop(runtime);
+
+        // Fast startup reuses existing valid generation immediately
+        let (fast_rt, fast_rep, needs_bg) =
+            PersistentRuntime::open_fast_startup(src.path(), data.path(), None, None).unwrap();
+        assert!(needs_bg);
+        assert!(fast_rep.indexed >= 1);
+        let init_hit = fast_rt
+            .service()
+            .search(
+                &public,
+                &SearchRequest {
+                    query: "Initial".into(),
+                    ..SearchRequest::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(init_hit.total_hits, 1);
     }
 }

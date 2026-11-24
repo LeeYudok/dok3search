@@ -19,7 +19,7 @@ use std::process::ExitCode;
 use std::sync::Arc;
 
 use dok3_analyzer::{AnalyzerConfig, AnalyzerProfile, configure_runtime};
-use dok3_api::ApiState;
+use dok3_api::{ApiState, AuthConfig};
 use dok3_core::ServerConfig;
 use dok3_domain::Principal;
 use dok3_search::{InMemorySearchRepository, SearchService};
@@ -136,7 +136,7 @@ where
         Arc::clone(&search_arc),
         mode,
         persistent_runtime.as_ref(),
-    );
+    )?;
     let app = mcp::build_app(state, static_dir.clone());
     // --- /slice-B: mcp ---
 
@@ -194,14 +194,35 @@ fn open_runtime(
     match (config.source_dir.as_deref(), config.data_dir.as_deref()) {
         (Some(root), Some(data_dir)) => {
             validate_source_bind(&config.bind, config.allow_non_loopback_bind)?;
-            let (runtime, report) = PersistentRuntime::open_with_options(
-                root,
-                data_dir,
-                config.refresh_interval_secs,
-                classifier,
-            )?;
+            let (runtime, report, needs_bg_refresh) = if config.fast_startup {
+                PersistentRuntime::open_fast_startup(
+                    root,
+                    data_dir,
+                    config.refresh_interval_secs,
+                    classifier,
+                )?
+            } else {
+                let (rt, rep) = PersistentRuntime::open_with_options(
+                    root,
+                    data_dir,
+                    config.refresh_interval_secs,
+                    classifier,
+                )?;
+                (rt, rep, false)
+            };
             print_build_report("persistent Markdown snapshot", &report);
             let runtime = Arc::new(runtime);
+            if needs_bg_refresh {
+                let bg_rt = Arc::clone(&runtime);
+                std::thread::Builder::new()
+                    .name("dok3-startup-refresh".to_string())
+                    .spawn(move || {
+                        if let Err(err) = bg_rt.refresh() {
+                            eprintln!("background startup refresh failed: {err}");
+                        }
+                    })
+                    .map_err(|err| format!("failed to spawn startup refresh: {err}"))?;
+            }
             let service = runtime.service().clone();
             Ok((service, "tantivy-persistent", Some(runtime)))
         }
@@ -229,19 +250,28 @@ fn build_api_state(
     search: Arc<SearchService>,
     mode: &str,
     persistent_runtime: Option<&Arc<PersistentRuntime>>,
-) -> ApiState {
+) -> Result<ApiState, String> {
     let mut state = ApiState::new(search);
     if config.admin_enabled {
         state = state.with_principal(Principal::local_admin());
     }
+    let auth = AuthConfig::from_parts(
+        &config.auth_mode,
+        &config.auth_user_header,
+        &config.auth_groups_header,
+        config.auth_tokens.as_deref(),
+    )
+    .map_err(|err| err.to_string())?;
+    state = state.with_auth(auth);
     if let Some(runtime) = persistent_runtime {
         state = state
             .with_index_jobs(Arc::clone(runtime) as _)
             .with_classification(Arc::clone(runtime) as _)
-            .with_sources(Arc::clone(runtime) as _);
+            .with_sources(Arc::clone(runtime) as _)
+            .with_document_mutations(Arc::clone(runtime) as _);
     }
     state.mode = mode.into();
-    state
+    Ok(state)
 }
 
 fn print_build_report(label: &str, report: &local_index::BuildReport) {
@@ -429,7 +459,8 @@ mod tests {
 
         let (service, mode, persistent) = open_runtime(&config, None).unwrap();
         let search_arc = Arc::new(service);
-        let state = build_api_state(&config, Arc::clone(&search_arc), mode, persistent.as_ref());
+        let state =
+            build_api_state(&config, Arc::clone(&search_arc), mode, persistent.as_ref()).unwrap();
         assert!(state.default_principal.is_admin);
         let app = mcp::build_app(state, None);
 
@@ -534,7 +565,7 @@ mod tests {
         let config = ServerConfig::default();
         let (service, mode, persistent) = open_runtime(&config, None).unwrap();
         let search = Arc::new(service);
-        let state = build_api_state(&config, search, mode, persistent.as_ref());
+        let state = build_api_state(&config, search, mode, persistent.as_ref()).unwrap();
         let app = mcp::build_app(state, None);
 
         for path in ["/health", "/health/ready"] {
