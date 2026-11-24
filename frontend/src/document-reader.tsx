@@ -10,9 +10,11 @@ import {
   type DocumentClassification,
   fetchClassification,
   fetchDocument,
+  isSourceCodePath,
   type ReaderDocument,
   updateClassification,
 } from './api'
+import { CodeDocumentViewer, parseSymbolOutlineItem } from './code-viewer'
 import { categories, categoryLabels, documentHeadingId, isReferenceTopic, loadLocalSamples, searchUrl, topics, type Document } from './documents'
 import type { ReferenceCorpus } from './reference-corpus'
 
@@ -385,7 +387,7 @@ export function DocumentPage({ id, corpora }: { id: string; corpora?: readonly R
       const ratio = maxScroll > 0 ? Math.min(1, Math.max(0, window.scrollY / maxScroll)) : 1
       bar.style.transform = 'scaleX(' + ratio + ')'
 
-      const headings = [...article.querySelectorAll<HTMLElement>('.article-copy h2[id]')]
+      const headings = [...article.querySelectorAll<HTMLElement>('.article-copy h2[id], .article-copy [data-symbol-anchor]')]
       const offset = 110
       let current = headings[0]
       for (const heading of headings) {
@@ -434,13 +436,21 @@ export function DocumentPage({ id, corpora }: { id: string; corpora?: readonly R
     }
   }, [doc])
 
+  const isCodeDoc = !corpus && Boolean(doc && isSourceCodePath(doc.samplePath) && doc.body.trim())
+  const codeOutline = useMemo(() => {
+    if (!isCodeDoc || !doc?.sections?.length) return []
+    return doc.sections
+      .map(parseSymbolOutlineItem)
+      .filter((item): item is NonNullable<typeof item> => item !== null)
+  }, [isCodeDoc, doc])
+
   const sections = useMemo(
     () => doc?.markdown ? markdownSections(doc.markdown, Boolean(corpus)) : [{ label: '본문', id: 'body' }],
     [doc, corpus],
   )
   const mainSections = sections.filter(({ depth }) => depth === undefined || depth === 2)
   const fallbackBody = Boolean(doc?.markdown && mainSections.length === 0)
-  const readerSummary = corpus ? '' : doc?.summary
+  const readerSummary = corpus || isCodeDoc ? '' : doc?.summary
   const tocSections = [
     ...(readerSummary ? [{ id: 'overview', label: '요약' }] : []),
     ...(fallbackBody ? [{ id: 'body', label: '본문' }] : mainSections),
@@ -464,7 +474,7 @@ export function DocumentPage({ id, corpora }: { id: string; corpora?: readonly R
         </div>
         {doc && <div className="read-progress" aria-hidden="true"><div ref={progress} /></div>}
       </header>
-      <main id="content" className="shell reader" ref={reader}>
+      <main id="content" className={isCodeDoc ? 'shell reader reader-code' : 'shell reader'} ref={reader}>
         {readerState.status === 'loading' && (
           <p className="empty" role="status">문서를 불러오는 중입니다.</p>
         )}
@@ -624,7 +634,21 @@ export function DocumentPage({ id, corpora }: { id: string; corpora?: readonly R
                   <h2 id="overview">요약</h2>
                   <p>{readerSummary}</p>
                 </section>}
-                {doc.markdown ? (
+                {isCodeDoc && doc ? (
+                  <CodeDocumentViewer
+                    body={doc.body}
+                    samplePath={doc.samplePath}
+                    sections={doc.sections ?? []}
+                    activeAnchor={activeSection}
+                    markdownFallbackRender={() =>
+                      doc.markdown ? (
+                        <MarkdownBody markdown={doc.markdown} sections={sections} samplePath={doc.samplePath} corpus={corpus} corpora={corpora} designDocs={designDocs} />
+                      ) : (
+                        <pre><code>{doc.body}</code></pre>
+                      )
+                    }
+                  />
+                ) : doc.markdown ? (
                   <section>
                     {fallbackBody && <h2 id="body">본문</h2>}
                     <MarkdownBody markdown={doc.markdown} sections={sections} samplePath={doc.samplePath} corpus={corpus} corpora={corpora} designDocs={designDocs} />
@@ -647,11 +671,24 @@ export function DocumentPage({ id, corpora }: { id: string; corpora?: readonly R
                   ))}
                 </div>
               </article>
-              <nav className="article-toc" aria-label="이 문서의 목차">
-                <strong>목차</strong>
-                {tocSections.map(({ id: secId, label }) => (
-                  <a key={secId} href={'#' + secId} aria-current={activeSection === secId ? 'location' : undefined}>{label}</a>
-                ))}
+              <nav className="article-toc" aria-label={isCodeDoc ? '심볼 목차' : '이 문서의 목차'}>
+                <strong>{isCodeDoc ? '심볼' : '목차'}</strong>
+                {isCodeDoc && codeOutline.length > 0
+                  ? codeOutline.map((sym) => (
+                      <a
+                        key={sym.id}
+                        href={'#' + sym.id}
+                        className="toc-sym-row"
+                        aria-current={activeSection === sym.id ? 'location' : undefined}
+                      >
+                        <span className="toc-sym-kind">{sym.kind}</span>
+                        <span className="toc-sym-name">{sym.name}</span>
+                        <span className="toc-sym-line">L{sym.lineStart}</span>
+                      </a>
+                    ))
+                  : tocSections.map(({ id: secId, label }) => (
+                      <a key={secId} href={'#' + secId} aria-current={activeSection === secId ? 'location' : undefined}>{label}</a>
+                    ))}
               </nav>
             </div>
           </>

@@ -264,7 +264,14 @@ fn extract_tags(
         ("매뉴얼", "매뉴얼"),
     ];
     for (needle, label) in domain_tags {
-        if combined.contains(needle) {
+        let matched = if needle.is_ascii() {
+            combined
+                .split(|c: char| !c.is_alphanumeric())
+                .any(|w| w == needle)
+        } else {
+            combined.contains(needle)
+        };
+        if matched {
             push_unique(label);
         }
     }
@@ -355,6 +362,37 @@ fn is_stopword(token: &str) -> bool {
             | "have"
             | "not"
             | "use"
+            | "const"
+            | "let"
+            | "var"
+            | "function"
+            | "class"
+            | "interface"
+            | "type"
+            | "enum"
+            | "export"
+            | "import"
+            | "default"
+            | "async"
+            | "await"
+            | "return"
+            | "public"
+            | "private"
+            | "protected"
+            | "static"
+            | "fn"
+            | "pub"
+            | "struct"
+            | "trait"
+            | "impl"
+            | "mod"
+            | "func"
+            | "def"
+            | "method"
+            | "string"
+            | "number"
+            | "boolean"
+            | "void"
             | "있는"
             | "하는"
             | "합니다"

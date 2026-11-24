@@ -116,7 +116,54 @@ pub struct SearchHit {
     pub acl_scope: AclScope,
     pub has_paired_formats: bool,
     pub matched_section_id: Option<SectionId>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub matched_section_heading: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub matched_line_start: Option<usize>,
     pub score: f32,
+}
+
+/// Inline search query operators (`path:`, `ext:`, `sym:` / `symbol:`) extracted from raw queries.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ParsedQueryOperators {
+    pub free_query: String,
+    pub path_terms: Vec<String>,
+    pub ext_terms: Vec<String>,
+    pub symbol_terms: Vec<String>,
+}
+
+/// Extracts `path:<term>`, `ext:<ext>`, and `sym:<symbol>` operators from `raw`,
+/// leaving all remaining tokens in `free_query`.
+#[must_use]
+pub fn parse_query_operators(raw: &str) -> ParsedQueryOperators {
+    let mut out = ParsedQueryOperators::default();
+    let mut free = Vec::new();
+    for token in raw.split_whitespace() {
+        let lower = token.to_ascii_lowercase();
+        if let Some(val) = lower.strip_prefix("path:") {
+            let clean = val.trim_matches(|c: char| c == '/' || c == '\\');
+            if !clean.is_empty() {
+                out.path_terms.push(clean.to_string());
+                continue;
+            }
+        } else if let Some(val) = lower.strip_prefix("ext:") {
+            let clean = val.trim_start_matches('.');
+            if !clean.is_empty() {
+                out.ext_terms.push(clean.to_string());
+                continue;
+            }
+        } else if let Some(val) = lower
+            .strip_prefix("sym:")
+            .or_else(|| lower.strip_prefix("symbol:"))
+            && !val.is_empty()
+        {
+            out.symbol_terms.push(val.to_string());
+            continue;
+        }
+        free.push(token);
+    }
+    out.free_query = free.join(" ");
+    out
 }
 
 /// Aggregated hit count for a single category computed under the caller's effective ACL.

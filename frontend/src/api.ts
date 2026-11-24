@@ -14,6 +14,9 @@ export type SearchHitItem = {
   samplePath?: string
   topic?: ReferenceTopic
   hasPairedFormats: boolean
+  matchedSectionId?: string
+  matchedSectionHeading?: string
+  matchedLineStart?: number
 }
 
 export type CategoryCountItem = {
@@ -52,6 +55,14 @@ export type DocumentFormatPair = {
   yamlId: string
 }
 
+export type ReaderSectionItem = {
+  sectionId: string
+  heading: string
+  anchor: string
+  lineStart: number
+  lineEnd: number
+}
+
 export type ReaderDocument = {
   id: string
   title: string
@@ -66,7 +77,13 @@ export type ReaderDocument = {
   markdown?: string
   samplePath?: string
   topic?: ReferenceTopic
+  sections?: ReaderSectionItem[]
   formats?: DocumentFormatPair
+}
+
+export function isSourceCodePath(path?: string): boolean {
+  if (!path) return false
+  return /\.(ts|tsx|mts|cts|js|jsx|mjs|cjs|rs|go|java|py|sql|jsp|txt|log)$/i.test(path)
 }
 
 export type ClassificationSource = 'rule' | 'manual' | 'agent'
@@ -178,6 +195,11 @@ function parseSearchHit(raw: unknown): SearchHitItem {
     samplePath: optionalString(raw, 'sample_path'),
     topic: optionalTopic(raw),
     hasPairedFormats: expectBoolean(raw, 'has_paired_formats'),
+    matchedSectionId: optionalString(raw, 'matched_section_id'),
+    matchedSectionHeading: optionalString(raw, 'matched_section_heading'),
+    matchedLineStart: typeof raw.matched_line_start === 'number' && Number.isFinite(raw.matched_line_start)
+      ? raw.matched_line_start
+      : undefined,
   }
 }
 
@@ -242,6 +264,17 @@ function parseDocumentDetail(raw: unknown): ReaderDocument {
     markdown: optionalString(raw, 'markdown'),
     samplePath: optionalString(raw, 'sample_path'),
     topic: optionalTopic(raw),
+    sections: Array.isArray(raw.sections)
+      ? raw.sections
+          .filter((entry): entry is Record<string, unknown> => isRecord(entry) && typeof entry.section_id === 'string')
+          .map((entry) => ({
+            sectionId: entry.section_id as string,
+            heading: typeof entry.heading === 'string' ? entry.heading : '',
+            anchor: typeof entry.anchor === 'string' ? entry.anchor : '',
+            lineStart: typeof entry.line_start === 'number' && Number.isFinite(entry.line_start) ? entry.line_start : 1,
+            lineEnd: typeof entry.line_end === 'number' && Number.isFinite(entry.line_end) ? entry.line_end : 1,
+          }))
+      : undefined,
     formats,
   }
 }
