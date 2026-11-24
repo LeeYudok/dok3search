@@ -1,8 +1,13 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import * as api from '../api'
+import * as documents from '../documents'
 import { DocumentPage } from '../document-reader'
 import { HomePage, SearchForm, SearchPage } from '../main'
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 describe('HomePage, SearchForm, and SearchPage', () => {
   it('renders HomePage with recommended chips and handles SearchForm autocomplete + keyboard nav', async () => {
@@ -78,6 +83,90 @@ describe('HomePage, SearchForm, and SearchPage', () => {
       'href',
       expect.stringContaining('#function-toarraybuffer'),
     )
+  })
+
+  it('loads guide search via API without importing local sample chunks on category=guide and topic=rust', async () => {
+    window.history.replaceState({}, '', '/search?category=guide&topic=rust')
+    vi.spyOn(api, 'fetchRecommendations').mockResolvedValue([])
+    const loadLocalSpy = vi.spyOn(documents, 'loadLocalSamples')
+    const fetchSearchSpy = vi.spyOn(api, 'fetchSearch').mockResolvedValue({
+      mode: 'api',
+      result: {
+        query: '',
+        page: 1,
+        limit: 100,
+        totalHits: 2,
+        totalPages: 1,
+        totalUnfilteredHits: 2,
+        categoryCounts: [{ id: 'guide', label: '개발 가이드', count: 2 }],
+        topicCounts: [],
+        relatedSearches: ['rust'],
+        hits: [
+          {
+            documentId: 'local-markdown:samples/rust-book/ch01.md',
+            title: 'Getting Started',
+            summary: 'rust book',
+            snippet: 'Rust intro',
+            category: 'guide',
+            topic: 'rust',
+            source: 'The Rust Programming Language',
+            tag: 'rust',
+            hasPairedFormats: false,
+          },
+          {
+            documentId: 'local-markdown:samples/go-reference/ch01.md',
+            title: 'Go Spec',
+            summary: 'go ref',
+            snippet: 'Go intro',
+            category: 'guide',
+            topic: 'go',
+            source: 'The Go Programming Language Specification',
+            tag: 'go',
+            hasPairedFormats: false,
+          },
+        ],
+        snapshot: { generationId: 'gen-1', epoch: 1 },
+      },
+    })
+
+    render(<SearchPage />)
+    await waitFor(() => {
+      expect(screen.getByText('Getting Started')).toBeInTheDocument()
+    })
+    expect(screen.queryByText('Go Spec')).not.toBeInTheDocument()
+    expect(fetchSearchSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ query: '', category: 'guide', page: 1, limit: 100 }),
+      expect.any(AbortSignal),
+    )
+    expect(loadLocalSpy).not.toHaveBeenCalled()
+  })
+
+  it('does not load local sample chunks when general search API returns zero hits', async () => {
+    window.history.replaceState({}, '', '/search?q=nonexistent-term-xyz')
+    vi.spyOn(api, 'fetchRecommendations').mockResolvedValue([])
+    const loadLocalSpy = vi.spyOn(documents, 'loadLocalSamples')
+    vi.spyOn(api, 'fetchSearch').mockResolvedValue({
+      mode: 'api',
+      result: {
+        query: 'nonexistent-term-xyz',
+        page: 1,
+        limit: 15,
+        totalHits: 0,
+        totalPages: 0,
+        totalUnfilteredHits: 0,
+        categoryCounts: [{ id: 'guide', label: '개발 가이드', count: 0 }],
+        topicCounts: [],
+        relatedSearches: [],
+        hits: [],
+        snapshot: { generationId: 'gen-1', epoch: 1 },
+      },
+    })
+
+    render(<SearchPage />)
+    await waitFor(() => {
+      expect(screen.getByText(/검색 조건에 맞는 문서가 없습니다/)).toBeInTheDocument()
+    })
+    expect(loadLocalSpy).not.toHaveBeenCalled()
   })
 })
 

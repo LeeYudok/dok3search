@@ -79,18 +79,15 @@ export async function fetchSearchPage(
     }
   }
   async function searchGuideMerged(topicFilter = ''): Promise<{ result: SearchViewResult; mode: DataSourceMode }> {
-    const [{ documents, searchLocalDocuments }, corpora] = await Promise.all([
-      loadLocalSamples(),
-      getReferences(),
-    ])
-    const allDocuments = [...new Map(documents.concat(corpora.flatMap(({ documents }) => documents)).map((doc) => [doc.id, doc])).values()]
-    const allLocal = searchLocalDocuments(query, '', 1, pageSize, allDocuments)
-    const guideDocuments = allDocuments.filter((doc) => doc.category === 'guide')
-    const localGuideAll = searchLocalDocuments(query, 'guide', 1, Math.max(1, guideDocuments.length), guideDocuments)
-    const localGuide = topicFilter
-      ? searchLocalDocuments(query, 'guide', 1, Math.max(1, guideDocuments.length), guideDocuments, topicFilter)
-      : localGuideAll
-    const localFallback = () => {
+    const localFallback = async () => {
+      const [{ documents, searchLocalDocuments }, corpora] = await Promise.all([
+        loadLocalSamples(),
+        getReferences(),
+      ])
+      const allDocuments = [...new Map(documents.concat(corpora.flatMap(({ documents }) => documents)).map((doc) => [doc.id, doc])).values()]
+      const allLocal = searchLocalDocuments(query, '', 1, pageSize, allDocuments)
+      const guideDocuments = allDocuments.filter((doc) => doc.category === 'guide')
+      const localGuideAll = searchLocalDocuments(query, 'guide', 1, Math.max(1, guideDocuments.length), guideDocuments)
       const localPage = searchLocalDocuments(
         query, 'guide', page, pageSize, guideDocuments, topicFilter,
       )
@@ -122,18 +119,11 @@ export async function fetchSearchPage(
       return localFallback()
     }
 
-    const allGuideHits = mergeSearchHits(serverHits, localGuideAll.hits)
+    const allGuideHits = mergeSearchHits(serverHits)
     const visibleHits = topicFilter ? allGuideHits.filter((hit) => hit.topic === topicFilter) : allGuideHits
     const pageCount = Math.ceil(visibleHits.length / pageSize)
     const currentPage = pageCount > 0 ? Math.max(1, Math.min(page, pageCount)) : 1
-    const apiCounts = new Map(apiFirst.categoryCounts.map(({ id, count }) => [id, count]))
-    const localCounts = new Map(allLocal.categoryCounts.map(({ id, count }) => [id, count]))
-    const categoryCounts = categories.map((item) => ({
-      ...item,
-      count: item.id === 'guide'
-        ? allGuideHits.length
-        : Math.max(apiCounts.get(item.id) ?? 0, localCounts.get(item.id) ?? 0),
-    }))
+    const categoryCounts = apiFirst.categoryCounts.filter(({ id }) => categories.some((item) => item.id === id))
 
     return {
       result: {
@@ -142,13 +132,13 @@ export async function fetchSearchPage(
         limit: pageSize,
         totalHits: visibleHits.length,
         totalPages: pageCount,
-        totalUnfilteredHits: categoryCounts.reduce((total, item) => total + item.count, 0),
+        totalUnfilteredHits: apiFirst.totalUnfilteredHits,
         categoryCounts,
         topicCounts: topics.map((item) => ({
           ...item,
           count: allGuideHits.filter((hit) => hit.topic === item.id).length,
         })),
-        relatedSearches: localGuide.relatedSearches,
+        relatedSearches: apiFirst.relatedSearches,
         hits: visibleHits.slice((currentPage - 1) * pageSize, currentPage * pageSize),
         snapshot: apiFirst.snapshot,
       },
@@ -210,21 +200,12 @@ export async function fetchSearchPage(
   }
   if (search.mode !== 'api') return searchAllLocal()
   const categoryCounts = search.result.categoryCounts.filter(({ id }) => categories.some((item) => item.id === id))
-  let topicCounts: SearchViewResult['topicCounts'] = []
-  if (search.result.hits.length === 0 && query) {
-    const [{ documents, searchLocalDocuments }, corpora] = await Promise.all([
-      loadLocalSamples(),
-      getReferences().catch(() => []),
-    ])
-    const referenceDocuments = documents.filter((doc) => doc.topic).concat(corpora.flatMap(({ documents }) => documents))
-    topicCounts = searchLocalDocuments(query, '', 1, pageSize, referenceDocuments).topicCounts
-  }
   return {
     mode: search.mode,
     result: {
       ...search.result,
       categoryCounts,
-      topicCounts,
+      topicCounts: [],
     },
   }
 }
