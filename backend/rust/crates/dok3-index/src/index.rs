@@ -698,7 +698,10 @@ fn find_term_byte_offset(text: &str, term: &str) -> Option<usize> {
             .position(|w| w.eq_ignore_ascii_case(needle))
             .filter(|&pos| text.is_char_boundary(pos))
     } else {
-        text.to_lowercase().find(term)
+        let lower = text.to_lowercase();
+        let lower_pos = lower.find(term)?;
+        let char_idx = lower[..lower_pos].chars().count();
+        text.char_indices().nth(char_idx).map(|(idx, _)| idx)
     }
 }
 
