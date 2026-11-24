@@ -1431,3 +1431,116 @@ async fn analyze_endpoint_returns_tokens_and_rejects_empty_or_oversized_text() {
         .unwrap();
     assert_eq!(empty.status(), StatusCode::BAD_REQUEST);
 }
+
+#[tokio::test]
+async fn trusted_header_and_bearer_auth_enforce_group_acl_and_401() {
+    let docs = vec![Document {
+        id: DocumentId::new("sec-doc-1"),
+        revision_id: RevisionId::new("rev-1"),
+        source_id: SourceId::new("vault"),
+        source: "보안 문서".to_string(),
+        title: "내부 보안 지침".to_string(),
+        summary: "대외비".to_string(),
+        category: "policy".to_string(),
+        topic: None,
+        tag: "보안".to_string(),
+        tags: vec!["보안".to_string()],
+        keywords: vec![],
+        language: "ko".to_string(),
+        version: "1.0".to_string(),
+        date: None,
+        source_uri: "internal://sec-doc-1".to_string(),
+        sample_path: None,
+        acl_scope: AclScope::internal("security"),
+        content_hash: "h".to_string(),
+        body: "기밀 내용".to_string(),
+        markdown: None,
+        sections: vec![],
+    }];
+    let repo = Arc::new(InMemorySearchRepository::new(docs, vec![]));
+    let service = Arc::new(SearchService::new(repo.clone(), repo));
+
+    // 1. trusted_header mode
+    let auth_hdr =
+        dok3_api::AuthConfig::from_parts("trusted_header", "X-Auth-User", "X-Auth-Groups", None)
+            .unwrap();
+    let app_hdr = build_router(
+        ApiState::new(Arc::clone(&service)).with_auth(auth_hdr),
+        None,
+    );
+
+    // Without user header -> anonymous_public -> cannot read internal:security doc
+    let anon_doc = app_hdr
+        .clone()
+        .oneshot(
+            Request::get("/api/v1/documents/sec-doc-1")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(anon_doc.status(), StatusCode::FORBIDDEN);
+
+    // With X-Auth-User + X-Auth-Groups: security -> allowed + /api/v1/auth/me reflects scopes
+    let authed_doc = app_hdr
+        .clone()
+        .oneshot(
+            Request::get("/api/v1/documents/sec-doc-1")
+                .header("X-Auth-User", "alice")
+                .header("X-Auth-Groups", "security,eng")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(authed_doc.status(), StatusCode::OK);
+
+    let (_, _, me): (_, _, Value) = response_json(
+        app_hdr
+            .oneshot(
+                Request::get("/api/v1/auth/me")
+                    .header("X-Auth-User", "alice")
+                    .header("X-Auth-Groups", "security,admin")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap(),
+    )
+    .await;
+    assert_eq!(me["subject"], "alice");
+    assert_eq!(me["is_admin"], true);
+
+    // 2. bearer mode
+    let auth_bearer = dok3_api::AuthConfig::from_parts(
+        "bearer",
+        "X-Auth-User",
+        "X-Auth-Groups",
+        Some("tok-sec:bob:security"),
+    )
+    .unwrap();
+    let app_bearer = build_router(ApiState::new(service).with_auth(auth_bearer), None);
+
+    let bad_tok = app_bearer
+        .clone()
+        .oneshot(
+            Request::get("/api/v1/auth/me")
+                .header(header::AUTHORIZATION, "Bearer wrong")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(bad_tok.status(), StatusCode::UNAUTHORIZED);
+
+    let ok_tok = app_bearer
+        .oneshot(
+            Request::get("/api/v1/documents/sec-doc-1")
+                .header(header::AUTHORIZATION, "Bearer tok-sec")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(ok_tok.status(), StatusCode::OK);
+}

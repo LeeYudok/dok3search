@@ -1,5 +1,7 @@
 //! Axum HTTP router, security headers, API error mapping, and static SPA hosting.
 
+pub mod auth;
+
 use std::future::Future;
 use std::net::SocketAddr;
 use std::path::PathBuf;
@@ -16,9 +18,9 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::{any, delete, get, post};
 use dok3_core::Dok3Error;
 use dok3_domain::{
-    ClassificationPort, CreateSourceRequest, DocumentId, IndexJobPort, Principal, SearchRequest,
-    SearchResponse, SectionId, SectionReadRequest, SourceRegistryPort, TriggerIndexJobRequest,
-    UpdateClassificationRequest,
+    ClassificationPort, CreateSourceRequest, DocumentId, DocumentMutationPort, IndexJobPort,
+    Principal, SearchRequest, SearchResponse, SectionId, SectionReadRequest, SourceRegistryPort,
+    TriggerIndexJobRequest, UpdateClassificationRequest, UpsertDocumentRequest,
 };
 use dok3_search::SearchService;
 use serde::{Deserialize, Serialize};
@@ -28,6 +30,7 @@ use tower_http::compression::predicate::{DefaultPredicate, NotForContentType, Pr
 use tower_http::services::{ServeDir, ServeFile};
 
 /// Re-exported so callers can compose extra routes without a direct `axum` dependency.
+pub use auth::AuthConfig;
 pub use axum::Router;
 
 const CSP_POLICY: &str = "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'";
@@ -126,6 +129,8 @@ pub struct ApiState {
     pub index_jobs: Option<Arc<dyn IndexJobPort>>,
     pub classification: Option<Arc<dyn ClassificationPort>>,
     pub sources: Option<Arc<dyn SourceRegistryPort>>,
+    pub document_mutations: Option<Arc<dyn DocumentMutationPort>>,
+    pub auth: AuthConfig,
     metrics: Arc<HttpMetrics>,
 }
 
@@ -140,6 +145,8 @@ impl ApiState {
             index_jobs: None,
             classification: None,
             sources: None,
+            document_mutations: None,
+            auth: AuthConfig::default(),
             metrics: Arc::new(HttpMetrics::new()),
         }
     }
@@ -169,6 +176,20 @@ impl ApiState {
     #[must_use]
     pub fn with_sources(mut self, sources: Arc<dyn SourceRegistryPort>) -> Self {
         self.sources = Some(sources);
+        self
+    }
+
+    /// Attaches a real-time document mutation port for `PUT`/`DELETE /api/v1/documents/{id}`.
+    #[must_use]
+    pub fn with_document_mutations(mut self, mutations: Arc<dyn DocumentMutationPort>) -> Self {
+        self.document_mutations = Some(mutations);
+        self
+    }
+
+    /// Configures per-request authentication (`DOK3_AUTH_MODE`).
+    #[must_use]
+    pub fn with_auth(mut self, auth: AuthConfig) -> Self {
+        self.auth = auth;
         self
     }
 }
@@ -204,6 +225,12 @@ pub fn build_router_with_extra(
 
     let doc_classification_router = Router::new()
         .route(
+            "/api/v1/documents/{id}",
+            get(get_document)
+                .put(upsert_document)
+                .delete(delete_document),
+        )
+        .route(
             "/api/v1/documents/{id}/classification",
             get(get_document_classification).patch(update_document_classification),
         )
@@ -221,6 +248,7 @@ pub fn build_router_with_extra(
         // checks and the frontend dev proxy can share one endpoint.
         .route("/health", get(health_ready))
         .route("/health/ready", get(health_ready))
+        .route("/api/v1/auth/me", get(auth_me))
         .route("/api/v1/corpora", get(list_corpora))
         .route("/api/v1/search", post(search))
         .route("/api/v1/search/analyze", post(analyze_search_text))
@@ -228,7 +256,6 @@ pub fn build_router_with_extra(
             "/api/v1/search/recommendations",
             get(recommend_search_terms),
         )
-        .route("/api/v1/documents/{id}", get(get_document))
         .route(
             "/api/v1/documents/{id}/original",
             get(get_document_original),
@@ -381,12 +408,51 @@ struct ApiErrorBody {
     message: String,
 }
 
+enum ApiFailure {
+    Domain(Dok3Error),
+    Unauthorized(&'static str),
+}
+
 struct ApiError(Dok3Error);
 
 impl From<Dok3Error> for ApiError {
     fn from(err: Dok3Error) -> Self {
         Self(err)
     }
+}
+
+impl From<Dok3Error> for ApiFailure {
+    fn from(err: Dok3Error) -> Self {
+        Self::Domain(err)
+    }
+}
+
+impl From<ApiError> for ApiFailure {
+    fn from(err: ApiError) -> Self {
+        Self::Domain(err.0)
+    }
+}
+
+impl From<auth::AuthRejection> for ApiFailure {
+    fn from(rej: auth::AuthRejection) -> Self {
+        Self::Unauthorized(rej.0)
+    }
+}
+
+impl IntoResponse for ApiFailure {
+    fn into_response(self) -> Response {
+        match self {
+            Self::Domain(err) => ApiError(err).into_response(),
+            Self::Unauthorized(msg) => auth::AuthRejection(msg).into_response(),
+        }
+    }
+}
+
+fn resolve_principal(state: &ApiState, headers: &HeaderMap) -> Result<Principal, ApiFailure> {
+    state
+        .auth
+        .resolve_principal(headers, &state.default_principal)
+        .map_err(ApiFailure::from)
 }
 
 impl IntoResponse for ApiError {
@@ -418,10 +484,35 @@ async fn health_ready(State(state): State<ApiState>) -> impl IntoResponse {
     Json(state.search.health_ready(state.mode))
 }
 
-async fn list_corpora(State(state): State<ApiState>) -> Result<impl IntoResponse, ApiError> {
-    let response = state
-        .search
-        .list_corpora(&state.default_principal, state.mode)?;
+#[derive(Serialize)]
+struct AuthMeResponse {
+    subject: String,
+    allowed_scopes: Vec<String>,
+    is_admin: bool,
+}
+
+async fn auth_me(
+    State(state): State<ApiState>,
+    headers: HeaderMap,
+) -> Result<impl IntoResponse, ApiFailure> {
+    let principal = resolve_principal(&state, &headers)?;
+    Ok(Json(AuthMeResponse {
+        subject: principal.subject,
+        allowed_scopes: principal
+            .allowed_scopes
+            .iter()
+            .map(ToString::to_string)
+            .collect(),
+        is_admin: principal.is_admin,
+    }))
+}
+
+async fn list_corpora(
+    State(state): State<ApiState>,
+    headers: HeaderMap,
+) -> Result<impl IntoResponse, ApiFailure> {
+    let principal = resolve_principal(&state, &headers)?;
+    let response = state.search.list_corpora(&principal, state.mode)?;
     Ok(Json(response))
 }
 
@@ -437,11 +528,13 @@ struct RecommendationsQuery {
 
 async fn recommend_search_terms(
     State(state): State<ApiState>,
+    headers: HeaderMap,
     query: Result<Query<RecommendationsQuery>, QueryRejection>,
-) -> Result<impl IntoResponse, ApiError> {
+) -> Result<impl IntoResponse, ApiFailure> {
+    let principal = resolve_principal(&state, &headers)?;
     let Query(params) = query.map_err(|err| Dok3Error::InvalidInput(err.body_text()))?;
     let response = state.search.recommend_terms(
-        &state.default_principal,
+        &principal,
         &params.q,
         params.category.as_deref(),
         params.limit.unwrap_or(8),
@@ -451,15 +544,17 @@ async fn recommend_search_terms(
 
 async fn search(
     State(state): State<ApiState>,
+    headers: HeaderMap,
     payload: Result<Json<SearchApiPayload>, JsonRejection>,
-) -> Result<impl IntoResponse, ApiError> {
+) -> Result<impl IntoResponse, ApiFailure> {
+    let principal = resolve_principal(&state, &headers)?;
     let Json(payload) =
         payload.map_err(|err| ApiError(Dok3Error::InvalidInput(err.body_text())))?;
     let mut request = payload.search.normalized();
     if let Some(cursor) = payload.cursor.as_deref() {
         request.page = decode_search_cursor(cursor, &request)?;
     }
-    let response = state.search.search(&state.default_principal, &request)?;
+    let response = state.search.search(&principal, &request)?;
     let next_cursor = response
         .page
         .checked_add(1)
@@ -591,11 +686,13 @@ fn safe_attachment_filename(raw: &str) -> String {
 
 async fn get_document_original(
     State(state): State<ApiState>,
+    headers: HeaderMap,
     Path(id): Path<String>,
-) -> Result<Response, ApiError> {
+) -> Result<Response, ApiFailure> {
+    let principal = resolve_principal(&state, &headers)?;
     let payload = state
         .search
-        .get_original(&state.default_principal, &DocumentId::new(id))
+        .get_original(&principal, &DocumentId::new(id))
         .map_err(ApiError)?;
     let filename = safe_attachment_filename(&payload.filename);
     let mut resp = Response::new(axum::body::Body::from(payload.bytes));
@@ -612,12 +709,79 @@ async fn get_document_original(
 
 async fn get_document(
     State(state): State<ApiState>,
+    headers: HeaderMap,
     Path(id): Path<String>,
-) -> Result<impl IntoResponse, ApiError> {
+) -> Result<impl IntoResponse, ApiFailure> {
+    let principal = resolve_principal(&state, &headers)?;
     let detail = state
         .search
-        .get_document(&state.default_principal, &DocumentId::new(id))?;
+        .get_document(&principal, &DocumentId::new(id))?;
     Ok(Json(detail))
+}
+
+#[derive(Debug, Serialize)]
+struct DeleteDocumentResponse {
+    document_id: String,
+    deleted: bool,
+}
+
+async fn upsert_document(
+    State(state): State<ApiState>,
+    Path(id): Path<String>,
+    body: Bytes,
+) -> Result<impl IntoResponse, ApiFailure> {
+    let port = state
+        .document_mutations
+        .as_ref()
+        .map(Arc::clone)
+        .ok_or_else(|| {
+            ApiError(Dok3Error::InvalidInput(
+                "document mutations require persistent mode (DOK3_SOURCE_DIR + DOK3_DATA_DIR)"
+                    .to_string(),
+            ))
+        })?;
+    let req = serde_json::from_slice::<UpsertDocumentRequest>(&body).map_err(|err| {
+        ApiError(Dok3Error::InvalidInput(format!(
+            "invalid document upsert JSON: {err}"
+        )))
+    })?;
+    let doc_id = DocumentId::new(id);
+    let doc = tokio::task::spawn_blocking(move || port.upsert_document(&doc_id, &req))
+        .await
+        .map_err(|err| {
+            ApiError(Dok3Error::Internal(format!(
+                "document upsert task failed: {err}"
+            )))
+        })??;
+    Ok(Json(doc))
+}
+
+async fn delete_document(
+    State(state): State<ApiState>,
+    Path(id): Path<String>,
+) -> Result<impl IntoResponse, ApiFailure> {
+    let port = state
+        .document_mutations
+        .as_ref()
+        .map(Arc::clone)
+        .ok_or_else(|| {
+            ApiError(Dok3Error::InvalidInput(
+                "document mutations require persistent mode (DOK3_SOURCE_DIR + DOK3_DATA_DIR)"
+                    .to_string(),
+            ))
+        })?;
+    let doc_id = DocumentId::new(id.clone());
+    let deleted = tokio::task::spawn_blocking(move || port.delete_document(&doc_id))
+        .await
+        .map_err(|err| {
+            ApiError(Dok3Error::Internal(format!(
+                "document delete task failed: {err}"
+            )))
+        })??;
+    Ok(Json(DeleteDocumentResponse {
+        document_id: id,
+        deleted,
+    }))
 }
 
 #[derive(Debug, Deserialize)]
@@ -628,9 +792,11 @@ struct SectionQueryParams {
 
 async fn get_section(
     State(state): State<ApiState>,
+    headers: HeaderMap,
     Path((id, sid)): Path<(String, String)>,
     query: Result<Query<SectionQueryParams>, QueryRejection>,
-) -> Result<impl IntoResponse, ApiError> {
+) -> Result<impl IntoResponse, ApiFailure> {
+    let principal = resolve_principal(&state, &headers)?;
     let Query(query) = query.map_err(|err| ApiError(Dok3Error::InvalidInput(err.body_text())))?;
     let mut req = SectionReadRequest {
         document_id: DocumentId::new(id),
@@ -641,7 +807,7 @@ async fn get_section(
     if let Some(max_chars) = query.max_chars {
         req.max_chars = max_chars;
     }
-    let response = state.search.get_section(&state.default_principal, &req)?;
+    let response = state.search.get_section(&principal, &req)?;
     Ok(Json(response))
 }
 
@@ -650,7 +816,11 @@ async fn require_admin_middleware(
     request: Request<axum::body::Body>,
     next: Next,
 ) -> Response {
-    if let Err(err) = check_admin_guards(&state.default_principal, &request) {
+    let principal = match resolve_principal(&state, request.headers()) {
+        Ok(p) => p,
+        Err(err) => return err.into_response(),
+    };
+    if let Err(err) = check_admin_guards(&principal, &request) {
         return err.into_response();
     }
     next.run(request).await
@@ -661,10 +831,14 @@ async fn require_admin_for_mutations_middleware(
     request: Request<axum::body::Body>,
     next: Next,
 ) -> Response {
-    if !matches!(*request.method(), Method::GET | Method::HEAD)
-        && let Err(err) = check_admin_guards(&state.default_principal, &request)
-    {
-        return err.into_response();
+    if !matches!(*request.method(), Method::GET | Method::HEAD) {
+        let principal = match resolve_principal(&state, request.headers()) {
+            Ok(p) => p,
+            Err(err) => return err.into_response(),
+        };
+        if let Err(err) = check_admin_guards(&principal, &request) {
+            return err.into_response();
+        }
     }
     next.run(request).await
 }
@@ -839,10 +1013,11 @@ fn require_classification(state: &ApiState) -> Result<&Arc<dyn ClassificationPor
 
 async fn get_document_classification(
     State(state): State<ApiState>,
+    headers: HeaderMap,
     Path(id): Path<String>,
-) -> Result<impl IntoResponse, ApiError> {
+) -> Result<impl IntoResponse, ApiFailure> {
     let port = Arc::clone(require_classification(&state)?);
-    let principal = state.default_principal.clone();
+    let principal = resolve_principal(&state, &headers)?;
     let doc_id = DocumentId::new(id);
     let classification =
         tokio::task::spawn_blocking(move || port.get_classification(&principal, &doc_id))
@@ -857,16 +1032,17 @@ async fn get_document_classification(
 
 async fn update_document_classification(
     State(state): State<ApiState>,
+    headers: HeaderMap,
     Path(id): Path<String>,
     body: Bytes,
-) -> Result<impl IntoResponse, ApiError> {
+) -> Result<impl IntoResponse, ApiFailure> {
     let port = Arc::clone(require_classification(&state)?);
     let req = serde_json::from_slice::<UpdateClassificationRequest>(&body).map_err(|err| {
         ApiError(Dok3Error::InvalidInput(format!(
             "invalid classification update JSON: {err}"
         )))
     })?;
-    let principal = state.default_principal.clone();
+    let principal = resolve_principal(&state, &headers)?;
     let doc_id = DocumentId::new(id);
     let updated =
         tokio::task::spawn_blocking(move || port.update_classification(&principal, &doc_id, &req))

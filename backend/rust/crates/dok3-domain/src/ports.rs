@@ -6,10 +6,12 @@ use crate::acl::Principal;
 use crate::admin::{
     CreateSourceRequest, DeleteSourceResponse, DocumentClassification, IndexJobListResponse,
     IndexJobRecord, RegisteredSource, SourceListResponse, TriggerIndexJobRequest,
-    UpdateClassificationRequest,
+    UpdateClassificationRequest, UpsertDocumentRequest,
 };
 use crate::change::ChangeEvent;
-use crate::document::{DocumentDetail, ParsedDocument, SectionReadRequest, SectionReadResponse};
+use crate::document::{
+    Document, DocumentDetail, ParsedDocument, SectionReadRequest, SectionReadResponse,
+};
 use crate::ids::{DocumentId, Sequence};
 use crate::search::{
     CorpusCatalogEntry, RecommendedTerm, SearchRequest, SearchResponse, SearchSnapshotMeta,
@@ -121,4 +123,14 @@ pub trait SourceRegistryPort: Send + Sync {
     fn list_sources(&self) -> Result<SourceListResponse, Dok3Error>;
     fn register_source(&self, req: &CreateSourceRequest) -> Result<RegisteredSource, Dok3Error>;
     fn delete_source(&self, source_id: &str) -> Result<DeleteSourceResponse, Dok3Error>;
+}
+
+/// Port for real-time single-document NRT upsert and delete mutations.
+pub trait DocumentMutationPort: Send + Sync {
+    fn upsert_document(
+        &self,
+        id: &DocumentId,
+        req: &UpsertDocumentRequest,
+    ) -> Result<Document, Dok3Error>;
+    fn delete_document(&self, id: &DocumentId) -> Result<bool, Dok3Error>;
 }

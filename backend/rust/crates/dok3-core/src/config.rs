@@ -34,6 +34,16 @@ pub struct ServerConfig {
     pub classifier_model: Option<String>,
     /// Optional path to custom comma-separated synonyms file (`DOK3_SYNONYMS_PATH`).
     pub synonyms_path: Option<PathBuf>,
+    /// Serves existing valid PVC generation immediately and refreshes in background (`DOK3_FAST_STARTUP`).
+    pub fast_startup: bool,
+    /// Authentication mode (`public`, `trusted_header`, `bearer`) via `DOK3_AUTH_MODE`.
+    pub auth_mode: String,
+    /// Header carrying authenticated subject in `trusted_header` mode (`DOK3_AUTH_USER_HEADER`).
+    pub auth_user_header: String,
+    /// Header carrying comma-separated groups/scopes in `trusted_header` mode (`DOK3_AUTH_GROUPS_HEADER`).
+    pub auth_groups_header: String,
+    /// Semicolon-separated `token:subject:scope1,scope2[:admin]` entries for `bearer` mode (`DOK3_AUTH_TOKENS`).
+    pub auth_tokens: Option<String>,
 }
 
 impl Default for ServerConfig {
@@ -54,6 +64,11 @@ impl Default for ServerConfig {
             classifier_endpoint: None,
             classifier_model: None,
             synonyms_path: None,
+            fast_startup: true,
+            auth_mode: "public".to_string(),
+            auth_user_header: "X-Auth-User".to_string(),
+            auth_groups_header: "X-Auth-Groups".to_string(),
+            auth_tokens: None,
         }
     }
 }
@@ -142,6 +157,33 @@ impl ServerConfig {
             .map(|v| v.trim().to_string())
             .filter(|v| !v.is_empty());
         config.synonyms_path = non_empty_path(lookup("DOK3_SYNONYMS_PATH"));
+        if let Some(fast_raw) = lookup("DOK3_FAST_STARTUP") {
+            config.fast_startup = parse_bool_flag("DOK3_FAST_STARTUP", &fast_raw)?;
+        }
+        if let Some(mode_raw) = lookup("DOK3_AUTH_MODE") {
+            let mode = mode_raw.trim().to_ascii_lowercase();
+            if !matches!(mode.as_str(), "public" | "trusted_header" | "bearer") {
+                return Err(Dok3Error::InvalidInput(format!(
+                    "invalid DOK3_AUTH_MODE value '{mode}' (expected public/trusted_header/bearer)"
+                )));
+            }
+            config.auth_mode = mode;
+        }
+        if let Some(user_hdr) = lookup("DOK3_AUTH_USER_HEADER") {
+            let trimmed = user_hdr.trim();
+            if !trimmed.is_empty() {
+                config.auth_user_header = trimmed.to_string();
+            }
+        }
+        if let Some(groups_hdr) = lookup("DOK3_AUTH_GROUPS_HEADER") {
+            let trimmed = groups_hdr.trim();
+            if !trimmed.is_empty() {
+                config.auth_groups_header = trimmed.to_string();
+            }
+        }
+        config.auth_tokens = lookup("DOK3_AUTH_TOKENS")
+            .map(|v| v.trim().to_string())
+            .filter(|v| !v.is_empty());
 
         Ok(config)
     }

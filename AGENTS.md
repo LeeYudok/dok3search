@@ -61,6 +61,11 @@
 - `DOK3_USER_DICT_PATH`: 선택적 `mecab-ko-dic` 사용자 사전 CSV 경로.
 - `DOK3_CLASSIFIER_ENDPOINT`: 오프라인 자동 분류기 OpenAI 호환 로컬/LAN 엔드포인트(`http://` 루프백·RFC1918 IP만 허용).
 - `DOK3_CLASSIFIER_MODEL`: 오프라인 자동 분류기 모델명(기본 `qwen2.5-3b-instruct`).
+- `DOK3_SYNONYMS_PATH`: 선택적 사용자 동의어 사전 파일 경로(쉼표 구분, `#` 주석).
+- `DOK3_FAST_STARTUP`: `true`(기본) 설정 시 디스크에 호환되는 활성 세대가 이미 존재하면 즉시 HTTP를 열고 초기 증분 색인은 백그라운드 스레드에서 실행한다.
+- `DOK3_AUTH_MODE`: 인증 모드(`public` 기본 | `trusted_header` | `bearer`).
+- `DOK3_AUTH_USER_HEADER`, `DOK3_AUTH_GROUPS_HEADER`: `trusted_header` 모드에서 사용자/그룹 헤더명(기본 `X-Auth-User`, `X-Auth-Groups`).
+- `DOK3_AUTH_TOKENS`: `bearer` 모드 토큰 정의(`token:subject:scope1,scope2[:admin];...`).
 
 - `--mcp-stdio`: MCP 서버를 표준입출력 모드로 시작한다.
 - `--acp-stdio`: ACP 어댑터를 표준입출력 모드로 시작한다(`POST /acp`는 HTTP 모드 엔드포인트, `Principal::anonymous_public()` 고정).
@@ -82,6 +87,8 @@ dok3search를 단일 노드 doksam Kubernetes에 재현 가능하게 배포하�
 
 - `GET/POST /api/v1/index/jobs`, `GET /api/v1/index/jobs/{job_id}`: 영속 색인 작업 이력 조회 및 증분/전체(또는 특정 `source_id`) 색인 트리거 (`DOK3_ENABLE_ADMIN=true` 필요).
 - `GET/PATCH /api/v1/documents/{id}/classification`: 문서 분류 조회(ACL 준수) 및 수동 수정/`reset_to_rule` 초기화 (원본 바이트·해시 불변, `PATCH`는 관리자 가드 적용).
+- `PUT/DELETE /api/v1/documents/{id}`: 실시간 단건 문서 NRT 색인·삭제(영속 모드 + 관리자 가드 적용).
+- `GET /api/v1/auth/me`: 현재 요청의 인증 주체(`subject`, `allowed_scopes`, `is_admin`) 조회.
 - `GET /api/v1/documents/{id}/original`: ACL 및 SHA-256 무결성 검증 후 `application/octet-stream` 첨부 내려받기.
 - `POST /api/v1/search/analyze`: 활성 분석기 프로파일 토큰·n-gram·정규화 질의어 반환(`/admin/analyzers`).
 - `GET/POST /api/v1/sources`, `DELETE /api/v1/sources/{id}`: 로컬 디렉터리(`local_dir`) 및 SQLite(`sqlite`, `source_cursors.json` 증분 커서 체크포인트) Source 등록·목록 조회·삭제 (`local-markdown` 삭제 금지, Source 삭제 시 디스크 원본·DB 파일 불변, 관리자 가드 적용).
