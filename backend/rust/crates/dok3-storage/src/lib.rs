@@ -10,6 +10,7 @@
 
 mod fsutil;
 mod journal;
+mod meta_db;
 mod store;
 
 pub use journal::FileChangeJournal;

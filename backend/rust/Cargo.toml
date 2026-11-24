@@ -45,6 +45,7 @@ tower = { version = "0.5", features = ["util"] }
 tower-http = { version = "0.7", features = ["fs"] }
 http-body-util = "0.1"
 sha2 = "0.10"
+rusqlite = { version = "0.43.0", default-features = false, features = ["bundled"] }
 ego-tree = "0.11.1"
 scraper = { version = "0.29", default-features = false, features = ["errors", "main"] }
 postgres = "0.19"
