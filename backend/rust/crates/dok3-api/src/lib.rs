@@ -221,7 +221,12 @@ pub fn build_router_with_extra(
         .route("/health/ready", get(health_ready))
         .route("/api/v1/corpora", get(list_corpora))
         .route("/api/v1/search", post(search))
+        .route("/api/v1/search/analyze", post(analyze_search_text))
         .route("/api/v1/documents/{id}", get(get_document))
+        .route(
+            "/api/v1/documents/{id}/original",
+            get(get_document_original),
+        )
         .route("/api/v1/documents/{id}/sections/{sid}", get(get_section))
         .merge(metrics_router)
         .merge(admin_router)
@@ -475,6 +480,99 @@ fn search_fingerprint(request: &SearchRequest) -> u64 {
         hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
     }
     hash
+}
+
+#[derive(Debug, Deserialize)]
+struct AnalyzeSearchRequest {
+    text: String,
+    #[serde(default = "default_true")]
+    split_identifiers: bool,
+    #[serde(default = "default_true")]
+    char_ngrams: bool,
+}
+
+const fn default_true() -> bool {
+    true
+}
+
+#[derive(Debug, Serialize)]
+struct AnalyzeSearchResponse {
+    profile: String,
+    analyzer_version: u64,
+    normalized_query_terms: Vec<String>,
+    terms: Vec<String>,
+    char_ngrams: Vec<String>,
+}
+
+async fn analyze_search_text(
+    payload: Result<Json<AnalyzeSearchRequest>, JsonRejection>,
+) -> Result<Json<AnalyzeSearchResponse>, ApiError> {
+    let Json(req) = payload.map_err(|err| ApiError(Dok3Error::InvalidInput(err.body_text())))?;
+    if req.text.trim().is_empty() {
+        return Err(ApiError(Dok3Error::InvalidInput(
+            "text must not be empty".to_string(),
+        )));
+    }
+    if req.text.len() > 65_536 {
+        return Err(ApiError(Dok3Error::InvalidInput(
+            "text exceeds maximum of 65536 bytes".to_string(),
+        )));
+    }
+    let analyzed = dok3_analyzer::analyze_text(
+        &req.text,
+        dok3_analyzer::AnalyzeOptions {
+            split_identifiers: req.split_identifiers,
+            char_ngrams: req.char_ngrams,
+        },
+    );
+    let normalized_query_terms = dok3_analyzer::normalize_query_terms(&req.text);
+    Ok(Json(AnalyzeSearchResponse {
+        profile: dok3_analyzer::active_profile().as_str().to_string(),
+        analyzer_version: dok3_analyzer::active_analyzer_version(),
+        normalized_query_terms,
+        terms: analyzed.terms,
+        char_ngrams: analyzed.char_ngrams,
+    }))
+}
+
+fn safe_attachment_filename(raw: &str) -> String {
+    let cleaned: String = raw
+        .chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || matches!(c, '.' | '-' | '_') {
+                c
+            } else {
+                '_'
+            }
+        })
+        .collect();
+    let trimmed = cleaned.trim_matches('_');
+    if trimmed.is_empty() {
+        "document.txt".to_string()
+    } else {
+        trimmed.to_string()
+    }
+}
+
+async fn get_document_original(
+    State(state): State<ApiState>,
+    Path(id): Path<String>,
+) -> Result<Response, ApiError> {
+    let payload = state
+        .search
+        .get_original(&state.default_principal, &DocumentId::new(id))
+        .map_err(ApiError)?;
+    let filename = safe_attachment_filename(&payload.filename);
+    let mut resp = Response::new(axum::body::Body::from(payload.bytes));
+    *resp.status_mut() = StatusCode::OK;
+    resp.headers_mut().insert(
+        header::CONTENT_TYPE,
+        HeaderValue::from_static("application/octet-stream"),
+    );
+    if let Ok(disp) = HeaderValue::from_str(&format!("attachment; filename="{filename}"")) {
+        resp.headers_mut().insert(header::CONTENT_DISPOSITION, disp);
+    }
+    Ok(resp)
 }
 
 async fn get_document(

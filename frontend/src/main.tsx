@@ -455,7 +455,7 @@ function SearchPage() {
 }
 
 const path = window.location.pathname
-const adminMatch = /^\/admin(?:\/(sources|jobs))?\/?$/.exec(path)
+const adminMatch = /^\/admin(?:\/(sources|jobs|analyzers))?\/?$/.exec(path)
 // Document ids contain `:` and `/` (`local-markdown:samples/…/*.md`). Encoded
 // links keep %2F in the path, and freshly pasted raw links arrive with real
 // slashes, so the detail route must not be limited to a single segment.
@@ -482,7 +482,11 @@ const rootElement = document.getElementById('root')
 if (rootElement) {
   const root = createRoot(rootElement)
   if (adminMatch) {
-    const initialTab = adminMatch[1] === 'jobs' ? 'jobs' : 'sources'
+    const initialTab = adminMatch[1] === 'jobs'
+      ? 'jobs'
+      : adminMatch[1] === 'analyzers'
+        ? 'analyzers'
+        : 'sources'
     void import('./admin-page').then(
       ({ AdminPage }) => root.render(<AdminPage initialTab={initialTab} />),
       () => root.render(<main className="shell reader"><p role="alert">관리 화면을 불러올 수 없습니다.</p></main>),

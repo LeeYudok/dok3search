@@ -56,6 +56,19 @@ impl SearchService {
         self.doc_store.get_document(principal, id)
     }
 
+    pub fn get_original(
+        &self,
+        principal: &Principal,
+        id: &DocumentId,
+    ) -> Result<dok3_domain::OriginalDocumentPayload, Dok3Error> {
+        if id.as_str().trim().is_empty() {
+            return Err(Dok3Error::InvalidInput(
+                "document_id must not be empty".to_string(),
+            ));
+        }
+        self.doc_store.get_original(principal, id)
+    }
+
     /// Retrieves a bounded, cursor-paginated slice of a single document section if authorized.
     pub fn get_section(
         &self,

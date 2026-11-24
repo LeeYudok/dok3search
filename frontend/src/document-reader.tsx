@@ -502,6 +502,7 @@ export function DocumentPage({ id, corpora }: { id: string; corpora?: readonly R
               <p className="article-meta">
                 <span>{corpus ? doc.source : doc.samplePath ?? doc.source}</span>{doc.date && <time dateTime={doc.date}>{doc.date}</time>}
                 {corpus?.licenses.map(({ label, url }) => <a href={url} key={label}>{label}</a>)}
+                {!corpus && <a href={'/api/v1/documents/' + encodeURIComponent(doc.id) + '/original'} download>원본 내려받기</a>}
               </p>
               {clsNotice && !editingClassification && (
                 <p className="cls-notice" role="status">{clsNotice}</p>

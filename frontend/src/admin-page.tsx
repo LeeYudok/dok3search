@@ -22,11 +22,13 @@ import {
   type RegisteredSource,
   type SourceKind,
   type SqliteCursorMode,
+  analyzeSearchText,
+  type AnalyzeSearchResponse,
   triggerIndexJob,
 } from './api'
 import { categories, categoryLabels } from './documents'
 
-export type AdminTab = 'sources' | 'jobs'
+export type AdminTab = 'sources' | 'jobs' | 'analyzers'
 
 function formatTimestamp(ms?: number): string {
   if (!ms) return '동기화 이력 없음'
@@ -80,6 +82,10 @@ export function AdminPage({ initialTab = 'sources' }: { initialTab?: AdminTab })
   const [sqCursorMode, setSqCursorMode] = useState<SqliteCursorMode>('integer_pk')
   const [sqCursorColumn, setSqCursorColumn] = useState('id')
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [analyzeInput, setAnalyzeInput] = useState('설계검토및보완결과 getAccountList ORA-00904')
+  const [analyzeSplit, setAnalyzeSplit] = useState(true)
+  const [analyzeNgrams, setAnalyzeNgrams] = useState(true)
+  const [analyzeResult, setAnalyzeResult] = useState<AnalyzeSearchResponse | null>(null)
 
   async function loadAll(signal?: AbortSignal) {
     setLoading(true)
@@ -102,12 +108,12 @@ export function AdminPage({ initialTab = 'sources' }: { initialTab?: AdminTab })
   }
 
   useEffect(() => {
-    document.title = (tab === 'sources' ? '소스 관리' : '색인 작업') + ' · dok3search'
+    document.title = (tab === 'sources' ? '소스 관리' : tab === 'jobs' ? '색인 작업' : '분석기 실험') + ' · dok3search'
   }, [tab])
 
   useEffect(() => {
     function handlePopState() {
-      setTab(window.location.pathname.startsWith('/admin/jobs') ? 'jobs' : 'sources')
+      setTab(window.location.pathname.startsWith('/admin/jobs') ? 'jobs' : window.location.pathname.startsWith('/admin/analyzers') ? 'analyzers' : 'sources')
     }
     window.addEventListener('popstate', handlePopState)
     return () => window.removeEventListener('popstate', handlePopState)
@@ -122,7 +128,7 @@ export function AdminPage({ initialTab = 'sources' }: { initialTab?: AdminTab })
   function switchTab(next: AdminTab) {
     setTab(next)
     setActionError(null)
-    const targetPath = next === 'jobs' ? '/admin/jobs' : '/admin/sources'
+    const targetPath = next === 'jobs' ? '/admin/jobs' : next === 'analyzers' ? '/admin/analyzers' : '/admin/sources'
     if (window.location.pathname !== targetPath) {
       window.history.pushState(null, '', targetPath)
     }
@@ -181,6 +187,25 @@ export function AdminPage({ initialTab = 'sources' }: { initialTab?: AdminTab })
         `소스 '${result.sourceId}' 등록을 해제하고 색인 문서 ${result.deletedDocuments}건을 제거했습니다. 디스크 원본 파일은 그대로 유지됩니다.`,
       )
       await loadAll()
+    } catch (err) {
+      setActionError(formatAdminError(err).message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleAnalyze(event: FormEvent) {
+    event.preventDefault()
+    setBusy(true)
+    setActionError(null)
+    try {
+      setAnalyzeResult(
+        await analyzeSearchText({
+          text: analyzeInput,
+          splitIdentifiers: analyzeSplit,
+          charNgrams: analyzeNgrams,
+        }),
+      )
     } catch (err) {
       setActionError(formatAdminError(err).message)
     } finally {
@@ -253,6 +278,16 @@ export function AdminPage({ initialTab = 'sources' }: { initialTab?: AdminTab })
             >
               색인 작업
             </a>
+            <a
+              href="/admin/analyzers"
+              aria-current={tab === 'analyzers' ? 'page' : undefined}
+              onClick={(event) => {
+                event.preventDefault()
+                switchTab('analyzers')
+              }}
+            >
+              분석기 실험
+            </a>
           </nav>
         </div>
 
@@ -260,7 +295,7 @@ export function AdminPage({ initialTab = 'sources' }: { initialTab?: AdminTab })
           <p className="empty" role="status">관리 정보를 불러오는 중입니다.</p>
         )}
 
-        {accessBanner && (
+        {accessBanner && tab !== 'analyzers' && (
           <section className="admin-alert" role="alert">
             <WarningCircle size={18} aria-hidden="true" />
             <div>
@@ -651,6 +686,63 @@ export function AdminPage({ initialTab = 'sources' }: { initialTab?: AdminTab })
                 </table>
               </div>
             )}
+          </section>
+        )}
+        {tab === 'analyzers' && (
+          <section className="admin-section" aria-labelledby="analyzers-heading">
+            <div className="admin-section-top">
+              <div>
+                <h2 id="analyzers-heading">검색어 분석기 실험</h2>
+                <p className="admin-meta-line">
+                  현재 활성화된 형태소·식별자·n-gram 분석 결과를 확인합니다.
+                </p>
+              </div>
+            </div>
+            <section className="admin-card">
+              <form className="admin-form" onSubmit={(event) => void handleAnalyze(event)}>
+                <div className="cls-field">
+                  <label htmlFor="analyze-input">분석할 텍스트 또는 질의어</label>
+                  <textarea
+                    id="analyze-input"
+                    rows={3}
+                    required
+                    value={analyzeInput}
+                    disabled={busy}
+                    onChange={(event) => setAnalyzeInput(event.target.value)}
+                  />
+                </div>
+                <div className="cls-actions">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={analyzeSplit}
+                      onChange={(event) => setAnalyzeSplit(event.target.checked)}
+                    />{' '}
+                    식별자·복합어 분해
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={analyzeNgrams}
+                      onChange={(event) => setAnalyzeNgrams(event.target.checked)}
+                    />{' '}
+                    문자 n-gram 생성
+                  </label>
+                  <button type="submit" className="admin-btn admin-btn-primary" disabled={busy}>
+                    <Play size={14} aria-hidden="true" />
+                    분석 실행
+                  </button>
+                </div>
+              </form>
+              {analyzeResult && (
+                <div className="admin-stats-row">
+                  <span>프로파일: <code>{analyzeResult.profile}</code> (v{analyzeResult.analyzerVersion})</span>
+                  <span>정규화 질의: <code>{analyzeResult.normalizedQueryTerms.join(', ') || '(없음)'}</code></span>
+                  <span>색인 토큰({analyzeResult.terms.length}): <code>{analyzeResult.terms.join(', ') || '(없음)'}</code></span>
+                  <span>n-gram({analyzeResult.charNgrams.length}): <code>{analyzeResult.charNgrams.slice(0, 24).join(', ') || '(없음)'}</code></span>
+                </div>
+              )}
+            </section>
           </section>
         )}
       </main>

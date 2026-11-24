@@ -817,3 +817,41 @@ export async function triggerIndexJob(input?: {
   )
   return parseIndexJobRecord(json)
 }
+
+export type AnalyzeSearchInput = {
+  text: string
+  splitIdentifiers?: boolean
+  charNgrams?: boolean
+}
+
+export type AnalyzeSearchResponse = {
+  profile: string
+  analyzerVersion: number
+  normalizedQueryTerms: string[]
+  terms: string[]
+  charNgrams: string[]
+}
+
+export async function analyzeSearchText(input: AnalyzeSearchInput): Promise<AnalyzeSearchResponse> {
+  const json = await requestAdminJson(
+    '/api/v1/search/analyze',
+    {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        text: input.text,
+        split_identifiers: input.splitIdentifiers ?? true,
+        char_ngrams: input.charNgrams ?? true,
+      }),
+    },
+    '검색어 분석에 실패했습니다',
+  )
+  if (!isRecord(json)) throw new Error('Invalid analyze response')
+  return {
+    profile: expectString(json, 'profile'),
+    analyzerVersion: expectNumber(json, 'analyzer_version'),
+    normalizedQueryTerms: expectStringArray(json, 'normalized_query_terms'),
+    terms: expectStringArray(json, 'terms'),
+    charNgrams: expectStringArray(json, 'char_ngrams'),
+  }
+}
