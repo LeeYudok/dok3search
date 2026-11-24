@@ -1,0 +1,125 @@
+{
+  "source": "polyglot-samples",
+  "category": "code",
+  "version": "1.0.0",
+  "chapters": [
+    {
+      "path": "README.md",
+      "source": "polyglot-samples",
+      "category": "code",
+      "version": "1.0.0",
+      "tags": [
+        "polyglot-samples",
+        "java",
+        "jsp",
+        "react",
+        "nextjs"
+      ],
+      "display_title": "Polyglot 샘플 코드 팩 안내"
+    },
+    {
+      "path": "java/OrderController.java",
+      "source": "polyglot-samples",
+      "category": "code",
+      "version": "1.0.0",
+      "tags": [
+        "polyglot-samples",
+        "java",
+        "spring"
+      ],
+      "display_title": "OrderController.java"
+    },
+    {
+      "path": "java/OrderRepository.java",
+      "source": "polyglot-samples",
+      "category": "code",
+      "version": "1.0.0",
+      "tags": [
+        "polyglot-samples",
+        "java",
+        "oracle"
+      ],
+      "display_title": "OrderRepository.java"
+    },
+    {
+      "path": "jsp/orderList.jsp",
+      "source": "polyglot-samples",
+      "category": "code",
+      "version": "1.0.0",
+      "tags": [
+        "polyglot-samples",
+        "jsp",
+        "jstl"
+      ],
+      "display_title": "orderList.jsp"
+    },
+    {
+      "path": "js/legacyOrderClient.cjs",
+      "source": "polyglot-samples",
+      "category": "code",
+      "version": "1.0.0",
+      "tags": [
+        "polyglot-samples",
+        "javascript",
+        "commonjs"
+      ],
+      "display_title": "legacyOrderClient.cjs"
+    },
+    {
+      "path": "ts/orderSettlement.ts",
+      "source": "polyglot-samples",
+      "category": "code",
+      "version": "1.0.0",
+      "tags": [
+        "polyglot-samples",
+        "typescript"
+      ],
+      "display_title": "orderSettlement.ts"
+    },
+    {
+      "path": "react/OrderStatusBadge.tsx",
+      "source": "polyglot-samples",
+      "category": "code",
+      "version": "1.0.0",
+      "tags": [
+        "polyglot-samples",
+        "react",
+        "typescript"
+      ],
+      "display_title": "OrderStatusBadge.tsx"
+    },
+    {
+      "path": "nextjs/app/orders/page.tsx",
+      "source": "polyglot-samples",
+      "category": "code",
+      "version": "1.0.0",
+      "tags": [
+        "polyglot-samples",
+        "nextjs",
+        "react"
+      ]
+    },
+    {
+      "path": "nextjs/app/users/page.tsx",
+      "source": "polyglot-samples",
+      "category": "code",
+      "version": "1.0.0",
+      "tags": [
+        "polyglot-samples",
+        "nextjs",
+        "react"
+      ]
+    },
+    {
+      "path": "nextjs/app/api/orders/route.ts",
+      "source": "polyglot-samples",
+      "category": "code",
+      "version": "1.0.0",
+      "tags": [
+        "polyglot-samples",
+        "nextjs",
+        "typescript"
+      ]
+    }
+  ]
+}

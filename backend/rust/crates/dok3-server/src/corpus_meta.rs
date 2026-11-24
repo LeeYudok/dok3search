@@ -114,7 +114,7 @@ fn load_corpus_dir(root: &Path, dir: &Path, out: &mut CorpusMetadataIndex) {
 
     let (default_category, default_topic) = match slug {
         "rust-std" | "rust-crates" | "rustc-error-codes" => ("code", Some("rust".to_string())),
-        "kordoc" => ("code", None),
+        "kordoc" | "polyglot-samples" => ("code", None),
         "rust-reference" | "cargo-book" | "rust-book" | "comprehensive-rust" => {
             ("guide", Some("rust".to_string()))
         }

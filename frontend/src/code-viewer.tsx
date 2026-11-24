@@ -17,6 +17,7 @@ const SYMBOL_PREFIXES: Array<{ prefix: string; kind: SymbolOutlineItem['kind'] }
   { prefix: 'def ', kind: 'fn' },
   { prefix: 'method ', kind: 'fn' },
   { prefix: 'class ', kind: 'class' },
+  { prefix: 'record ', kind: 'class' },
   { prefix: 'struct ', kind: 'class' },
   { prefix: 'impl ', kind: 'class' },
   { prefix: 'interface ', kind: 'iface' },
@@ -62,8 +63,10 @@ export function parseSymbolOutlineItem(sec: ReaderSectionItem): SymbolOutlineIte
 function detectLanguageLabel(samplePath?: string): string {
   if (!samplePath) return 'Code'
   const lower = samplePath.toLowerCase()
-  if (/\.(ts|tsx|mts|cts)$/.test(lower)) return 'TypeScript'
-  if (/\.(js|jsx|mjs|cjs)$/.test(lower)) return 'JavaScript'
+  if (lower.endsWith('.tsx')) return 'React TSX'
+  if (lower.endsWith('.jsx')) return 'React JSX'
+  if (/\.(ts|mts|cts)$/.test(lower)) return 'TypeScript'
+  if (/\.(js|mjs|cjs)$/.test(lower)) return 'JavaScript'
   if (lower.endsWith('.rs')) return 'Rust'
   if (lower.endsWith('.go')) return 'Go'
   if (lower.endsWith('.py')) return 'Python'
@@ -78,12 +81,13 @@ const KEYWORDS = new Set([
   'type', 'enum', 'async', 'await', 'return', 'if', 'else', 'for', 'while', 'switch', 'case',
   'break', 'continue', 'try', 'catch', 'finally', 'throw', 'new', 'typeof', 'instanceof', 'void',
   'null', 'undefined', 'true', 'false', 'declare', 'default', 'readonly', 'private', 'public',
-  'protected', 'static', 'extends', 'implements', 'pub', 'fn', 'struct', 'impl', 'trait', 'mod',
+  'protected', 'static', 'extends', 'implements', 'record', 'throws', 'synchronized', 'abstract',
+  'final', 'pub', 'fn', 'struct', 'impl', 'trait', 'mod',
   'use', 'match', 'mut', 'where', 'def', 'func', 'package', 'SELECT', 'FROM', 'WHERE', 'CREATE',
-  'TABLE', 'OR', 'REPLACE', 'VIEW', 'INDEX',
+  'TABLE', 'OR', 'REPLACE', 'VIEW', 'INDEX', 'INSERT', 'UPDATE', 'DELETE', 'JOIN',
 ])
 
-const TOKEN_RE = /("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|\b\d+(?:\.\d+)?\b|\b[A-Za-z_$][A-Za-z0-9_$]*\b)/g
+const TOKEN_RE = /("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|@[A-Za-z_][A-Za-z0-9_]*|\b\d+(?:\.\d+)?\b|\b[A-Za-z_$][A-Za-z0-9_$]*\b)/g
 
 function renderCodeSegment(segment: string, keyPrefix: string): ReactNode[] {
   const nodes: ReactNode[] = []
@@ -99,10 +103,10 @@ function renderCodeSegment(segment: string, keyPrefix: string): ReactNode[] {
     const key = `${keyPrefix}-${idx++}`
     if (token.startsWith('"') || token.startsWith("'") || token.startsWith('`')) {
       nodes.push(<span className="tok-str" key={key}>{token}</span>)
+    } else if (token.startsWith('@') || KEYWORDS.has(token)) {
+      nodes.push(<span className="tok-kw" key={key}>{token}</span>)
     } else if (/^\d/.test(token)) {
       nodes.push(<span className="tok-num" key={key}>{token}</span>)
-    } else if (KEYWORDS.has(token)) {
-      nodes.push(<span className="tok-kw" key={key}>{token}</span>)
     } else if (/^[A-Z][A-Za-z0-9_]*$/.test(token)) {
       nodes.push(<span className="tok-type" key={key}>{token}</span>)
     } else {
@@ -123,7 +127,9 @@ function renderHighlightedLine(line: string): ReactNode {
     trimmed.startsWith('/*') ||
     trimmed.startsWith('*') ||
     trimmed.startsWith('#') ||
-    trimmed.startsWith('--')
+    trimmed.startsWith('--') ||
+    trimmed.startsWith('<!--') ||
+    trimmed.startsWith('<%--')
   ) {
     return <span className="tok-comment">{line}</span>
   }

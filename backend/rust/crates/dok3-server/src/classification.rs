@@ -77,6 +77,9 @@ fn classify_category(
     body_lower: &str,
     default_category: &str,
 ) -> String {
+    if has_code_extension(path_lower) {
+        return "code".to_string();
+    }
     if contains_any(
         path_lower,
         &["policy/", "policies/", "security/", "compliance/"],
@@ -257,6 +260,8 @@ fn extract_tags(
         ("postgres", "postgres"),
         ("mcp", "mcp"),
         ("react", "react"),
+        ("spring", "spring"),
+        ("nextjs", "nextjs"),
         ("보안", "보안"),
         ("색인", "색인"),
         ("세대", "세대전환"),
@@ -279,6 +284,16 @@ fn extract_tags(
         if path_lower.ends_with(ext) {
             push_unique(label);
         }
+    }
+    if path_lower.ends_with(".tsx") || path_lower.ends_with(".jsx") {
+        push_unique("react");
+    }
+    if path_lower.contains("/app/")
+        && (path_lower.ends_with("/page.tsx")
+            || path_lower.ends_with("/layout.tsx")
+            || path_lower.ends_with("/route.ts"))
+    {
+        push_unique("nextjs");
     }
     if path_lower.ends_with(".html") || path_lower.ends_with(".htm") {
         push_unique("html");

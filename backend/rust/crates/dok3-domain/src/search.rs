@@ -292,6 +292,7 @@ const SYMBOL_HEADING_PREFIXES: &[&str] = &[
     "func ",
     "def ",
     "method ",
+    "record ",
 ];
 
 fn is_noise_recommendation(term: &str) -> bool {
@@ -764,6 +765,14 @@ fn classify_corpus(doc: &Document) -> CorpusSpec {
             label: "kordoc (HWP·HWPX·PDF→Markdown Parser Source)".to_string(),
             toolchain: None,
             source_url: Some("https://github.com/LeeYudok/kordoc".to_string()),
+            license: Some("MIT".to_string()),
+        },
+        "polyglot-samples" => CorpusSpec {
+            corpus_id: "polyglot-samples".to_string(),
+            label: "Polyglot Enterprise & Web Code Samples (Java·JSP·JS·TS·React·Next.js)"
+                .to_string(),
+            toolchain: None,
+            source_url: Some("https://github.com/LeeYudok/dok3search".to_string()),
             license: Some("MIT".to_string()),
         },
         _ => CorpusSpec {

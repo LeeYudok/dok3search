@@ -61,4 +61,51 @@ describe('CodeDocumentViewer', () => {
     fireEvent.click(screen.getByRole('button', { name: '파일 전체' }))
     expect(document.querySelector('.code-table')).not.toBeNull()
   })
+
+  it('detects React TSX, JSP, and Java annotations/records cleanly', () => {
+    const { rerender } = render(
+      <CodeDocumentViewer
+        body={'export const OrderBadge = () => <span>OK</span>'}
+        samplePath="samples/polyglot-samples/react/OrderStatusBadge.tsx"
+        sections={[]}
+        activeAnchor=""
+        markdownFallbackRender={() => null}
+      />,
+    )
+    expect(screen.getByText('React TSX')).toBeInTheDocument()
+
+    rerender(
+      <CodeDocumentViewer
+        body={'<%-- JSP comment --%>\n<%@ page contentType="text/html; charset=UTF-8" %>'}
+        samplePath="samples/polyglot-samples/jsp/orderList.jsp"
+        sections={[]}
+        activeAnchor=""
+        markdownFallbackRender={() => null}
+      />,
+    )
+    expect(screen.getByText('JSP')).toBeInTheDocument()
+    expect(document.querySelector('.tok-comment')).not.toBeNull()
+
+    expect(
+      parseSymbolOutlineItem({
+        sectionId: 'record-order',
+        heading: 'record OrderCreateRequest',
+        anchor: 'record-order',
+        lineStart: 5,
+        lineEnd: 9,
+      })?.kind,
+    ).toBe('class')
+
+    rerender(
+      <CodeDocumentViewer
+        body={'@RestController\npublic record OrderCreateRequest(String orderId) {}'}
+        samplePath="samples/polyglot-samples/java/OrderController.java"
+        sections={[]}
+        activeAnchor=""
+        markdownFallbackRender={() => null}
+      />,
+    )
+    expect(screen.getByText('Java')).toBeInTheDocument()
+    expect(screen.getByText('@RestController')).toHaveClass('tok-kw')
+  })
 })

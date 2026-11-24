@@ -294,7 +294,11 @@ pub fn build_document(
         revision_id: RevisionId::new("pending"),
         source_id: config.source_id.clone(),
         source: config.source_label.clone(),
-        title: parsed.title.clone(),
+        title: disambiguate_document_title(
+            &scanned.relative_path,
+            &scanned.filename,
+            &parsed.title,
+        ),
         summary,
         category: config.category.clone(),
         topic: None,
@@ -311,6 +315,51 @@ pub fn build_document(
         body: parsed.normalized_text.clone(),
         markdown: Some(render_reader_markdown(scanned, parsed)),
         sections: parsed.sections.clone(),
+    }
+}
+
+fn disambiguate_document_title(relative_path: &str, filename: &str, parsed_title: &str) -> String {
+    if parsed_title != filename || !relative_path.contains('/') {
+        return parsed_title.to_string();
+    }
+    let stem = filename
+        .split('.')
+        .next()
+        .unwrap_or("")
+        .to_ascii_lowercase();
+    let is_ambiguous = matches!(
+        stem.as_str(),
+        "page"
+            | "layout"
+            | "route"
+            | "loading"
+            | "error"
+            | "not-found"
+            | "template"
+            | "default"
+            | "middleware"
+            | "instrumentation"
+            | "index"
+            | "mod"
+            | "lib"
+            | "main"
+    );
+    if !is_ambiguous {
+        return parsed_title.to_string();
+    }
+    let normalized = relative_path.replace('\\', "/");
+    let trimmed = if let Some(after_samples) = normalized.strip_prefix("samples/") {
+        after_samples
+            .split_once('/')
+            .map_or(normalized.as_str(), |(_, rest)| rest)
+    } else {
+        normalized.as_str()
+    };
+    let segments: Vec<&str> = trimmed.split('/').filter(|s| !s.is_empty()).collect();
+    if segments.len() <= 5 {
+        trimmed.to_string()
+    } else {
+        segments[segments.len() - 4..].join("/")
     }
 }
 

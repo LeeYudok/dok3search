@@ -1,0 +1,18 @@
+{
+  "repository": "https://github.com/LeeYudok/dok3search",
+  "release": "1.0.0",
+  "license": "MIT",
+  "count": 10,
+  "sha256": {
+    "README.md": "d48be374e29fe260aec8c3638bf6139f2f27bf38bcd9eccac331b350aa475b88",
+    "java/OrderController.java": "45e8082be3f14770b7237c37d73731f02e9096bc404825291e7a4a3a85c9a6c2",
+    "java/OrderRepository.java": "fc60e693941e5cdfba1cf60f70730f77798072a3120a0e28f5852dee26415a70",
+    "jsp/orderList.jsp": "457152f270a10918eb0850fbf43b1256943bc445da2411679f562a1deb5984bd",
+    "js/legacyOrderClient.cjs": "95f575ccbf3583bd9d28de3424d22b46aece328348af9e134bf1e574b9301a0f",
+    "ts/orderSettlement.ts": "775fd59ff27c67cbb438f4bbb81b0531487fb39653faa4be18f04aa9c449863f",
+    "react/OrderStatusBadge.tsx": "fcebd5c8d6c47b54866960f219dc10d4fa32eddfb211344e40b1168f435e4aad",
+    "nextjs/app/orders/page.tsx": "68de7a44cf6e55244e547c55204b5bf1edf6018ec8366570d7a486edfb42a139",
+    "nextjs/app/users/page.tsx": "15e75ac320d94b8833c2e1a9a3bf437c0a88b7d2a2db0104ab4bb7b75b30715a",
+    "nextjs/app/api/orders/route.ts": "438e22e841bb293049d62ede4461d2cb8c8f583bfe02f01949fd15b9e8e3ccf2"
+  }
+}

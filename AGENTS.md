@@ -28,6 +28,7 @@
 - `frontend/src/samples/{rust-std,rust-crates,rustc-error-codes}/chapters/` — 로컬 `rust-docs`(`std`·`core`·`alloc`), 워크스페이스·직접 의존 크레이트(`cargo doc`), `rustc --explain` 오류 코드 인덱스를 변환한 `code`/`rust` Markdown 코퍼스다. `scripts/import-rustdoc-and-errors.py`로 재생성한다.
 - `frontend/src/samples/doksam-blog/chapters/` — `blog.doksam.com`(`blog-doksam`)에서 선별한 Rust·Go 강의, AI 에이전트 가이드, 폐쇄망/개발 실무 Markdown 코퍼스다. `scripts/import-doksam-blog.py`로 재생성한다.
 - `frontend/src/samples/kordoc/src/` — `LeeYudok/kordoc`(MIT) HWP·HWPX·PDF → Markdown 파서의 `src/**` TypeScript 소스 전용 코퍼스다. `scripts/import-kordoc-source.py`로 재생성한다.
+- `frontend/src/samples/polyglot-samples/` — Java·JSP·JS(CJS)·TS·React(TSX)·Next.js App Router 다중 스택 파서·경로 식별·지식파운데이션 검증용 MIT 샘플 팩이다.
 - `backend/rust/` — Cargo workspace (`crates/` 아래 13개 크레이트: `dok3-core` ~ `dok3-server`)
 - `config/` — 환경별 설정 예시 및 Google AX(`ax-workspace.example.yaml`) 매니페스트 배치 위치
 - `deploy/windows/` — Windows Service 등록·제거·자동 복구·smoke PowerShell 스크립트 배치 위치
