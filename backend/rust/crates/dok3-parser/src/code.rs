@@ -1,4 +1,4 @@
-//! Line-based source code symbol parser for Rust, Java, Go, SQL, and JSP.
+//! Line-based source code symbol parser for Rust, Java, Go, SQL, JSP, TypeScript, JavaScript, and Python.
 
 use std::collections::HashMap;
 use std::path::Path;
@@ -7,7 +7,9 @@ use dok3_core::Dok3Error;
 use dok3_domain::{DocumentParserPort, DocumentSection, ParsedDocument, SectionId};
 
 /// Supported source code extensions handled by [`CodeSymbolParser`].
-pub const CODE_EXTENSIONS: &[&str] = &["rs", "java", "go", "sql", "jsp"];
+pub const CODE_EXTENSIONS: &[&str] = &[
+    "rs", "java", "go", "sql", "jsp", "ts", "tsx", "mts", "cts", "js", "jsx", "mjs", "cjs", "py",
+];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum CodeLanguage {
@@ -16,6 +18,9 @@ enum CodeLanguage {
     Go,
     Sql,
     Jsp,
+    TypeScript,
+    JavaScript,
+    Python,
 }
 
 impl CodeLanguage {
@@ -30,6 +35,9 @@ impl CodeLanguage {
             "go" => Some(Self::Go),
             "sql" => Some(Self::Sql),
             "jsp" => Some(Self::Jsp),
+            "ts" | "tsx" | "mts" | "cts" => Some(Self::TypeScript),
+            "js" | "jsx" | "mjs" | "cjs" => Some(Self::JavaScript),
+            "py" => Some(Self::Python),
             _ => None,
         }
     }
@@ -47,6 +55,9 @@ impl CodeLanguage {
             "text/x-go" => Some(Self::Go),
             "application/sql" | "text/x-sql" => Some(Self::Sql),
             "application/jsp" | "text/x-jsp" => Some(Self::Jsp),
+            "text/typescript" | "application/typescript" => Some(Self::TypeScript),
+            "text/javascript" | "application/javascript" => Some(Self::JavaScript),
+            "text/x-python" | "application/x-python-code" => Some(Self::Python),
             _ => None,
         }
     }
@@ -217,6 +228,10 @@ fn detect_symbol(
         CodeLanguage::Go => detect_go_symbol(trimmed),
         CodeLanguage::Sql => detect_sql_symbol(trimmed),
         CodeLanguage::Jsp => detect_jsp_section(trimmed, warnings, line_no),
+        CodeLanguage::TypeScript | CodeLanguage::JavaScript => {
+            detect_ts_js_symbol(raw_line, trimmed)
+        }
+        CodeLanguage::Python => detect_python_symbol(trimmed),
     }
 }
 
@@ -350,9 +365,133 @@ fn detect_jsp_section(trimmed: &str, warnings: &mut Vec<String>, line_no: usize)
     None
 }
 
+fn detect_ts_js_symbol(raw_line: &str, trimmed: &str) -> Option<String> {
+    if raw_line.starts_with([' ', '\t']) || trimmed.starts_with("/*") || trimmed.starts_with('*') {
+        return None;
+    }
+    let mut rest = trimmed;
+    loop {
+        let mut stripped = false;
+        for prefix in ["export ", "default ", "declare ", "abstract ", "async "] {
+            if let Some(after) = rest.strip_prefix(prefix) {
+                rest = after.trim_start();
+                stripped = true;
+                break;
+            }
+        }
+        if !stripped {
+            break;
+        }
+    }
+    for (kw, label) in [
+        ("function* ", "function"),
+        ("function ", "function"),
+        ("class ", "class"),
+        ("interface ", "interface"),
+        ("type ", "type"),
+        ("enum ", "enum"),
+        ("const ", "const"),
+        ("let ", "let"),
+    ] {
+        if let Some(after) = rest.strip_prefix(kw) {
+            let ident = extract_ts_py_ident(after.trim_start());
+            if !ident.is_empty() {
+                return Some(format!("{label} {ident}"));
+            }
+        }
+    }
+    None
+}
+
+fn detect_python_symbol(trimmed: &str) -> Option<String> {
+    if trimmed.starts_with('#') {
+        return None;
+    }
+    let rest = trimmed
+        .strip_prefix("async ")
+        .map(str::trim_start)
+        .unwrap_or(trimmed);
+    for kw in ["def ", "class "] {
+        if let Some(after) = rest.strip_prefix(kw) {
+            let ident = extract_ts_py_ident(after.trim_start());
+            if !ident.is_empty() {
+                return Some(format!("{} {ident}", kw.trim()));
+            }
+        }
+    }
+    None
+}
+
+fn extract_ts_py_ident(input: &str) -> &str {
+    let end = input
+        .find(|c: char| !c.is_alphanumeric() && c != '_' && c != '$')
+        .unwrap_or(input.len());
+    &input[..end]
+}
+
 fn extract_ident(input: &str) -> &str {
     let end = input
         .find(|c: char| !c.is_alphanumeric() && c != '_' && c != ':')
         .unwrap_or(input.len());
     input[..end].trim_end_matches(':')
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parses_typescript_top_level_symbols_and_ignores_jsdoc_and_indented() {
+        let src = br#"/**
+ * Helper comment:
+ * function fakeInComment() {}
+ * const fakeConst = 1;
+ */
+export interface HwpxOptions {
+  strict?: boolean;
+}
+
+export async function parseHwpx(buf: Uint8Array): Promise<string> {
+  const localHelper = 1;
+  return String(localHelper);
+}
+
+export class HwpxReader {}
+
+export const DEFAULT_VERSION: string = "4.18.8";
+"#;
+        let parser = CodeSymbolParser::new();
+        assert!(parser.supports("text/typescript", "reader.ts"));
+        let parsed = parser.parse("reader.ts", src).unwrap();
+        let headings: Vec<&str> = parsed.sections.iter().map(|s| s.heading.as_str()).collect();
+        assert_eq!(
+            headings,
+            vec![
+                "reader.ts",
+                "interface HwpxOptions",
+                "function parseHwpx",
+                "class HwpxReader",
+                "const DEFAULT_VERSION",
+            ]
+        );
+    }
+
+    #[test]
+    fn parses_python_symbols_and_ignores_comments() {
+        let src = br#"# def commented_out():
+class Parser:
+    pass
+
+async def parse_async(data):
+    return data
+"#;
+        let parser = CodeSymbolParser::new();
+        assert!(parser.supports("text/x-python", "parser.py"));
+        let parsed = parser.parse("parser.py", src).unwrap();
+        let headings: Vec<&str> = parsed.sections.iter().map(|s| s.heading.as_str()).collect();
+        assert_eq!(
+            headings,
+            vec!["parser.py", "class Parser", "def parse_async"]
+        );
+    }
 }

@@ -427,6 +427,13 @@ fn classify_corpus(doc: &Document) -> CorpusSpec {
             source_url: Some("https://go.dev/doc/".to_string()),
             license: Some("CC-BY-4.0 AND BSD-3-Clause".to_string()),
         },
+        "kordoc" => CorpusSpec {
+            corpus_id: "kordoc".to_string(),
+            label: "kordoc (HWP·HWPX·PDF→Markdown Parser Source)".to_string(),
+            toolchain: None,
+            source_url: Some("https://github.com/LeeYudok/kordoc".to_string()),
+            license: Some("MIT".to_string()),
+        },
         _ => CorpusSpec {
             corpus_id: doc.source_id.as_str().to_string(),
             label: doc.source.clone(),

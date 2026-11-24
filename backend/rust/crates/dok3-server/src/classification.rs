@@ -125,12 +125,21 @@ fn classify_category(
     }
 }
 
-const CODE_FILE_EXTENSIONS: [(&str, &str); 5] = [
+const CODE_FILE_EXTENSIONS: &[(&str, &str)] = &[
     (".rs", "rust"),
     (".java", "java"),
     (".go", "go"),
     (".sql", "sql"),
     (".jsp", "jsp"),
+    (".ts", "typescript"),
+    (".tsx", "typescript"),
+    (".mts", "typescript"),
+    (".cts", "typescript"),
+    (".js", "javascript"),
+    (".jsx", "javascript"),
+    (".mjs", "javascript"),
+    (".cjs", "javascript"),
+    (".py", "python"),
 ];
 
 fn has_code_extension(path_lower: &str) -> bool {
@@ -145,7 +154,16 @@ fn has_error_or_code_markers(body_raw: &str, body_lower: &str) -> bool {
     }
     contains_any(
         body_lower,
-        &["pub fn ", "pub struct ", "impl ", "async fn ", "select "],
+        &[
+            "pub fn ",
+            "pub struct ",
+            "impl ",
+            "async fn ",
+            "select ",
+            "export function ",
+            "export class ",
+            "export interface ",
+        ],
     )
 }
 
@@ -250,7 +268,7 @@ fn extract_tags(
             push_unique(label);
         }
     }
-    for (ext, label) in CODE_FILE_EXTENSIONS {
+    for &(ext, label) in CODE_FILE_EXTENSIONS {
         if path_lower.ends_with(ext) {
             push_unique(label);
         }

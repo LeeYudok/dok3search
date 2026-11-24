@@ -27,6 +27,7 @@
 - `frontend/src/samples/{comprehensive-rust,rust-book,rust-reference,cargo-book,go-reference}/chapters/` — Rust와 Go 참고 자료 검색에 쓰는 장별 Markdown. 메인 `개발 가이드` 분류 안에서 Rust·Go 세부 분류로 나눈다. Comprehensive Rust와 `go-reference/chapters/practice/`의 Go 실무 가이드는 한국어이고 나머지는 영문이다. `go-reference/chapters/learn-go-with-tests/`에는 MIT 라이선스의 영문 실습 3편을 담는다.
 - `frontend/src/samples/{rust-std,rust-crates,rustc-error-codes}/chapters/` — 로컬 `rust-docs`(`std`·`core`·`alloc`), 워크스페이스·직접 의존 크레이트(`cargo doc`), `rustc --explain` 오류 코드 인덱스를 변환한 `code`/`rust` Markdown 코퍼스다. `scripts/import-rustdoc-and-errors.py`로 재생성한다.
 - `frontend/src/samples/doksam-blog/chapters/` — `blog.doksam.com`(`blog-doksam`)에서 선별한 Rust·Go 강의, AI 에이전트 가이드, 폐쇄망/개발 실무 Markdown 코퍼스다. `scripts/import-doksam-blog.py`로 재생성한다.
+- `frontend/src/samples/kordoc/src/` — `LeeYudok/kordoc`(MIT) HWP·HWPX·PDF → Markdown 파서의 `src/**` TypeScript 소스 전용 코퍼스다. `scripts/import-kordoc-source.py`로 재생성한다.
 - `backend/rust/` — Cargo workspace (`crates/` 아래 13개 크레이트: `dok3-core` ~ `dok3-server`)
 - `config/` — 환경별 설정 예시 및 Google AX(`ax-workspace.example.yaml`) 매니페스트 배치 위치
 - `deploy/windows/` — Windows Service 등록·제거·자동 복구·smoke PowerShell 스크립트 배치 위치
@@ -50,7 +51,7 @@
 - `DOK3_STATIC_DIR`: 정적 React 빌드(`frontend/dist`) 경로 (미지정 시 자동 탐색)
 - `DOK3_DESIGN_DIR`: 설계 문서 시드(`frontend/src/samples/design`) 경로 (미지정 시 자동 탐색)
 
-- `DOK3_SOURCE_DIR`: 시작할 때 색인할 기본 문서 폴더(`local-markdown`, `managed_by_env: true`). `dok3-parser::ParserRegistry`로 Markdown(`md`·`markdown`·`mdown`·`mkd`), HTML(`html`·`htm`), 코드(`rs`·`java`·`go`·`sql`·`jsp`), 텍스트(`txt`·`log`)를 읽는다(`DEFAULT_DOCUMENT_EXTENSIONS`; `json`·`yaml` 등은 코퍼스 매니페스트 오염 방지를 위해 제외). 코드·텍스트는 열람 화면에서 펜스 코드 블록으로 보인다. 설정하면 IPv4 루프백에서만 열리며, `DOK3_DATA_DIR` 없이 기동할 때는 메모리 검색 스냅샷을 구성한다. `DOK3_DATA_DIR` 와 함께 설정하면 `sources.json` 다중 Source 레지스트리와 영속 저장소(`dok3-storage`)·Blue-Green 세대(`dok3-index-manager`)를 사용한다. 읽을 수 없거나 비어 있거나 UTF-8이 아닌 파일은 경로와 사유를 기록하고 나머지 문서 색인은 계속한다.
+- `DOK3_SOURCE_DIR`: 시작할 때 색인할 기본 문서 폴더(`local-markdown`, `managed_by_env: true`). `dok3-parser::ParserRegistry`로 Markdown(`md`·`markdown`·`mdown`·`mkd`), HTML(`html`·`htm`), 코드(`rs`·`java`·`go`·`sql`·`jsp`·`ts`·`tsx`·`mts`·`cts`·`js`·`jsx`·`mjs`·`cjs`·`py`), 텍스트(`txt`·`log`)를 읽는다(`DEFAULT_DOCUMENT_EXTENSIONS`; `json`·`yaml` 등은 코퍼스 매니페스트 오염 방지를 위해 제외). 코드·텍스트는 열람 화면에서 펜스 코드 블록으로 보인다. 설정하면 IPv4 루프백에서만 열리며, `DOK3_DATA_DIR` 없이 기동할 때는 메모리 검색 스냅샷을 구성한다. `DOK3_DATA_DIR` 와 함께 설정하면 `sources.json` 다중 Source 레지스트리와 영속 저장소(`dok3-storage`)·Blue-Green 세대(`dok3-index-manager`)를 사용한다. 읽을 수 없거나 비어 있거나 UTF-8이 아닌 파일은 경로와 사유를 기록하고 나머지 문서 색인은 계속한다.
 - `DOK3_REFRESH_INTERVAL_SECS`: 영속 모드(`DOK3_SOURCE_DIR` + `DOK3_DATA_DIR`)에서 주기적 증분 색인 워커 실행 간격(초, 선택). 미설정 시 백그라운드 워커는 비활성.
 - `DOK3_ENABLE_ADMIN`: `true` 설정 시 IPv4 루프백 바인드에서 관리자 API(`/api/v1/index/jobs*`, `/api/v1/sources*`, `PATCH /api/v1/documents/{id}/classification`) 및 `/admin` 관리 UI를 활성화한다(기본 `false`, 루프백 `Origin`·`Sec-Fetch-Site`·`Content-Type: application/json` 가드 강제).
 - `DOK3_ALLOW_NON_LOOPBACK_BIND`: `true`/`1` 설정 시 `DOK3_SOURCE_DIR` 모드에서 비-loopback `DOK3_BIND`(예: 컨테이너의 `0.0.0.0`)를 명시적으로 허용한다(기본 `false`, true/false/1/0만 허용). 관리자 API 바인드는 이 플래그와 무관하게 항상 loopback만 허용한다. 인증 프록시 뒤 컨테이너 배포에서만 켠다.
@@ -101,6 +102,7 @@ dok3search를 단일 노드 doksam Kubernetes에 재현 가능하게 배포하�
 - Comprehensive Rust 변환: `python3 scripts/import-comprehensive-rust.py <snapshot-dir> <output-dir>` ([준비할 입력과 라이선스](frontend/src/samples/comprehensive-rust/README.md))
 - Rust Reference·Cargo Book 변환: `python3 scripts/import-rust-official-components.py --rust-docs-root <toolchain>/share/doc/rust/html --license-root <toolchain>/share/doc/rust/licenses --output-root frontend/src/samples --version '<rustc version>'` ([출처와 라이선스](frontend/src/samples/rust-reference/README.md))
 - `rustdoc`(`std` + 사용 크레이트)·`rustc --explain` 변환: `python3 scripts/import-rustdoc-and-errors.py --output-root frontend/src/samples`
+- `kordoc` 소스 코퍼스 반입: `python3 scripts/import-kordoc-source.py --source <kordoc-dir> --output frontend/src/samples/kordoc`
 - Rust 서버 실행: `cargo run --manifest-path backend/rust/Cargo.toml -p dok3-server`
 - CI: `.github/workflows/ci.yml` 가 PR 의 `rust-fmt`, `rust-clippy`, `rust-test`, `frontend-build` 를 필수 검사로 실행한다.
 - Rust 정적/테스트 검증:
