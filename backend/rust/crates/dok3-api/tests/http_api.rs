@@ -857,6 +857,8 @@ impl StubSources {
                 label: "Local Markdown".to_string(),
                 path: "/tmp/env-docs".to_string(),
                 default_category: "guide".to_string(),
+                kind: Default::default(),
+                sqlite: None,
                 default_tag: "docs".to_string(),
                 managed_by_env: true,
                 created_at_ms: 100,
@@ -900,6 +902,8 @@ impl SourceRegistryPort for StubSources {
             source_id,
             label: label.to_string(),
             path: req.path.trim().to_string(),
+            kind: req.kind,
+            sqlite: req.sqlite.clone(),
             default_category,
             default_tag: req
                 .default_tag

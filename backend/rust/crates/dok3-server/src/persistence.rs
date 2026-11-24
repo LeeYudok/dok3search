@@ -16,8 +16,8 @@ use dok3_domain::{
     DeleteSourceResponse, Document, DocumentClassification, DocumentId, DocumentStorePort,
     GenerationId, IndexJobListResponse, IndexJobMode, IndexJobPort, IndexJobRecord, IndexJobState,
     Principal, ReaderState, RegisteredSource, RevisionId, SearchPort, SearchRequest,
-    SearchResponse, SearchSnapshotMeta, Sequence, SourceListResponse, SourceRegistryPort,
-    TriggerIndexJobRequest, UpdateClassificationRequest,
+    SearchResponse, SearchSnapshotMeta, Sequence, SourceKind, SourceListResponse,
+    SourceRegistryPort, TriggerIndexJobRequest, UpdateClassificationRequest,
 };
 use dok3_index::{SCHEMA_VERSION, TantivyIndex};
 use dok3_index_manager::{
@@ -32,7 +32,10 @@ use serde::{Deserialize, Serialize};
 use crate::classification::{ClassificationStore, classification_from_doc};
 use crate::corpus_meta::CorpusMetadataIndex;
 use crate::local_index::{BuildReport, apply_detected_language};
-use crate::sources::{SourceRegistry, source_config_for, validate_real_directory};
+use crate::sources::{
+    SourceCursorStore, SourceRegistry, source_config_for, sqlite_adapter_for,
+    validate_real_directory, validate_real_sqlite_file,
+};
 
 const ACL_POLICY_VERSION: u64 = 1;
 
@@ -665,6 +668,7 @@ impl PersistentRuntime {
             &store,
             &journal,
             &mut classification_store,
+            false,
         )?;
         quarantine_incompatible_generations(&generations_dir)?;
 
@@ -1334,8 +1338,14 @@ fn refresh_locked(
     manager.reconcile_on_startup().map_err(|err| {
         format!("persistent index manager reconciliation failed; restart required: {err}")
     })?;
-    let report =
-        sync_sources_to_storage(sources, target_source_id, store, journal, classifications)?;
+    let report = sync_sources_to_storage(
+        sources,
+        target_source_id,
+        store,
+        journal,
+        classifications,
+        force_rebuild,
+    )?;
     let rebuilt = ensure_active_generation(manager, store, journal, force_rebuild)?;
     classifications.clear_all_pending_index_sync()?;
     sources.finalize_all_pending_deletes()?;
@@ -1453,7 +1463,20 @@ fn scan_and_store_source(
     journal: &FileChangeJournal,
     classifications: &mut ClassificationStore,
     synced_this_pass: &mut HashSet<String>,
+    cursors: &mut SourceCursorStore,
+    full: bool,
 ) -> Result<SourceScanOutcome, String> {
+    if entry.kind == SourceKind::Sqlite {
+        return scan_and_store_sqlite_source(
+            entry,
+            store,
+            journal,
+            classifications,
+            synced_this_pass,
+            cursors,
+            full,
+        );
+    }
     if let Err(err) = validate_real_directory(Path::new(&entry.path)) {
         return Ok(SourceScanOutcome::ScanFailed(err.to_string()));
     }
@@ -1569,6 +1592,118 @@ fn scan_and_store_source(
     })
 }
 
+/// Upper bound on cursor pages per pass to guard against a non-advancing source.
+const MAX_SQLITE_PAGES_PER_PASS: usize = 100_000;
+
+fn scan_and_store_sqlite_source(
+    entry: &RegisteredSource,
+    store: &FileDocumentStore,
+    journal: &FileChangeJournal,
+    classifications: &mut ClassificationStore,
+    synced_this_pass: &mut HashSet<String>,
+    cursors: &mut SourceCursorStore,
+    full: bool,
+) -> Result<SourceScanOutcome, String> {
+    if let Err(err) = validate_real_sqlite_file(Path::new(&entry.path)) {
+        return Ok(SourceScanOutcome::ScanFailed(err.to_string()));
+    }
+    let adapter = match sqlite_adapter_for(entry, None) {
+        Ok(adapter) => adapter,
+        Err(err) => return Ok(SourceScanOutcome::ScanFailed(err.to_string())),
+    };
+    let mut cursor = if full {
+        None
+    } else {
+        cursors.get(&entry.source_id)
+    };
+    let mut seen_ids = HashSet::new();
+    let mut indexed = 0usize;
+    let mut completed = false;
+
+    for _ in 0..MAX_SQLITE_PAGES_PER_PASS {
+        let batch = match adapter.collect(cursor.as_ref()) {
+            Ok(batch) => batch,
+            Err(err) => return Ok(SourceScanOutcome::ScanFailed(err.to_string())),
+        };
+        let mut batch_items: Vec<(Document, Option<Vec<u8>>)> =
+            Vec::with_capacity(batch.documents.len());
+        for mut document in batch.documents {
+            let bytes = document.body.clone().into_bytes();
+            let rev = content_revision(&bytes);
+            let content_hash = rev
+                .as_str()
+                .strip_prefix("sha256:")
+                .unwrap_or(rev.as_str())
+                .to_string();
+            document.category = entry.default_category.clone();
+            document.markdown = Some(document.body.clone());
+            let text = document.body.clone();
+            apply_detected_language(&mut document, &text);
+            classifications.apply_during_sync_with_defaults(
+                &mut document,
+                &entry.default_category,
+                &entry.default_tag,
+                &content_hash,
+            )?;
+            let doc_id = document.id.clone();
+            seen_ids.insert(doc_id.as_str().to_string());
+            let unchanged_content = store
+                .existing_content_hash(&doc_id)
+                .map_err(|err| err.to_string())?
+                .as_deref()
+                == Some(content_hash.as_str());
+            let bytes_opt = (!unchanged_content).then_some(bytes);
+            batch_items.push((document, bytes_opt));
+            indexed += 1;
+        }
+        let outcomes = store
+            .sync_scanned_batch(batch_items)
+            .map_err(|err| err.to_string())?;
+        for (doc_id, put_outcome) in outcomes {
+            if let PutOutcome::Stored(rev) = put_outcome {
+                journal
+                    .append(ChangeEvent {
+                        sequence: Sequence::new(0),
+                        document_id: doc_id.clone(),
+                        revision_id: rev,
+                        kind: ChangeKind::Upsert,
+                    })
+                    .map_err(|err| err.to_string())?;
+                synced_this_pass.insert(doc_id.as_str().to_string());
+            }
+        }
+
+        let next = batch.next_cursor;
+        if !batch.has_more {
+            cursor = next;
+            completed = true;
+            break;
+        }
+        if next == cursor {
+            return Ok(SourceScanOutcome::ScanFailed(
+                "sqlite cursor did not advance while more rows remain (increase batch_limit)"
+                    .to_string(),
+            ));
+        }
+        cursor = next;
+    }
+
+    // Persist the cursor only after documents and journal entries are durable.
+    if let Some(cursor) = cursor.as_ref() {
+        cursors.set(&entry.source_id, cursor)?;
+    }
+    if !completed {
+        return Ok(SourceScanOutcome::ScanFailed(format!(
+            "sqlite scan exceeded page limit ({MAX_SQLITE_PAGES_PER_PASS} pages) with more rows remaining"
+        )));
+    }
+    Ok(SourceScanOutcome::Scanned {
+        indexed,
+        skipped: Vec::new(),
+        seen_ids,
+    })
+}
+
 fn doc_counts_by_source(docs: &[Document]) -> BTreeMap<String, usize> {
     let mut counts = BTreeMap::new();
     for doc in docs {
@@ -1585,6 +1720,7 @@ fn sync_sources_to_storage(
     store: &FileDocumentStore,
     journal: &FileChangeJournal,
     classifications: &mut ClassificationStore,
+    full: bool,
 ) -> Result<BuildReport, String> {
     let targets: Vec<RegisteredSource> = match target_source_id {
         Some(id) => {
@@ -1603,13 +1739,19 @@ fn sync_sources_to_storage(
     let mut scan_outcomes: BTreeMap<String, Result<usize, String>> = BTreeMap::new();
     let mut failed_errors = Vec::new();
 
+    let mut incremental_sqlite_sources = HashSet::new();
     for entry in &targets {
+        if entry.kind == SourceKind::Sqlite && !full {
+            incremental_sqlite_sources.insert(entry.source_id.clone());
+        }
         match scan_and_store_source(
             entry,
             store,
             journal,
             classifications,
             &mut synced_this_pass,
+            sources.cursors_mut(),
+            full,
         )? {
             SourceScanOutcome::Scanned {
                 indexed,
@@ -1648,6 +1790,9 @@ fn sync_sources_to_storage(
         let src_id = doc.source_id.as_str();
         let should_delete = if !live_source_ids.contains(src_id) {
             true
+        } else if incremental_sqlite_sources.contains(src_id) {
+            // Cursor collection only emits new/updated rows; absence is not deletion.
+            false
         } else if healthy_scanned_sources.contains(src_id) {
             !seen_ids_by_source
                 .get(src_id)
@@ -3209,6 +3354,8 @@ mod tests {
                 path: team_dir.path().to_string_lossy().into_owned(),
                 default_category: Some("manual".to_string()),
                 default_tag: Some("ops".to_string()),
+                kind: dok3_domain::SourceKind::LocalDir,
+                sqlite: None,
             })
             .unwrap();
         assert_eq!(team_src.source_id, "team-notes");
@@ -3224,6 +3371,8 @@ mod tests {
                 path: broken_dir.path().to_string_lossy().into_owned(),
                 default_category: None,
                 default_tag: None,
+                kind: dok3_domain::SourceKind::LocalDir,
+                sqlite: None,
             }),
             Err(Dok3Error::InvalidInput(_))
         ));
@@ -3234,6 +3383,8 @@ mod tests {
                 path: team_dir.path().to_string_lossy().into_owned(),
                 default_category: None,
                 default_tag: None,
+                kind: dok3_domain::SourceKind::LocalDir,
+                sqlite: None,
             }),
             Err(Dok3Error::InvalidInput(_))
         ));
@@ -3325,6 +3476,8 @@ mod tests {
                 path: broken_dir.path().to_string_lossy().into_owned(),
                 default_category: None,
                 default_tag: None,
+                kind: dok3_domain::SourceKind::LocalDir,
+                sqlite: None,
             })
             .unwrap();
         fs::remove_dir_all(broken_dir.path()).unwrap();
@@ -3421,6 +3574,8 @@ mod tests {
                 path: src_a_dir.path().to_string_lossy().into_owned(),
                 default_category: None,
                 default_tag: None,
+                kind: dok3_domain::SourceKind::LocalDir,
+                sqlite: None,
             })
             .unwrap();
         runtime
@@ -3430,6 +3585,8 @@ mod tests {
                 path: src_b_dir.path().to_string_lossy().into_owned(),
                 default_category: None,
                 default_tag: None,
+                kind: dok3_domain::SourceKind::LocalDir,
+                sqlite: None,
             })
             .unwrap();
 
@@ -3544,6 +3701,8 @@ mod tests {
                 path: team_dir.path().to_string_lossy().into_owned(),
                 default_category: None,
                 default_tag: None,
+                kind: dok3_domain::SourceKind::LocalDir,
+                sqlite: None,
             })
             .unwrap_err();
         assert!(matches!(err, Dok3Error::Storage(_)));
@@ -3575,6 +3734,8 @@ mod tests {
                 path: team_dir.path().to_string_lossy().into_owned(),
                 default_category: None,
                 default_tag: None,
+                kind: dok3_domain::SourceKind::LocalDir,
+                sqlite: None,
             })
             .unwrap();
         assert_eq!(registered.source_id, "team-notes");
@@ -3590,6 +3751,8 @@ mod tests {
                     path: post_dir.path().to_string_lossy().into_owned(),
                     default_category: None,
                     default_tag: None,
+                    kind: dok3_domain::SourceKind::LocalDir,
+                    sqlite: None,
                 },
                 || Err("simulated post-activation failure".to_string()),
             )
@@ -3626,6 +3789,8 @@ mod tests {
                 path: post_dir.path().to_string_lossy().into_owned(),
                 default_category: None,
                 default_tag: None,
+                kind: dok3_domain::SourceKind::LocalDir,
+                sqlite: None,
             })
             .unwrap();
         assert_eq!(retried.document_count, 1);
@@ -3700,5 +3865,268 @@ mod tests {
         assert_eq!(hits(&runtime, "firstrusttoken"), 0);
         assert_eq!(hits(&runtime, "secondrusttoken"), 1);
         assert_eq!(hits(&runtime, "plaintexttoken"), 0);
+    }
+
+    fn run_sqlite_script(db: &Path, script: &str) {
+        let status = std::process::Command::new("python3")
+            .arg("-c")
+            .arg(
+                "import sqlite3,sys\nc=sqlite3.connect(sys.argv[1])\nc.executescript(sys.argv[2])\nc.commit()\nc.close()",
+            )
+            .arg(db)
+            .arg(script)
+            .status()
+            .unwrap();
+        assert!(status.success());
+    }
+
+    fn sqlite_options() -> dok3_domain::SqliteSourceOptions {
+        dok3_domain::SqliteSourceOptions {
+            select_query: "SELECT id, title, body FROM notes".to_string(),
+            id_column: "id".to_string(),
+            title_column: "title".to_string(),
+            body_column: "body".to_string(),
+            summary_column: None,
+            cursor_mode: dok3_domain::SqliteCursorKind::IntegerPk,
+            cursor_column: "id".to_string(),
+            batch_limit: Some(2),
+        }
+    }
+
+    fn sqlite_request(db: &Path) -> CreateSourceRequest {
+        CreateSourceRequest {
+            source_id: "notes-db".to_string(),
+            label: "Notes DB".to_string(),
+            path: db.to_string_lossy().into_owned(),
+            kind: SourceKind::Sqlite,
+            sqlite: Some(sqlite_options()),
+            default_category: None,
+            default_tag: None,
+        }
+    }
+
+    #[test]
+    fn sqlite_source_indexes_incrementally_reconciles_on_full_and_keeps_db_on_delete() {
+        let env_dir = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+        let db_dir = tempfile::tempdir().unwrap();
+        let db = db_dir.path().join("notes.db");
+        run_sqlite_script(
+            &db,
+            "CREATE TABLE notes(id INTEGER PRIMARY KEY, title TEXT, body TEXT);\
+             INSERT INTO notes VALUES (1,'One','sqliteaaatoken'),(2,'Two','sqlitebbbtoken'),(3,'Three','sqliteccctoken');",
+        );
+        fs::write(env_dir.path().join("env.md"), "# Env\n\nenvdoc\n").unwrap();
+
+        let (runtime, _) = PersistentRuntime::open(env_dir.path(), data_root.path()).unwrap();
+        let anon = Principal::anonymous_public();
+        let hits = |runtime: &PersistentRuntime, query: &str| {
+            runtime
+                .service()
+                .search(
+                    &anon,
+                    &SearchRequest {
+                        query: query.to_string(),
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap()
+                .total_hits
+        };
+
+        let registered = runtime.register_source(&sqlite_request(&db)).unwrap();
+        assert_eq!(registered.kind, SourceKind::Sqlite);
+        assert_eq!(registered.default_category, "guide");
+        assert_eq!(registered.default_tag, "sqlite");
+        assert_eq!(registered.document_count, 3);
+        assert_eq!(hits(&runtime, "sqliteaaatoken"), 1);
+        assert_eq!(hits(&runtime, "sqliteccctoken"), 1);
+        let cursor_file = data_root.path().join("storage/source_cursors.json");
+        assert!(
+            fs::read_to_string(&cursor_file)
+                .unwrap()
+                .contains("notes-db")
+        );
+
+        // Duplicate (path, query) is rejected; bad SQL is rejected at registration.
+        let mut dup = sqlite_request(&db);
+        dup.source_id = "notes-db-2".to_string();
+        assert!(matches!(
+            runtime.register_source(&dup),
+            Err(Dok3Error::InvalidInput(_))
+        ));
+        let mut bad = sqlite_request(&db);
+        bad.source_id = "bad-sql".to_string();
+        bad.sqlite.as_mut().unwrap().select_query = "SELECT id, title, nope FROM notes".to_string();
+        assert!(runtime.register_source(&bad).is_err());
+        assert!(
+            runtime
+                .list_sources()
+                .unwrap()
+                .sources
+                .iter()
+                .all(|src| src.source_id != "bad-sql")
+        );
+
+        // Incremental: new rows indexed, existing rows kept, cursor advanced.
+        run_sqlite_script(
+            &db,
+            "INSERT INTO notes VALUES (4,'Four','sqliteddtoken'),(5,'Five','sqliteeetoken');",
+        );
+        let job = runtime
+            .run_job(
+                "test",
+                &TriggerIndexJobRequest {
+                    source_id: Some("notes-db".to_string()),
+                    mode: IndexJobMode::Incremental,
+                },
+            )
+            .unwrap();
+        assert_eq!(job.state, IndexJobState::Succeeded, "{job:?}");
+        assert_eq!(hits(&runtime, "sqliteddtoken"), 1);
+        assert_eq!(hits(&runtime, "sqliteeetoken"), 1);
+        assert_eq!(hits(&runtime, "sqliteaaatoken"), 1);
+        let cursor_json = fs::read_to_string(&cursor_file).unwrap();
+        assert!(cursor_json.contains("\"value\": 5"), "{cursor_json}");
+        let count = |runtime: &PersistentRuntime| {
+            runtime
+                .list_sources()
+                .unwrap()
+                .sources
+                .iter()
+                .find(|src| src.source_id == "notes-db")
+                .unwrap()
+                .document_count
+        };
+        assert_eq!(count(&runtime), 5);
+
+        // Source row deletion is ignored by incremental passes but reconciled by Full.
+        run_sqlite_script(&db, "DELETE FROM notes WHERE id = 2;");
+        let job = runtime
+            .run_job(
+                "test",
+                &TriggerIndexJobRequest {
+                    source_id: Some("notes-db".to_string()),
+                    mode: IndexJobMode::Incremental,
+                },
+            )
+            .unwrap();
+        assert_eq!(job.state, IndexJobState::Succeeded);
+        assert_eq!(hits(&runtime, "sqlitebbbtoken"), 1);
+        let job = runtime
+            .run_job(
+                "test",
+                &TriggerIndexJobRequest {
+                    source_id: Some("notes-db".to_string()),
+                    mode: IndexJobMode::Full,
+                },
+            )
+            .unwrap();
+        assert_eq!(job.state, IndexJobState::Succeeded, "{job:?}");
+        assert_eq!(hits(&runtime, "sqlitebbbtoken"), 0);
+        assert_eq!(hits(&runtime, "sqliteaaatoken"), 1);
+        assert_eq!(count(&runtime), 4);
+        assert_eq!(hits(&runtime, "envdoc"), 1);
+
+        // Deleting the source removes its documents and cursor but never the .db file.
+        let deleted = runtime.delete_source("notes-db").unwrap();
+        assert_eq!(deleted.deleted_documents, 4);
+        assert_eq!(hits(&runtime, "sqliteaaatoken"), 0);
+        assert!(db.is_file());
+        assert!(
+            !fs::read_to_string(&cursor_file)
+                .unwrap()
+                .contains("notes-db")
+        );
+        assert_eq!(hits(&runtime, "envdoc"), 1);
+    }
+
+    #[tokio::test]
+    async fn sources_http_accepts_kindless_local_dir_and_sqlite_requests() {
+        let env_dir = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+        let team_dir = tempfile::tempdir().unwrap();
+        let db_dir = tempfile::tempdir().unwrap();
+        let db = db_dir.path().join("notes.db");
+        run_sqlite_script(
+            &db,
+            "CREATE TABLE notes(id INTEGER PRIMARY KEY, title TEXT, body TEXT);\
+             INSERT INTO notes VALUES (1,'One','httpsqlitetoken');",
+        );
+        fs::write(env_dir.path().join("env.md"), "# Env\n\nenvdoc\n").unwrap();
+        fs::write(team_dir.path().join("team.md"), "# Team\n\nhttpteamtoken\n").unwrap();
+
+        let (runtime, _) = PersistentRuntime::open(env_dir.path(), data_root.path()).unwrap();
+        let runtime = Arc::new(runtime);
+        let state = ApiState::new(Arc::new(runtime.service().clone()))
+            .with_principal(Principal::local_admin())
+            .with_sources(Arc::clone(&runtime) as _);
+        let app = build_router(state, None);
+
+        let post = |body: serde_json::Value| {
+            Request::builder()
+                .method("POST")
+                .uri("/api/v1/sources")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(body.to_string()))
+                .unwrap()
+        };
+        let response = app
+            .clone()
+            .oneshot(post(serde_json::json!({
+                "source_id": "team-http",
+                "label": "Team",
+                "path": team_dir.path().to_string_lossy(),
+            })))
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::CREATED);
+        let created: RegisteredSource = json(response).await;
+        assert_eq!(created.kind, SourceKind::LocalDir);
+        assert_eq!(created.document_count, 1);
+
+        let response = app
+            .clone()
+            .oneshot(post(serde_json::json!({
+                "source_id": "sqlite-http",
+                "label": "SQLite",
+                "path": db.to_string_lossy(),
+                "kind": "sqlite",
+                "sqlite": {
+                    "select_query": "SELECT id, title, body FROM notes",
+                    "id_column": "id",
+                    "title_column": "title",
+                    "body_column": "body",
+                    "cursor_mode": "integer_pk",
+                    "cursor_column": "id"
+                }
+            })))
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::CREATED);
+        let created: RegisteredSource = json(response).await;
+        assert_eq!(created.kind, SourceKind::Sqlite);
+        assert_eq!(created.default_tag, "sqlite");
+        assert_eq!(created.document_count, 1);
+
+        // sqlite options on a local_dir request are rejected.
+        let response = app
+            .clone()
+            .oneshot(post(serde_json::json!({
+                "source_id": "mixed",
+                "label": "Mixed",
+                "path": team_dir.path().to_string_lossy(),
+                "sqlite": {
+                    "select_query": "SELECT 1",
+                    "id_column": "id",
+                    "title_column": "t",
+                    "body_column": "b",
+                    "cursor_mode": "integer_pk",
+                    "cursor_column": "id"
+                }
+            })))
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
     }
 }
