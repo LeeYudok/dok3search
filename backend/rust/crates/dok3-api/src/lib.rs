@@ -569,7 +569,7 @@ async fn get_document_original(
         header::CONTENT_TYPE,
         HeaderValue::from_static("application/octet-stream"),
     );
-    if let Ok(disp) = HeaderValue::from_str(&format!("attachment; filename="{filename}"")) {
+    if let Ok(disp) = HeaderValue::from_str(&format!("attachment; filename=\"{filename}\"")) {
         resp.headers_mut().insert(header::CONTENT_DISPOSITION, disp);
     }
     Ok(resp)
