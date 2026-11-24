@@ -546,8 +546,25 @@ export async function updateClassification(
   return parseDocumentClassification(json)
 }
 
-export type SourceKind = 'local_dir' | 'sqlite'
+export type SourceKind = 'local_dir' | 'sqlite' | 'postgres' | 'mysql'
 export type SqliteCursorMode = 'integer_pk' | 'updated_at'
+
+export type TombstoneMode = 'deleted_at' | 'boolean_flag'
+
+export type RelationalSourceOptions = {
+  dsnEnv: string
+  connectionLabel: string
+  selectQuery: string
+  idColumn: string
+  titleColumn: string
+  bodyColumn: string
+  summaryColumn?: string
+  cursorMode: SqliteCursorKind
+  cursorColumn: string
+  tombstoneMode?: TombstoneMode
+  tombstoneColumn?: string
+  batchLimit?: number
+}
 
 export type SqliteSourceOptions = {
   selectQuery: string
@@ -566,6 +583,7 @@ export type RegisteredSource = {
   path: string
   kind?: SourceKind
   sqlite?: SqliteSourceOptions
+  relational?: RelationalSourceOptions
   defaultCategory: string
   defaultTag: string
   managedByEnv: boolean
@@ -585,6 +603,7 @@ export type CreateSourceInput = {
   path: string
   kind?: SourceKind
   sqlite?: SqliteSourceOptions
+  relational?: RelationalSourceOptions
   defaultCategory?: string
   defaultTag?: string
 }
@@ -660,6 +679,33 @@ function serializeSqliteOptions(options: SqliteSourceOptions) {
     cursor_mode: options.cursorMode,
     cursor_column: options.cursorColumn,
     batch_limit: options.batchLimit,
+  }
+}
+
+function parseRelationalSourceOptions(raw: unknown): RelationalSourceOptions | undefined {
+  if (raw === undefined || raw === null) return undefined
+  if (!isRecord(raw)) throw new Error('Invalid relational options payload')
+  const mode = expectString(raw, 'cursor_mode')
+  if (mode !== 'integer_pk' && mode !== 'updated_at') {
+    throw new Error("Invalid API field 'relational.cursor_mode'")
+  }
+  const tomb = optionalString(raw, 'tombstone_mode')
+  if (tomb !== undefined && tomb !== 'deleted_at' && tomb !== 'boolean_flag') {
+    throw new Error("Invalid API field 'relational.tombstone_mode'")
+  }
+  return {
+    dsnEnv: expectString(raw, 'dsn_env'),
+    connectionLabel: expectString(raw, 'connection_label'),
+    selectQuery: expectString(raw, 'select_query'),
+    idColumn: expectString(raw, 'id_column'),
+    titleColumn: expectString(raw, 'title_column'),
+    bodyColumn: expectString(raw, 'body_column'),
+    summaryColumn: optionalString(raw, 'summary_column'),
+    cursorMode: mode,
+    cursorColumn: expectString(raw, 'cursor_column'),
+    tombstoneMode: tomb,
+    tombstoneColumn: optionalString(raw, 'tombstone_column'),
+    batchLimit: optionalNumber(raw, 'batch_limit'),
   }
 }
 

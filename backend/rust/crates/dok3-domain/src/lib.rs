@@ -13,9 +13,9 @@ pub use admin::{
     ALLOWED_CLASSIFICATION_CATEGORIES, ClassificationSource, CreateSourceRequest,
     DeleteSourceResponse, DocumentClassification, IndexJobListResponse, IndexJobMode,
     IndexJobRecord, IndexJobState, MAX_CLASSIFICATION_SUMMARY_CHARS, MAX_CLASSIFICATION_TERMS,
-    MAX_SOURCE_ID_LEN, RegisteredSource, SourceKind, SourceListResponse, SqliteCursorKind,
-    SqliteSourceOptions, TriggerIndexJobRequest, UpdateClassificationRequest,
-    normalize_classification_terms, validate_classification_category,
+    MAX_SOURCE_ID_LEN, RegisteredSource, RelationalSourceOptions, SourceKind, SourceListResponse,
+    SqliteCursorKind, SqliteSourceOptions, TombstoneMode, TriggerIndexJobRequest,
+    UpdateClassificationRequest, normalize_classification_terms, validate_classification_category,
     validate_classification_summary, validate_source_id_slug,
 };
 pub use change::{ChangeEvent, ChangeKind};

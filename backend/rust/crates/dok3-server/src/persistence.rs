@@ -9,7 +9,7 @@ use std::sync::{Arc, Mutex, mpsc};
 use std::thread::{self, JoinHandle};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use dok3_connectors::{LocalFileConnector, build_document};
+use dok3_connectors::{LocalFileConnector, RelationalSourceAdapter, build_document};
 use dok3_core::Dok3Error;
 use dok3_domain::{
     ChangeEvent, ChangeJournalPort, ChangeKind, ClassificationPort, CreateSourceRequest,
@@ -33,8 +33,8 @@ use crate::classification::{ClassificationStore, classification_from_doc};
 use crate::corpus_meta::CorpusMetadataIndex;
 use crate::local_index::{BuildReport, apply_detected_language};
 use crate::sources::{
-    SourceCursorStore, SourceRegistry, source_config_for, sqlite_adapter_for,
-    validate_real_directory, validate_real_sqlite_file,
+    SourceCursorStore, SourceRegistry, relational_source_config_for, source_config_for,
+    sqlite_adapter_for, validate_real_directory, validate_real_sqlite_file,
 };
 
 const ACL_POLICY_VERSION: u64 = 1;
@@ -1466,6 +1466,17 @@ fn scan_and_store_source(
     cursors: &mut SourceCursorStore,
     full: bool,
 ) -> Result<SourceScanOutcome, String> {
+    if matches!(entry.kind, SourceKind::Postgres | SourceKind::Mysql) {
+        return scan_and_store_relational_source(
+            entry,
+            store,
+            journal,
+            classifications,
+            cursors,
+            full,
+            synced_this_pass,
+        );
+    }
     if entry.kind == SourceKind::Sqlite {
         return scan_and_store_sqlite_source(
             entry,
@@ -1704,6 +1715,144 @@ fn scan_and_store_sqlite_source(
     })
 }
 
+fn scan_and_store_relational_source(
+    entry: &RegisteredSource,
+    store: &FileDocumentStore,
+    journal: &FileChangeJournal,
+    classifications: &mut ClassificationStore,
+    cursors: &mut SourceCursorStore,
+    full: bool,
+    synced_this_pass: &mut HashSet<String>,
+) -> Result<SourceScanOutcome, String> {
+    let (cfg, dsn) = match relational_source_config_for(entry) {
+        Ok(pair) => pair,
+        Err(err) => return Ok(SourceScanOutcome::ScanFailed(err.to_string())),
+    };
+    let mut cursor = if full {
+        None
+    } else {
+        cursors.get(&entry.source_id)
+    };
+    let mut seen_ids = HashSet::new();
+    let mut indexed = 0usize;
+    let mut completed = false;
+
+    for _ in 0..MAX_SQLITE_PAGES_PER_PASS {
+        let batch = match entry.kind {
+            SourceKind::Postgres => {
+                let adapter = match RelationalSourceAdapter::new_postgres(cfg.clone(), &dsn) {
+                    Ok(a) => a,
+                    Err(err) => return Ok(SourceScanOutcome::ScanFailed(err.to_string())),
+                };
+                match adapter.collect(cursor.as_ref()) {
+                    Ok(b) => b,
+                    Err(err) => return Ok(SourceScanOutcome::ScanFailed(err.to_string())),
+                }
+            }
+            SourceKind::Mysql => {
+                let adapter = match RelationalSourceAdapter::new_mysql(cfg.clone(), &dsn) {
+                    Ok(a) => a,
+                    Err(err) => return Ok(SourceScanOutcome::ScanFailed(err.to_string())),
+                };
+                match adapter.collect(cursor.as_ref()) {
+                    Ok(b) => b,
+                    Err(err) => return Ok(SourceScanOutcome::ScanFailed(err.to_string())),
+                }
+            }
+            _ => unreachable!(),
+        };
+
+        let mut batch_items: Vec<(Document, Option<Vec<u8>>)> =
+            Vec::with_capacity(batch.documents.len());
+        for mut document in batch.documents {
+            let bytes = document.body.clone().into_bytes();
+            let rev = content_revision(&bytes);
+            let content_hash = rev
+                .as_str()
+                .strip_prefix("sha256:")
+                .unwrap_or(rev.as_str())
+                .to_string();
+            document.category = entry.default_category.clone();
+            document.markdown = Some(document.body.clone());
+            let text = document.body.clone();
+            apply_detected_language(&mut document, &text);
+            classifications.apply_during_sync_with_defaults(
+                &mut document,
+                &entry.default_category,
+                &entry.default_tag,
+                &content_hash,
+            )?;
+            let doc_id = document.id.clone();
+            seen_ids.insert(doc_id.as_str().to_string());
+            let unchanged_content = store
+                .existing_content_hash(&doc_id)
+                .map_err(|err| err.to_string())?
+                .as_deref()
+                == Some(content_hash.as_str());
+            let bytes_opt = (!unchanged_content).then_some(bytes);
+            batch_items.push((document, bytes_opt));
+            indexed += 1;
+        }
+        let outcomes = store
+            .sync_scanned_batch(batch_items)
+            .map_err(|err| err.to_string())?;
+        for (doc_id, put_outcome) in outcomes {
+            if let PutOutcome::Stored(rev) = put_outcome {
+                journal
+                    .append(ChangeEvent {
+                        sequence: Sequence::new(0),
+                        document_id: doc_id.clone(),
+                        revision_id: rev,
+                        kind: ChangeKind::Upsert,
+                    })
+                    .map_err(|err| err.to_string())?;
+                synced_this_pass.insert(doc_id.as_str().to_string());
+            }
+        }
+        for del_id in batch.deleted_ids {
+            seen_ids.remove(del_id.as_str());
+            if store.delete(&del_id).map_err(|err| err.to_string())? {
+                journal
+                    .append(ChangeEvent {
+                        sequence: Sequence::new(0),
+                        document_id: del_id,
+                        revision_id: RevisionId::new("deleted"),
+                        kind: ChangeKind::Delete,
+                    })
+                    .map_err(|err| err.to_string())?;
+            }
+        }
+
+        let next = batch.next_cursor;
+        if !batch.has_more {
+            cursor = next;
+            completed = true;
+            break;
+        }
+        if next == cursor {
+            return Ok(SourceScanOutcome::ScanFailed(
+                "relational cursor did not advance while more rows remain (increase batch_limit)"
+                    .to_string(),
+            ));
+        }
+        cursor = next;
+    }
+
+    if let Some(cursor) = cursor.as_ref() {
+        cursors.set(&entry.source_id, cursor)?;
+    }
+    if !completed {
+        return Ok(SourceScanOutcome::ScanFailed(format!(
+            "relational scan exceeded page limit ({MAX_SQLITE_PAGES_PER_PASS} pages) with more rows remaining"
+        )));
+    }
+    Ok(SourceScanOutcome::Scanned {
+        indexed,
+        skipped: Vec::new(),
+        seen_ids,
+    })
+}
+
 fn doc_counts_by_source(docs: &[Document]) -> BTreeMap<String, usize> {
     let mut counts = BTreeMap::new();
     for doc in docs {
@@ -1741,7 +1890,11 @@ fn sync_sources_to_storage(
 
     let mut incremental_sqlite_sources = HashSet::new();
     for entry in &targets {
-        if entry.kind == SourceKind::Sqlite && !full {
+        if matches!(
+            entry.kind,
+            SourceKind::Sqlite | SourceKind::Postgres | SourceKind::Mysql
+        ) && !full
+        {
             incremental_sqlite_sources.insert(entry.source_id.clone());
         }
         match scan_and_store_source(
@@ -3356,6 +3509,7 @@ mod tests {
                 default_tag: Some("ops".to_string()),
                 kind: dok3_domain::SourceKind::LocalDir,
                 sqlite: None,
+                relational: None,
             })
             .unwrap();
         assert_eq!(team_src.source_id, "team-notes");
@@ -3373,6 +3527,7 @@ mod tests {
                 default_tag: None,
                 kind: dok3_domain::SourceKind::LocalDir,
                 sqlite: None,
+                relational: None,
             }),
             Err(Dok3Error::InvalidInput(_))
         ));
@@ -3385,6 +3540,7 @@ mod tests {
                 default_tag: None,
                 kind: dok3_domain::SourceKind::LocalDir,
                 sqlite: None,
+                relational: None,
             }),
             Err(Dok3Error::InvalidInput(_))
         ));
@@ -3478,6 +3634,7 @@ mod tests {
                 default_tag: None,
                 kind: dok3_domain::SourceKind::LocalDir,
                 sqlite: None,
+                relational: None,
             })
             .unwrap();
         fs::remove_dir_all(broken_dir.path()).unwrap();
@@ -3576,6 +3733,7 @@ mod tests {
                 default_tag: None,
                 kind: dok3_domain::SourceKind::LocalDir,
                 sqlite: None,
+                relational: None,
             })
             .unwrap();
         runtime
@@ -3587,6 +3745,7 @@ mod tests {
                 default_tag: None,
                 kind: dok3_domain::SourceKind::LocalDir,
                 sqlite: None,
+                relational: None,
             })
             .unwrap();
 
@@ -3703,6 +3862,7 @@ mod tests {
                 default_tag: None,
                 kind: dok3_domain::SourceKind::LocalDir,
                 sqlite: None,
+                relational: None,
             })
             .unwrap_err();
         assert!(matches!(err, Dok3Error::Storage(_)));
@@ -3736,6 +3896,7 @@ mod tests {
                 default_tag: None,
                 kind: dok3_domain::SourceKind::LocalDir,
                 sqlite: None,
+                relational: None,
             })
             .unwrap();
         assert_eq!(registered.source_id, "team-notes");
@@ -3753,6 +3914,7 @@ mod tests {
                     default_tag: None,
                     kind: dok3_domain::SourceKind::LocalDir,
                     sqlite: None,
+                    relational: None,
                 },
                 || Err("simulated post-activation failure".to_string()),
             )
@@ -3791,6 +3953,7 @@ mod tests {
                 default_tag: None,
                 kind: dok3_domain::SourceKind::LocalDir,
                 sqlite: None,
+                relational: None,
             })
             .unwrap();
         assert_eq!(retried.document_count, 1);
@@ -3900,6 +4063,7 @@ mod tests {
             path: db.to_string_lossy().into_owned(),
             kind: SourceKind::Sqlite,
             sqlite: Some(sqlite_options()),
+            relational: None,
             default_category: None,
             default_tag: None,
         }
