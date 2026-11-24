@@ -251,6 +251,8 @@ fn contract_dtos_round_trip_json() {
         citation: SectionCitation {
             source_uri: "kb://rust_manual/chapter-01".to_string(),
             section: SectionId::new("ownership"),
+            line_start: Some(1),
+            line_end: Some(10),
         },
         text: "Section content here".to_string(),
         next_cursor: None,

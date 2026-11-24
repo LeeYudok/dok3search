@@ -21,6 +21,8 @@ use crate::protocol::{
 
 /// Maximum bytes accepted for a single newline-delimited JSON-RPC message on stdio.
 pub const MAX_JSONRPC_LINE_BYTES: usize = 1024 * 1024;
+/// Default character cap for `kb_get_document` body text to avoid flooding LLM context windows.
+pub const DEFAULT_MCP_DOC_MAX_CHARS: usize = 16_000;
 
 /// MCP stdio JSON-RPC 2.0 server delegating all use cases to [`SearchService`].
 #[derive(Clone)]
@@ -343,9 +345,7 @@ impl McpServer {
             "kb_search_error" => {
                 self.call_kb_search_preset(principal, id, &args, &["error_code", "query"])
             }
-            "kb_search_code" => {
-                self.call_kb_search_preset(principal, id, &args, &["symbol", "query"])
-            }
+            "kb_search_code" => self.call_kb_search_code(principal, id, &args),
             "kb_list_categories" => self.call_kb_list_categories(principal, id, &args),
             _ => JsonRpcResponse::err(
                 id,
@@ -415,6 +415,93 @@ impl McpServer {
         tool_result(id, self.search.search(principal, &req))
     }
 
+    fn call_kb_search_code(
+        &self,
+        principal: &Principal,
+        id: Value,
+        args: &Map<String, Value>,
+    ) -> JsonRpcResponse {
+        let symbol = match optional_string(args, "symbol") {
+            Ok(v) => v.unwrap_or_default(),
+            Err(msg) => return JsonRpcResponse::err(id, JSONRPC_INVALID_PARAMS, msg, None),
+        };
+        let query = match optional_string(args, "query") {
+            Ok(v) => v.unwrap_or_default(),
+            Err(msg) => return JsonRpcResponse::err(id, JSONRPC_INVALID_PARAMS, msg, None),
+        };
+        let path = match optional_string(args, "path") {
+            Ok(v) => v.unwrap_or_default(),
+            Err(msg) => return JsonRpcResponse::err(id, JSONRPC_INVALID_PARAMS, msg, None),
+        };
+        let ext = match optional_string(args, "ext") {
+            Ok(v) => v.unwrap_or_default(),
+            Err(msg) => return JsonRpcResponse::err(id, JSONRPC_INVALID_PARAMS, msg, None),
+        };
+
+        let sym_trimmed = symbol.trim();
+        let q_trimmed = query.trim();
+        let path_trimmed = path.trim();
+        let ext_trimmed = ext.trim().trim_start_matches('.');
+        if sym_trimmed.is_empty()
+            && q_trimmed.is_empty()
+            && path_trimmed.is_empty()
+            && ext_trimmed.is_empty()
+        {
+            return JsonRpcResponse::err(
+                id,
+                JSONRPC_INVALID_PARAMS,
+                "at least one of [\"symbol\", \"query\", \"path\", \"ext\"] must be non-empty",
+                None,
+            );
+        }
+
+        let mut base_ops = Vec::new();
+        for p in path_trimmed.split_whitespace() {
+            base_ops.push(format!("path:{p}"));
+        }
+        if !ext_trimmed.is_empty() {
+            base_ops.push(format!("ext:{ext_trimmed}"));
+        }
+
+        if !sym_trimmed.is_empty() {
+            let mut strict_parts = base_ops.clone();
+            for w in sym_trimmed.split_whitespace() {
+                strict_parts.push(format!("sym:{w}"));
+            }
+            if !q_trimmed.is_empty() {
+                strict_parts.push(q_trimmed.to_string());
+            }
+            let strict_req = match build_search_request(strict_parts.join(" "), args) {
+                Ok(r) => r,
+                Err(InvalidOrDomain::InvalidParams(msg)) => {
+                    return JsonRpcResponse::err(id, JSONRPC_INVALID_PARAMS, msg, None);
+                }
+                Err(InvalidOrDomain::Domain(dok3_err)) => return dok3_error_result(id, dok3_err),
+            };
+            match self.search.search(principal, &strict_req) {
+                Ok(resp) if resp.total_hits > 0 => return tool_result(id, Ok(resp)),
+                Ok(_) => {}
+                Err(err) => return dok3_error_result(id, err),
+            }
+        }
+
+        let mut fallback_parts = base_ops;
+        if !sym_trimmed.is_empty() {
+            fallback_parts.push(sym_trimmed.to_string());
+        }
+        if !q_trimmed.is_empty() {
+            fallback_parts.push(q_trimmed.to_string());
+        }
+        let req = match build_search_request(fallback_parts.join(" "), args) {
+            Ok(r) => r,
+            Err(InvalidOrDomain::InvalidParams(msg)) => {
+                return JsonRpcResponse::err(id, JSONRPC_INVALID_PARAMS, msg, None);
+            }
+            Err(InvalidOrDomain::Domain(dok3_err)) => return dok3_error_result(id, dok3_err),
+        };
+        tool_result(id, self.search.search(principal, &req))
+    }
+
     fn call_kb_get_document(
         &self,
         principal: &Principal,
@@ -425,11 +512,55 @@ impl McpServer {
             Ok(v) => v,
             Err(msg) => return JsonRpcResponse::err(id, JSONRPC_INVALID_PARAMS, msg, None),
         };
-        tool_result(
-            id,
-            self.search
-                .get_document(principal, &DocumentId::new(doc_id)),
-        )
+        let toc_only = match optional_bool(args, "toc_only") {
+            Ok(v) => v.unwrap_or(false),
+            Err(msg) => return JsonRpcResponse::err(id, JSONRPC_INVALID_PARAMS, msg, None),
+        };
+        let max_chars = match optional_usize(args, "max_chars") {
+            Ok(v) => v
+                .unwrap_or(DEFAULT_MCP_DOC_MAX_CHARS)
+                .clamp(1, dok3_domain::MAX_SECTION_MAX_CHARS),
+            Err(msg) => return JsonRpcResponse::err(id, JSONRPC_INVALID_PARAMS, msg, None),
+        };
+        let mut detail = match self
+            .search
+            .get_document(principal, &DocumentId::new(doc_id))
+        {
+            Ok(d) => d,
+            Err(err) => return dok3_error_result(id, err),
+        };
+        if detail.body.trim().is_empty()
+            && let Some(md) = detail.markdown.take()
+        {
+            detail.body = md;
+        }
+        detail.markdown = None;
+
+        let total_chars = detail.body.chars().count();
+        let (body_out, truncated) = if toc_only {
+            (String::new(), total_chars > 0)
+        } else if total_chars > max_chars {
+            (detail.body.chars().take(max_chars).collect(), true)
+        } else {
+            (detail.body, false)
+        };
+        detail.body = body_out;
+
+        let mut val = match serde_json::to_value(&detail) {
+            Ok(v) => v,
+            Err(err) => {
+                return dok3_error_result(
+                    id,
+                    Dok3Error::Internal(format!("failed to serialize document detail: {err}")),
+                );
+            }
+        };
+        if let Some(obj) = val.as_object_mut() {
+            obj.remove("markdown");
+            obj.insert("total_chars".to_string(), json!(total_chars));
+            obj.insert("truncated".to_string(), json!(truncated));
+        }
+        tool_result(id, Ok(val))
     }
 
     fn call_kb_get_section(

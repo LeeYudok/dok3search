@@ -161,7 +161,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
     vec![
         ToolDefinition {
             name: "kb_search".to_string(),
-            description: "Search authorized knowledge base documents with filters, pagination, and category facets."
+            description: "Air-gapped web_search replacement. Search authorized docs and source code with filters and inline operators (path:<dir>, ext:<ext>, sym:<name>). Hits include matched_section_id and matched_line_start — call kb_get_section next to read the exact matched section."
                 .to_string(),
             input_schema: schema_with(
                 vec![(
@@ -174,20 +174,30 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
         },
         ToolDefinition {
             name: "kb_get_document".to_string(),
-            description: "Retrieve document metadata, body, section TOC, and paired format links if authorized."
+            description: "Retrieve document metadata, section/symbol TOC with line ranges, and bounded single-copy body (default max_chars=16000). Set toc_only=true to inspect the symbol/section outline before calling kb_get_section."
                 .to_string(),
             input_schema: schema_with(
-                vec![(
-                    "document_id",
-                    json!({ "type": "string", "description": "Logical document ID." }),
-                )],
+                vec![
+                    (
+                        "document_id",
+                        json!({ "type": "string", "description": "Logical document ID." }),
+                    ),
+                    (
+                        "toc_only",
+                        json!({ "type": "boolean", "description": "If true, omit body text and return only metadata and section/symbol TOC (default false)." }),
+                    ),
+                    (
+                        "max_chars",
+                        json!({ "type": "integer", "minimum": 1, "maximum": 100000, "description": "Maximum body characters to return before truncation (default 16000)." }),
+                    ),
+                ],
                 &["document_id"],
                 false,
             ),
         },
         ToolDefinition {
             name: "kb_get_section".to_string(),
-            description: "Read a bounded, cursor-paginated slice of a specific document section with source citations."
+            description: "Preferred follow-up reader after kb_search/kb_search_code. Reads a bounded, cursor-paginated slice of a specific section/symbol (with attached doc comments) and exact source_uri + line_start..line_end citations."
                 .to_string(),
             input_schema: schema_with(
                 vec![
@@ -252,17 +262,25 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
         },
         ToolDefinition {
             name: "kb_search_code".to_string(),
-            description: "Search code symbols, identifiers, namespaces, and programming examples."
+            description: "Search source code symbols, definitions, file paths, and programming examples. Ranks symbol definitions first when symbol is given, with automatic fallback to full-text matches."
                 .to_string(),
             input_schema: schema_with(
                 vec![
                     (
                         "symbol",
-                        json!({ "type": "string", "description": "Code symbol or namespace (e.g. SearchService, tokio::spawn)." }),
+                        json!({ "type": "string", "description": "Code symbol or namespace (e.g. SearchService, toArrayBuffer, tokio::spawn)." }),
                     ),
                     (
                         "query",
                         json!({ "type": "string", "description": "Additional code or topic query." }),
+                    ),
+                    (
+                        "path",
+                        json!({ "type": "string", "description": "Optional file or directory path fragment (e.g. hwpx, roundtrip/table)." }),
+                    ),
+                    (
+                        "ext",
+                        json!({ "type": "string", "description": "Optional file extension without leading dot (e.g. ts, rs, go, py)." }),
                     ),
                 ],
                 &[],

@@ -24,6 +24,10 @@ pub enum AcpRequest {
     },
     GetDocument {
         document_id: String,
+        #[serde(default)]
+        toc_only: bool,
+        #[serde(default)]
+        max_chars: Option<usize>,
     },
     GetSection {
         document_id: String,
@@ -69,10 +73,28 @@ impl AcpAdapter {
                 )?;
                 Ok(AcpResponse::Search(resp))
             }
-            AcpRequest::GetDocument { document_id } => {
-                let doc = self
+            AcpRequest::GetDocument {
+                document_id,
+                toc_only,
+                max_chars,
+            } => {
+                let mut doc = self
                     .search
                     .get_document(principal, &DocumentId::new(document_id))?;
+                if doc.body.trim().is_empty()
+                    && let Some(md) = doc.markdown.take()
+                {
+                    doc.body = md;
+                }
+                doc.markdown = None;
+                let cap = max_chars
+                    .unwrap_or(16_000)
+                    .clamp(1, dok3_domain::MAX_SECTION_MAX_CHARS);
+                if toc_only {
+                    doc.body.clear();
+                } else if doc.body.chars().count() > cap {
+                    doc.body = doc.body.chars().take(cap).collect();
+                }
                 Ok(AcpResponse::Document(Box::new(doc)))
             }
             AcpRequest::GetSection {

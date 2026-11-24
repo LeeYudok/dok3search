@@ -473,6 +473,8 @@ impl DocumentStorePort for FileDocumentStore {
             citation: SectionCitation {
                 source_uri: doc.source_uri.clone(),
                 section: section.section_id.clone(),
+                line_start: (section.line_start > 0).then_some(section.line_start),
+                line_end: (section.line_end > 0).then_some(section.line_end),
             },
             text,
             next_cursor: truncated.then_some(end),
