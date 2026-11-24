@@ -197,6 +197,8 @@ fn acp_adapter_delegates_search_doc_and_section_with_acl() {
                 &anon,
                 AcpRequest::GetDocument {
                     document_id: "priv-1".to_string(),
+                    toc_only: false,
+                    max_chars: None,
                 }
             )
             .is_err()

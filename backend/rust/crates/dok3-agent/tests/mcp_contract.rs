@@ -332,6 +332,44 @@ fn exposes_all_seven_ssot_tools_and_enforces_acl_on_every_tool() {
     );
     assert_eq!(page1["structuredContent"]["truncated"], true);
     assert_eq!(page1["structuredContent"]["next_cursor"], 14);
+    assert_eq!(page1["structuredContent"]["citation"]["line_start"], 1);
+    assert_eq!(page1["structuredContent"]["citation"]["line_end"], 3);
+
+    // kb_get_document omits duplicate markdown and supports toc_only / max_chars.
+    let toc_doc = public_server
+        .handle_message(
+            r#"{"jsonrpc":"2.0","id":21,"method":"tools/call","params":{"name":"kb_get_document","arguments":{"document_id":"pub-code","toc_only":true}}}"#,
+        )
+        .unwrap()
+        .result
+        .unwrap();
+    assert_eq!(toc_doc["isError"], false);
+    assert!(toc_doc["structuredContent"].get("markdown").is_none());
+    assert_eq!(toc_doc["structuredContent"]["body"], "");
+    assert_eq!(toc_doc["structuredContent"]["truncated"], true);
+    assert!(
+        toc_doc["structuredContent"]["total_chars"]
+            .as_u64()
+            .unwrap()
+            > 0
+    );
+
+    let bounded_doc = public_server
+        .handle_message(
+            r#"{"jsonrpc":"2.0","id":22,"method":"tools/call","params":{"name":"kb_get_document","arguments":{"document_id":"pub-code","max_chars":10}}}"#,
+        )
+        .unwrap()
+        .result
+        .unwrap();
+    assert_eq!(bounded_doc["structuredContent"]["truncated"], true);
+    assert_eq!(
+        bounded_doc["structuredContent"]["body"]
+            .as_str()
+            .unwrap()
+            .chars()
+            .count(),
+        10
+    );
 }
 
 #[test]

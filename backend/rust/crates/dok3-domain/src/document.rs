@@ -145,6 +145,10 @@ impl SectionReadRequest {
 pub struct SectionCitation {
     pub source_uri: String,
     pub section: SectionId,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub line_start: Option<usize>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub line_end: Option<usize>,
 }
 
 /// Paginated, source-preserving section response.
