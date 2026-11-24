@@ -13,23 +13,20 @@ REPO_ROOT="$(cd "$DEPLOY_DIR/../.." && pwd)"
 
 NAMESPACE="${NAMESPACE:-dok3search}"
 DEPLOYMENT="${DEPLOYMENT:-dok3search}"
-IMAGE_REPO="${IMAGE_REPO:-dok3search}"
-
-# doksam runtime access. HOST=local runs the commands in the current shell.
-HOST="${HOST:-doksam}"
-SSH_OPTS=(-o ControlMaster=auto -o "ControlPath=$HOME/.ssh/cm-dok3search-%C" -o ControlPersist=600)
-
-# Public edge + node address used for the Host-based verification.
-PUBLIC_HOST="${PUBLIC_HOST:-www.doksam.com}"
-NODE_IP="${NODE_IP:-192.168.113.220}"
-HTTPS_PORT="${HTTPS_PORT:-443}"
-
 # Container engine used by build-image.sh (podman or docker).
 CONTAINER_ENGINE="${CONTAINER_ENGINE:-podman}"
 IFS=' ' read -r -a CONTAINER_ENGINE_CMD <<< "$CONTAINER_ENGINE"
 if [ "${#CONTAINER_ENGINE_CMD[@]}" -eq 0 ]; then
   echo "error: CONTAINER_ENGINE must name podman or docker" >&2
   exit 2
+fi
+
+if [ -z "${IMAGE_REPO:-}" ]; then
+  if [ "${CONTAINER_ENGINE_CMD[0]##*/}" = "podman" ]; then
+    IMAGE_REPO="localhost/dok3search"
+  else
+    IMAGE_REPO="dok3search"
+  fi
 fi
 
 # Commit-SHA based, immutable image tag.
