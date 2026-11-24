@@ -18,7 +18,8 @@ pub const DEFAULT_MAX_FILE_BYTES: u64 = 4 * 1024 * 1024;
 /// `frontend/src/samples` carry corpus manifests (`index.json`, `provenance.json`) and design
 /// YAML that must not be indexed as standalone documents.
 pub const DEFAULT_DOCUMENT_EXTENSIONS: &[&str] = &[
-    "md", "markdown", "mdown", "mkd", "html", "htm", "rs", "java", "go", "sql", "jsp", "txt", "log",
+    "md", "markdown", "mdown", "mkd", "html", "htm", "pdf", "docx", "rs", "java", "go", "sql",
+    "jsp", "txt", "log",
 ];
 
 /// Configuration describing a local filesystem knowledge source.
@@ -317,7 +318,13 @@ pub fn build_document(
 /// Markdown-shaped text; code and plain text are wrapped in fenced blocks so generics,
 /// JSP scriptlets and HTML-like snippets render as text instead of being dropped.
 fn render_reader_markdown(scanned: &ScannedFile, parsed: &ParsedDocument) -> String {
-    if matches!(scanned.media_type.as_str(), "text/markdown" | "text/html") {
+    if matches!(
+        scanned.media_type.as_str(),
+        "text/markdown"
+            | "text/html"
+            | "application/pdf"
+            | "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ) {
         return parsed.normalized_text.clone();
     }
     let lang = fence_language(&scanned.media_type);
@@ -418,10 +425,12 @@ fn normalize_relative(root: &Path, path: &Path) -> Result<String, Dok3Error> {
     Ok(parts.join("/"))
 }
 
-fn media_type_for_ext(ext: &str) -> &'static str {
+pub(crate) fn media_type_for_ext(ext: &str) -> &'static str {
     match ext {
         "md" | "markdown" | "mdown" | "mkd" => "text/markdown",
         "html" | "htm" => "text/html",
+        "pdf" => "application/pdf",
+        "docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         "rs" => "text/x-rust",
         "java" => "text/x-java-source",
         "go" => "text/x-go",

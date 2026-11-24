@@ -3,7 +3,7 @@
 use dok3_core::Dok3Error;
 use dok3_domain::{DocumentParserPort, ParsedDocument};
 
-use crate::{CodeSymbolParser, HtmlParser, MarkdownParser, PlainTextParser};
+use crate::{CodeSymbolParser, DocxParser, HtmlParser, MarkdownParser, PdfParser, PlainTextParser};
 
 /// Registry of [`DocumentParserPort`] implementations tried in registration order.
 pub struct ParserRegistry {
@@ -31,6 +31,8 @@ impl ParserRegistry {
         let mut reg = Self::empty();
         reg.register(MarkdownParser);
         reg.register(HtmlParser);
+        reg.register(DocxParser::new());
+        reg.register(PdfParser::new());
         reg.register(CodeSymbolParser::new());
         reg.register(PlainTextParser::new());
         reg
