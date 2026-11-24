@@ -259,10 +259,9 @@ mod tests {
 
     use super::*;
 
-    fn recorder() -> (
-        StatusReporter,
-        Arc<Mutex<Vec<(ServiceLifecycleState, bool)>>>,
-    ) {
+    type RecordedStatuses = Arc<Mutex<Vec<(ServiceLifecycleState, bool)>>>;
+
+    fn recorder() -> (StatusReporter, RecordedStatuses) {
         let log = Arc::new(Mutex::new(Vec::new()));
         let sink = Arc::clone(&log);
         let report: StatusReporter =
