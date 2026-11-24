@@ -1,6 +1,6 @@
-# dok3search → doksam k3s 배포
+# dok3search → doksam k8s 배포
 
-dok3search를 단일 노드 doksam Kubernetes에 배포하고 `https://www.doksam.com`
+dok3search를 단일 노드 doksam Kubernetes(v1.37.2)에 배포하고 `https://www.doksam.com`
 Host로 서비스한다. 공개 진입점은 인증 없이 접근 가능하다.
 
 ## 토폴로지
