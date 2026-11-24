@@ -10,13 +10,16 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use dok3_agent::{McpServer, build_agent_router};
+use dok3_agent::{AcpAdapter, McpServer, build_agent_router};
 use dok3_api::{ApiState, Router, build_router_with_extra};
 use dok3_domain::Principal;
 use dok3_search::SearchService;
 
 /// CLI flag selecting stdio MCP mode instead of the HTTP server.
 pub const MCP_STDIO_FLAG: &str = "--mcp-stdio";
+
+/// CLI flag selecting stdio ACP mode instead of the HTTP server.
+pub const ACP_STDIO_FLAG: &str = "--acp-stdio";
 
 /// CLI flag selecting the Windows SCM service entrypoint.
 pub const WINDOWS_SERVICE_FLAG: &str = "--windows-service";
@@ -28,36 +31,41 @@ pub enum CliMode {
     Http,
     /// Stdio MCP server (`--mcp-stdio`).
     McpStdio,
+    /// Stdio ACP server (`--acp-stdio`).
+    AcpStdio,
     /// Windows SCM service (`--windows-service`).
     WindowsService,
 }
 
-/// Parses process arguments (excluding `argv[0]`). `--mcp-stdio` and `--windows-service` are
-/// mutually exclusive; unknown arguments are rejected so typos never silently fall back to HTTP.
+/// Parses process arguments (excluding `argv[0]`). `--mcp-stdio`, `--acp-stdio`, and
+/// `--windows-service` are mutually exclusive; unknown arguments are rejected.
 pub fn parse_cli_args<I>(args: I) -> Result<CliMode, String>
 where
     I: IntoIterator<Item = String>,
 {
-    let mut stdio = false;
+    let mut mcp_stdio = false;
+    let mut acp_stdio = false;
     let mut service = false;
     for arg in args {
         match arg.as_str() {
-            MCP_STDIO_FLAG => stdio = true,
+            MCP_STDIO_FLAG => mcp_stdio = true,
+            ACP_STDIO_FLAG => acp_stdio = true,
             WINDOWS_SERVICE_FLAG => service = true,
             _ => {
                 return Err(format!(
-                    "unknown argument '{arg}' (supported: {MCP_STDIO_FLAG}, {WINDOWS_SERVICE_FLAG})"
+                    "unknown argument '{arg}' (supported: {MCP_STDIO_FLAG}, {ACP_STDIO_FLAG}, {WINDOWS_SERVICE_FLAG})"
                 ));
             }
         }
     }
-    match (stdio, service) {
-        (true, true) => Err(format!(
-            "{MCP_STDIO_FLAG} and {WINDOWS_SERVICE_FLAG} are mutually exclusive"
+    match (mcp_stdio, acp_stdio, service) {
+        (true, false, false) => Ok(CliMode::McpStdio),
+        (false, true, false) => Ok(CliMode::AcpStdio),
+        (false, false, true) => Ok(CliMode::WindowsService),
+        (false, false, false) => Ok(CliMode::Http),
+        _ => Err(format!(
+            "{MCP_STDIO_FLAG}, {ACP_STDIO_FLAG}, and {WINDOWS_SERVICE_FLAG} are mutually exclusive"
         )),
-        (true, false) => Ok(CliMode::McpStdio),
-        (false, true) => Ok(CliMode::WindowsService),
-        (false, false) => Ok(CliMode::Http),
     }
 }
 
@@ -84,6 +92,15 @@ pub async fn serve_stdio(search: Arc<SearchService>) -> Result<(), String> {
         .await
         .map_err(|err| format!("MCP stdio task failed: {err}"))?
         .map_err(|err| format!("MCP stdio I/O error: {err}"))
+}
+
+/// Serves ACP over stdin/stdout until EOF with `Principal::anonymous_public()`.
+pub async fn serve_acp_stdio(search: Arc<SearchService>) -> Result<(), String> {
+    let adapter = AcpAdapter::new(search);
+    tokio::task::spawn_blocking(move || adapter.serve_stdio(&Principal::anonymous_public()))
+        .await
+        .map_err(|err| format!("ACP stdio task failed: {err}"))?
+        .map_err(|err| format!("ACP stdio I/O error: {err}"))
 }
 
 #[cfg(test)]

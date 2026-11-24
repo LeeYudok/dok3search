@@ -1,5 +1,6 @@
 //! Agent Communication Protocol (ACP) adapter delegating to [`SearchService`].
 
+use std::io::{self, BufRead, BufReader, BufWriter, Write};
 use std::sync::Arc;
 
 use dok3_core::Dok3Error;
@@ -9,6 +10,8 @@ use dok3_domain::{
 };
 use dok3_search::SearchService;
 use serde::{Deserialize, Serialize};
+
+use crate::server::MAX_JSONRPC_LINE_BYTES;
 
 /// ACP operation envelope routed through [`AcpAdapter`].
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -88,5 +91,73 @@ impl AcpAdapter {
                 Ok(AcpResponse::Section(section))
             }
         }
+    }
+
+    /// Serves newline-delimited ACP JSON requests over stdin/stdout until EOF.
+    pub fn serve_stdio(&self, principal: &Principal) -> io::Result<()> {
+        let stdin = io::stdin();
+        let stdout = io::stdout();
+        self.serve_io(
+            principal,
+            BufReader::new(stdin.lock()),
+            BufWriter::new(stdout.lock()),
+        )
+    }
+
+    /// Serves newline-delimited ACP JSON requests over arbitrary buffered streams.
+    pub fn serve_io<R: BufRead, W: Write>(
+        &self,
+        principal: &Principal,
+        mut reader: R,
+        mut writer: W,
+    ) -> io::Result<()> {
+        let mut buf = Vec::new();
+        loop {
+            buf.clear();
+            let n = reader.read_until(b'\n', &mut buf)?;
+            if n == 0 {
+                break;
+            }
+            if buf.len() > MAX_JSONRPC_LINE_BYTES {
+                let err = serde_json::json!({
+                    "ok": false,
+                    "error": { "code": "invalid_input", "message": "ACP request line exceeds maximum byte limit" }
+                });
+                writeln!(writer, "{err}")?;
+                writer.flush()?;
+                continue;
+            }
+            let line = match std::str::from_utf8(&buf) {
+                Ok(s) => s.trim(),
+                Err(_) => {
+                    let err = serde_json::json!({
+                        "ok": false,
+                        "error": { "code": "invalid_input", "message": "ACP request must be valid UTF-8" }
+                    });
+                    writeln!(writer, "{err}")?;
+                    writer.flush()?;
+                    continue;
+                }
+            };
+            if line.is_empty() {
+                continue;
+            }
+            let payload = match serde_json::from_str::<AcpRequest>(line) {
+                Ok(req) => match self.handle(principal, req) {
+                    Ok(result) => serde_json::json!({ "ok": true, "result": result }),
+                    Err(err) => serde_json::json!({
+                        "ok": false,
+                        "error": { "code": err.code(), "message": err.to_string() }
+                    }),
+                },
+                Err(err) => serde_json::json!({
+                    "ok": false,
+                    "error": { "code": "invalid_input", "message": format!("invalid ACP request JSON: {err}") }
+                }),
+            };
+            writeln!(writer, "{payload}")?;
+            writer.flush()?;
+        }
+        Ok(())
     }
 }

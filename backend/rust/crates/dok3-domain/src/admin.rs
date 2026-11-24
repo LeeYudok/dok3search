@@ -76,6 +76,7 @@ pub struct IndexJobListResponse {
 pub enum ClassificationSource {
     Rule,
     Manual,
+    Agent,
 }
 
 /// Stored classification metadata associated with a document without altering original bytes.
