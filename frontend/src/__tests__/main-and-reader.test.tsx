@@ -70,8 +70,10 @@ describe('HomePage, SearchForm, and SearchPage', () => {
     await waitFor(() => {
       expect(screen.getByText('kordoc — src/utils.ts')).toBeInTheDocument()
     })
-    expect(screen.getByText('function toArrayBuffer · L9')).toBeInTheDocument()
+    expect(document.querySelector('.hit-symbol')?.textContent).toBe('function toArrayBuffer · L9')
     expect(document.querySelector('.snippet-code')).not.toBeNull()
+    const marks = [...document.querySelectorAll('mark.search-hl')].map((el) => el.textContent)
+    expect(marks).toEqual(['toArrayBuffer', 'toArrayBuffer'])
     expect(screen.getByRole('link', { name: /kordoc — src\/utils\.ts/ })).toHaveAttribute(
       'href',
       expect.stringContaining('#function-toarraybuffer'),

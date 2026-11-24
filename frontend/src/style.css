@@ -538,6 +538,30 @@ form.cls-form button:disabled { opacity: .5; cursor: not-allowed; }
   -webkit-line-clamp: 3;
 }
 
+mark.search-hl {
+  background: var(--accent);
+  color: var(--foreground);
+  font-weight: 700;
+  padding: 0 2px;
+  border-radius: 3px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  box-shadow: inset 0 -1.5px 0 var(--primary);
+}
+.doc-copy strong mark.search-hl {
+  color: var(--primary);
+}
+.hit-symbol mark.search-hl {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  padding: 0 3px;
+  box-shadow: none;
+}
+.search-suggestions li[aria-selected="true"] mark.search-hl,
+.search-suggestions a:hover mark.search-hl {
+  background: var(--card);
+}
+
 .admin-back { display: inline-flex; align-items: center; gap: 6px; }
 .admin-shell { width: min(980px, calc(100% - 48px)); padding-block: 28px 56px; display: grid; gap: 20px; }
 .admin-header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
