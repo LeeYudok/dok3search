@@ -85,6 +85,7 @@ dok3search를 단일 노드 doksam Kubernetes에 재현 가능하게 배포하�
 - `POST /api/v1/search/analyze`: 활성 분석기 프로파일 토큰·n-gram·정규화 질의어 반환(`/admin/analyzers`).
 - `GET/POST /api/v1/sources`, `DELETE /api/v1/sources/{id}`: 로컬 디렉터리(`local_dir`) 및 SQLite(`sqlite`, `source_cursors.json` 증분 커서 체크포인트) Source 등록·목록 조회·삭제 (`local-markdown` 삭제 금지, Source 삭제 시 디스크 원본·DB 파일 불변, 관리자 가드 적용).
 - `GET /api/v1/corpora`: 현재 접근 권한(ACL)으로 열람 가능한 코퍼스별 문서 수·툴체인·패키지 버전·라이선스·출처 카탈로그 공개 조회(관리자 권한 불필요).
+- `GET /api/v1/search/recommendations`: 현재 접근 권한(ACL)으로 열람 가능한 코퍼스·카테고리·접두어 기반 추천 검색어 목록 공개 조회(`q`, `category`, `limit`).
 
 ## 검색 섹션 매칭 (`matched_section_id`)
 

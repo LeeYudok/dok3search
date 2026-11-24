@@ -11,7 +11,9 @@ use crate::admin::{
 use crate::change::ChangeEvent;
 use crate::document::{DocumentDetail, ParsedDocument, SectionReadRequest, SectionReadResponse};
 use crate::ids::{DocumentId, Sequence};
-use crate::search::{CorpusCatalogEntry, SearchRequest, SearchResponse, SearchSnapshotMeta};
+use crate::search::{
+    CorpusCatalogEntry, RecommendedTerm, SearchRequest, SearchResponse, SearchSnapshotMeta,
+};
 
 /// Port for executing ACL-scoped document search queries.
 pub trait SearchPort: Send + Sync {
@@ -67,6 +69,16 @@ pub trait DocumentStorePort: Send + Sync {
     ) -> Result<(usize, Vec<CorpusCatalogEntry>), Dok3Error> {
         let _ = principal;
         Ok((0, Vec::new()))
+    }
+    fn recommend_terms(
+        &self,
+        principal: &Principal,
+        query: &str,
+        category: Option<&str>,
+        limit: usize,
+    ) -> Result<Vec<RecommendedTerm>, Dok3Error> {
+        let _ = (principal, query, category, limit);
+        Ok(Vec::new())
     }
 }
 

@@ -8,8 +8,9 @@ use std::sync::RwLock;
 use dok3_core::Dok3Error;
 use dok3_domain::{
     CorpusCatalogEntry, Document, DocumentDetail, DocumentId, DocumentStorePort,
-    OriginalDocumentPayload, Principal, RevisionId, SectionCitation, SectionReadRequest,
-    SectionReadResponse, SectionSummary, build_corpus_catalog,
+    OriginalDocumentPayload, Principal, RecommendedTerm, RevisionId, SectionCitation,
+    SectionReadRequest, SectionReadResponse, SectionSummary, build_corpus_catalog,
+    build_recommended_terms,
 };
 use sha2::{Digest, Sha256};
 
@@ -509,6 +510,26 @@ impl DocumentStorePort for FileDocumentStore {
             .read()
             .map_err(|_| Dok3Error::Internal("store lock poisoned".into()))?;
         Ok(build_corpus_catalog(docs.values(), principal))
+    }
+
+    fn recommend_terms(
+        &self,
+        principal: &Principal,
+        query: &str,
+        category: Option<&str>,
+        limit: usize,
+    ) -> Result<Vec<RecommendedTerm>, Dok3Error> {
+        let docs = self
+            .docs
+            .read()
+            .map_err(|_| Dok3Error::Internal("store lock poisoned".into()))?;
+        Ok(build_recommended_terms(
+            docs.values(),
+            principal,
+            query,
+            category,
+            limit,
+        ))
     }
 }
 

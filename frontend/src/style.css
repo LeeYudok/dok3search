@@ -314,6 +314,55 @@ form.cls-form button:disabled { opacity: .5; cursor: not-allowed; }
 .home-footer { margin-top: 40px; }
 .footer a:hover { text-decoration: underline; }
 
+.search-box { position: relative; width: 100%; }
+.search-suggestions {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(100% + 4px);
+  z-index: 20;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--popover);
+  color: var(--popover-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.search-suggestions a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: calc(var(--radius) - 4px);
+  color: inherit;
+  font-size: 14px;
+}
+.search-suggestions li[aria-selected="true"] a,
+.search-suggestions a:hover {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+.suggestion-term { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.suggestion-count { color: var(--muted-foreground); font-size: 12px; font-variant-numeric: tabular-nums; }
+
+.recommended-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.home .recommended-chips { justify-content: center; margin-top: 12px; }
+.has-query .recommended-chips { margin-block: 10px 6px; }
+.recommended-label { font-size: 12px; font-weight: 700; color: var(--muted-foreground); }
+.recommended-list { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.recommended-list a {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--foreground);
+  font-size: 12px;
+}
+.recommended-list a:hover {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
 .admin-back { display: inline-flex; align-items: center; gap: 6px; }
 .admin-shell { width: min(980px, calc(100% - 48px)); padding-block: 28px 56px; display: grid; gap: 20px; }
 .admin-header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }

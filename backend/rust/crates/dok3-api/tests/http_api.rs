@@ -52,6 +52,77 @@ fn request_with_peer(method: &str, uri: &str, address: SocketAddr) -> Request<ax
 }
 
 #[tokio::test]
+async fn recommendations_enforce_acl_scope_isolation() {
+    let docs = vec![
+        Document {
+            id: DocumentId::new("pub-1"),
+            revision_id: RevisionId::new("rev-1"),
+            source_id: SourceId::new("s1"),
+            source: "Public".into(),
+            title: "Public Tantivy Guide".into(),
+            summary: "Tantivy search guide".into(),
+            category: "guide".into(),
+            topic: None,
+            tag: "Tantivy".into(),
+            tags: vec!["Tantivy".into()],
+            keywords: vec![],
+            language: "en".into(),
+            version: "v1".into(),
+            date: None,
+            source_uri: "file:///pub.md".into(),
+            sample_path: None,
+            acl_scope: AclScope::Public,
+            content_hash: "h1".into(),
+            body: "Tantivy".into(),
+            markdown: None,
+            sections: vec![],
+        },
+        Document {
+            id: DocumentId::new("int-1"),
+            revision_id: RevisionId::new("rev-2"),
+            source_id: SourceId::new("s1"),
+            source: "Internal".into(),
+            title: "SecretOnlyToken".into(),
+            summary: "Internal secret".into(),
+            category: "policy".into(),
+            topic: None,
+            tag: "SecretOnlyToken".into(),
+            tags: vec!["SecretOnlyToken".into()],
+            keywords: vec!["SecretOnlyToken".into()],
+            language: "en".into(),
+            version: "v1".into(),
+            date: None,
+            source_uri: "file:///int.md".into(),
+            sample_path: None,
+            acl_scope: AclScope::Internal("team".into()),
+            content_hash: "h2".into(),
+            body: "SecretOnlyToken".into(),
+            markdown: None,
+            sections: vec![],
+        },
+    ];
+    let repo = Arc::new(InMemorySearchRepository::new(docs, vec![]));
+    let service = Arc::new(SearchService::new(repo.clone(), repo));
+    let app = build_router(ApiState::new(service), None);
+
+    let (status, _, rec): (_, _, dok3_domain::SearchRecommendationsResponse) = response_json(
+        app.oneshot(
+            Request::get("/api/v1/search/recommendations?q=secret")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap(),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(
+        rec.recommendations.is_empty(),
+        "internal-only term must never leak to anonymous_public"
+    );
+}
+
+#[tokio::test]
 async fn health_search_document_section_and_404_routes_work() {
     let design_dir = sample_design_dir();
     let repo = Arc::new(InMemorySearchRepository::from_seed(Some(&design_dir)));
@@ -86,6 +157,48 @@ async fn health_search_document_section_and_404_routes_work() {
     .await;
     assert_eq!(status, StatusCode::OK);
     assert!(corpora.total_documents > 20 && corpora.total_documents <= health.document_count);
+
+    // 1.6. GET /api/v1/search/recommendations (default + prefix)
+    let (status, _, rec_default): (_, _, dok3_domain::SearchRecommendationsResponse) =
+        response_json(
+            app.clone()
+                .oneshot(
+                    Request::get("/api/v1/search/recommendations?limit=6")
+                        .body(Body::empty())
+                        .unwrap(),
+                )
+                .await
+                .unwrap(),
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(!rec_default.recommendations.is_empty());
+    assert!(
+        rec_default
+            .recommendations
+            .iter()
+            .all(|r| r.document_count > 0)
+    );
+
+    let (status, _, rec_prefix): (_, _, dok3_domain::SearchRecommendationsResponse) =
+        response_json(
+            app.clone()
+                .oneshot(
+                    Request::get("/api/v1/search/recommendations?q=tantivy&limit=5")
+                        .body(Body::empty())
+                        .unwrap(),
+                )
+                .await
+                .unwrap(),
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(
+        rec_prefix
+            .recommendations
+            .iter()
+            .all(|r| r.term.to_lowercase().contains("tantivy"))
+    );
     assert!(
         corpora
             .corpora

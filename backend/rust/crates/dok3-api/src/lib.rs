@@ -224,6 +224,10 @@ pub fn build_router_with_extra(
         .route("/api/v1/corpora", get(list_corpora))
         .route("/api/v1/search", post(search))
         .route("/api/v1/search/analyze", post(analyze_search_text))
+        .route(
+            "/api/v1/search/recommendations",
+            get(recommend_search_terms),
+        )
         .route("/api/v1/documents/{id}", get(get_document))
         .route(
             "/api/v1/documents/{id}/original",
@@ -418,6 +422,30 @@ async fn list_corpora(State(state): State<ApiState>) -> Result<impl IntoResponse
     let response = state
         .search
         .list_corpora(&state.default_principal, state.mode)?;
+    Ok(Json(response))
+}
+
+#[derive(Debug, Default, Deserialize)]
+struct RecommendationsQuery {
+    #[serde(default)]
+    q: String,
+    #[serde(default)]
+    category: Option<String>,
+    #[serde(default)]
+    limit: Option<usize>,
+}
+
+async fn recommend_search_terms(
+    State(state): State<ApiState>,
+    query: Result<Query<RecommendationsQuery>, QueryRejection>,
+) -> Result<impl IntoResponse, ApiError> {
+    let Query(params) = query.map_err(|err| Dok3Error::InvalidInput(err.body_text()))?;
+    let response = state.search.recommend_terms(
+        &state.default_principal,
+        &params.q,
+        params.category.as_deref(),
+        params.limit.unwrap_or(8),
+    )?;
     Ok(Json(response))
 }
 
