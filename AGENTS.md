@@ -58,7 +58,8 @@
 - `DOK3_DICT_PATH`: 컴파일된 `mecab-ko-dic` 바이너리(`ko-dic.bin`) 경로(`lindera`/`nori-*` 프로파일 필수). `dok3-server --compile-kodic <src_dir> <out_bin>`으로 생성한다.
 - `DOK3_USER_DICT_PATH`: 선택적 `mecab-ko-dic` 사용자 사전 CSV 경로.
 
-- `--mcp-stdio`: MCP 서버를 표준입출력 모드로 시작한다. `POST /mcp`는 HTTP 모드의 MCP 엔드포인트다. 두 경로 모두 `Principal::anonymous_public()` 고정을 사용한다.
+- `--mcp-stdio`: MCP 서버를 표준입출력 모드로 시작한다.
+- `--windows-service`: Windows 네이티브 SCM(Service Control Manager) 서비스로 실행한다(`deploy/windows/install-service.ps1` 의 `sc.exe create` 에서 사용). `POST /mcp`는 HTTP 모드의 MCP 엔드포인트다. 두 경로 모두 `Principal::anonymous_public()` 고정을 사용한다.
 
 ## doksam 배포 (`deploy/doksam/`)
 
