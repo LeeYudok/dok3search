@@ -1,6 +1,6 @@
 # ADR-0001: P1 File-Backed Storage Layout and Planned SQLite Migration
 
-- **Status**: Accepted (P1 temporary implementation)
+- **Status**: Implemented (SQLite meta.db in P1-2, #135)
 - **Date**: '2026-11-22'
 - **Context**: `dok3search#19` (PR `#22`), `dok3search#23`
 
@@ -17,4 +17,4 @@ For P1 (`FileDocumentStore` + `FileChangeJournal` in `dok3-storage`), metadata (
 
 - Every `FileDocumentStore::put` / `delete` rewrites the full `documents.json` map (O(N²) total bytes across N puts), and `FileChangeJournal::read_after` scans `journal.jsonl` linearly.
 - This layout is bounded to P1/P2 development and early corpora (up to ~10,000 documents).
-- **Planned follow-up (before P3 / 500k-document release gate)**: Migrate `documents.json` metadata and `journal.jsonl` checkpoints to SQLite (keeping `objects/<sha256>` immutable content-addressed blobs or chunked store) behind the same `DocumentStorePort` and `ChangeJournalPort` traits.
+- **Implemented in P1-2 (`#135`)**: `FileDocumentStore` and `FileChangeJournal` now persist metadata and change journal entries in `meta.db` (SQLite WAL mode, `synchronous = FULL`), transparently migrating legacy `documents.json` / `journal.jsonl` to `documents.json.migrated` / `journal.jsonl.migrated` while keeping `objects/<sha256>` immutable content-addressed blobs behind the same `DocumentStorePort` and `ChangeJournalPort` traits.

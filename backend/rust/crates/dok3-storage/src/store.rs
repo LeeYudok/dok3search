@@ -67,14 +67,17 @@ impl FileDocumentStore {
         cleanup_stale_temps(root);
         cleanup_stale_temps(&objects_dir);
 
-        let meta = root.join("documents.json");
-        let docs = match fs::read(&meta) {
-            Ok(raw) => {
-                serde_json::from_slice(&raw).map_err(|e| storage_err("decode metadata", e))?
-            }
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => BTreeMap::new(),
-            Err(e) => return Err(storage_err("read metadata", e)),
-        };
+        let conn = crate::meta_db::open_meta_db(root)?;
+        let mut docs = load_docs_from_db(&conn)?;
+        let legacy_meta = root.join("documents.json");
+        if docs.is_empty() && legacy_meta.is_file() {
+            let raw = fs::read(&legacy_meta).map_err(|e| storage_err("read metadata", e))?;
+            let legacy: BTreeMap<String, Document> =
+                serde_json::from_slice(&raw).map_err(|e| storage_err("decode metadata", e))?;
+            save_docs_to_db(&conn, &legacy)?;
+            let _ = fs::rename(&legacy_meta, root.join("documents.json.migrated"));
+            docs = legacy;
+        }
         Ok(Self {
             _lock: lock,
             root: root.to_path_buf(),
@@ -354,21 +357,15 @@ impl FileDocumentStore {
     }
 
     fn persist(&self, docs: &BTreeMap<String, Document>) -> Result<(), Dok3Error> {
-        let raw = serde_json::to_vec_pretty(docs).map_err(|e| storage_err("encode metadata", e))?;
-        atomic_write(&self.root.join("documents.json"), &raw)
+        let conn = crate::meta_db::open_meta_db(&self.root)?;
+        save_docs_to_db(&conn, docs)
     }
 
     fn resync_from_disk(&self, docs: &mut BTreeMap<String, Document>) {
-        match fs::read(self.root.join("documents.json")) {
-            Ok(raw) => {
-                if let Ok(on_disk) = serde_json::from_slice::<BTreeMap<String, Document>>(&raw) {
-                    *docs = on_disk;
-                }
-            }
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-                docs.clear();
-            }
-            Err(_) => {}
+        if let Ok(conn) = crate::meta_db::open_meta_db(&self.root)
+            && let Ok(on_disk) = load_docs_from_db(&conn)
+        {
+            *docs = on_disk;
         }
     }
 
@@ -513,6 +510,58 @@ impl DocumentStorePort for FileDocumentStore {
             .map_err(|_| Dok3Error::Internal("store lock poisoned".into()))?;
         Ok(build_corpus_catalog(docs.values(), principal))
     }
+}
+
+fn load_docs_from_db(conn: &rusqlite::Connection) -> Result<BTreeMap<String, Document>, Dok3Error> {
+    let mut stmt = conn
+        .prepare("SELECT id, payload_json FROM documents")
+        .map_err(|e| Dok3Error::Storage(format!("prepare load documents: {e}")))?;
+    let rows = stmt
+        .query_map([], |row| {
+            let id: String = row.get(0)?;
+            let json: String = row.get(1)?;
+            Ok((id, json))
+        })
+        .map_err(|e| Dok3Error::Storage(format!("query documents: {e}")))?;
+    let mut docs = BTreeMap::new();
+    for row in rows {
+        let (id, json) = row.map_err(|e| Dok3Error::Storage(format!("read document row: {e}")))?;
+        let doc: Document = serde_json::from_str(&json)
+            .map_err(|e| Dok3Error::Storage(format!("decode document '{id}': {e}")))?;
+        docs.insert(id, doc);
+    }
+    Ok(docs)
+}
+
+fn save_docs_to_db(
+    conn: &rusqlite::Connection,
+    docs: &BTreeMap<String, Document>,
+) -> Result<(), Dok3Error> {
+    let tx = conn
+        .unchecked_transaction()
+        .map_err(|e| Dok3Error::Storage(format!("begin meta.db tx: {e}")))?;
+    tx.execute("DELETE FROM documents", [])
+        .map_err(|e| Dok3Error::Storage(format!("clear documents: {e}")))?;
+    {
+        let mut stmt = tx
+            .prepare(
+                "INSERT INTO documents (id, source_id, content_hash, payload_json) VALUES (?1, ?2, ?3, ?4)",
+            )
+            .map_err(|e| Dok3Error::Storage(format!("prepare insert document: {e}")))?;
+        for (id, doc) in docs {
+            let json = serde_json::to_string(doc)
+                .map_err(|e| Dok3Error::Storage(format!("encode document '{id}': {e}")))?;
+            stmt.execute(rusqlite::params![
+                id,
+                doc.source_id.as_str(),
+                doc.content_hash.as_str(),
+                json
+            ])
+            .map_err(|e| Dok3Error::Storage(format!("insert document '{id}': {e}")))?;
+        }
+    }
+    tx.commit()
+        .map_err(|e| Dok3Error::Storage(format!("commit meta.db tx: {e}")))
 }
 
 #[cfg(test)]

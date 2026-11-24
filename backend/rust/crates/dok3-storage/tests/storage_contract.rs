@@ -228,14 +228,17 @@ fn journal_assigns_monotonic_sequences_and_replays_after_reopen() {
 #[test]
 fn journal_recovers_from_torn_trailing_write() {
     let root = TempRoot::new("torn");
-    let journal = FileChangeJournal::open(&root.0).unwrap();
-    journal.append(event("a", ChangeKind::Upsert)).unwrap();
-    drop(journal);
-
     let mut f = OpenOptions::new()
-        .append(true)
+        .create(true)
+        .write(true)
+        .truncate(true)
         .open(root.0.join("journal.jsonl"))
         .unwrap();
+    let ev = ChangeEvent {
+        sequence: Sequence::new(1),
+        ..event("a", ChangeKind::Upsert)
+    };
+    writeln!(f, "{}", serde_json::to_string(&ev).unwrap()).unwrap();
     f.write_all(br#"{"sequence":2,"document_id":"b""#).unwrap();
     drop(f);
 
@@ -347,13 +350,19 @@ fn put_heals_corrupted_object_file_on_same_hash() {
 #[test]
 fn journal_recovers_corrupt_newline_terminated_trailing_line_and_rejects_midfile_corruption() {
     let root = TempRoot::new("corrupt-nl");
-    let journal = FileChangeJournal::open(&root.0).unwrap();
-    journal.append(event("a", ChangeKind::Upsert)).unwrap();
-    drop(journal);
-
-    // Append corrupt NUL + newline at EOF -> open recovers by truncating it.
     let jpath = root.0.join("journal.jsonl");
-    let mut f = OpenOptions::new().append(true).open(&jpath).unwrap();
+    let mut f = OpenOptions::new()
+        .create(true)
+        .write(true)
+        .truncate(true)
+        .open(&jpath)
+        .unwrap();
+    let ev = ChangeEvent {
+        sequence: Sequence::new(1),
+        ..event("a", ChangeKind::Upsert)
+    };
+    let valid_first = format!("{}\n", serde_json::to_string(&ev).unwrap());
+    f.write_all(valid_first.as_bytes()).unwrap();
     f.write_all(b"\0\0corrupt-line\n").unwrap();
     drop(f);
 
@@ -366,15 +375,11 @@ fn journal_recovers_corrupt_newline_terminated_trailing_line_and_rejects_midfile
     drop(reopened);
 
     // Mid-file corruption (corrupt line followed by valid line) must fail loudly.
-    let mut original = fs::read(&jpath).unwrap();
     let valid_line = b"{\"sequence\":3,\"document_id\":\"c\",\"revision_id\":\"sha256:x\",\"kind\":\"upsert\"}\n";
     let mut mid_corrupt = Vec::new();
-    let first_nl = original.iter().position(|&b| b == b'\n').unwrap() + 1;
-    mid_corrupt.extend_from_slice(&original[..first_nl]);
+    mid_corrupt.extend_from_slice(valid_first.as_bytes());
     mid_corrupt.extend_from_slice(b"{not-json}\n");
     mid_corrupt.extend_from_slice(valid_line);
-    original.clear();
-    let _ = original;
     fs::write(&jpath, &mid_corrupt).unwrap();
 
     assert!(matches!(
@@ -469,4 +474,55 @@ fn update_metadata_preserves_original_and_rejects_corrupted_object_without_overw
         Err(dok3_core::Dok3Error::Storage(_))
     ));
     assert_eq!(fs::read(&obj_path).unwrap(), b"tampered");
+}
+
+#[test]
+fn legacy_documents_json_and_journal_jsonl_migrate_to_meta_db() {
+    let root = TempRoot::new("legacy-migrate");
+    let legacy_doc = doc("legacy-1", AclScope::Public, "레거시 본문");
+    let docs_map =
+        std::collections::BTreeMap::from([(legacy_doc.id.as_str().to_string(), legacy_doc)]);
+    fs::write(
+        root.0.join("documents.json"),
+        serde_json::to_vec_pretty(&docs_map).unwrap(),
+    )
+    .unwrap();
+
+    let legacy_event = ChangeEvent {
+        sequence: Sequence::new(42),
+        kind: ChangeKind::Upsert,
+        document_id: DocumentId::new("legacy-1"),
+        revision_id: RevisionId::new("sha256:abc"),
+    };
+    fs::write(
+        root.0.join("journal.jsonl"),
+        format!("{}\n", serde_json::to_string(&legacy_event).unwrap()),
+    )
+    .unwrap();
+
+    let store = FileDocumentStore::open(&root.0).unwrap();
+    assert_eq!(store.document_count(), 1);
+    let loaded = store
+        .get_document(&public(), &DocumentId::new("legacy-1"))
+        .unwrap();
+    assert_eq!(loaded.body, "레거시 본문");
+    assert!(root.0.join("documents.json.migrated").exists());
+    assert!(!root.0.join("documents.json").exists());
+    assert!(root.0.join("meta.db").exists());
+
+    let journal = FileChangeJournal::open(&root.0).unwrap();
+    let events = journal.read_after(Sequence::new(0), 10).unwrap();
+    assert_eq!(events.len(), 1);
+    assert_eq!(events[0].sequence, Sequence::new(42));
+    let next = journal
+        .append(ChangeEvent {
+            sequence: Sequence::new(0),
+            kind: ChangeKind::Upsert,
+            document_id: DocumentId::new("legacy-2"),
+            revision_id: RevisionId::new("sha256:def"),
+        })
+        .unwrap();
+    assert_eq!(next, Sequence::new(43));
+    assert!(root.0.join("journal.jsonl.migrated").exists());
+    assert!(!root.0.join("journal.jsonl").exists());
 }

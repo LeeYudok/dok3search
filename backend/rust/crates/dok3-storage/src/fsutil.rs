@@ -28,6 +28,13 @@ pub(crate) fn acquire_exclusive_lock(path: &Path) -> Result<File, Dok3Error> {
         .truncate(false)
         .open(path)
         .map_err(|e| storage_err("open writer lock", e))?;
+    for delay_ms in [2u64, 5, 10] {
+        match file.try_lock() {
+            Ok(()) => return Ok(file),
+            Err(TryLockError::WouldBlock) => thread::sleep(Duration::from_millis(delay_ms)),
+            Err(TryLockError::Error(e)) => return Err(storage_err("acquire writer lock", e)),
+        }
+    }
     match file.try_lock() {
         Ok(()) => Ok(file),
         Err(TryLockError::WouldBlock) => Err(Dok3Error::Storage(format!(

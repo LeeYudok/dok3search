@@ -645,6 +645,7 @@ version = "0.1.0"
 dependencies = [
  "dok3-core",
  "dok3-domain",
+ "rusqlite",
  "serde_json",
  "sha2 0.10.9",
 ]

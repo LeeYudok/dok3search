@@ -1,66 +1,89 @@
 //! Append-only JSONL change journal implementing `ChangeJournalPort`.
 
-use std::fs::{self, File, OpenOptions};
-use std::io::{self, BufRead, BufReader, Read, Seek, SeekFrom, Write};
+use std::fs::{self, File};
+use std::io::{self, BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 use dok3_core::Dok3Error;
-use dok3_domain::{ChangeEvent, ChangeJournalPort, Sequence};
+use dok3_domain::{ChangeEvent, ChangeJournalPort, ChangeKind, DocumentId, RevisionId, Sequence};
 
 use crate::fsutil::{acquire_exclusive_lock, storage_err, sync_dir};
 
 #[derive(Debug)]
 struct JournalState {
     last: u64,
-    poisoned: bool,
     dir_synced: bool,
 }
 
-/// Durable single-writer change journal. Assigns sequences strictly monotonically (`last + 1`);
-/// any caller-supplied `sequence` is overwritten.
+/// Durable single-writer change journal backed by SQLite `meta.db`.
 #[derive(Debug)]
 pub struct FileChangeJournal {
     _lock: File,
-    path: PathBuf,
+    root: PathBuf,
     state: Mutex<JournalState>,
 }
 
 impl FileChangeJournal {
-    /// Opens (or creates) `journal.jsonl` under `root` with an exclusive `.journal.lock`,
-    /// recovering from any partial or corrupt trailing line at EOF.
+    /// Opens (or creates) `meta.db` under `root` with an exclusive `.journal.lock`,
+    /// migrating any legacy `journal.jsonl` (including torn-tail recovery).
     pub fn open(root: &Path) -> Result<Self, Dok3Error> {
         fs::create_dir_all(root).map_err(|e| storage_err("create journal dir", e))?;
         let lock = acquire_exclusive_lock(&root.join(".journal.lock"))?;
 
-        let path = root.join("journal.jsonl");
-        let (events, valid_len) = read_all(&path)?;
+        let conn = crate::meta_db::open_meta_db(root)?;
+        let max_seq: i64 = conn
+            .query_row(
+                "SELECT COALESCE(MAX(sequence), 0) FROM change_journal",
+                [],
+                |row| row.get(0),
+            )
+            .map_err(|e| Dok3Error::Storage(format!("query journal max sequence: {e}")))?;
+        let mut last = u64::try_from(max_seq).unwrap_or(0);
+        let legacy_path = root.join("journal.jsonl");
         let mut dir_synced = false;
-        if path.exists() {
-            let len = fs::metadata(&path)
-                .map_err(|e| storage_err("stat journal", e))?
-                .len();
-            if len != valid_len {
-                let f = OpenOptions::new()
-                    .write(true)
-                    .open(&path)
-                    .map_err(|e| storage_err("open journal", e))?;
-                f.set_len(valid_len)
-                    .map_err(|e| storage_err("truncate journal", e))?;
-                f.sync_all().map_err(|e| storage_err("fsync journal", e))?;
+        if legacy_path.is_file() {
+            let (events, _) = read_all(&legacy_path)?;
+            if !events.is_empty() {
+                let tx = conn
+                    .unchecked_transaction()
+                    .map_err(|e| Dok3Error::Storage(format!("begin journal migration tx: {e}")))?;
+                {
+                    let mut stmt = tx
+                        .prepare(
+                            "INSERT OR REPLACE INTO change_journal (sequence, document_id, revision_id, kind) VALUES (?1, ?2, ?3, ?4)",
+                        )
+                        .map_err(|e| Dok3Error::Storage(format!("prepare journal migration: {e}")))?;
+                    for ev in &events {
+                        if ev.sequence.get() > last {
+                            let kind = match ev.kind {
+                                ChangeKind::Upsert => "upsert",
+                                ChangeKind::Delete => "delete",
+                            };
+                            stmt.execute(rusqlite::params![
+                                i64::try_from(ev.sequence.get()).unwrap_or(i64::MAX),
+                                ev.document_id.as_str(),
+                                ev.revision_id.as_str(),
+                                kind
+                            ])
+                            .map_err(|e| {
+                                Dok3Error::Storage(format!("migrate journal event: {e}"))
+                            })?;
+                            last = last.max(ev.sequence.get());
+                        }
+                    }
+                }
+                tx.commit()
+                    .map_err(|e| Dok3Error::Storage(format!("commit journal migration: {e}")))?;
             }
+            let _ = fs::rename(&legacy_path, root.join("journal.jsonl.migrated"));
             sync_dir(root)?;
             dir_synced = true;
         }
-        let last = events.last().map_or(0, |e| e.sequence.get());
         Ok(Self {
             _lock: lock,
-            path,
-            state: Mutex::new(JournalState {
-                last,
-                poisoned: false,
-                dir_synced,
-            }),
+            root: root.to_path_buf(),
+            state: Mutex::new(JournalState { last, dir_synced }),
         })
     }
 
@@ -73,97 +96,105 @@ impl FileChangeJournal {
     /// Returns the latest monotonically assigned sequence number (`0` when empty).
     pub fn last_sequence(&self) -> Result<Sequence, Dok3Error> {
         let state = self.lock_state()?;
-        if state.poisoned {
-            return Err(Dok3Error::Storage(
-                "change journal is poisoned after failed rollback; reopen required".to_string(),
-            ));
-        }
         Ok(Sequence::new(state.last))
     }
 
-    fn append_with_hooks<S, W, R>(
+    fn append_with_hooks<S, I>(
         &self,
         mut change: ChangeEvent,
         sync_dir_fn: S,
-        write_fn: W,
-        rollback_fn: R,
+        insert_fn: I,
     ) -> Result<Sequence, Dok3Error>
     where
         S: FnOnce(&Path) -> Result<(), Dok3Error>,
-        W: FnOnce(&mut File, &[u8]) -> io::Result<()>,
-        R: FnOnce(&mut File, u64) -> io::Result<()>,
+        I: FnOnce(&rusqlite::Connection, &ChangeEvent) -> Result<(), Dok3Error>,
     {
         let mut state = self.lock_state()?;
-        if state.poisoned {
-            return Err(Dok3Error::Storage(
-                "change journal is poisoned after failed rollback; reopen required".to_string(),
-            ));
+        if !state.dir_synced {
+            sync_dir_fn(&self.root)?;
+            state.dir_synced = true;
         }
 
         let next = state.last + 1;
         change.sequence = Sequence::new(next);
-        let mut line = serde_json::to_vec(&change).map_err(|e| storage_err("encode event", e))?;
-        line.push(b'\n');
-
-        let mut f = OpenOptions::new()
-            .create(true)
-            .read(true)
-            .write(true)
-            .truncate(false)
-            .open(&self.path)
-            .map_err(|e| storage_err("open journal", e))?;
-        // Track directory durability explicitly so a retry continues syncing parent dir
-        // even if a prior attempt already created an empty journal.jsonl on disk.
-        if !state.dir_synced
-            && let Some(parent) = self.path.parent()
-        {
-            sync_dir_fn(parent)?;
-            state.dir_synced = true;
-        }
-        let prev_len = f
-            .seek(SeekFrom::End(0))
-            .map_err(|e| storage_err("seek journal end", e))?;
-
-        if let Err(err) = write_fn(&mut f, &line) {
-            if rollback_fn(&mut f, prev_len).is_err() {
-                state.poisoned = true;
-            }
-            return Err(storage_err("append journal", err));
-        }
+        let conn = crate::meta_db::open_meta_db(&self.root)?;
+        insert_fn(&conn, &change)?;
 
         state.last = next;
         Ok(Sequence::new(next))
     }
 }
 
-fn write_and_sync(f: &mut File, line: &[u8]) -> io::Result<()> {
-    f.write_all(line)?;
-    f.sync_all()
-}
-
-fn rollback_truncate(f: &mut File, prev_len: u64) -> io::Result<()> {
-    f.set_len(prev_len)?;
-    f.sync_all()
+fn insert_event_db(conn: &rusqlite::Connection, change: &ChangeEvent) -> Result<(), Dok3Error> {
+    let kind = match change.kind {
+        ChangeKind::Upsert => "upsert",
+        ChangeKind::Delete => "delete",
+    };
+    conn.execute(
+        "INSERT INTO change_journal (sequence, document_id, revision_id, kind) VALUES (?1, ?2, ?3, ?4)",
+        rusqlite::params![
+            i64::try_from(change.sequence.get()).unwrap_or(i64::MAX),
+            change.document_id.as_str(),
+            change.revision_id.as_str(),
+            kind
+        ],
+    )
+    .map_err(|e| Dok3Error::Storage(format!("append journal: {e}")))?;
+    Ok(())
 }
 
 impl ChangeJournalPort for FileChangeJournal {
     fn append(&self, change: ChangeEvent) -> Result<Sequence, Dok3Error> {
-        self.append_with_hooks(change, sync_dir, write_and_sync, rollback_truncate)
+        self.append_with_hooks(change, sync_dir, insert_event_db)
     }
 
     fn read_after(&self, seq: Sequence, limit: usize) -> Result<Vec<ChangeEvent>, Dok3Error> {
-        let state = self.lock_state()?;
-        if state.poisoned {
-            return Err(Dok3Error::Storage(
-                "change journal is poisoned after failed rollback; reopen required".to_string(),
-            ));
+        let _state = self.lock_state()?;
+        if limit == 0 {
+            return Ok(Vec::new());
         }
-        let (events, _) = read_all(&self.path)?;
-        Ok(events
-            .into_iter()
-            .filter(|e| e.sequence > seq)
-            .take(limit)
-            .collect())
+        let conn = crate::meta_db::open_meta_db(&self.root)?;
+        let mut stmt = conn
+            .prepare(
+                "SELECT sequence, document_id, revision_id, kind FROM change_journal WHERE sequence > ?1 ORDER BY sequence ASC LIMIT ?2",
+            )
+            .map_err(|e| Dok3Error::Storage(format!("prepare read_after: {e}")))?;
+        let rows = stmt
+            .query_map(
+                rusqlite::params![
+                    i64::try_from(seq.get()).unwrap_or(i64::MAX),
+                    i64::try_from(limit).unwrap_or(i64::MAX)
+                ],
+                |row| {
+                    let seq_raw: i64 = row.get(0)?;
+                    let doc_id: String = row.get(1)?;
+                    let rev_id: String = row.get(2)?;
+                    let kind_str: String = row.get(3)?;
+                    Ok((seq_raw, doc_id, rev_id, kind_str))
+                },
+            )
+            .map_err(|e| Dok3Error::Storage(format!("query read_after: {e}")))?;
+        let mut events = Vec::new();
+        for row in rows {
+            let (seq_raw, doc_id, rev_id, kind_str) =
+                row.map_err(|e| Dok3Error::Storage(format!("read journal row: {e}")))?;
+            let kind = match kind_str.as_str() {
+                "upsert" => ChangeKind::Upsert,
+                "delete" => ChangeKind::Delete,
+                other => {
+                    return Err(Dok3Error::Storage(format!(
+                        "unknown journal kind '{other}'"
+                    )));
+                }
+            };
+            events.push(ChangeEvent {
+                sequence: Sequence::new(u64::try_from(seq_raw).unwrap_or(0)),
+                document_id: DocumentId::new(doc_id),
+                revision_id: RevisionId::new(rev_id),
+                kind,
+            });
+        }
+        Ok(events)
     }
 }
 
@@ -213,7 +244,6 @@ fn read_all(path: &Path) -> Result<(Vec<ChangeEvent>, u64), Dok3Error> {
 
 #[cfg(test)]
 mod tests {
-    use std::io::{self, Write};
     use std::path::PathBuf;
 
     use dok3_core::Dok3Error;
@@ -221,7 +251,7 @@ mod tests {
         ChangeEvent, ChangeJournalPort, ChangeKind, DocumentId, RevisionId, Sequence,
     };
 
-    use super::{FileChangeJournal, rollback_truncate, write_and_sync};
+    use super::{FileChangeJournal, insert_event_db};
     use crate::fsutil::sync_dir;
 
     struct TempDir(PathBuf);
@@ -257,25 +287,18 @@ mod tests {
     }
 
     #[test]
-    fn failed_append_rolls_back_partial_write_and_preserves_sequence() {
+    fn failed_append_rolls_back_and_preserves_sequence() {
         let dir = TempDir::new("rollback");
         let journal = FileChangeJournal::open(&dir.0).unwrap();
         assert_eq!(journal.append(sample_event("a")).unwrap(), Sequence::new(1));
 
         let err = journal
-            .append_with_hooks(
-                sample_event("partial"),
-                sync_dir,
-                |f, line| {
-                    f.write_all(&line[..line.len() / 2])?;
-                    Err(io::Error::other("simulated disk full"))
-                },
-                rollback_truncate,
-            )
+            .append_with_hooks(sample_event("partial"), sync_dir, |_conn, _ev| {
+                Err(Dok3Error::Storage("simulated db failure".to_string()))
+            })
             .unwrap_err();
         assert!(matches!(err, Dok3Error::Storage(_)));
 
-        // Next append must reclaim seq 2 cleanly without line corruption.
         assert_eq!(journal.append(sample_event("b")).unwrap(), Sequence::new(2));
         let all = journal.read_after(Sequence::new(0), 10).unwrap();
         assert_eq!(all.len(), 2);
@@ -299,15 +322,11 @@ mod tests {
                         "simulated dir fsync failure".to_string(),
                     ))
                 },
-                write_and_sync,
-                rollback_truncate,
+                insert_event_db,
             )
             .unwrap_err();
         assert!(matches!(err, Dok3Error::Storage(msg) if msg.contains("dir fsync")));
-        // journal.jsonl now exists on disk (empty) from the failed first attempt.
-        assert!(dir.0.join("journal.jsonl").exists());
 
-        // Retry even with existing empty file must STILL invoke sync_dir_fn before writing seq 1.
         let mut sync_calls = 0usize;
         let seq = journal
             .append_with_hooks(
@@ -316,14 +335,12 @@ mod tests {
                     sync_calls += 1;
                     sync_dir(parent)
                 },
-                write_and_sync,
-                rollback_truncate,
+                insert_event_db,
             )
             .unwrap();
         assert_eq!(sync_calls, 1);
         assert_eq!(seq, Sequence::new(1));
 
-        // Subsequent append does not re-sync the directory unnecessarily.
         let mut subsequent_sync_calls = 0usize;
         let seq2 = journal
             .append_with_hooks(
@@ -332,43 +349,10 @@ mod tests {
                     subsequent_sync_calls += 1;
                     Ok(())
                 },
-                write_and_sync,
-                rollback_truncate,
+                insert_event_db,
             )
             .unwrap();
         assert_eq!(subsequent_sync_calls, 0);
         assert_eq!(seq2, Sequence::new(2));
-    }
-
-    #[test]
-    fn failed_rollback_poisons_journal_until_reopen() {
-        let dir = TempDir::new("poison");
-        let journal = FileChangeJournal::open(&dir.0).unwrap();
-
-        let err = journal
-            .append_with_hooks(
-                sample_event("a"),
-                sync_dir,
-                |f, line| {
-                    f.write_all(&line[..4])?;
-                    Err(io::Error::other("write failed"))
-                },
-                |_f, _len| Err(io::Error::other("truncate failed")),
-            )
-            .unwrap_err();
-        assert!(matches!(err, Dok3Error::Storage(_)));
-
-        let poisoned_append = journal.append(sample_event("b")).unwrap_err();
-        assert!(matches!(poisoned_append, Dok3Error::Storage(msg) if msg.contains("poisoned")));
-        drop(journal);
-
-        // Reopen truncates the torn fragment and restores usability.
-        let reopened = FileChangeJournal::open(&dir.0).unwrap();
-        assert_eq!(reopened.last_sequence().unwrap(), Sequence::new(0));
-        assert_eq!(
-            reopened.append(sample_event("c")).unwrap(),
-            Sequence::new(1)
-        );
-        assert_eq!(reopened.last_sequence().unwrap(), Sequence::new(1));
     }
 }

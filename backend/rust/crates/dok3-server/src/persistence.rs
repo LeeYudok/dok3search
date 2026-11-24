@@ -2012,8 +2012,7 @@ mod tests {
         // 1. Cold start: builds storage, journal, and first active Blue-Green generation.
         let (app1, report1) = build_persistent_app(source_root.path(), data_root.path());
         assert_eq!(report1.indexed, 2);
-        assert!(data_root.path().join("storage/documents.json").is_file());
-        assert!(data_root.path().join("storage/journal.jsonl").is_file());
+        assert!(data_root.path().join("storage/meta.db").is_file());
         assert!(data_root.path().join("storage/objects").is_dir());
         assert!(
             data_root
