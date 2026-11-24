@@ -18,23 +18,47 @@ use dok3_search::SearchService;
 /// CLI flag selecting stdio MCP mode instead of the HTTP server.
 pub const MCP_STDIO_FLAG: &str = "--mcp-stdio";
 
-/// Parses process arguments (excluding `argv[0]`). Returns `true` when stdio MCP mode is requested.
-/// Unknown arguments are rejected so typos never silently fall back to HTTP mode.
-pub fn stdio_requested<I>(args: I) -> Result<bool, String>
+/// CLI flag selecting the Windows SCM service entrypoint.
+pub const WINDOWS_SERVICE_FLAG: &str = "--windows-service";
+
+/// Process run mode selected by CLI flags.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CliMode {
+    /// Default HTTP server with console (Ctrl-C) shutdown.
+    Http,
+    /// Stdio MCP server (`--mcp-stdio`).
+    McpStdio,
+    /// Windows SCM service (`--windows-service`).
+    WindowsService,
+}
+
+/// Parses process arguments (excluding `argv[0]`). `--mcp-stdio` and `--windows-service` are
+/// mutually exclusive; unknown arguments are rejected so typos never silently fall back to HTTP.
+pub fn parse_cli_args<I>(args: I) -> Result<CliMode, String>
 where
     I: IntoIterator<Item = String>,
 {
     let mut stdio = false;
+    let mut service = false;
     for arg in args {
-        if arg == MCP_STDIO_FLAG {
-            stdio = true;
-        } else {
-            return Err(format!(
-                "unknown argument '{arg}' (supported: {MCP_STDIO_FLAG})"
-            ));
+        match arg.as_str() {
+            MCP_STDIO_FLAG => stdio = true,
+            WINDOWS_SERVICE_FLAG => service = true,
+            _ => {
+                return Err(format!(
+                    "unknown argument '{arg}' (supported: {MCP_STDIO_FLAG}, {WINDOWS_SERVICE_FLAG})"
+                ));
+            }
         }
     }
-    Ok(stdio)
+    match (stdio, service) {
+        (true, true) => Err(format!(
+            "{MCP_STDIO_FLAG} and {WINDOWS_SERVICE_FLAG} are mutually exclusive"
+        )),
+        (true, false) => Ok(CliMode::McpStdio),
+        (false, true) => Ok(CliMode::WindowsService),
+        (false, false) => Ok(CliMode::Http),
+    }
 }
 
 /// Builds the anonymous-public MCP server over the shared search service.
@@ -77,7 +101,7 @@ mod tests {
     use serde_json::{Value, json};
     use tower::ServiceExt;
 
-    use super::{anonymous_server, build_app, stdio_requested};
+    use super::{CliMode, anonymous_server, build_app, parse_cli_args};
 
     fn doc(id: &str, title: &str, body: &str, acl_scope: AclScope) -> Document {
         Document {
@@ -173,13 +197,26 @@ mod tests {
             .collect()
     }
 
+    fn args(list: &[&str]) -> Vec<String> {
+        list.iter().map(|s| s.to_string()).collect()
+    }
+
     #[test]
-    fn cli_parses_mcp_stdio_flag_and_rejects_unknown_args() {
-        assert_eq!(stdio_requested(Vec::<String>::new()), Ok(false));
-        assert_eq!(stdio_requested(["--mcp-stdio".to_string()]), Ok(true));
-        assert!(stdio_requested(["--mcp".to_string()]).is_err());
-        let extra = ["--mcp-stdio".to_string(), "x".to_string()];
-        assert!(stdio_requested(extra).is_err());
+    fn cli_parses_flag_combinations() {
+        assert_eq!(parse_cli_args(args(&[])), Ok(CliMode::Http));
+        assert_eq!(
+            parse_cli_args(args(&["--mcp-stdio"])),
+            Ok(CliMode::McpStdio)
+        );
+        assert_eq!(
+            parse_cli_args(args(&["--windows-service"])),
+            Ok(CliMode::WindowsService)
+        );
+        assert!(parse_cli_args(args(&["--mcp-stdio", "--windows-service"])).is_err());
+        assert!(parse_cli_args(args(&["--windows-service", "--mcp-stdio"])).is_err());
+        assert!(parse_cli_args(args(&["--mcp"])).is_err());
+        assert!(parse_cli_args(args(&["--mcp-stdio", "x"])).is_err());
+        assert!(parse_cli_args(args(&["--windows-service", "x"])).is_err());
     }
 
     #[tokio::test]
