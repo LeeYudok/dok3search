@@ -28,6 +28,10 @@ pub struct ServerConfig {
     pub dict_path: Option<PathBuf>,
     /// Path to optional CSV user dictionary for `mecab-ko-dic`.
     pub user_dict_path: Option<PathBuf>,
+    /// Optional local/LAN OpenAI-compatible chat completions endpoint for offline classification.
+    pub classifier_endpoint: Option<String>,
+    /// Optional model name for offline classification.
+    pub classifier_model: Option<String>,
 }
 
 impl Default for ServerConfig {
@@ -45,6 +49,8 @@ impl Default for ServerConfig {
             analyzer_profile: None,
             dict_path: None,
             user_dict_path: None,
+            classifier_endpoint: None,
+            classifier_model: None,
         }
     }
 }
@@ -126,6 +132,12 @@ impl ServerConfig {
         }
         config.dict_path = non_empty_path(lookup("DOK3_DICT_PATH"));
         config.user_dict_path = non_empty_path(lookup("DOK3_USER_DICT_PATH"));
+        config.classifier_endpoint = lookup("DOK3_CLASSIFIER_ENDPOINT")
+            .map(|v| v.trim().to_string())
+            .filter(|v| !v.is_empty());
+        config.classifier_model = lookup("DOK3_CLASSIFIER_MODEL")
+            .map(|v| v.trim().to_string())
+            .filter(|v| !v.is_empty());
 
         Ok(config)
     }

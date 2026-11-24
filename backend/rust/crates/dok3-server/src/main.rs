@@ -2,6 +2,7 @@
 
 mod classification;
 mod corpus_meta;
+mod llm_classifier;
 mod local_index;
 // --- slice-B: mcp ---
 mod mcp;
@@ -57,15 +58,38 @@ async fn run() -> Result<(), String> {
     // --- /slice-B: mcp ---
     match mode {
         mcp::CliMode::WindowsService => win_service::run_as_service(),
-        mcp::CliMode::McpStdio => run_server(true, shutdown_signal(), || {}).await,
-        mcp::CliMode::Http => run_server(false, shutdown_signal(), || {}).await,
+        mcp::CliMode::McpStdio => {
+            run_server_mode(Some(mcp::CliMode::McpStdio), shutdown_signal(), || {}).await
+        }
+        mcp::CliMode::AcpStdio => {
+            run_server_mode(Some(mcp::CliMode::AcpStdio), shutdown_signal(), || {}).await
+        }
+        mcp::CliMode::Http => run_server_mode(None, shutdown_signal(), || {}).await,
     }
 }
 
 /// Runs the server until `shutdown` resolves. `on_ready` is invoked right after the HTTP listener
-/// is bound (never in stdio MCP mode, which has no listener).
+/// is bound (never in stdio MCP/ACP mode, which has no listener).
+#[allow(dead_code)]
 pub(crate) async fn run_server<F, R>(
     mcp_stdio: bool,
+    shutdown: F,
+    on_ready: R,
+) -> Result<(), String>
+where
+    F: std::future::Future<Output = ()> + Send + 'static,
+    R: FnOnce(),
+{
+    run_server_mode(
+        mcp_stdio.then_some(mcp::CliMode::McpStdio),
+        shutdown,
+        on_ready,
+    )
+    .await
+}
+
+async fn run_server_mode<F, R>(
+    stdio_mode: Option<mcp::CliMode>,
     shutdown: F,
     on_ready: R,
 ) -> Result<(), String>
@@ -94,9 +118,16 @@ where
     let doc_count = service.health_ready(mode).document_count;
     // --- slice-B: mcp ---
     let search_arc = Arc::new(service);
-    if mcp_stdio {
-        eprintln!("dok3search MCP stdio ready (docs={doc_count}, mode={mode})");
-        return mcp::serve_stdio(search_arc).await;
+    match stdio_mode {
+        Some(mcp::CliMode::McpStdio) => {
+            eprintln!("dok3search MCP stdio ready (docs={doc_count}, mode={mode})");
+            return mcp::serve_stdio(search_arc).await;
+        }
+        Some(mcp::CliMode::AcpStdio) => {
+            eprintln!("dok3search ACP stdio ready (docs={doc_count}, mode={mode})");
+            return mcp::serve_acp_stdio(search_arc).await;
+        }
+        _ => {}
     }
     let state = build_api_state(
         &config,
@@ -150,12 +181,23 @@ fn open_runtime(
         );
     }
 
+    let classifier = config
+        .classifier_endpoint
+        .as_deref()
+        .map(|ep| llm_classifier::OfflineLlmClassifier::new(ep, config.classifier_model.as_deref()))
+        .transpose()?
+        .map(Arc::new);
+
     // --- slice-C: persistent-store ---
     match (config.source_dir.as_deref(), config.data_dir.as_deref()) {
         (Some(root), Some(data_dir)) => {
             validate_source_bind(&config.bind, config.allow_non_loopback_bind)?;
-            let (runtime, report) =
-                PersistentRuntime::open_with_refresh(root, data_dir, config.refresh_interval_secs)?;
+            let (runtime, report) = PersistentRuntime::open_with_options(
+                root,
+                data_dir,
+                config.refresh_interval_secs,
+                classifier,
+            )?;
             print_build_report("persistent Markdown snapshot", &report);
             let runtime = Arc::new(runtime);
             let service = runtime.service().clone();

@@ -4,6 +4,7 @@ use std::collections::{BTreeMap, BTreeSet, HashSet};
 use std::fs::{self, OpenOptions};
 use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 use dok3_core::Dok3Error;
 use dok3_domain::{
@@ -14,6 +15,7 @@ use dok3_domain::{
 };
 use serde::{Deserialize, Serialize};
 
+use crate::llm_classifier::OfflineLlmClassifier;
 use crate::persistence::{atomic_write_bytes, now_ms};
 
 const MAX_RULE_SUMMARY_CHARS: usize = 200;
@@ -377,6 +379,7 @@ pub(crate) struct ClassificationStore {
     audit_path: PathBuf,
     records: BTreeMap<String, DocumentClassification>,
     pending_index_sync: BTreeSet<String>,
+    llm: Option<Arc<OfflineLlmClassifier>>,
 }
 
 impl ClassificationStore {
@@ -394,7 +397,13 @@ impl ClassificationStore {
             audit_path,
             records: disk.records,
             pending_index_sync: disk.pending_index_sync,
+            llm: None,
         })
+    }
+
+    pub(crate) fn with_llm_classifier(mut self, llm: Option<Arc<OfflineLlmClassifier>>) -> Self {
+        self.llm = llm;
+        self
     }
 
     pub(crate) fn is_manual_locked(&self, id: &DocumentId) -> bool {
@@ -466,6 +475,33 @@ impl ClassificationStore {
                 self.save_record(updated, "system", "sync_preserve_manual")?;
             }
             return Ok(());
+        }
+
+        if let Some(llm) = self.llm.as_ref() {
+            if let Some(existing) = self.records.get(doc.id.as_str()).cloned()
+                && !existing.manual_locked
+                && existing.source == ClassificationSource::Agent
+                && existing.content_hash == content_hash
+            {
+                apply_classification_to_doc(doc, &existing);
+                return Ok(());
+            }
+            if let Ok(agent_out) = llm.classify(doc) {
+                let next = DocumentClassification {
+                    document_id: doc.id.clone(),
+                    summary: agent_out.summary,
+                    category: agent_out.category,
+                    tags: agent_out.tags,
+                    keywords: agent_out.keywords,
+                    source: ClassificationSource::Agent,
+                    manual_locked: false,
+                    updated_at_ms: now_ms(),
+                    content_hash: content_hash.to_string(),
+                };
+                self.save_record(next.clone(), "system", "agent_classify")?;
+                apply_classification_to_doc(doc, &next);
+                return Ok(());
+            }
         }
 
         let rule = RuleClassifier::classify_with_defaults(doc, default_category, default_tag);

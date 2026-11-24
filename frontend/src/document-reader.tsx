@@ -490,7 +490,11 @@ export function DocumentPage({ id, corpora }: { id: string; corpora?: readonly R
                       {classification.manualLocked
                         ? <LockSimple size={13} weight="bold" aria-hidden="true" />
                         : <SlidersHorizontal size={13} aria-hidden="true" />}
-                      {classification.manualLocked ? '수동 수정 유지됨' : '규칙 자동 분류'}
+                      {classification.manualLocked
+                        ? '수동 수정 유지됨'
+                        : classification.source === 'agent'
+                          ? 'AI 자동 분류'
+                          : '규칙 자동 분류'}
                     </span>
                     <button
                       type="button"

@@ -14,6 +14,7 @@ use dok3_domain::Principal;
 use serde_json::{Value, json};
 
 use crate::a2a::{A2aServer, default_agent_card};
+use crate::acp::{AcpAdapter, AcpRequest};
 use crate::llms_txt::render_llms_txt;
 
 use crate::protocol::{
@@ -65,20 +66,23 @@ pub fn build_mcp_router_with_auth(
 #[derive(Clone)]
 struct AgentDiscoveryState {
     a2a: A2aServer,
+    acp: AcpAdapter,
     doc_count: usize,
     mode: String,
 }
 
-/// Builds the full agent router mounting `/mcp`, `/.well-known/agent.json`, `/a2a`, and `/llms.txt`.
+/// Builds the full agent router mounting `/mcp`, `/.well-known/agent.json`, `/a2a`, `/acp`, and `/llms.txt`.
 pub fn build_agent_router(server: Arc<McpServer>, doc_count: usize, mode: &str) -> Router {
     let discovery = AgentDiscoveryState {
         a2a: A2aServer::new(server.search_service()),
+        acp: AcpAdapter::new(server.search_service()),
         doc_count,
         mode: mode.to_string(),
     };
     let a2a_routes = Router::new()
         .route("/.well-known/agent.json", get(handle_agent_card))
         .route("/a2a", post(handle_post_a2a))
+        .route("/acp", post(handle_post_acp))
         .route("/llms.txt", get(handle_llms_txt))
         .layer(DefaultBodyLimit::max(MAX_JSONRPC_LINE_BYTES))
         .with_state(discovery);
@@ -104,6 +108,71 @@ async fn handle_post_a2a(State(state): State<AgentDiscoveryState>, body: Bytes) 
     let payload = serde_json::to_vec(&resp_json).unwrap_or_else(|_| b"{}".to_vec());
     let mut resp = Response::new(axum::body::Body::from(payload));
     *resp.status_mut() = StatusCode::OK;
+    resp.headers_mut().insert(
+        header::CONTENT_TYPE,
+        HeaderValue::from_static("application/json"),
+    );
+    resp
+}
+
+async fn handle_post_acp(
+    State(state): State<AgentDiscoveryState>,
+    headers: HeaderMap,
+    body: Bytes,
+) -> Response {
+    if let Err(resp) = validate_loopback_origin(&headers) {
+        return *resp;
+    }
+    let Ok(text) = std::str::from_utf8(&body) else {
+        return acp_error_response(
+            StatusCode::BAD_REQUEST,
+            "invalid_input",
+            "ACP request body must be valid UTF-8 JSON",
+        );
+    };
+    let req = match serde_json::from_str::<AcpRequest>(text) {
+        Ok(req) => req,
+        Err(err) => {
+            return acp_error_response(
+                StatusCode::BAD_REQUEST,
+                "invalid_input",
+                &format!("invalid ACP request JSON: {err}"),
+            );
+        }
+    };
+    match state.acp.handle(&Principal::anonymous_public(), req) {
+        Ok(resp) => {
+            let payload = serde_json::to_vec(&resp).unwrap_or_else(|_| b"{}".to_vec());
+            let mut out = Response::new(axum::body::Body::from(payload));
+            *out.status_mut() = StatusCode::OK;
+            out.headers_mut().insert(
+                header::CONTENT_TYPE,
+                HeaderValue::from_static("application/json"),
+            );
+            out
+        }
+        Err(err) => {
+            let status = match &err {
+                Dok3Error::InvalidInput(_) => StatusCode::BAD_REQUEST,
+                Dok3Error::Forbidden(_) => StatusCode::FORBIDDEN,
+                Dok3Error::NotFound(_) => StatusCode::NOT_FOUND,
+                _ => StatusCode::INTERNAL_SERVER_ERROR,
+            };
+            acp_error_response(status, err.code(), &err.to_string())
+        }
+    }
+}
+
+fn acp_error_response(status: StatusCode, code: &str, message: &str) -> Response {
+    let payload = serde_json::to_vec(&json!({
+        "error": {
+            "code": code,
+            "message": message,
+        }
+    }))
+    .unwrap_or_else(|_| b"{}".to_vec());
+    let mut resp = Response::new(axum::body::Body::from(payload));
+    *resp.status_mut() = status;
     resp.headers_mut().insert(
         header::CONTENT_TYPE,
         HeaderValue::from_static("application/json"),

@@ -653,6 +653,15 @@ impl PersistentRuntime {
         data_dir: &Path,
         refresh_interval_secs: Option<u64>,
     ) -> Result<(Self, BuildReport), String> {
+        Self::open_with_options(source_dir, data_dir, refresh_interval_secs, None)
+    }
+
+    pub(crate) fn open_with_options(
+        source_dir: &Path,
+        data_dir: &Path,
+        refresh_interval_secs: Option<u64>,
+        classifier: Option<Arc<crate::llm_classifier::OfflineLlmClassifier>>,
+    ) -> Result<(Self, BuildReport), String> {
         let storage_dir = data_dir.join("storage");
         let generations_dir = data_dir.join("generations");
 
@@ -660,7 +669,8 @@ impl PersistentRuntime {
         let journal =
             Arc::new(FileChangeJournal::open(&storage_dir).map_err(|err| err.to_string())?);
         let mut source_registry = SourceRegistry::open(&storage_dir, source_dir)?;
-        let mut classification_store = ClassificationStore::open(&storage_dir)?;
+        let mut classification_store =
+            ClassificationStore::open(&storage_dir)?.with_llm_classifier(classifier);
 
         let report = sync_sources_to_storage(
             &mut source_registry,

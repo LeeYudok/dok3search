@@ -63,7 +63,7 @@ export type ReaderDocument = {
   formats?: DocumentFormatPair
 }
 
-export type ClassificationSource = 'rule' | 'manual'
+export type ClassificationSource = 'rule' | 'manual' | 'agent'
 
 export type DocumentClassification = {
   documentId: string
@@ -243,8 +243,8 @@ function parseDocumentDetail(raw: unknown): ReaderDocument {
 function parseDocumentClassification(raw: unknown): DocumentClassification {
   if (!isRecord(raw)) throw new Error('Invalid classification response payload')
   const source = expectString(raw, 'source')
-  if (source !== 'rule' && source !== 'manual') {
-    throw new Error("Invalid API field 'source': expected 'rule' or 'manual'")
+  if (source !== 'rule' && source !== 'manual' && source !== 'agent') {
+    throw new Error("Invalid API field 'source': expected 'rule', 'manual', or 'agent'")
   }
   return {
     documentId: expectString(raw, 'document_id'),
