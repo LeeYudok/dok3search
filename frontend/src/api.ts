@@ -803,6 +803,22 @@ export async function createSource(input: CreateSourceInput): Promise<Registered
         label: input.label,
         path: input.path,
         kind: input.kind,
+        relational: input.relational
+          ? {
+              dsn_env: input.relational.dsnEnv,
+              connection_label: input.relational.connectionLabel,
+              select_query: input.relational.selectQuery,
+              id_column: input.relational.idColumn,
+              title_column: input.relational.titleColumn,
+              body_column: input.relational.bodyColumn,
+              summary_column: input.relational.summaryColumn || undefined,
+              cursor_mode: input.relational.cursorMode,
+              cursor_column: input.relational.cursorColumn,
+              tombstone_mode: input.relational.tombstoneMode || undefined,
+              tombstone_column: input.relational.tombstoneColumn || undefined,
+              batch_limit: input.relational.batchLimit,
+            }
+          : undefined,
         sqlite: input.sqlite ? serializeSqliteOptions(input.sqlite) : undefined,
         default_category: input.defaultCategory || undefined,
         default_tag: input.defaultTag || undefined,
