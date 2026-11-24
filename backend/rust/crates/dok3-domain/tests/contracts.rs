@@ -407,3 +407,74 @@ fn contract_dtos_round_trip_json() {
         serde_json::from_str(&serde_json::to_string(&del_src).unwrap()).unwrap();
     assert_eq!(round_del, del_src);
 }
+
+#[test]
+fn parse_query_operators_and_recommendations_work() {
+    let ops = dok3_domain::parse_query_operators(
+        "path:/roundtrip/hwpx/ ext:.ts sym:toArrayBuffer symbol:KordocError path: table",
+    );
+    assert_eq!(ops.path_terms, vec!["roundtrip/hwpx"]);
+    assert_eq!(ops.ext_terms, vec!["ts"]);
+    assert_eq!(ops.symbol_terms, vec!["toarraybuffer", "kordocerror"]);
+    assert_eq!(ops.free_query, "path: table");
+
+    let public = Principal::anonymous_public();
+    let docs = [
+        Document {
+            id: DocumentId::new("d1"),
+            revision_id: RevisionId::new("r1"),
+            source_id: SourceId::new("s1"),
+            source: "kordoc".into(),
+            title: "kordoc utils".into(),
+            summary: "hwpx parser".into(),
+            category: "code".into(),
+            topic: None,
+            tag: "kordoc".into(),
+            tags: vec!["kordoc".into(), "ko".into()],
+            keywords: vec!["toArrayBuffer".into()],
+            language: "en".into(),
+            version: "1.0".into(),
+            date: None,
+            source_uri: "file:///utils.ts".into(),
+            sample_path: Some("samples/kordoc/src/utils.ts".into()),
+            acl_scope: AclScope::Public,
+            content_hash: "h1".into(),
+            body: "export function toArrayBuffer() {}".into(),
+            markdown: None,
+            sections: vec![],
+        },
+        Document {
+            id: DocumentId::new("d2"),
+            revision_id: RevisionId::new("r2"),
+            source_id: SourceId::new("s1"),
+            source: "secret".into(),
+            title: "InternalOnlySecret".into(),
+            summary: "InternalOnlySecret".into(),
+            category: "policy".into(),
+            topic: None,
+            tag: "InternalOnlySecret".into(),
+            tags: vec!["InternalOnlySecret".into()],
+            keywords: vec![],
+            language: "ko".into(),
+            version: "1.0".into(),
+            date: None,
+            source_uri: "file:///secret.md".into(),
+            sample_path: None,
+            acl_scope: AclScope::internal("sec"),
+            content_hash: "h2".into(),
+            body: "secret".into(),
+            markdown: None,
+            sections: vec![],
+        },
+    ];
+    let recs = dok3_domain::build_recommended_terms(docs.iter(), &public, "", None, 8);
+    assert!(recs.iter().any(|r| r.term == "kordoc"));
+    assert!(
+        recs.iter()
+            .all(|r| r.term != "ko" && r.term != "InternalOnlySecret")
+    );
+
+    let prefix = dok3_domain::build_recommended_terms(docs.iter(), &public, "toArr", None, 5);
+    assert_eq!(prefix.len(), 1);
+    assert_eq!(prefix[0].term, "toArrayBuffer");
+}

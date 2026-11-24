@@ -100,6 +100,7 @@ dok3search를 단일 노드 doksam Kubernetes에 재현 가능하게 배포하�
 ## 검증 및 실행 명령
 
 - 프론트엔드 빌드: `npm --prefix frontend run build`
+- 프론트엔드 테스트·커버리지: `npm --prefix frontend run test:coverage`
 - Comprehensive Rust 변환: `python3 scripts/import-comprehensive-rust.py <snapshot-dir> <output-dir>` ([준비할 입력과 라이선스](frontend/src/samples/comprehensive-rust/README.md))
 - Rust Reference·Cargo Book 변환: `python3 scripts/import-rust-official-components.py --rust-docs-root <toolchain>/share/doc/rust/html --license-root <toolchain>/share/doc/rust/licenses --output-root frontend/src/samples --version '<rustc version>'` ([출처와 라이선스](frontend/src/samples/rust-reference/README.md))
 - `rustdoc`(`std` + 사용 크레이트)·`rustc --explain` 변환: `python3 scripts/import-rustdoc-and-errors.py --output-root frontend/src/samples`

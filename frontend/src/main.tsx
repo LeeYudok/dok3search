@@ -55,7 +55,7 @@ function mergeSearchHits(...groups: ReadonlyArray<SearchViewResult['hits']>): Se
   return [...merged.values()]
 }
 
-async function fetchSearchPage(
+export async function fetchSearchPage(
   query: string, category: string, topic: string, page: number, signal: AbortSignal,
 ): Promise<{ result: SearchViewResult; mode: DataSourceMode }> {
   let refPromise: Promise<ReferenceCorpus[]> | undefined
@@ -228,7 +228,7 @@ async function fetchSearchPage(
   }
 }
 
-function SearchForm({ query = '', category = '', topic = '' }: { query?: string; category?: string; topic?: string }) {
+export function SearchForm({ query = '', category = '', topic = '' }: { query?: string; category?: string; topic?: string }) {
   const [inputValue, setInputValue] = useState(query)
   const [focused, setFocused] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
@@ -325,7 +325,7 @@ function SearchForm({ query = '', category = '', topic = '' }: { query?: string;
   )
 }
 
-function RecommendedChips({
+export function RecommendedChips({
   category = '',
   topic = '',
   label = '추천 검색어',
@@ -363,7 +363,7 @@ function RecommendedChips({
   )
 }
 
-function HomePage() {
+export function HomePage() {
   return (
     <div className="home-wrap">
       <main id="content" className="shell home">
@@ -383,7 +383,7 @@ function HomePage() {
   )
 }
 
-function SearchPage() {
+export function SearchPage() {
   const params = new URLSearchParams(window.location.search)
   const query = params.get('q')?.trim() ?? ''
   const rawCategory = params.get('category') ?? ''

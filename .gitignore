@@ -1,5 +1,8 @@
 node_modules/
 dist/
+coverage/
+*.lcov
+lcov.info
 target/
 offline-bundles/
 .offline-cache/

@@ -141,6 +141,8 @@ commands:
   frontend:
     install: 'npm --prefix frontend ci'
     dev: 'npm --prefix frontend run dev'
+    test: 'npm --prefix frontend run test'
+    coverage: 'npm --prefix frontend run test:coverage'
     build: 'npm --prefix frontend run build'
   rust:
     run: 'cargo run --manifest-path backend/rust/Cargo.toml -p dok3-server'
