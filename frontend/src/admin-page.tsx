@@ -20,6 +20,8 @@ import {
   type IndexJobListResponse,
   type IndexJobMode,
   type RegisteredSource,
+  type SourceKind,
+  type SqliteCursorMode,
   triggerIndexJob,
 } from './api'
 import { categories, categoryLabels } from './documents'
@@ -69,6 +71,14 @@ export function AdminPage({ initialTab = 'sources' }: { initialTab?: AdminTab })
   const [newPath, setNewPath] = useState('')
   const [newCategory, setNewCategory] = useState('guide')
   const [newTag, setNewTag] = useState('docs')
+  const [newKind, setNewKind] = useState<SourceKind>('local_dir')
+  const [sqSelect, setSqSelect] = useState('SELECT id, title, body FROM notes')
+  const [sqId, setSqId] = useState('id')
+  const [sqTitle, setSqTitle] = useState('title')
+  const [sqBody, setSqBody] = useState('body')
+  const [sqSummary, setSqSummary] = useState('')
+  const [sqCursorMode, setSqCursorMode] = useState<SqliteCursorMode>('integer_pk')
+  const [sqCursorColumn, setSqCursorColumn] = useState('id')
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   async function loadAll(signal?: AbortSignal) {
@@ -128,6 +138,19 @@ export function AdminPage({ initialTab = 'sources' }: { initialTab?: AdminTab })
         sourceId: newSourceId,
         label: newLabel,
         path: newPath,
+        kind: newKind,
+        sqlite:
+          newKind === 'sqlite'
+            ? {
+                selectQuery: sqSelect,
+                idColumn: sqId,
+                titleColumn: sqTitle,
+                bodyColumn: sqBody,
+                summaryColumn: sqSummary.trim() || undefined,
+                cursorMode: sqCursorMode,
+                cursorColumn: sqCursorColumn,
+              }
+            : undefined,
         defaultCategory: newCategory,
         defaultTag: newTag,
       })
@@ -136,6 +159,7 @@ export function AdminPage({ initialTab = 'sources' }: { initialTab?: AdminTab })
       setNewPath('')
       setNewCategory('guide')
       setNewTag('docs')
+      setNewKind('local_dir')
       setShowAddForm(false)
       setActionNotice(`소스 '${created.sourceId}' 를 등록하고 문서 ${created.documentCount}건을 색인했습니다.`)
       await loadAll()
@@ -289,8 +313,24 @@ export function AdminPage({ initialTab = 'sources' }: { initialTab?: AdminTab })
             </div>
 
             {showAddForm && (
-              <section className="admin-card" aria-label="새 로컬 소스 등록">
+              <section className="admin-card" aria-label="새 소스 등록">
                 <form className="admin-form" onSubmit={(event) => void handleCreateSource(event)}>
+                  <div className="cls-field">
+                    <label htmlFor="src-kind">소스 유형</label>
+                    <select
+                      id="src-kind"
+                      value={newKind}
+                      disabled={busy}
+                      onChange={(event) => {
+                        const kind = event.target.value as SourceKind
+                        setNewKind(kind)
+                        setNewTag(kind === 'sqlite' ? 'sqlite' : 'docs')
+                      }}
+                    >
+                      <option value="local_dir">로컬 문서 폴더</option>
+                      <option value="sqlite">SQLite 데이터베이스</option>
+                    </select>
+                  </div>
                   <div className="admin-form-grid">
                     <div className="cls-field">
                       <label htmlFor="src-id">소스 ID (소문자·숫자·하이픈·밑줄)</label>
@@ -319,17 +359,70 @@ export function AdminPage({ initialTab = 'sources' }: { initialTab?: AdminTab })
                     </div>
                   </div>
                   <div className="cls-field">
-                    <label htmlFor="src-path">로컬 디렉터리 절대 경로 (심볼릭 링크 불가)</label>
+                    <label htmlFor="src-path">
+                      {newKind === 'sqlite'
+                        ? 'SQLite DB 파일 절대 경로 (읽기 전용, 심볼릭 링크 불가)'
+                        : '로컬 디렉터리 절대 경로 (심볼릭 링크 불가)'}
+                    </label>
                     <input
                       id="src-path"
                       type="text"
                       required
-                      placeholder="/path/to/markdown-docs"
+                      placeholder={newKind === 'sqlite' ? '/path/to/notes.db' : '/path/to/markdown-docs'}
                       value={newPath}
                       disabled={busy}
                       onChange={(event) => setNewPath(event.target.value)}
                     />
                   </div>
+                  {newKind === 'sqlite' && (
+                    <>
+                      <div className="cls-field">
+                        <label htmlFor="sq-select">SELECT 쿼리 (읽기 전용)</label>
+                        <input
+                          id="sq-select"
+                          type="text"
+                          required
+                          value={sqSelect}
+                          disabled={busy}
+                          onChange={(event) => setSqSelect(event.target.value)}
+                        />
+                      </div>
+                      <div className="admin-form-grid">
+                        <div className="cls-field">
+                          <label htmlFor="sq-id">ID 컬럼</label>
+                          <input id="sq-id" type="text" required value={sqId} disabled={busy} onChange={(event) => setSqId(event.target.value)} />
+                        </div>
+                        <div className="cls-field">
+                          <label htmlFor="sq-title">제목 컬럼</label>
+                          <input id="sq-title" type="text" required value={sqTitle} disabled={busy} onChange={(event) => setSqTitle(event.target.value)} />
+                        </div>
+                        <div className="cls-field">
+                          <label htmlFor="sq-body">본문 컬럼</label>
+                          <input id="sq-body" type="text" required value={sqBody} disabled={busy} onChange={(event) => setSqBody(event.target.value)} />
+                        </div>
+                        <div className="cls-field">
+                          <label htmlFor="sq-summary">요약 컬럼 (선택)</label>
+                          <input id="sq-summary" type="text" value={sqSummary} disabled={busy} onChange={(event) => setSqSummary(event.target.value)} />
+                        </div>
+                        <div className="cls-field">
+                          <label htmlFor="sq-cursor-mode">커서 방식</label>
+                          <select
+                            id="sq-cursor-mode"
+                            value={sqCursorMode}
+                            disabled={busy}
+                            onChange={(event) => setSqCursorMode(event.target.value as SqliteCursorMode)}
+                          >
+                            <option value="integer_pk">정수 기본키 (신규 행만)</option>
+                            <option value="updated_at">수정 시각 (신규·변경 행)</option>
+                          </select>
+                        </div>
+                        <div className="cls-field">
+                          <label htmlFor="sq-cursor-column">커서 컬럼</label>
+                          <input id="sq-cursor-column" type="text" required value={sqCursorColumn} disabled={busy} onChange={(event) => setSqCursorColumn(event.target.value)} />
+                        </div>
+                      </div>
+                    </>
+                  )}
                   <div className="admin-form-grid">
                     <div className="cls-field">
                       <label htmlFor="src-category">기본 카테고리</label>
@@ -382,6 +475,12 @@ export function AdminPage({ initialTab = 'sources' }: { initialTab?: AdminTab })
                       <div className="admin-title-row">
                         <h3>{src.label}</h3>
                         <code className="admin-code">{src.sourceId}</code>
+                        {src.kind === 'sqlite' && (
+                          <span className="admin-badge">
+                            <Database size={12} aria-hidden="true" />
+                            SQLite
+                          </span>
+                        )}
                         {src.managedByEnv && (
                           <span className="admin-badge">
                             <LockSimple size={12} aria-hidden="true" />

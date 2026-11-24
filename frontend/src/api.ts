@@ -546,10 +546,26 @@ export async function updateClassification(
   return parseDocumentClassification(json)
 }
 
+export type SourceKind = 'local_dir' | 'sqlite'
+export type SqliteCursorMode = 'integer_pk' | 'updated_at'
+
+export type SqliteSourceOptions = {
+  selectQuery: string
+  idColumn: string
+  titleColumn: string
+  bodyColumn: string
+  summaryColumn?: string
+  cursorMode: SqliteCursorMode
+  cursorColumn: string
+  batchLimit?: number
+}
+
 export type RegisteredSource = {
   sourceId: string
   label: string
   path: string
+  kind?: SourceKind
+  sqlite?: SqliteSourceOptions
   defaultCategory: string
   defaultTag: string
   managedByEnv: boolean
@@ -567,6 +583,8 @@ export type CreateSourceInput = {
   sourceId: string
   label: string
   path: string
+  kind?: SourceKind
+  sqlite?: SqliteSourceOptions
   defaultCategory?: string
   defaultTag?: string
 }
@@ -613,12 +631,48 @@ function optionalNumber(record: Record<string, unknown>, key: string): number | 
   return value
 }
 
+function parseSqliteOptions(raw: unknown): SqliteSourceOptions | undefined {
+  if (raw === undefined || raw === null) return undefined
+  if (!isRecord(raw)) throw new Error("Invalid API field 'sqlite'")
+  const cursorMode = expectString(raw, 'cursor_mode')
+  if (cursorMode !== 'integer_pk' && cursorMode !== 'updated_at') {
+    throw new Error("Invalid API field 'cursor_mode'")
+  }
+  return {
+    selectQuery: expectString(raw, 'select_query'),
+    idColumn: expectString(raw, 'id_column'),
+    titleColumn: expectString(raw, 'title_column'),
+    bodyColumn: expectString(raw, 'body_column'),
+    summaryColumn: optionalString(raw, 'summary_column'),
+    cursorMode,
+    cursorColumn: expectString(raw, 'cursor_column'),
+    batchLimit: optionalNumber(raw, 'batch_limit'),
+  }
+}
+
+function serializeSqliteOptions(options: SqliteSourceOptions) {
+  return {
+    select_query: options.selectQuery,
+    id_column: options.idColumn,
+    title_column: options.titleColumn,
+    body_column: options.bodyColumn,
+    summary_column: options.summaryColumn || undefined,
+    cursor_mode: options.cursorMode,
+    cursor_column: options.cursorColumn,
+    batch_limit: options.batchLimit,
+  }
+}
+
 function parseRegisteredSource(raw: unknown): RegisteredSource {
   if (!isRecord(raw)) throw new Error('Invalid source record payload')
+  const kind = optionalString(raw, 'kind') ?? 'local_dir'
+  if (kind !== 'local_dir' && kind !== 'sqlite') throw new Error("Invalid API field 'kind'")
   return {
     sourceId: expectString(raw, 'source_id'),
     label: expectString(raw, 'label'),
     path: expectString(raw, 'path'),
+    kind,
+    sqlite: parseSqliteOptions(raw.sqlite),
     defaultCategory: expectString(raw, 'default_category'),
     defaultTag: expectString(raw, 'default_tag'),
     managedByEnv: expectBoolean(raw, 'managed_by_env'),
@@ -702,6 +756,8 @@ export async function createSource(input: CreateSourceInput): Promise<Registered
         source_id: input.sourceId,
         label: input.label,
         path: input.path,
+        kind: input.kind,
+        sqlite: input.sqlite ? serializeSqliteOptions(input.sqlite) : undefined,
         default_category: input.defaultCategory || undefined,
         default_tag: input.defaultTag || undefined,
       }),
