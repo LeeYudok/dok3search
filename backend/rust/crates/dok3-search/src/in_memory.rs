@@ -3,14 +3,17 @@
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
-use dok3_analyzer::{SectionCandidate, select_matched_section_id};
+use dok3_analyzer::{
+    SectionCandidate, cosine_similarity, embed_text, expand_synonyms, extract_chosung,
+    is_chosung_query, select_matched_section_id,
+};
 use dok3_core::Dok3Error;
 use dok3_domain::{
     AclScope, CategoryCount, CorpusCatalogEntry, Document, DocumentDetail, DocumentFormatLinks,
-    DocumentId, DocumentStorePort, GenerationId, Principal, ReaderState, RecommendedTerm,
-    SearchHit, SearchPort, SearchRequest, SearchResponse, SearchSnapshotMeta, SectionCitation,
-    SectionReadRequest, SectionReadResponse, SectionSummary, Sequence, build_corpus_catalog,
-    build_recommended_terms,
+    DocumentId, DocumentStorePort, FacetCount, GenerationId, Principal, ReaderState,
+    RecommendedTerm, SearchHit, SearchMode, SearchPort, SearchRequest, SearchResponse,
+    SearchSnapshotMeta, SearchSort, SectionCitation, SectionReadRequest, SectionReadResponse,
+    SectionSummary, Sequence, TopicCount, build_corpus_catalog, build_recommended_terms,
 };
 
 use crate::seed::load_seed_dataset;
@@ -149,6 +152,20 @@ impl SearchPort for InMemorySearchRepository {
             score: f32,
         }
 
+        let date_from = req
+            .filters
+            .date_from
+            .as_deref()
+            .map(str::trim)
+            .filter(|d| !d.is_empty());
+        let date_to = req
+            .filters
+            .date_to
+            .as_deref()
+            .map(str::trim)
+            .filter(|d| !d.is_empty());
+        let has_date_filter = date_from.is_some() || date_to.is_some();
+
         let mut matched = Vec::new();
 
         for (idx, doc) in self.documents.iter().enumerate() {
@@ -181,21 +198,52 @@ impl SearchPort for InMemorySearchRepository {
             {
                 continue;
             }
+            if has_date_filter && !match_date_range(doc.date.as_deref(), date_from, date_to) {
+                continue;
+            }
 
-            if terms.is_empty() {
-                matched.push(ScoredDoc {
-                    idx,
-                    doc,
-                    score: 1.0,
-                });
+            if terms.is_empty() || req.search_mode == SearchMode::Semantic {
+                let score = if req.search_mode == SearchMode::Semantic && !query_lower.is_empty() {
+                    let q_vec = embed_text(&query_trimmed);
+                    let d_vec = embed_text(&format!(
+                        "{} {} {} {}",
+                        doc.title,
+                        doc.summary,
+                        doc.tags.join(" "),
+                        doc.keywords.join(" ")
+                    ));
+                    let sim = cosine_similarity(&q_vec, &d_vec);
+                    if sim <= 0.05 {
+                        continue;
+                    }
+                    sim
+                } else {
+                    1.0
+                };
+                matched.push(ScoredDoc { idx, doc, score });
                 continue;
             }
 
             let variants = self.authorized_variants(doc, &effective_scopes);
             let mut best_score: Option<f32> = None;
             for variant in variants {
-                if let Some(score) = score_variant(variant, &query_lower, &terms) {
+                if let Some(score) = score_variant(variant, &query_lower, &terms, req.fuzzy) {
                     best_score = Some(best_score.map_or(score, |prev| prev.max(score)));
+                }
+            }
+            if req.search_mode == SearchMode::Hybrid && !query_lower.is_empty() {
+                let q_vec = embed_text(&query_trimmed);
+                let d_vec = embed_text(&format!(
+                    "{} {} {} {}",
+                    doc.title,
+                    doc.summary,
+                    doc.tags.join(" "),
+                    doc.keywords.join(" ")
+                ));
+                let sim = cosine_similarity(&q_vec, &d_vec);
+                if best_score.is_some() || sim > 0.15 {
+                    let combined = best_score.unwrap_or(0.0) + sim * 2.0;
+                    best_score = Some(combined);
                 }
             }
             if let Some(score) = best_score {
@@ -203,13 +251,35 @@ impl SearchPort for InMemorySearchRepository {
             }
         }
 
-        if !terms.is_empty() {
-            matched.sort_by(|a, b| {
-                b.score
-                    .partial_cmp(&a.score)
-                    .unwrap_or(std::cmp::Ordering::Equal)
-                    .then_with(|| a.idx.cmp(&b.idx))
-            });
+        match req.sort {
+            SearchSort::Relevance => {
+                if !terms.is_empty() {
+                    matched.sort_by(|a, b| {
+                        b.score
+                            .partial_cmp(&a.score)
+                            .unwrap_or(std::cmp::Ordering::Equal)
+                            .then_with(|| a.idx.cmp(&b.idx))
+                    });
+                }
+            }
+            SearchSort::DateDesc => {
+                matched.sort_by(|a, b| {
+                    b.doc
+                        .date
+                        .cmp(&a.doc.date)
+                        .then_with(|| a.doc.title.cmp(&b.doc.title))
+                });
+            }
+            SearchSort::DateAsc => {
+                matched.sort_by(|a, b| {
+                    let da = a.doc.date.as_deref().unwrap_or("9999-99-99");
+                    let db = b.doc.date.as_deref().unwrap_or("9999-99-99");
+                    da.cmp(db).then_with(|| a.doc.title.cmp(&b.doc.title))
+                });
+            }
+            SearchSort::TitleAsc => {
+                matched.sort_by_key(|a| a.doc.title.to_lowercase());
+            }
         }
 
         let total_unfiltered_hits = matched.len();
@@ -232,11 +302,53 @@ impl SearchPort for InMemorySearchRepository {
             .as_deref()
             .map(str::trim)
             .filter(|c| !c.is_empty());
+        let active_topic = req
+            .filters
+            .topic
+            .as_deref()
+            .map(str::trim)
+            .filter(|t| !t.is_empty());
 
-        let visible: Vec<&ScoredDoc<'_>> = matched
+        let category_filtered: Vec<&ScoredDoc<'_>> = matched
             .iter()
             .filter(|item| active_category.is_none_or(|cat| item.doc.category == cat))
             .collect();
+
+        let topic_counts: Vec<TopicCount> =
+            if active_category == Some("guide") || active_topic.is_some() {
+                let mut by_topic: HashMap<&str, usize> = HashMap::new();
+                for item in &category_filtered {
+                    if let Some(t) = item.doc.topic.as_deref() {
+                        *by_topic.entry(t).or_insert(0) += 1;
+                    }
+                }
+                [("rust", "Rust"), ("go", "Go")]
+                    .iter()
+                    .map(|(id, label)| TopicCount {
+                        id: (*id).to_string(),
+                        label: (*label).to_string(),
+                        count: by_topic.get(id).copied().unwrap_or(0),
+                    })
+                    .collect()
+            } else {
+                Vec::new()
+            };
+
+        let visible: Vec<&ScoredDoc<'_>> = category_filtered
+            .into_iter()
+            .filter(|item| {
+                active_topic.is_none_or(|t| {
+                    item.doc
+                        .topic
+                        .as_deref()
+                        .is_some_and(|dt| dt.eq_ignore_ascii_case(t))
+                })
+            })
+            .collect();
+
+        let tag_source_docs: Vec<&Document> =
+            visible.iter().take(100).map(|item| item.doc).collect();
+        let (tag_facets, source_facets) = compute_in_memory_facets(&tag_source_docs);
 
         let related_searches = if !terms.is_empty() && !visible.is_empty() {
             let matched_categories: HashSet<&str> = visible
@@ -344,6 +456,9 @@ impl SearchPort for InMemorySearchRepository {
             total_pages,
             total_unfiltered_hits,
             category_counts,
+            topic_counts,
+            tag_facets,
+            source_facets,
             related_searches,
             hits,
             snapshot: self.snapshot.clone(),
@@ -498,8 +613,15 @@ impl DocumentStorePort for InMemorySearchRepository {
     }
 }
 
-fn score_variant(doc: &Document, query_lower: &str, terms: &[String]) -> Option<f32> {
+fn score_variant(doc: &Document, query_lower: &str, terms: &[String], fuzzy: bool) -> Option<f32> {
     let title_lower = doc.title.to_lowercase();
+    if is_chosung_query(query_lower) {
+        let chosung_title = extract_chosung(&doc.title);
+        let q_parts: Vec<&str> = query_lower.split_whitespace().collect();
+        if !q_parts.is_empty() && q_parts.iter().all(|part| chosung_title.contains(part)) {
+            return Some(3.0);
+        }
+    }
     let summary_lower = doc.summary.to_lowercase();
     let meta_lower = [
         doc.source.as_str(),
@@ -521,6 +643,24 @@ fn score_variant(doc: &Document, query_lower: &str, terms: &[String]) -> Option<
             && !meta_lower.contains(term)
             && !body_lower.contains(term)
         {
+            let syns = expand_synonyms(term);
+            let syn_found = syns.iter().any(|syn| {
+                title_lower.contains(syn.as_str())
+                    || summary_lower.contains(syn.as_str())
+                    || meta_lower.contains(syn.as_str())
+                    || body_lower.contains(syn.as_str())
+            });
+            if syn_found {
+                continue;
+            }
+            if fuzzy
+                && term.chars().count() >= 4
+                && title_lower
+                    .split_whitespace()
+                    .any(|w| levenshtein_le1(w, term))
+            {
+                continue;
+            }
             let components = analyzer_components(term);
             let all_found = !components.is_empty()
                 && components.iter().all(|c| {
@@ -563,6 +703,79 @@ fn score_variant(doc: &Document, query_lower: &str, terms: &[String]) -> Option<
         score += 2.0 * in_title / total + 0.5;
     }
     Some(score)
+}
+
+fn match_date_range(date: Option<&str>, from: Option<&str>, to: Option<&str>) -> bool {
+    let Some(d) = date.map(str::trim).filter(|s| !s.is_empty()) else {
+        return false;
+    };
+    if let Some(f) = from
+        && d < f
+    {
+        return false;
+    }
+    if let Some(t) = to
+        && d > t
+    {
+        return false;
+    }
+    true
+}
+
+fn levenshtein_le1(a: &str, b: &str) -> bool {
+    let ac: Vec<char> = a.chars().collect();
+    let bc: Vec<char> = b.chars().collect();
+    if ac.len().abs_diff(bc.len()) > 1 {
+        return false;
+    }
+    if ac.len() == bc.len() {
+        return ac.iter().zip(bc.iter()).filter(|(x, y)| x != y).count() <= 1;
+    }
+    let (shorter, longer) = if ac.len() < bc.len() {
+        (&ac, &bc)
+    } else {
+        (&bc, &ac)
+    };
+    let (mut i, mut j, mut edits) = (0, 0, 0);
+    while i < shorter.len() && j < longer.len() {
+        if shorter[i] == longer[j] {
+            i += 1;
+            j += 1;
+        } else {
+            edits += 1;
+            if edits > 1 {
+                return false;
+            }
+            j += 1;
+        }
+    }
+    true
+}
+
+fn compute_in_memory_facets(visible: &[&Document]) -> (Vec<FacetCount>, Vec<FacetCount>) {
+    let mut tag_counts: HashMap<String, usize> = HashMap::new();
+    let mut source_counts: HashMap<String, usize> = HashMap::new();
+    for doc in visible {
+        if !doc.source.trim().is_empty() {
+            *source_counts.entry(doc.source.clone()).or_insert(0) += 1;
+        }
+        for tag in &doc.tags {
+            let t = tag.trim();
+            if !t.is_empty() {
+                *tag_counts.entry(t.to_string()).or_insert(0) += 1;
+            }
+        }
+    }
+    let to_sorted = |map: HashMap<String, usize>| -> Vec<FacetCount> {
+        let mut items: Vec<FacetCount> = map
+            .into_iter()
+            .map(|(value, count)| FacetCount { value, count })
+            .collect();
+        items.sort_by(|a, b| b.count.cmp(&a.count).then_with(|| a.value.cmp(&b.value)));
+        items.truncate(10);
+        items
+    };
+    (to_sorted(tag_counts), to_sorted(source_counts))
 }
 
 /// Analyzer components (after the whole term) of a term with no direct match.

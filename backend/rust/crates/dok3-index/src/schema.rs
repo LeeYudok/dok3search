@@ -13,7 +13,7 @@ use tantivy::{Index, TantivyDocument};
 use crate::tokenizer::{GramTokenizer, TextTokenizer};
 
 /// Increment when index field definitions or tokenizers change incompatibly.
-pub const SCHEMA_VERSION: u32 = 3;
+pub const SCHEMA_VERSION: u32 = 4;
 /// Tokenizer name for general words and code identifier segments.
 pub const TOKENIZER_TEXT: &str = "dok3_text_v2";
 /// Tokenizer name for 2-3 character n-gram partial matching.
@@ -27,9 +27,11 @@ pub struct IndexFields {
     pub source_id: Field,
     pub acl_scope: Field,
     pub category: Field,
+    pub topic: Field,
     pub language: Field,
     pub tag_exact: Field,
     pub title: Field,
+    pub title_chosung: Field,
     pub summary: Field,
     pub tags_text: Field,
     pub symbols: Field,
@@ -85,9 +87,11 @@ pub fn build_schema() -> (Schema, IndexFields) {
         source_id: builder.add_text_field("source_id", STRING | STORED),
         acl_scope: builder.add_text_field("acl_scope", STRING | STORED),
         category: builder.add_text_field("category", STRING | STORED),
+        topic: builder.add_text_field("topic", STRING | STORED),
         language: builder.add_text_field("language", STRING | STORED),
         tag_exact: builder.add_text_field("tag_exact", STRING),
         title: builder.add_text_field("title", text_indexed.clone().set_stored()),
+        title_chosung: builder.add_text_field("title_chosung", text_indexed.clone()),
         summary: builder.add_text_field("summary", text_indexed.clone().set_stored()),
         tags_text: builder.add_text_field("tags_text", text_indexed.clone()),
         symbols: builder.add_text_field("symbols", text_indexed.clone()),
@@ -146,6 +150,14 @@ pub(crate) fn to_tantivy_document(
     tv.add_text(fields.source_id, doc.source_id.as_str());
     tv.add_text(fields.acl_scope, doc.acl_scope.to_string());
     tv.add_text(fields.category, &doc.category);
+    if let Some(topic) = doc
+        .topic
+        .as_deref()
+        .map(str::trim)
+        .filter(|t| !t.is_empty())
+    {
+        tv.add_text(fields.topic, topic.to_lowercase());
+    }
     tv.add_text(fields.language, doc.language.trim().to_lowercase());
     for tag in &doc.tags {
         let trimmed = tag.trim().to_lowercase();
@@ -154,6 +166,17 @@ pub(crate) fn to_tantivy_document(
         }
     }
     tv.add_text(fields.title, &doc.title);
+    let mut chosung_source = doc.title.clone();
+    for sec in &doc.sections {
+        if !sec.heading.trim().is_empty() {
+            chosung_source.push(' ');
+            chosung_source.push_str(&sec.heading);
+        }
+    }
+    let chosung = dok3_analyzer::extract_chosung(&chosung_source);
+    if !chosung.is_empty() {
+        tv.add_text(fields.title_chosung, &chosung);
+    }
     tv.add_text(fields.summary, &doc.summary);
 
     let tags_combined = doc

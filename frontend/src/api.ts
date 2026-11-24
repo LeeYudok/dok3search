@@ -212,6 +212,22 @@ function parseCategoryCount(raw: unknown): CategoryCountItem {
   }
 }
 
+function parseTopicCounts(raw: unknown): SearchViewResult['topicCounts'] {
+  if (!Array.isArray(raw)) return []
+  const items: SearchViewResult['topicCounts'] = []
+  for (const entry of raw) {
+    if (!isRecord(entry)) continue
+    const id = expectString(entry, 'id')
+    if (!isReferenceTopicFilter(id)) continue
+    items.push({
+      id,
+      label: expectString(entry, 'label'),
+      count: expectNumber(entry, 'count'),
+    })
+  }
+  return items
+}
+
 function parseSearchResponse(raw: unknown): SearchViewResult {
   if (!isRecord(raw)) throw new Error('Invalid search response payload')
   const rawCounts = raw.category_counts
@@ -229,7 +245,7 @@ function parseSearchResponse(raw: unknown): SearchViewResult {
     totalPages: expectNumber(raw, 'total_pages'),
     totalUnfilteredHits: expectNumber(raw, 'total_unfiltered_hits'),
     categoryCounts: rawCounts.map(parseCategoryCount),
-    topicCounts: [],
+    topicCounts: parseTopicCounts(raw.topic_counts),
     relatedSearches: expectStringArray(raw, 'related_searches'),
     hits: rawHits.map(parseSearchHit),
     snapshot: {
@@ -371,16 +387,19 @@ export async function fetchRecommendations(
 }
 
 export async function fetchSearch(
-  params: { query: string; category: string; page: number; limit: number },
+  params: { query: string; category: string; topic?: string; page: number; limit: number },
   signal: AbortSignal,
 ): Promise<{ result: SearchViewResult; mode: DataSourceMode }> {
   try {
+    const filters: Record<string, string> = {}
+    if (params.category) filters.category = params.category
+    if (params.topic) filters.topic = params.topic
     const response = await fetch('/api/v1/search', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         query: params.query,
-        filters: params.category ? { category: params.category } : {},
+        filters,
         page: params.page,
         limit: params.limit,
         include_snippets: true,

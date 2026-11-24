@@ -30,8 +30,9 @@ pub use ports::{
     OriginalDocumentPayload, SearchPort, SourceRegistryPort,
 };
 pub use search::{
-    CategoryCount, CorpusCatalogEntry, CorpusCatalogResponse, CorpusPackageVersion,
+    CategoryCount, CorpusCatalogEntry, CorpusCatalogResponse, CorpusPackageVersion, FacetCount,
     HealthReadyResponse, ParsedQueryOperators, ReaderState, RecommendedTerm, SearchFilters,
-    SearchHit, SearchRecommendationsResponse, SearchRequest, SearchResponse, SearchSnapshotMeta,
-    build_corpus_catalog, build_recommended_terms, parse_query_operators,
+    SearchHit, SearchMode, SearchRecommendationsResponse, SearchRequest, SearchResponse,
+    SearchSnapshotMeta, SearchSort, TopicCount, build_corpus_catalog, build_recommended_terms,
+    parse_query_operators,
 };
