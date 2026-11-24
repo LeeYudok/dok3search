@@ -76,7 +76,7 @@ dok3search를 단일 노드 doksam Kubernetes에 재현 가능하게 배포하�
 
 - `GET/POST /api/v1/index/jobs`, `GET /api/v1/index/jobs/{job_id}`: 영속 색인 작업 이력 조회 및 증분/전체(또는 특정 `source_id`) 색인 트리거 (`DOK3_ENABLE_ADMIN=true` 필요).
 - `GET/PATCH /api/v1/documents/{id}/classification`: 문서 분류 조회(ACL 준수) 및 수동 수정/`reset_to_rule` 초기화 (원본 바이트·해시 불변, `PATCH`는 관리자 가드 적용).
-- `GET/POST /api/v1/sources`, `DELETE /api/v1/sources/{id}`: 로컬 디렉터리 Source 등록·목록 조회·삭제 (`local-markdown` 삭제 금지, Source 삭제 시 디스크 원본 파일 불변, 관리자 가드 적용).
+- `GET/POST /api/v1/sources`, `DELETE /api/v1/sources/{id}`: 로컬 디렉터리(`local_dir`) 및 SQLite(`sqlite`, `source_cursors.json` 증분 커서 체크포인트) Source 등록·목록 조회·삭제 (`local-markdown` 삭제 금지, Source 삭제 시 디스크 원본·DB 파일 불변, 관리자 가드 적용).
 - `GET /api/v1/corpora`: 현재 접근 권한(ACL)으로 열람 가능한 코퍼스별 문서 수·툴체인·패키지 버전·라이선스·출처 카탈로그 공개 조회(관리자 권한 불필요).
 
 ## 검색 섹션 매칭 (`matched_section_id`)
