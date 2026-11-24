@@ -77,7 +77,7 @@ PR 은 `.github/workflows/ci.yml` 에서 `rust-fmt`, `rust-clippy`, `rust-test`,
 - 변경 이력: [CHANGELOG.md](CHANGELOG.md)
 
 
-### 로컬 Markdown 폴더 색인
+### 로컬 문서 폴더 색인 (Markdown·HTML·코드·텍스트)
 
 ```bash
 DOK3_SOURCE_DIR=/path/to/markdown cargo run --manifest-path backend/rust/Cargo.toml -p dok3-server

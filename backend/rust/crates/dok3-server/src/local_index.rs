@@ -4,9 +4,9 @@ use std::{path::Path, sync::Arc};
 
 use crate::corpus_meta::CorpusMetadataIndex;
 use dok3_connectors::{LocalFileConnector, SourceConfig, build_document};
-use dok3_domain::{DocumentParserPort, GenerationId, SourceId};
+use dok3_domain::{GenerationId, SourceId};
 use dok3_index::TantivyIndex;
-use dok3_parser::MarkdownParser;
+use dok3_parser::ParserRegistry;
 use dok3_search::{InMemorySearchRepository, SearchService};
 use dok3_storage::content_revision;
 
@@ -17,7 +17,7 @@ pub struct BuildReport {
 }
 
 pub fn build(root: &Path) -> Result<(SearchService, BuildReport), String> {
-    let connector = LocalFileConnector::new(SourceConfig::markdown_defaults(
+    let connector = LocalFileConnector::new(SourceConfig::supported_document_defaults(
         SourceId::new("local-markdown"),
         "Local Markdown",
         root,
@@ -36,11 +36,11 @@ pub fn build(root: &Path) -> Result<(SearchService, BuildReport), String> {
         TantivyIndex::create_in_ram(GenerationId::new("local-markdown"))
             .map_err(|err| err.to_string())?,
     );
-    let parser = MarkdownParser::new();
+    let parser = ParserRegistry::with_defaults();
     let corpus_meta = CorpusMetadataIndex::load(root);
     let mut documents = Vec::with_capacity(report.files.len());
     for file in report.files {
-        let parsed = match parser.parse(&file.filename, &file.bytes) {
+        let parsed = match parser.parse_auto(&file.media_type, &file.filename, &file.bytes) {
             Ok(parsed) => parsed,
             Err(err) => {
                 build_report
@@ -110,7 +110,7 @@ mod tests {
     use axum::http::{Request, StatusCode, header};
     use dok3_api::{ApiState, build_router};
     use dok3_domain::{
-        DocumentDetail, HealthReadyResponse, Principal, SearchRequest, SearchResponse,
+        DocumentDetail, DocumentId, HealthReadyResponse, Principal, SearchRequest, SearchResponse,
         SectionReadResponse,
     };
     use http_body_util::BodyExt;
@@ -335,5 +335,75 @@ mod tests {
             .unwrap();
         assert_eq!(removed.total_hits, 0);
         assert_eq!(remaining.total_hits, 1);
+    }
+
+    #[test]
+    fn indexes_html_code_and_text_through_the_parser_registry() {
+        let root = tempfile::tempdir().unwrap();
+        fs::write(root.path().join("guide.md"), "# Guide\n\nmdtoken body\n").unwrap();
+        fs::write(
+            root.path().join("page.html"),
+            "<html><body><h1>Page</h1><p>htmltoken</p><script>scriptpayload()</script></body></html>",
+        )
+        .unwrap();
+        fs::write(
+            root.path().join("lib.rs"),
+            "// rusttoken\npub fn alpha_fn() {}\n\npub fn beta_fn() {}\n",
+        )
+        .unwrap();
+        fs::write(
+            root.path().join("Account.java"),
+            "public class AccountService {\n    // javatoken\n}\n",
+        )
+        .unwrap();
+        fs::write(
+            root.path().join("schema.sql"),
+            "CREATE TABLE accounts (id INT);\n",
+        )
+        .unwrap();
+        fs::write(
+            root.path().join("view.jsp"),
+            "<%@ page language=\"java\" %>\n",
+        )
+        .unwrap();
+        fs::write(root.path().join("note.txt"), "plaintoken note\n").unwrap();
+        fs::write(root.path().join("data.json"), "{\"jsontoken\": 1}").unwrap();
+        fs::write(root.path().join("bad.txt"), [0xff, 0xfe, 0xfd]).unwrap();
+
+        let (service, report) = build(root.path()).unwrap();
+        assert_eq!(report.indexed, 7, "{report:?}");
+        assert!(
+            report
+                .skipped
+                .iter()
+                .any(|s| s.starts_with("bad.txt: parse failed")),
+            "{report:?}"
+        );
+
+        let anon = Principal::anonymous_public();
+        let hits = |query: &str| {
+            service
+                .search(
+                    &anon,
+                    &SearchRequest {
+                        query: query.to_string(),
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap()
+                .total_hits
+        };
+        assert_eq!(hits("htmltoken"), 1);
+        assert_eq!(hits("rusttoken"), 1);
+        assert_eq!(hits("javatoken"), 1);
+        assert_eq!(hits("plaintoken"), 1);
+        assert_eq!(hits("scriptpayload"), 0);
+        assert_eq!(hits("jsontoken"), 0);
+
+        let rs = service
+            .get_document(&anon, &DocumentId::new("local-markdown:lib.rs"))
+            .unwrap();
+        assert!(rs.markdown.unwrap().starts_with("## "));
+        assert!(rs.sections.len() >= 2, "{:?}", rs.sections);
     }
 }

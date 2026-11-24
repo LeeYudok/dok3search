@@ -108,7 +108,8 @@ fn classify_category(
     {
         return "manual".to_string();
     }
-    if contains_any(path_lower, &["code/", "api/", "src/", "reference/"])
+    if has_code_extension(path_lower)
+        || contains_any(path_lower, &["code/", "api/", "src/", "reference/"])
         || contains_any(title_lower, &["api", "오류", "error", "sql", "쿼리"])
         || has_error_or_code_markers(body_raw, body_lower)
     {
@@ -120,6 +121,20 @@ fn classify_category(
     } else {
         "guide".to_string()
     }
+}
+
+const CODE_FILE_EXTENSIONS: [(&str, &str); 5] = [
+    (".rs", "rust"),
+    (".java", "java"),
+    (".go", "go"),
+    (".sql", "sql"),
+    (".jsp", "jsp"),
+];
+
+fn has_code_extension(path_lower: &str) -> bool {
+    CODE_FILE_EXTENSIONS
+        .iter()
+        .any(|(ext, _)| path_lower.ends_with(ext))
 }
 
 fn has_error_or_code_markers(body_raw: &str, body_lower: &str) -> bool {
@@ -232,6 +247,14 @@ fn extract_tags(
         if combined.contains(needle) {
             push_unique(label);
         }
+    }
+    for (ext, label) in CODE_FILE_EXTENSIONS {
+        if path_lower.ends_with(ext) {
+            push_unique(label);
+        }
+    }
+    if path_lower.ends_with(".html") || path_lower.ends_with(".htm") {
+        push_unique("html");
     }
     if !default_tag.trim().is_empty() {
         push_unique(default_tag);

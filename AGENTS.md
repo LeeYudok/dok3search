@@ -50,7 +50,7 @@
 - `DOK3_STATIC_DIR`: 정적 React 빌드(`frontend/dist`) 경로 (미지정 시 자동 탐색)
 - `DOK3_DESIGN_DIR`: 설계 문서 시드(`frontend/src/samples/design`) 경로 (미지정 시 자동 탐색)
 
-- `DOK3_SOURCE_DIR`: 시작할 때 색인할 기본 Markdown 폴더(`local-markdown`, `managed_by_env: true`). 설정하면 IPv4 루프백에서만 열리며, `DOK3_DATA_DIR` 없이 기동할 때는 메모리 검색 스냅샷을 구성한다. `DOK3_DATA_DIR` 와 함께 설정하면 `sources.json` 다중 Source 레지스트리와 영속 저장소(`dok3-storage`)·Blue-Green 세대(`dok3-index-manager`)를 사용한다. 읽을 수 없거나 비어 있거나 UTF-8이 아닌 파일은 경로와 사유를 기록하고 나머지 문서 색인은 계속한다.
+- `DOK3_SOURCE_DIR`: 시작할 때 색인할 기본 문서 폴더(`local-markdown`, `managed_by_env: true`). `dok3-parser::ParserRegistry`로 Markdown(`md`·`markdown`·`mdown`·`mkd`), HTML(`html`·`htm`), 코드(`rs`·`java`·`go`·`sql`·`jsp`), 텍스트(`txt`·`log`)를 읽는다(`DEFAULT_DOCUMENT_EXTENSIONS`; `json`·`yaml` 등은 코퍼스 매니페스트 오염 방지를 위해 제외). 코드·텍스트는 열람 화면에서 펜스 코드 블록으로 보인다. 설정하면 IPv4 루프백에서만 열리며, `DOK3_DATA_DIR` 없이 기동할 때는 메모리 검색 스냅샷을 구성한다. `DOK3_DATA_DIR` 와 함께 설정하면 `sources.json` 다중 Source 레지스트리와 영속 저장소(`dok3-storage`)·Blue-Green 세대(`dok3-index-manager`)를 사용한다. 읽을 수 없거나 비어 있거나 UTF-8이 아닌 파일은 경로와 사유를 기록하고 나머지 문서 색인은 계속한다.
 - `DOK3_REFRESH_INTERVAL_SECS`: 영속 모드(`DOK3_SOURCE_DIR` + `DOK3_DATA_DIR`)에서 주기적 증분 색인 워커 실행 간격(초, 선택). 미설정 시 백그라운드 워커는 비활성.
 - `DOK3_ENABLE_ADMIN`: `true` 설정 시 IPv4 루프백 바인드에서 관리자 API(`/api/v1/index/jobs*`, `/api/v1/sources*`, `PATCH /api/v1/documents/{id}/classification`) 및 `/admin` 관리 UI를 활성화한다(기본 `false`, 루프백 `Origin`·`Sec-Fetch-Site`·`Content-Type: application/json` 가드 강제).
 - `DOK3_ALLOW_NON_LOOPBACK_BIND`: `true`/`1` 설정 시 `DOK3_SOURCE_DIR` 모드에서 비-loopback `DOK3_BIND`(예: 컨테이너의 `0.0.0.0`)를 명시적으로 허용한다(기본 `false`, true/false/1/0만 허용). 관리자 API 바인드는 이 플래그와 무관하게 항상 loopback만 허용한다. 인증 프록시 뒤 컨테이너 배포에서만 켠다.

@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use dok3_connectors::{LocalFileConnector, SourceConfig, build_document};
 use dok3_core::Dok3Error;
 use dok3_domain::{AclScope, DocumentParserPort, SourceId};
-use dok3_parser::MarkdownParser;
+use dok3_parser::{MarkdownParser, ParserRegistry};
 
 struct TempDir(PathBuf);
 
@@ -154,5 +154,100 @@ fn scan_and_parse_over_100_real_offline_markdown_samples() {
         assert!(!doc.sections.is_empty());
         assert_eq!(doc.category, "guide");
         assert!(doc.source_uri.starts_with("file:///"));
+    }
+}
+
+#[test]
+fn supported_document_defaults_scan_and_render_multi_format_sources() {
+    let dir = TempDir::new("multi-format");
+    fs::write(dir.0.join("guide.md"), "# Guide\nbody").unwrap();
+    fs::write(
+        dir.0.join("page.html"),
+        "<html><body><h1>Page</h1><p>hello</p></body></html>",
+    )
+    .unwrap();
+    fs::write(
+        dir.0.join("lib.rs"),
+        "/// ```\n/// fenced\n/// ```\npub fn alpha() {}\n",
+    )
+    .unwrap();
+    fs::write(
+        dir.0.join("Account.java"),
+        "public class AccountService {}\n",
+    )
+    .unwrap();
+    fs::write(dir.0.join("main.go"), "func Run() {}\n").unwrap();
+    fs::write(
+        dir.0.join("schema.sql"),
+        "CREATE TABLE accounts (id INT);\n",
+    )
+    .unwrap();
+    fs::write(
+        dir.0.join("view.jsp"),
+        "<%@ page language=\"java\" %>\n<p>x</p>\n",
+    )
+    .unwrap();
+    fs::write(dir.0.join("note.txt"), "plain note\n").unwrap();
+    fs::write(dir.0.join("app.log"), "log line\n").unwrap();
+    fs::write(dir.0.join("provenance.json"), "{}").unwrap();
+    fs::write(dir.0.join("index.yaml"), "a: 1\n").unwrap();
+
+    let cfg = SourceConfig::supported_document_defaults(SourceId::new("multi"), "Multi", &dir.0);
+    let connector = LocalFileConnector::new(cfg).unwrap();
+    let report = connector.scan().unwrap();
+    let names: Vec<&str> = report
+        .files
+        .iter()
+        .map(|f| f.relative_path.as_str())
+        .collect();
+    assert_eq!(
+        names,
+        vec![
+            "Account.java",
+            "app.log",
+            "guide.md",
+            "lib.rs",
+            "main.go",
+            "note.txt",
+            "page.html",
+            "schema.sql",
+            "view.jsp"
+        ]
+    );
+    let media = |name: &str| {
+        report
+            .files
+            .iter()
+            .find(|f| f.relative_path == name)
+            .unwrap()
+            .media_type
+            .clone()
+    };
+    assert_eq!(media("page.html"), "text/html");
+    assert_eq!(media("lib.rs"), "text/x-rust");
+    assert_eq!(media("schema.sql"), "application/sql");
+    assert_eq!(media("view.jsp"), "application/jsp");
+    assert_eq!(media("note.txt"), "text/plain");
+
+    let registry = ParserRegistry::with_defaults();
+    for file in &report.files {
+        let parsed = registry
+            .parse_auto(&file.media_type, &file.filename, &file.bytes)
+            .unwrap_or_else(|err| panic!("{}: {err}", file.relative_path));
+        let doc = build_document(connector.config(), file, &parsed);
+        let markdown = doc.markdown.clone().unwrap();
+        match file.relative_path.as_str() {
+            "lib.rs" => {
+                assert!(markdown.contains("````rust"), "{markdown}");
+                assert!(doc.body.contains("pub fn alpha"));
+            }
+            "view.jsp" => {
+                assert!(markdown.contains("```jsp"), "{markdown}");
+                assert!(markdown.contains("<%@ page"));
+            }
+            "note.txt" => assert!(markdown.starts_with("```text\nplain note\n```")),
+            "guide.md" => assert_eq!(markdown, doc.body),
+            _ => {}
+        }
     }
 }

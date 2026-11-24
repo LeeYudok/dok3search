@@ -13,18 +13,18 @@ use dok3_connectors::{LocalFileConnector, build_document};
 use dok3_core::Dok3Error;
 use dok3_domain::{
     ChangeEvent, ChangeJournalPort, ChangeKind, ClassificationPort, CreateSourceRequest,
-    DeleteSourceResponse, Document, DocumentClassification, DocumentId, DocumentParserPort,
-    DocumentStorePort, GenerationId, IndexJobListResponse, IndexJobMode, IndexJobPort,
-    IndexJobRecord, IndexJobState, Principal, ReaderState, RegisteredSource, RevisionId,
-    SearchPort, SearchRequest, SearchResponse, SearchSnapshotMeta, Sequence, SourceListResponse,
-    SourceRegistryPort, TriggerIndexJobRequest, UpdateClassificationRequest,
+    DeleteSourceResponse, Document, DocumentClassification, DocumentId, DocumentStorePort,
+    GenerationId, IndexJobListResponse, IndexJobMode, IndexJobPort, IndexJobRecord, IndexJobState,
+    Principal, ReaderState, RegisteredSource, RevisionId, SearchPort, SearchRequest,
+    SearchResponse, SearchSnapshotMeta, Sequence, SourceListResponse, SourceRegistryPort,
+    TriggerIndexJobRequest, UpdateClassificationRequest,
 };
 use dok3_index::{SCHEMA_VERSION, TantivyIndex};
 use dok3_index_manager::{
     DurableState, Error as ManagerError, GenerationBackend, IndexManager, Manifest, ReaderAccess,
     Result as ManagerResult, SearchSnapshot, ValidationCheck,
 };
-use dok3_parser::MarkdownParser;
+use dok3_parser::ParserRegistry;
 use dok3_search::SearchService;
 use dok3_storage::{FileChangeJournal, FileDocumentStore, PutOutcome, content_revision};
 use serde::{Deserialize, Serialize};
@@ -1471,14 +1471,14 @@ fn scan_and_store_source(
         .into_iter()
         .map(|file| format!("{}: {}", file.relative_path, file.reason))
         .collect();
-    let parser = MarkdownParser::new();
+    let parser = ParserRegistry::with_defaults();
     let corpus_meta = CorpusMetadataIndex::load(Path::new(&entry.path));
     let mut seen_ids = HashSet::with_capacity(report.files.len());
     let mut indexed = 0usize;
     let mut batch_items: Vec<(Document, Option<Vec<u8>>)> = Vec::with_capacity(report.files.len());
 
     for file in report.files {
-        let parsed = match parser.parse(&file.filename, &file.bytes) {
+        let parsed = match parser.parse_auto(&file.media_type, &file.filename, &file.bytes) {
             Ok(parsed) => parsed,
             Err(err) => {
                 skipped.push(format!("{}: parse failed: {err}", file.relative_path));
@@ -1821,8 +1821,8 @@ mod tests {
     use dok3_api::{ApiState, build_router};
     use dok3_connectors::SourceConfig;
     use dok3_domain::{
-        ClassificationSource, DocumentDetail, HealthReadyResponse, SearchResponse,
-        SectionReadResponse, SourceId,
+        ClassificationSource, DocumentDetail, DocumentParserPort, HealthReadyResponse,
+        SearchResponse, SectionReadResponse, SourceId,
     };
     use dok3_index_manager::{DurableState, GenerationFiles, GenerationState};
     use http_body_util::BodyExt;
@@ -2474,7 +2474,7 @@ mod tests {
         ))
         .unwrap();
         let report = connector.scan().unwrap();
-        let parser = MarkdownParser::new();
+        let parser = dok3_parser::MarkdownParser::new();
         let scanned = &report.files[0];
         let parsed = parser.parse(&scanned.filename, &scanned.bytes).unwrap();
         let mut updated_doc = build_document(connector.config(), scanned, &parsed);
@@ -3643,5 +3643,62 @@ mod tests {
                 .total_hits,
             1
         );
+    }
+
+    #[test]
+    fn persistent_runtime_indexes_code_and_text_and_refreshes_incrementally() {
+        let source_root = tempfile::tempdir().unwrap();
+        let data_root = tempfile::tempdir().unwrap();
+        fs::write(source_root.path().join("guide.md"), "# Guide\n\nmdtoken\n").unwrap();
+        fs::write(
+            source_root.path().join("lib.rs"),
+            "// firstrusttoken\npub fn alpha() {}\n",
+        )
+        .unwrap();
+        fs::write(source_root.path().join("note.txt"), "plaintexttoken\n").unwrap();
+        fs::write(
+            source_root.path().join("schema.sql"),
+            "CREATE TABLE accounts (id INT);\n",
+        )
+        .unwrap();
+
+        let (runtime, report) =
+            PersistentRuntime::open(source_root.path(), data_root.path()).unwrap();
+        assert_eq!(report.indexed, 4, "{report:?}");
+        let anon = Principal::anonymous_public();
+        let hits = |runtime: &PersistentRuntime, query: &str| {
+            runtime
+                .service()
+                .search(
+                    &anon,
+                    &SearchRequest {
+                        query: query.to_string(),
+                        ..SearchRequest::default()
+                    },
+                )
+                .unwrap()
+                .total_hits
+        };
+        assert_eq!(hits(&runtime, "firstrusttoken"), 1);
+        assert_eq!(hits(&runtime, "plaintexttoken"), 1);
+        for name in ["lib.rs", "schema.sql"] {
+            let doc = runtime
+                .service()
+                .get_document(&anon, &DocumentId::new(format!("local-markdown:{name}")))
+                .unwrap();
+            assert_eq!(doc.category, "code", "{name}");
+        }
+
+        fs::write(
+            source_root.path().join("lib.rs"),
+            "// secondrusttoken\npub fn alpha() {}\n",
+        )
+        .unwrap();
+        fs::remove_file(source_root.path().join("note.txt")).unwrap();
+        let refreshed = runtime.refresh().unwrap();
+        assert!(refreshed.rebuilt);
+        assert_eq!(hits(&runtime, "firstrusttoken"), 0);
+        assert_eq!(hits(&runtime, "secondrusttoken"), 1);
+        assert_eq!(hits(&runtime, "plaintexttoken"), 0);
     }
 }
