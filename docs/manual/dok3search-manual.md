@@ -187,7 +187,7 @@ cargo run --manifest-path backend/rust/Cargo.toml -p dok3-server -- --mcp-stdio
 
 ## 접근 제어
 
-현재 인증 계층이 없다. 그래서 HTTP MCP와 stdio MCP의 모든 호출자를 익명 공개 사용자로 취급한다. 익명 공개 사용자는 접근 범위가 `public`인 문서만 검색하고 열람한다.
+HTTP MCP는 Bearer 키를 확인한다. 로컬 stdio MCP는 키 없이 실행한다. 두 방식 모두 접근 범위가 `public`인 문서만 검색하고 열람한다.
 
 - 검색 결과와 분류별 문서 수에서 권한 밖 문서를 뺀다.
 - 권한 밖 문서를 ID로 직접 조회하면 `403 FORBIDDEN`이다.
