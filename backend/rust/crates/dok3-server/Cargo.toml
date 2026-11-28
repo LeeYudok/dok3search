@@ -10,6 +10,7 @@ name = "dok3search"
 path = "src/main.rs"
 
 [dependencies]
+axum.workspace = true
 dok3-core.workspace = true
 dok3-domain.workspace = true
 dok3-storage.workspace = true
@@ -29,7 +30,6 @@ tokio.workspace = true
 windows-service.workspace = true
 
 [dev-dependencies]
-axum.workspace = true
 http-body-util.workspace = true
 tempfile = "3"
 tower.workspace = true
