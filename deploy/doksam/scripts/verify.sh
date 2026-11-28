@@ -5,7 +5,7 @@
 #
 # Checks:
 #   1. unauthenticated health/SPA/search paths -> 200
-#   2. GET /mcp -> 405
+#   2. GET /mcp -> 401
 #   3. TLS certificate validates against the system trust store
 set -euo pipefail
 
@@ -14,6 +14,7 @@ set -euo pipefail
 . "$(cd "$(dirname "$0")" && pwd)/lib.sh"
 
 URL="https://$PUBLIC_HOST"
+MCP_EXPECTED_STATUS="${MCP_EXPECTED_STATUS:-401}"
 RESOLVE=("--resolve" "$PUBLIC_HOST:$HTTPS_PORT:$NODE_IP")
 
 TLS_ARGS=()
@@ -47,7 +48,7 @@ s_search="$(status "${RESOLVE[@]}" \
 echo "POST /api/v1/search        -> $s_search (expect 200)"
 
 s_mcp="$(status "${RESOLVE[@]}" "$URL/mcp")"
-echo "GET  /mcp                  -> $s_mcp (expect 405)"
+echo "GET  /mcp                  -> $s_mcp (expect $MCP_EXPECTED_STATUS)"
 
 fail=0
 [ "$s_ready" = "200" ] || fail=1
@@ -55,7 +56,7 @@ fail=0
 [ "$s_root" = "200" ] || fail=1
 [ "$s_spa" = "200" ] || fail=1
 [ "$s_search" = "200" ] || fail=1
-[ "$s_mcp" = "405" ] || fail=1
+[ "$s_mcp" = "$MCP_EXPECTED_STATUS" ] || fail=1
 if [ "$fail" -ne 0 ]; then
   echo "verify FAILED" >&2
   exit 1

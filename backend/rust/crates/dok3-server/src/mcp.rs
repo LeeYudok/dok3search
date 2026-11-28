@@ -4,13 +4,18 @@
 //!   `/api/v1/*` and `/health/ready`, sharing one [`SearchService`].
 //! - stdio: `--mcp-stdio` serves newline-delimited JSON-RPC on stdin/stdout instead of HTTP.
 //!
-//! Both transports bind every caller to [`Principal::anonymous_public()`] (fail-closed) until an
-//! authentication layer exists; neither inherits a privileged default principal.
+//! HTTP requires a Bearer token. Both transports use the public document scope.
 
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use dok3_agent::{AcpAdapter, McpServer, build_agent_router};
+use axum::extract::{Request, State};
+use axum::http::{HeaderValue, header};
+use axum::middleware::{self, Next};
+use axum::response::{IntoResponse, Response};
+use dok3_agent::{AcpAdapter, McpServer, build_agent_router_with_mcp, build_mcp_router};
+use dok3_api::AuthConfig;
+use dok3_api::auth::AuthRejection;
 use dok3_api::{ApiState, Router, build_router_with_extra};
 use dok3_domain::Principal;
 use dok3_search::SearchService;
@@ -75,14 +80,34 @@ pub fn anonymous_server(search: &Arc<SearchService>) -> McpServer {
 }
 
 /// Builds the full HTTP app: REST API, health, optional SPA, `/mcp`, A2A, and `/llms.txt`.
-pub fn build_app(state: ApiState, static_dir: Option<PathBuf>) -> Router {
+pub fn build_app(
+    state: ApiState,
+    static_dir: Option<PathBuf>,
+    mcp_tokens: Option<&str>,
+) -> Result<Router, String> {
+    let auth = AuthConfig::from_parts("bearer", "", "", mcp_tokens)
+        .map_err(|err| format!("invalid DOK3_MCP_AUTH_TOKENS: {err}"))?;
+    let server = Arc::new(anonymous_server(&state.search));
+    let mcp = build_mcp_router(Arc::clone(&server))
+        .route_layer(middleware::from_fn_with_state(auth, require_bearer));
     let doc_count = state.search.health_ready(&state.mode).document_count;
-    let agent = build_agent_router(
-        Arc::new(anonymous_server(&state.search)),
-        doc_count,
-        &state.mode,
-    );
-    build_router_with_extra(state, static_dir, Some(agent))
+    let agent = build_agent_router_with_mcp(server, doc_count, &state.mode, mcp);
+    Ok(build_router_with_extra(state, static_dir, Some(agent)))
+}
+
+async fn require_bearer(State(auth): State<AuthConfig>, request: Request, next: Next) -> Response {
+    if request.headers().contains_key(header::AUTHORIZATION)
+        && auth
+            .resolve_principal(request.headers(), &Principal::anonymous_public())
+            .is_ok()
+    {
+        return next.run(request).await;
+    }
+    let mut response = AuthRejection("valid MCP Bearer token required").into_response();
+    response
+        .headers_mut()
+        .insert(header::WWW_AUTHENTICATE, HeaderValue::from_static("Bearer"));
+    response
 }
 
 /// Serves MCP over stdin/stdout until EOF. Diagnostics must go to stderr only.
@@ -174,13 +199,19 @@ mod tests {
     }
 
     fn app_with_static(static_dir: Option<std::path::PathBuf>) -> axum::Router {
-        build_app(ApiState::new(fixture_search()), static_dir)
+        build_app(
+            ApiState::new(fixture_search()),
+            static_dir,
+            Some("test-key:mcp-test:public"),
+        )
+        .unwrap()
     }
 
     fn mcp_post(body: Value) -> Request<Body> {
         Request::builder()
             .method(Method::POST)
             .uri("/mcp")
+            .header(header::AUTHORIZATION, "Bearer test-key")
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::ACCEPT, "application/json, text/event-stream")
             .body(Body::from(body.to_string()))
@@ -297,6 +328,31 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn mcp_rejects_missing_invalid_and_unconfigured_bearer_tokens() {
+        let state = ApiState::new(fixture_search());
+        for (tokens, authorization) in [
+            (Some("test-key:mcp-test:public"), None),
+            (Some("test-key:mcp-test:public"), Some("Bearer wrong-key")),
+            (None, Some("Bearer test-key")),
+        ] {
+            let app = build_app(state.clone(), None, tokens).unwrap();
+            for method in [Method::GET, Method::POST] {
+                let mut request = mcp_post(json!({"jsonrpc":"2.0","id":1,"method":"ping"}));
+                *request.method_mut() = method;
+                request.headers_mut().remove(header::AUTHORIZATION);
+                if let Some(value) = authorization {
+                    request
+                        .headers_mut()
+                        .insert(header::AUTHORIZATION, value.parse().unwrap());
+                }
+                let response = app.clone().oneshot(request).await.unwrap();
+                assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+                assert_eq!(response.headers()[header::WWW_AUTHENTICATE], "Bearer");
+            }
+        }
+    }
+
+    #[tokio::test]
     async fn mcp_get_is_405_and_foreign_origin_is_403() {
         let app = app_with_static(None);
 
@@ -306,6 +362,7 @@ mod tests {
                 Request::builder()
                     .method(Method::GET)
                     .uri("/mcp")
+                    .header(header::AUTHORIZATION, "Bearer test-key")
                     .body(Body::empty())
                     .unwrap(),
             )
@@ -384,6 +441,7 @@ mod tests {
                 Request::builder()
                     .method(Method::GET)
                     .uri("/mcp")
+                    .header(header::AUTHORIZATION, "Bearer test-key")
                     .body(Body::empty())
                     .unwrap(),
             )
@@ -414,7 +472,12 @@ mod tests {
     async fn mcp_self_searches_and_reads_builtin_operations_manual() {
         let repo = Arc::new(InMemorySearchRepository::from_seed(None));
         let search = Arc::new(SearchService::new(repo.clone(), repo));
-        let app = build_app(ApiState::new(search), None);
+        let app = build_app(
+            ApiState::new(search),
+            None,
+            Some("test-key:mcp-test:public"),
+        )
+        .unwrap();
 
         let found = app
             .clone()

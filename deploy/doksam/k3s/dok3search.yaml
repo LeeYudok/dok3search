@@ -74,6 +74,12 @@ spec:
               value: 0.0.0.0
             - name: DOK3_PORT
               value: "8080"
+            - name: DOK3_MCP_AUTH_TOKENS
+              valueFrom:
+                secretKeyRef:
+                  name: dok3search-mcp-auth
+                  key: DOK3_MCP_AUTH_TOKENS
+                  optional: true
             - name: DOK3_DATA_DIR
               value: /data
             - name: DOK3_SOURCE_DIR
