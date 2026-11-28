@@ -5,7 +5,7 @@
 #
 # Steps: build linux/amd64 image -> import into doksam containerd -> apply the
 # manifest with the commit-SHA image -> record the previous image for rollback
-# -> wait for rollout -> verify (200 public endpoints, 405 GET /mcp). Re-running
+# -> wait for rollout -> verify (200 public endpoints, 401 GET /mcp). Re-running
 # with the same commit is a no-op; a new commit produces a new immutable tag and
 # rolls the Deployment once. Operational data is never touched.
 set -euo pipefail

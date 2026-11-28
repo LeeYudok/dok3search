@@ -73,6 +73,17 @@ struct AgentDiscoveryState {
 
 /// Builds the full agent router mounting `/mcp`, `/.well-known/agent.json`, `/a2a`, `/acp`, and `/llms.txt`.
 pub fn build_agent_router(server: Arc<McpServer>, doc_count: usize, mode: &str) -> Router {
+    let mcp = build_mcp_router(Arc::clone(&server));
+    build_agent_router_with_mcp(server, doc_count, mode, mcp)
+}
+
+/// Mounts the agent discovery and protocol routes with a caller-supplied MCP router.
+pub fn build_agent_router_with_mcp(
+    server: Arc<McpServer>,
+    doc_count: usize,
+    mode: &str,
+    mcp: Router,
+) -> Router {
     let discovery = AgentDiscoveryState {
         a2a: A2aServer::new(server.search_service()),
         acp: AcpAdapter::new(server.search_service()),
@@ -87,7 +98,7 @@ pub fn build_agent_router(server: Arc<McpServer>, doc_count: usize, mode: &str) 
         .layer(DefaultBodyLimit::max(MAX_JSONRPC_LINE_BYTES))
         .with_state(discovery);
 
-    build_mcp_router(server).merge(a2a_routes)
+    mcp.merge(a2a_routes)
 }
 
 async fn handle_agent_card() -> Response {

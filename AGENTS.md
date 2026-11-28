@@ -67,6 +67,8 @@
 - `DOK3_AUTH_USER_HEADER`, `DOK3_AUTH_GROUPS_HEADER`: `trusted_header` 모드에서 사용자/그룹 헤더명(기본 `X-Auth-User`, `X-Auth-Groups`).
 - `DOK3_AUTH_TOKENS`: `bearer` 모드 토큰 정의(`token:subject:scope1,scope2[:admin];...`).
 
+- `DOK3_MCP_AUTH_TOKENS`는 HTTP MCP 전용 Bearer 키 목록이다. 형식은 `token:subject:public`이며 여러 키는 세미콜론으로 구분한다. 키를 설정하기 전에는 HTTP MCP가 401을 반환한다. 인증한 MCP 호출은 공개 문서 권한으로 실행한다.
+
 - `--mcp-stdio`: MCP 서버를 표준입출력 모드로 시작한다.
 - `--acp-stdio`: ACP 어댑터를 표준입출력 모드로 시작한다(`POST /acp`는 HTTP 모드 엔드포인트, `Principal::anonymous_public()` 고정).
 - `--windows-service`: Windows 네이티브 SCM(Service Control Manager) 서비스로 실행한다(`deploy/windows/install-service.ps1` 의 `sc.exe create` 에서 사용). `POST /mcp`는 HTTP 모드의 MCP 엔드포인트다. 두 경로 모두 `Principal::anonymous_public()` 고정을 사용한다.

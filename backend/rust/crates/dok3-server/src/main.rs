@@ -137,7 +137,12 @@ where
         mode,
         persistent_runtime.as_ref(),
     )?;
-    let app = mcp::build_app(state, static_dir.clone());
+    let mcp_tokens = match std::env::var("DOK3_MCP_AUTH_TOKENS") {
+        Ok(tokens) => Some(tokens),
+        Err(std::env::VarError::NotPresent) => None,
+        Err(err) => return Err(format!("cannot read DOK3_MCP_AUTH_TOKENS: {err}")),
+    };
+    let app = mcp::build_app(state, static_dir.clone(), mcp_tokens.as_deref())?;
     // --- /slice-B: mcp ---
 
     let worker: Option<WorkerHandle> =
@@ -462,7 +467,7 @@ mod tests {
         let state =
             build_api_state(&config, Arc::clone(&search_arc), mode, persistent.as_ref()).unwrap();
         assert!(state.default_principal.is_admin);
-        let app = mcp::build_app(state, None);
+        let app = mcp::build_app(state, None, Some("test-key:mcp-test:public")).unwrap();
 
         let list_resp = app
             .clone()
@@ -536,6 +541,7 @@ mod tests {
         let mcp_req = Request::builder()
             .method(Method::POST)
             .uri("/mcp")
+            .header(header::AUTHORIZATION, "Bearer test-key")
             .header(header::CONTENT_TYPE, "application/json")
             .header("MCP-Protocol-Version", "2026-07-28")
             .body(Body::from(
@@ -566,7 +572,7 @@ mod tests {
         let (service, mode, persistent) = open_runtime(&config, None).unwrap();
         let search = Arc::new(service);
         let state = build_api_state(&config, search, mode, persistent.as_ref()).unwrap();
-        let app = mcp::build_app(state, None);
+        let app = mcp::build_app(state, None, Some("test-key:mcp-test:public")).unwrap();
 
         for path in ["/health", "/health/ready"] {
             let resp = app

@@ -107,6 +107,8 @@ deploy/doksam/scripts/rollback.sh
 - 롤백 리허설: 새 커밋을 배포한 뒤 `rollback.sh`로 직전 이미지 복원 →
   `rollout status`·`verify.sh` 통과 확인 → 다시 `deploy.sh`로 전진 배포.
 
+인증 도입 전 이미지로 롤백하면 HTTP MCP가 다시 공개된다. 해당 이미지를 복원할 때는 `MCP_EXPECTED_STATUS=405 deploy/doksam/scripts/rollback.sh`로 검증한다.
+
 ### 리허설 절차
 
 ```sh
@@ -123,7 +125,8 @@ deploy/doksam/scripts/verify.sh
 
 - 인증 없이 `/health/ready`(readiness), `/health`(liveness), `/`(정적 React),
   `/documents/deep-link`(SPA 라우트), `POST /api/v1/search`(검색 API) → 200.
-- `GET /mcp` → 405.
+- 인증 없이 `GET /mcp` → 401. 유효한 Bearer 키를 보내면 GET은 405를 반환하며 MCP 요청은 POST로 보낸다.
+- 원격 MCP를 사용하려면 `dok3search` 네임스페이스의 `dok3search-mcp-auth` Secret에 `DOK3_MCP_AUTH_TOKENS` 키를 등록한다. 값은 `token:subject:public` 형식이며, 등록 또는 변경 후 Deployment를 재시작한다.
 - 기본 검증은 시스템 trust store로 `www.doksam.com` TLS 인증서를 검증한다.
   인증서 발급 전 부트스트랩 디버깅에만 `TLS_INSECURE=1`로 일시 우회한다.
 

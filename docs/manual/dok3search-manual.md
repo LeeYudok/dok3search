@@ -140,13 +140,14 @@ dok3search는 MCP 서버를 두 가지 전송 방식으로 제공한다. 두 방
 `POST /mcp`에 JSON-RPC 2.0 메시지를 보낸다. HTTP 서버와 같은 주소·포트를 쓴다.
 
 - 요청 헤더에 `Content-Type: application/json`, `Accept: application/json, text/event-stream`을 넣는다.
-- `GET /mcp`는 `405 Method Not Allowed`(`Allow: POST`)를 돌려준다.
+- `Authorization: Bearer <키>` 헤더가 필요하다. 키가 없거나 유효하지 않으면 `401 Unauthorized`를 돌려준다. 유효한 키를 보낸 `GET /mcp`는 `405 Method Not Allowed`(`Allow: POST`)를 돌려준다.
 - `Origin` 헤더가 있으면 호스트가 `localhost` 또는 `127.0.0.1`이어야 한다. 다른 출처는 `403`으로 거부한다.
 - 응답에 협상된 프로토콜 버전이 `MCP-Protocol-Version` 헤더로 붙는다. 지원 버전은 `2026-07-28`(기본), `2025-11-25`, `2024-11-05`다.
 - 알림(id 없는 메시지)에는 본문 없이 `202 Accepted`로 응답한다.
 
 ```sh
 curl -s http://127.0.0.1:8080/mcp \
+  -H "Authorization: Bearer $DOK3_MCP_TOKEN" \
   -H 'Content-Type: application/json' \
   -H 'Accept: application/json, text/event-stream' \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"kb_search","arguments":{"query":"운영 매뉴얼","category":"manual"}}}'
@@ -186,7 +187,7 @@ cargo run --manifest-path backend/rust/Cargo.toml -p dok3-server -- --mcp-stdio
 
 ## 접근 제어
 
-현재 인증 계층이 없다. 그래서 HTTP MCP와 stdio MCP의 모든 호출자를 익명 공개 사용자로 취급한다. 익명 공개 사용자는 접근 범위가 `public`인 문서만 검색하고 열람한다.
+HTTP MCP는 Bearer 키를 확인한다. 로컬 stdio MCP는 키 없이 실행한다. 두 방식 모두 접근 범위가 `public`인 문서만 검색하고 열람한다.
 
 - 검색 결과와 분류별 문서 수에서 권한 밖 문서를 뺀다.
 - 권한 밖 문서를 ID로 직접 조회하면 `403 FORBIDDEN`이다.
